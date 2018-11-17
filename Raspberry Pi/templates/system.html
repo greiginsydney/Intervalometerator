@@ -1,0 +1,181 @@
+{% extends "index.html" %}
+{% block content %}
+
+<form name="setLocation" method="post" >
+	<table>
+		<tr>
+			<th>System Maintenance</th>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Location Name:</div>
+				<div class="alignright">
+					<input name="newName" type="text" value="{{ locationName }}" >
+				</div>
+			</td>
+		</tr>
+		<tr>	
+			<td class="noborder">
+				<button name="submitLocation" type="submit" class="hwbutton" >Submit</button>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">System (Arduino) Date:</div>
+				<div class="alignright">{{ arduinoDate }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">System (Arduino) Time:</div>
+				<div class="alignright">{{ arduinoTime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi Model:</div>
+				<div class="alignright">{{ piModel }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi Linux Version:</div>
+				<div class="alignright">{{ piLinuxVer }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi Available Storage:</div>
+				<div class="alignright">{{ piSpaceFree }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi Uptime:</div>
+				<div class="alignright">{{ piUptime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Arduino Temperature:</div>
+				<div class="alignright">{{ arduinoTemp }}{% if arduinoTemp != "Unknown" %}&deg;C{% endif %}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi Temperature:</div>
+				<div class="alignright">{{ piTemp }}{% if piTemp != "Unknown" %}&deg;C{% endif %}</div>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<form name="PiEnable" method="post" >
+	<table>
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Pi on at (hour):</div>
+				<div class="alignright">
+					<select name="wakePiTime" id="piHour">>
+						<option disabled selected value style="display:none"> -- choose -- </option>
+						{% for hour in ['25', '00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
+							<option value="{{ hour }}" {{ 'SELECTED' if hour == wakePiTime }} >{{ 'Always On' if hour == '25' else hour }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr id="piMinutes">
+			<td class="noborder">
+				<div class="alignleft">Pi on for (minutes):</div>
+				<div class="alignright">
+					<select name="wakePiDuration" >
+						<option disabled selected value style="display:none"> -- choose -- </option>
+						{% for window in ['05','10','15','20','30','60'] %}
+							<option value="{{window}}" {{ 'SELECTED' if window == wakePiDuration }} >{{window}}</option>"
+						{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="wakePi" type="submit" class="hwbutton" value="wakePi">Submit</button>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<form name="sendTime" method="post" onsubmit="return sendTimeToServer();">
+	<table>
+		<tr>
+			<td class="noborder">
+				<div >Current PC date/time is <p id="now"></p></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="SyncSystem" type="submit" class="hwbutton" value="SetPiTime">Set system time &amp; date</button>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="SyncCamera" type="submit" class="hwbutton" value="SetCameraTime" DISABLED>Set camera time &amp; date</button>
+			</td>
+		</tr>
+	</table>
+</form>
+
+
+<form name="reboot" method="post" >
+	<table>
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Reboot Arduino?</div>
+				<div class="alignright">(Enter "sayonara")</div>
+				<div class="alignright">
+					<input name="rebootString" type="text" value="" >
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				{% if wakePiTime == '25' %}
+				<p>If you request a reboot, the Arduino first shuts down the Pi and then reboots itself, after which the Pi will be restarted.</p>
+				{% else %}
+				<p>If you request a reboot, the Arduino first shuts down the Pi and then reboots itself. As the Pi is not set to 24x7 operation, it won't come back until {{wakePiTime}}:00 or you manually override on site.</p>
+				{% endif %}
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="Reboot" type="submit" class="hwbutton" value="Reboot">Reboot</button>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<script> 
+function sendTimeToServer()
+{
+    var today = new Date();
+	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
+	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2);
+	var dateTime = date + time;
+	document.forms["sendTime"]["SyncSystem"].value = dateTime;
+	var options = { year: 'numeric', month: 'short', day: 'numeric', hour12: 'false', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+	return today.toLocaleString('en-AU', options) // Customise (or customIZE) as appropriate for your locale
+}
+document.getElementById("now").innerHTML = sendTimeToServer();
+
+	// This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
+	var piHour = document.getElementById("piHour");
+	var piMinutes = document.getElementById("piMinutes");
+	piMinutes.style.display = (piHour.value == "25") ? "none":"";
+
+	piHour.onchange = function(){
+		piMinutes.style.display = (piHour.value == "25") ? "none":"";
+	};
+</script>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "index.html" %}
+{% block content %}
+
+<form method="get">
+	<table>
+	{% if cameraDate != "" %}
+		<tr>
+			<th>Camera Settings</th>
+		</tr>
+		
+		<tr>
+			<td>
+				<div class="alignleft">Camera Date:</div>
+				<div class="alignright">{{ cameraDate }}</div>
+			</td>
+		</tr>
+		<tr {{ 'class="red"' if focusmode == "Manual" }}>
+			<td>
+				<div class="alignleft">Focus Mode:</div>
+				<div class="alignright">{{ focusmode }}</div>
+			</td>
+		</tr>
+		<tr {{ 'class="red"' if exposuremode == "M" or exposuremode == "AV" }}>
+			<td>
+				<div class="alignleft">Exposure Mode:</div>
+				<div class="alignright">{{ exposuremode }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Auto Power-off:</div>
+				<div class="alignright">{{ autopoweroff }}</div>
+			</td>
+		</tr>
+	{% else %}
+		<tr>
+			<td>
+				<div class="alignleft">Camera:</div>
+				<div class="alignright">No or unknown camera detected</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the Camera</button>
+			</td>
+		</tr>
+	{% endif %}
+	</table>	
+</form>
+
+
+<form method="post">
+	<table>
+		<tr>
+			<td>
+			<div class="alignleft">Image Format:</div>
+			<div class="alignright">
+				<select name="img" >
+					{% for img in imgfmtoptions %}
+						<option value="{{img}}" {{ 'SELECTED' if img == imgfmtselected }} >{{img}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">White Balance:</div>
+			<div class="alignright">
+				<select name="wb" >
+					{% for wb in wboptions %}
+						<option value="{{wb}}" {{ 'SELECTED' if wb == wbselected }}>{{wb}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">ISO:</div>
+			<div class="alignright">
+				<select name="iso" >
+					{% for iso in isooptions %}
+						<option value="{{iso}}" {{ 'SELECTED' if iso == isoselected }} >{{iso}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Aperture:</div>
+			<div class="alignright">
+				<select name="aperture" >
+					{% for aperture in apoptions %}
+						<option value="{{aperture}}" {{ 'SELECTED' if aperture == apselected }} >{{aperture}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Shutter Speed:</div>
+			<div class="alignright">
+				<select name="shutter" >
+					{% for shutterspeed in shutoptions %}
+						<option value="{{shutterspeed}}" {{ 'SELECTED' if shutterspeed == shutselected }} >{{shutterspeed}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Exposure Comp:</div>
+			<div class="alignright">
+				<select name="exp" >
+					{% for exp in expoptions %}
+						<option value="{{exp}}" {{ 'SELECTED' if exp == expselected }} >{{exp}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+	</table>
+
+{% if piPreviewFile != '' %}	
+<table>
+	<tr>
+		<td>
+		<a href="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" target="_blank"><img src="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" alt="preview image" width="100%"></a>
+		</td>
+	</tr>
+</table> 
+{% endif %}
+
+<table class="noborder">
+	<tr>
+		<td class="noborder">
+		<div class="alignleft">
+			<button name="CamSubmit" type="submit" value="preview" {{ 'DISABLED' if cameraDate == "" }} >Preview</button>
+			<!-- See "capture preview" in focus-gui.py -->
+		</div>
+		<div class="alignright">
+			<button name="CamSubmit" type="submit" value="apply" {{ 'DISABLED' if cameraDate == "" }}>Apply</button>
+		</div>
+		</td>
+	</tr>
+</table>
+</form>
+{% endblock %}
