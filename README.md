@@ -2,7 +2,7 @@
 
 The Intervalometerator (aka "intvlm8r") is a flexible, low-cost time-lapse camera controller for DSLRs.
 
-It came into being after we were unable to find a suitable time-lapse controller for a planned time-lapse shoot for which we wanted the image quality of a DSLR. The first unit deployed is recording the construction of a friends' house in rural New Zealand, off-grid and with no network connectivity.
+It came into being after we were unable to find a suitable time-lapse controller for a planned time-lapse shoot for which we wanted the image quality of a DSLR. The first unit deployed is recording the construction of our friends' house in rural New Zealand, off-grid and with no network connectivity.
 
 At its heart are two micro-controller boards, each serving a specific purpose. An <a href="https://www.sparkfun.com/products/11114https://www.sparkfun.com/products/11114" target="_blank">Arduino Pro Mini</a> is the master, with a battery-backed external real-time clock signalling it to wake the camera and fire the shutter. A <a href="https://www.raspberrypi.org/products/raspberry-pi-zero-w/" target="_blank">Raspberry Pi Zero W</a> provides a web-based "front-end" where all configuration and management takes place. An I2C communication bus between the micros handles the higher-level intercommunication, with 3 digital IO lines between them providing 'wake' and 'shutdown' signalling. The digital IO reduces the risk of drive corruption as the power-hungry Pi's power is applied and removed under the Arduino's control.
 
@@ -14,19 +14,21 @@ The Arduino's code ('sketch') is largely bespoke, whilst the Pi is totally relia
 ### Use your choice of DSLR
 With gPhoto and python-gphoto2 providing all the camera interfacing, the intent is that any camera compatible with these projects should be able to be used.
 
-Note that in its initial published version, the intvlm8r has been developed with Canon 6D and 60D cameras. The unit deployed in NZ contained a 60D - read why on the [Design Decisions](designDecisions.md) page.
+Note that in its initial published version, the intvlm8r has been developed with Canon 6D and 60D cameras. The unit deployed in NZ contained a 60D - read why on the [Design Decisions](DESIGNDECISIONS.md) page.
 
-gPhoto is only used for the camera management, with the core role of waking the camera and taking the shot using the camera's manual shutter input.
+gPhoto (running on the Pi) is only used for the camera management, with the Arduino handling the core role of waking the camera and taking the shot using the camera's manual shutter input.
 
 ### Flexible interval settings
 
-From the web interface you select  the days of the week to shoot, within what span of hours, and how many shots per hour. A typical building construction might shoot Monday through Friday, from 6am to 6pm, and take 4 shots an hour.
+From the web interface you select the days of the week to shoot, within what span of hours, and how many shots per hour. A typical building construction might shoot Monday through Friday, from 6am to 6pm, and take 4 shots an hour.
 
 ### Low-Cost
-Using commonly-available components, an intvlm8r controller with charger, battery, solar panel, waterproof <a href="https://www.pelican.com/us/en/" target="_blank">Pelican case</a> & mounts should see you with plenty of change from $AUD600, a fraction of the cost of commercially-available equivalents. Add your DSLR and a lens and you're in business! See the Shopping List section for more details.
+Using commonly-available components, an intvlm8r controller with charger, battery, solar panel, waterproof <a href="https://www.pelican.com/us/en/" target="_blank">Pelican case</a> & mounts should see you with plenty of change from $AUD600 ($US440), a fraction of the cost of commercially-available equivalents. Add your DSLR and a lens and you're in business! See the [Shopping list](SHOPPINGLIST.md) for the specifics.
 
 ### Remote Management
-Assuming the installation has web connectivity, the setup can be monitored and tweaked remotely. Confirm that the camera is firing, backup the photos to the Pi, take a test image and adjust the available camera settings. In an isolated setup, come within range and connect to the Pi Zero W's inbuilt WiFi Access Point for on-site management.
+Assuming the installation has web connectivity, the setup can be monitored and tweaked remotely. From your web-browser you can confirm that the camera is firing, backup the photos to the Pi, take a test image and adjust the available camera settings.
+
+In an isolated setup, come within range and connect to the Pi Zero W's inbuilt WiFi Access Point for on-site management, without needing to crack the weatherproof seal on the Pelican case.
 
 ### Low-power
 The invtlm8r is designed for low-power operation. At rest the entire project consumes less than 1mA, enabling it to be powered by a common <a href="https://simple.wikipedia.org/wiki/Sealed_lead_acid_battery" target="_blank">sealed lead acid ("SLA")</a> battery and solar panel. Current consumption rises as the camera is woken to take a photo, and peaks when the Raspberry Pi is powered-on for management and file transfers.
@@ -40,7 +42,7 @@ The intvlm8r's master clock is a SparkFun "<a href="https://www.sparkfun.com/pro
 ### Common 12V power supply
 The intvlm8r is powered from a standard 12V SLA battery and charger, providing a wide range of powering and charging options. Separate high-efficiency <a href="https://www.pololu.com/category/136/voltage-regulatorshttps://www.pololu.com/category/136/voltage-regulators" target="_blank">Pololu</a> switched-mode power regulators run each operating unit on its own supply. Three separate on-board regulators provide:
 * 3.3V for the Arduino & DeadOn clock
-* 5.0V for the Raspberry Pi. An IO pin from the Arduino holds this supply's Inhibit input at 0V when the Pi is not running, reducing quiescent power consumption.
+* 5.0V for the Raspberry Pi. An IO pin from the Arduino holds this supply's /SHUTDOWN input at 0V when the Pi is not running, significantly reducing quiescent power consumption.
 * 7.5V for the Canon camera. The lower this voltage, the lower the battery can discharge without affecting the operation of the intvlm8r. The tested cameras run fine at this lower voltage, although report a battery at around 50% charge.
 
 In theory, the 12V battery can discharge to ~8V before the camera will not be able take a photo, and much lower still before the Arduino and DeadOn clock lose power.
@@ -54,9 +56,9 @@ Should the backup battery in the DeadOn RTC fail while the intvlm8r is not power
 # Where to next?
 
 Check out these documents for more information:
-* [Design Decisions](DESIGNDECISIONS.md). This provides a more detailed explanation about some of the design decisions and compromises.
+* [Design Decisions](DESIGNDECISIONS.md). This provides a detailed explanation of some of the design decisions and compromises.
 * [Shopping list](SHOPPINGLIST.md). All the items you need to make this.
-* [Construction](CONSTRUCTION.md) Some images of the assembly of the Pelican case.
+* [Construction](CONSTRUCTION.md). Some images of the assembly of the Pelican case.
 * [Board assembly](BOARDASSEMBLY.md). Putting the PCB together.
 
 The Arduino's Sketch is in its own folder, and the Raspberry Pi's Python script and HTML pages can be found in their respective folders under RaspberryPi.
