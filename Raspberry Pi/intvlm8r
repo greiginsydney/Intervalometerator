@@ -21,6 +21,6 @@ server {
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/home/pi/intvlm8r/intvlm8r.sock;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
     }
 }
