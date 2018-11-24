@@ -24,7 +24,7 @@ Type=oneshot
 User=pi
 #Group=www-data
 ExecStartPre=/bin/sleep 30
-ExecStart=python /home/pi/intvlm8r/cameratransfer.py
+ExecStart=python /home/pi/www/cameratransfer.py
 Requires=intvl8mr.service
 
 [Install]
