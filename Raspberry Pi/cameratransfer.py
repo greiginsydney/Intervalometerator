@@ -28,7 +28,7 @@ htmltext = ''
 resultcode = ''
 
 try:
-    response = urllib2.urlopen('http://localhost/transfer?copyNow=1')
+    response = urlopen('http://localhost/transfer?copyNow=1')
     resultcode = str(response.getcode())
     htmltext = response.read()
 except URLError as e:
