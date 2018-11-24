@@ -16,15 +16,18 @@
 
 [Unit]
 Description=Runs once on boot to copy images to the Pi
-After=multi-user.target
+Requires=intvlm8r.service
+After=intvlm8r.service
 
 [Service]
 #This means we don't run until the dust has settled and everything else - like Gunicorn - has started:
 Type=oneshot 
 User=pi
-#Group=www-data
+Group=www-data
+WorkingDirectory=/home/pi/www
+Environment="PATH=/home/pi/www"
 ExecStartPre=/bin/sleep 30
-ExecStart=python /home/pi/www/cameratransfer.py
+ExecStart=/usr/bin/python /home/pi/www/cameratransfer.py
 Requires=intvlm8r.service
 
 [Install]
