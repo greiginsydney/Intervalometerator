@@ -21,9 +21,9 @@ After=network.target
 [Service]
 User=pi
 Group=www-data
-WorkingDirectory=/home/pi/intvlm8r
-Environment="PATH=/home/pi/intvlm8r"
-ExecStart=/usr/local/bin/gunicorn --workers 3 --reload --log-level=debug --log-file /home/pi/intvlm8r/gunicorn.error --bind unix:intvlm8r.sock -m 007 wsgi:app
+WorkingDirectory=/home/pi/www
+Environment="PATH=/home/pi/www"
+ExecStart=/usr/local/bin/gunicorn --workers 3 --reload --log-level=debug --log-file /home/pi/www/gunicorn.error --bind unix:intvlm8r.sock -m 007 wsgi:app
 
 [Install]
 WantedBy=multi-user.target
