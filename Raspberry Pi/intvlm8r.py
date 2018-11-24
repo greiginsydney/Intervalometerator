@@ -763,7 +763,7 @@ def copy_files(camera):
                 except:
                     app.logger.debug("Didn't want to make " + subdir)
                 dest = os.path.join(PI_PHOTO_DIR, subdir, name)
-                app.logger.debug('Pi dest = ' + dest) #GREIG
+                app.logger.debug('Pi dest = ' + dest)
             else:
                 dest = os.path.join(PI_PHOTO_DIR, name)
         except Exception as e:
@@ -772,7 +772,7 @@ def copy_files(camera):
 
         if dest in computer_files:
             continue
-        app.logger.debug('%s -> %s' % (path, PI_PHOTO_DIR))
+        app.logger.debug('Copying %s --> %s' % (path, dest))
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, folder, name, gp.GP_FILE_TYPE_NORMAL))
         gp.check_result(gp.gp_file_save(camera_file, dest))
