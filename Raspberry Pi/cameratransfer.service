@@ -28,7 +28,6 @@ WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
 ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/python /home/pi/www/cameratransfer.py
-Requires=intvlm8r.service
 
 [Install]
 WantedBy=multi-user.target
