@@ -646,7 +646,7 @@ def systemPOST():
         writeString("SP=" + WakePiHour + str(request.form.get('wakePiDuration')))
 
     if 'SyncSystem' in request.form:
-        app.logger.debug('Yes we got the SyncSsytem button & value ' + str(request.form.get('SyncSystem')))
+        app.logger.debug('Yes we got the SyncSystem button & value ' + str(request.form.get('SyncSystem')))
         writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new interval data to the Arduino
     
     if 'Reboot' in request.form:
