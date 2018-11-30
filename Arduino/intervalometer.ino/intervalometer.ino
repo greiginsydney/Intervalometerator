@@ -323,14 +323,15 @@ void setTimeDate(String newTime)
   int dd;
   int hh;
   int minut;
-  int ss = 0; //The Pi only sends the time as hh:mm
+  int ss;
 
   yyyy  = newTime.substring(0, 4).toInt();
   mm    = newTime.substring(4, 6).toInt();
   dd    = newTime.substring(6, 8).toInt();
   hh    = newTime.substring(8, 10).toInt();
   minut = newTime.substring(10, 12).toInt();
-
+  ss    = newTime.substring(12, 14).toInt();
+  
   int dayOfWeek = getDayOfWeek(yyyy, mm, dd);
 
   //The clock only wants to see the year as 2 digits!
@@ -693,11 +694,11 @@ void loop()
   {
     //bitWrite(PORTD, LED_PIN, ON); //DEBUG: Turn the LED on. Remove this line when in operation to minimise current drain.
 
-    Serial.println(" - ALARM   fired");
+    //Serial.println(" - ALARM   fired");
     //detachInterrupt(digitalPinToInterrupt(RTC_IRQ_PIN));
     if (rtc.alarm1())
     {
-      Serial.println(" - ALARM 1 fired");
+      //Serial.println(" - ALARM 1 fired");
       todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
       if (todayAsBits && ShootDays)
       {
@@ -709,11 +710,11 @@ void loop()
     if (rtc.alarm2())
     {
       //FlashLed(8);
-      Serial.println(" - ALARM 2 fired");
+      //Serial.println(" - ALARM 2 fired");
       if ((rtc.getMinute() == 0) && (rtc.getHour() == WakePiHour))
       {
         //Serial.println(" -           " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + "       WAKING the Pi");
-        Serial.println(" - WAKING the Pi via ALARM 2");
+        //Serial.println(" - WAKING the Pi via ALARM 2");
         WakePi = true; //Actioned elsewhere in loop()
       }
       //Changed from "PIND" to "PORTD" 4/11/2018. The Pi isn't turning off.
@@ -721,11 +722,11 @@ void loop()
       {
         //It's NOT "wake time" and the Pi is already running, so it might be time to put it to sleep:
         //Serial.println(" - ALARM 2 fired @ " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ". Shutting down the Pi");
-        Serial.println(" - About to shut the Pi down");
+        //Serial.println(" - About to shut the Pi down");
         if (WakePiHour != 25)
         {
           // Safety net: don't want rogue code turning the Pi off if it's meant to be always on
-          Serial.println(" - Initiated a Pi shutdown");
+          //Serial.println(" - Initiated a Pi shutdown");
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
         }
       }
@@ -811,7 +812,7 @@ void loop()
     if (LastRunningState == HIGH)
     {
       //This is a falling edge - the Pi has just gone to sleep.
-      Serial.println(" - PI_RUNNING went LOW");
+      //Serial.println(" - PI_RUNNING went LOW");
       DelaymS(2000); //Just to be sure
       digitalWrite(PI_POWER, LOW);    // Turn the Pi off.
       digitalWrite(PI_SHUTDOWN, LOW); // This should already be low.
@@ -825,13 +826,13 @@ void loop()
     {
       //This is a rising edge - the Pi's just woken up.
       //Set alarm2 in readiness to put it to sleep:
-      Serial.println(" - PI_RUNNING went HIGH");
+      //Serial.println(" - PI_RUNNING went HIGH");
       PiShutdownMinute = rtc.getMinute() + WakePiDuration;
       if (PiShutdownMinute >= 60)
       {
         PiShutdownMinute -= 60 ;
       }
-      Serial.println(" - Set Alarm 2 for minute = " + String(PiShutdownMinute));
+      //Serial.println(" - Set Alarm 2 for minute = " + String(PiShutdownMinute));
       rtc.setAlarm2(PiShutdownMinute);
       LastRunningState = HIGH;
     }
@@ -847,13 +848,13 @@ void loop()
   if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false))
   {
     // The Pi is powered-off. It's safe for us to sleep
-    Serial.println(" - About to sleep");
+    //Serial.println(" - About to sleep");
     SLEEP = true;
   }
 
   if (SLEEP == true)
   {
-    Serial.println(" - SLEEP");
+    //Serial.println(" - SLEEP");
     SLEEP = false; //Reset the flag BEFORE we power-down, otherwise we risk looping
     bitWrite(PORTD, LED_PIN, LOW); //Make sure the LED's off before going to sleep
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); //SLEEP_FOREVER will only be woken by an IRQ
