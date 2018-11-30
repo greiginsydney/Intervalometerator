@@ -155,27 +155,37 @@
 	</table>
 </form>
 
-<script> 
+<script>
+
+function update_time(){
+	var refresh=1000; // Refresh rate in milli seconds
+	newtime=setTimeout('sendTimeToServer()', refresh);
+}
+
 function sendTimeToServer()
 {
-    var today = new Date();
+	var today = new Date();
 	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
 	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
 	var dateTime = date + time;
 	document.forms["sendTime"]["SyncSystem"].value = dateTime;
-	var options = { year: 'numeric', month: 'short', day: 'numeric', hour12: 'false', hour: '2-digit', minute: '2-digit', second: '2-digit'};
-	return today.toLocaleString('en-AU', options) // Customise (or customIZE) as appropriate for your locale
+	var options = { year: 'numeric', month: 'short', day: 'numeric', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'};
+	document.getElementById("now").innerHTML = today.toLocaleString('en-AU', options); // Customise (or customIZE) as appropriate for your locale
+	update_time();
 }
-document.getElementById("now").innerHTML = sendTimeToServer();
 
-	// This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
-	var piHour = document.getElementById("piHour");
-	var piMinutes = document.getElementById("piMinutes");
+sendTimeToServer();
+
+// This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
+var piHour = document.getElementById("piHour");
+var piMinutes = document.getElementById("piMinutes");
+piMinutes.style.display = (piHour.value == "25") ? "none":"";
+
+piHour.onchange = function()
+{
 	piMinutes.style.display = (piHour.value == "25") ? "none":"";
+};
 
-	piHour.onchange = function(){
-		piMinutes.style.display = (piHour.value == "25") ? "none":"";
-	};
 </script>
 
 {% endblock %}
