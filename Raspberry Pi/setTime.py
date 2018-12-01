@@ -53,7 +53,7 @@ try:
     if newTime != "Unknown":
         os.system('sudo date --set="%s"' % datetime.strptime(newTime, '%Y %b %d %H:%M:%S' ))
 except Exception as e:
-    resultcode = str(e.code)
+    resultcode = str(e)
      
 try:
     # 'w' creates a new file each time, else 'a' to append.
