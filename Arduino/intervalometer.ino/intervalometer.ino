@@ -32,13 +32,13 @@ References:
 #define WAKE_PIN        4 // High wakes the cammera ("half press")
 #define FIRE_PIN        5 // High takes a photo
 #define LED_PIN         6 // Monitor LED
-#define MAINT_PIN      14 // Take low to enable Maintenance Mode (D14 = A0 = PC0)
 #define PI_POWER        7 // Take High to enable the Pi's power (output)
 #define PI_RUNNING      8 // The Pi takes this High when it's running (input)
 #define PI_SHUTDOWN     9 // Take low to initiate a shutdown in the Pi
+#define MAINT_PIN      14 // Take low to enable Maintenance Mode (D14 = A0 = PC0)
 
-//#define OFF             0 // LED Status & the PI_POWER setting
-//#define ON              1 // "
+#define DS3234_REGISTER_CONTROL 0x0E
+#define DS3234_REGISTER_STATUS  0x0F
 
 //////////////////////////////////
 //   EEPROM memory allocations  //
@@ -63,23 +63,23 @@ References:
 //////////////////////////////////
 volatile bool   SLEEP = false;  //
 volatile bool   ALARM = false;  //
-volatile bool   WakePi = true;  // Turns the Pi on when the Arduino powers-up
-volatile bool   wakeCameraFlag  = false;
-volatile bool   setIntervalFlag = false;
-volatile bool   setTimeDateFlag = false;
-volatile bool   setWakePiFlag   = false;
-volatile bool   resetArduinoFlag = false;
+volatile bool   WakePi = true;  // Defaults true. Turns the Pi on (for at least WakePiDuration) when the Arduino powers-up
+volatile bool   wakeCameraFlag  = false; // These flags are all set in the I2C ISR
+volatile bool   setIntervalFlag = false; //
+volatile bool   setTimeDateFlag = false; //
+volatile bool   setWakePiFlag   = false; //
+volatile bool   resetArduinoFlag = false; //
 bool   LastRunningState = LOW;  // Used in loop() to tell for a falling Edge of the Pi state
 bool   LastMaintState = HIGH;   // Used in loop() to tell if the maint/debug jumper has been removed
 bool   LastRtcIrqState = LOW;   // Used in loop() to help protect against "stuck" issues
-byte   ShootDays = 0b11111110;  // Default shoot days. Only used if we power up with a flat clock battery
+byte   ShootDays = 0b11111110;  // Default shoot days (Mon-Sun). Only used if we power up with a flat clock battery
 byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot today.
 byte   StartHour = 00;          // Default start hour.
 byte   EndHour   = 23;          // Default end hour.
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
 byte   WakePiHour = 14;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 5;      // This is how long we leave the Pi awake for. Changeable from the Pi
-byte   PiShutdownMinute = 59;   // This is the value set for Alarm2, to shutdown a running Pi
+byte   PiShutdownMinute;        // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
 
 String newTimeDate = "";        // A new time and date sent by the Pi
 String newInterval = "";        // A new interval sent by the Pi
@@ -131,7 +131,7 @@ void setup()
   rtc.begin(DS13074_CS_PIN);
   DelaymS (1000);
 
-  uint8_t MemTest = rtc.controlReg();
+  uint8_t MemTest = rtc.readFromRegister(DS3234_REGISTER_CONTROL);
 
   //Serial.println("SRAM said ");
   //Serial.println(MemTest,BIN);
@@ -331,7 +331,7 @@ void setTimeDate(String newTime)
   hh    = newTime.substring(8, 10).toInt();
   minut = newTime.substring(10, 12).toInt();
   ss    = newTime.substring(12, 14).toInt();
-  
+
   int dayOfWeek = getDayOfWeek(yyyy, mm, dd);
 
   //The clock only wants to see the year as 2 digits!
@@ -474,31 +474,26 @@ void setInterval(String incoming)
 
 void SetWakePiTime(String NewTimeDuration)
 {
+  byte PiShutdownAlarm;
+  
   //Serial.println(" - New WakePi time = " + String(NewTimeDuration));
   if (NewTimeDuration.length() != 4) return;
 
   WakePiHour     = (ValidateIncoming (WakePiHour,     NewTimeDuration.substring(0, 2).toInt(), 00, 25));
   WakePiDuration = (ValidateIncoming (WakePiDuration, NewTimeDuration.substring(2, 4).toInt(), 05, 60));
 
-  //Changed from "PIND" to "PORTD" 4/11/2018
-  if (bitRead(PORTD, PI_POWER) == LOW)
-  {
-    //Only update the alarm if the Pi is stopped at this time.
-    //If it's running the alarm will have already been set to send it to sleep.
-    // These new settings will be picked up and written to the alarm when it next fires.
-    rtc.setAlarm2(0, WakePiHour);
-  }
-
-  //Serial.println(" - New WakePi duration = " + String(WakePiDuration));
-
   EEPROM.write(MEMWakePiHour,     WakePiHour);
   EEPROM.write(MEMWakePiDuration, WakePiDuration);
-
-  //We only need to act here if the user's set to turn the Pi on permanently:
-  if (WakePiHour == 25)
+ 
+  //The Pi is running. Set the alarm to put it to sleep:
+  PiShutdownAlarm = rtc.getMinute() + WakePiDuration;
+  if (PiShutdownAlarm >= 60)
   {
-    WakePi = true; //This sets the same flag as the reed switch ISR. Loop() will apply power
+    PiShutdownAlarm -= 60 ;
   }
+  rtc.setAlarm2(PiShutdownAlarm);
+  //Serial.println(" - Snoozing Pi @ minute = " + String(PiShutdownAlarm));
+  //Serial.println(" - New WakePi duration = " + String(WakePiDuration));
 }
 
 
@@ -674,7 +669,6 @@ void loop()
   // - continuously, whenever the Pi is powered-up
   // ... otherwise we go back to sleep at the end of the loop and wait for the next interrupt
 
-
   //Debug loop: Toggle the LED each pass through here (if we're awake)
   if (bitRead(PINC, 0) == LOW) // A0, the Maint header is read as PORTC bit *0*
   {
@@ -693,9 +687,7 @@ void loop()
   if (ALARM == true)
   {
     //bitWrite(PORTD, LED_PIN, ON); //DEBUG: Turn the LED on. Remove this line when in operation to minimise current drain.
-
     //Serial.println(" - ALARM   fired");
-    //detachInterrupt(digitalPinToInterrupt(RTC_IRQ_PIN));
     if (rtc.alarm1())
     {
       //Serial.println(" - ALARM 1 fired");
@@ -709,7 +701,6 @@ void loop()
     DelaymS(100);
     if (rtc.alarm2())
     {
-      //FlashLed(8);
       //Serial.println(" - ALARM 2 fired");
       if ((rtc.getMinute() == 0) && (rtc.getHour() == WakePiHour))
       {
@@ -717,7 +708,6 @@ void loop()
         //Serial.println(" - WAKING the Pi via ALARM 2");
         WakePi = true; //Actioned elsewhere in loop()
       }
-      //Changed from "PIND" to "PORTD" 4/11/2018. The Pi isn't turning off.
       else if (bitRead(PORTD, PI_POWER) == HIGH) // PI_POWER is read as PORTD bit 7, so this is OK
       {
         //It's NOT "wake time" and the Pi is already running, so it might be time to put it to sleep:
@@ -732,26 +722,7 @@ void loop()
       }
     }
     ALARM = false;
-    //bitWrite(PORTD, LED_PIN, OFF);
-    //attachInterrupt (digitalPinToInterrupt(RTC_IRQ_PIN), wakeisr, FALLING);  // attach interrupt handler for RTC
   }
-
-//  if (bitRead(PIND, 4) == HIGH) //IRQ pin 2 is read as PORTD bit *4*
-//  {
-//    if (LastRtcIrqState == LOW)
-//    {
-//      //OK, so the RTC's alarm IRQ pin has returned high. OK to reset the alarm flag and reinstate the IRQ
-//      ALARM = false;
-//      attachInterrupt (digitalPinToInterrupt(RTC_IRQ_PIN), wakeisr, FALLING);  // attach interrupt handler for RTC
-//      LastRtcIrqState = HIGH;
-//    }
-//  }
-//  else
-//  {
-//    LastRtcIrqState = LOW;
-//    //ALARM = true; // More safety net: make sure an enduring low on the Alarm pin keeps the alarm flag asserted
-//    //bitWrite(PORTD, LED_PIN, ON);
-//  }
 
   if (setTimeDateFlag == true)
   {
@@ -816,7 +787,10 @@ void loop()
       DelaymS(2000); //Just to be sure
       digitalWrite(PI_POWER, LOW);    // Turn the Pi off.
       digitalWrite(PI_SHUTDOWN, LOW); // This should already be low.
-      rtc.setAlarm2(0, WakePiHour);   // Reset the alarm to wake the Pi tomorrow
+      if (WakePiHour != 25)
+      {
+        rtc.setAlarm2(0, WakePiHour);   // Reset the alarm to wake the Pi tomorrow
+      }
       LastRunningState = LOW;
     }
   }
@@ -830,7 +804,7 @@ void loop()
       PiShutdownMinute = rtc.getMinute() + WakePiDuration;
       if (PiShutdownMinute >= 60)
       {
-        PiShutdownMinute -= 60 ;
+        PiShutdownMinute -= 60;
       }
       //Serial.println(" - Set Alarm 2 for minute = " + String(PiShutdownMinute));
       rtc.setAlarm2(PiShutdownMinute);
@@ -842,9 +816,8 @@ void loop()
   // - taken any photo that's required
   // - serviced any housekeeping alarm
   // - made any changes pushed via the Pi
-  // .. so now provided the Pi isn't running and Alarm still isn't set, we can sleep!
+  // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
 
-  //Changed from "PIND" to "PORTD" 4/11/2018
   if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false))
   {
     // The Pi is powered-off. It's safe for us to sleep
