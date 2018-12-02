@@ -52,8 +52,9 @@ try:
     #convert it to a form the date command will accept: Incoming is "2018 Nov 29 21:58:00"
     if newTime != "Unknown":
         os.system('sudo date --set="%s"' % datetime.strptime(newTime, '%Y %b %d %H:%M:%S' ))
+        resultcode += '\nCalculated = ' + str(datetime.strptime(newTime, '%Y %b %d %H:%M:%S' ))
 except Exception as e:
-    resultcode = str(e)
+    resultcode += '\n' + str(e)
      
 try:
     # 'w' creates a new file each time, else 'a' to append.
