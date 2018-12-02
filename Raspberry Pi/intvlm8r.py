@@ -211,7 +211,7 @@ def main():
         else:
             fileCount = len(files)
             info = get_camera_file_info(camera, files[-1]) #Get the last file
-            lastImage = datetime.fromtimestamp(info.file.mtime).isoformat(' ')
+            lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
         gp.check_result(gp.gp_camera_exit(camera))
         templateData['cameraModel']              = abilities.model
         templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
@@ -232,7 +232,7 @@ def main():
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
-            piLastImage = datetime.fromtimestamp(os.path.getmtime(FileList[-1]))
+            piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1]))
             piLastImageFile = str(FileList[-1]).replace((PI_PHOTO_DIR  + "/"), "")
     except:
         flash('Error talking to the Pi')
