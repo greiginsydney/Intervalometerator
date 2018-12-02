@@ -462,6 +462,9 @@ def transfer():
             app.logger.debug("Transfer wasn't able to connect to the camera: " + str(e))
             flash('Unable to connect to the camera')
 
+    if not os.path.exists(iniFile):
+        createConfigFile(iniFile)
+            
     # Initialise the dictionary:
     templateData = {
         'tfrMethod'     : 'manual',    # Hides all options if the file isn't found or is bad
@@ -829,8 +832,11 @@ def createConfigFile(iniFile):
     """ Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/ """
     try:
         config = ConfigParser.ConfigParser()
-        config.add_section("Global")
-        config.set("Global", "file created", time.strftime("%0d %b %Y",time.localtime(time.time())))
+        config.add_section('Global')
+        config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
+        config.add_section('Transfer')
+        config.set('Transfer', 'tfrMethod', 'manual')
+        config.add_section('Copy')
         with open(iniFile, "wb") as config_file:
             config.write(config_file)
     except:
