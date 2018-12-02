@@ -17,7 +17,7 @@
 [Unit]
 Description=Runs once on boot to copy images to the Pi
 Requires=intvlm8r.service
-After=intvlm8r.service,setTime.service
+After=intvlm8r.service setTime.service
 
 [Service]
 #This means we don't run until the dust has settled and everything else - like Gunicorn - has started:
