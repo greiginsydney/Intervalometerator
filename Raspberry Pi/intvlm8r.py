@@ -50,7 +50,8 @@ app.secret_key = b'_5#y2L"F12&$$%F*<>\n\xec]/' #Cookie for session messages
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_PHOTO_DIR = os.path.expanduser('/home/pi/photos')
+PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
+PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
 PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 gunicorn_logger = logging.getLogger('gunicorn.error')
@@ -228,7 +229,7 @@ def main():
     piLastImage = ''
     piLastImageFile = ''
     try:
-        FileList = list_Pi_Images()
+        FileList = list_Pi_Images(PI_PHOTO_DIR)
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
@@ -244,6 +245,34 @@ def main():
     
     return render_template('main.html', **templateData)
 
+
+@app.route("/thumbnails")
+def thumbnails():
+
+    # Pi comms:
+    piLastImage = ''
+    piLastImageFile = ''
+    try:
+        FileList  = list_Pi_Images(PI_PHOTO_DIR)
+        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        PI_PHOTO_COUNT = len(FileList)
+        if PI_PHOTO_COUNT >= 1:
+            FileList.sort(key=lambda x: os.path.getmtime(x))
+            ThumbsToShow = 20 #This will be moved to the INI file in due course
+            ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
+            for loop in range((0 - ThumbnailCount), -1):
+                newThumb = str(FileList[loop]).replace((PI_PHOTO_DIR  + "/"), PI_THUMBS_DIR + "/")
+                ThumbFiles += str(FileList[loop]).replace((PI_PHOTO_DIR  + "/"), "")
+                if newThumb in ThumbList:
+                    continue
+                thumb = image.open(str(FileList[loop]))
+                thumb.thumbnail((128, 128), Image.ANTIALIAS)
+                thumb.save(newThumb, "JPEG")
+    except:
+        flash('Error talking to the Pi')
+    
+    return render_template('thumbnails.html', ThumbFiles)
+    
 
 @app.route("/camera")
 def camera():
@@ -719,7 +748,7 @@ def list_camera_files(camera, path='/'):
     return result
 
 
-def list_Pi_Images():
+def list_Pi_Images(path):
     result = []
     for root, dirs, files in os.walk(os.path.expanduser(PI_PHOTO_DIR)):
         for name in files:
@@ -743,7 +772,7 @@ def get_camera_file_info(camera, path):
 
 def copy_files(camera):
     """ Straight from Jim's examples again """
-    computer_files = list_Pi_Images()
+    computer_files = list_Pi_Images(PI_PHOTO_DIR)
     camera_files = list_camera_files(camera)
     if not camera_files:
         app.logger.debug('No files found')
