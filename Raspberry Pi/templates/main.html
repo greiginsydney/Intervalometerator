@@ -57,7 +57,7 @@
 					<div class="alignright">{{ availableShots }}</div>
 				</td>
 			</tr>
-			<tr>
+			<tr {{ 'class="red"' if cameraBattery == "Low" }}>
 				<td>
 					<div class="alignleft">Battery:</div>
 					<div class="alignright">{{ cameraBattery }}</div>
