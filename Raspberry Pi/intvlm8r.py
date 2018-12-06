@@ -252,6 +252,7 @@ def thumbnails():
     # Pi comms:
     piLastImage = ''
     piLastImageFile = ''
+    ThumbFiles = []
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -261,17 +262,25 @@ def thumbnails():
             ThumbsToShow = 20 #This will be moved to the INI file in due course
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
             for loop in range((0 - ThumbnailCount), -1):
-                newThumb = str(FileList[loop]).replace((PI_PHOTO_DIR  + "/"), PI_THUMBS_DIR + "/")
-                ThumbFiles += str(FileList[loop]).replace((PI_PHOTO_DIR  + "/"), "")
-                if newThumb in ThumbList:
+                sourceFolderTree, imageFileName = os.path.split(FileList[loop])
+                dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
+                dest = os.path.join(dest, imageFileName)
+                dest = dest.replace('.JPG', '-thumb.JPG')
+                app.logger.debug('Thumb dest = ' + dest)
+                # This adds the shortened path to the list to pass to the web-page
+                ThumbFiles.append(str(dest).replace((PI_THUMBS_DIR  + "/"), ""))
+                if dest in ThumbList:
+                    app.logger.debug('Thumbnail exists')
                     continue
-                thumb = image.open(str(FileList[loop]))
+                thumb = Image.open(str(FileList[loop]))
                 thumb.thumbnail((128, 128), Image.ANTIALIAS)
-                thumb.save(newThumb, "JPEG")
-    except:
-        flash('Error talking to the Pi')
+                thumb.save(dest, "JPEG")
+    #except:
+     #   flash('Error talking to the Pi')
+    except Exception as e:
+        app.logger.debug('Thumbs error: ' + str(e))
     
-    return render_template('thumbnails.html', ThumbFiles)
+    return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
     
 
 @app.route("/camera")
@@ -778,37 +787,43 @@ def copy_files(camera):
         app.logger.debug('No files found')
         return 1
     app.logger.debug('Copying files...')
-    
+
     if not os.path.isdir(PI_PHOTO_DIR):
         os.makedirs(PI_PHOTO_DIR)
-    
-    for path in camera_files:
-        folder, name = os.path.split(path)
-        try:
-            ImageSubDir = re.search(("DCIM/\S*"), folder)
-            if ImageSubDir != None:
-                subdir = os.path.join(PI_PHOTO_DIR, ImageSubDir.group(0))
-                app.logger.debug('Subdir = ' + subdir)
-                try:
-                    if not os.path.isdir(subdir):
-                        os.makedirs(subdir)
-                except:
-                    app.logger.debug("Didn't want to make " + subdir)
-                dest = os.path.join(PI_PHOTO_DIR, subdir, name)
-                app.logger.debug('Pi dest = ' + dest)
-            else:
-                dest = os.path.join(PI_PHOTO_DIR, name)
-        except Exception as e:
-            app.logger.debug('Error in DCIM decoder: ' + str(e))
-            dest = os.path.join(PI_PHOTO_DIR, name)
 
+    for path in camera_files:
+        sourceFolderTree, imageFileName = os.path.split(path)
+        dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
+        dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
         app.logger.debug('Copying %s --> %s' % (path, dest))
         camera_file = gp.check_result(gp.gp_camera_file_get(
-            camera, folder, name, gp.GP_FILE_TYPE_NORMAL))
+            camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
         gp.check_result(gp.gp_file_save(camera_file, dest))
     return 0
+
+
+def CreateDestPath(folder, NewDestDir):
+    
+    try:
+        ImageSubDir = re.search(("DCIM/\S*"), folder)
+        if ImageSubDir != None:
+            subdir = os.path.join(NewDestDir, ImageSubDir.group(0))
+            app.logger.debug('Subdir = ' + subdir)
+            try:
+                if not os.path.isdir(subdir):
+                    os.makedirs(subdir)
+            except:
+                app.logger.debug("Didn't want to make " + subdir)
+            dest = os.path.join(NewDestDir, subdir)
+            app.logger.debug('Pi dest = ' + dest)
+        else:
+            dest = NewDestDir
+    except Exception as e:
+        app.logger.debug('Error in DCIM decoder: ' + str(e))
+        dest = NewDestDir
+    return dest
 
 
 def getPreviewImage(camera, context, config):
