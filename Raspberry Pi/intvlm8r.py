@@ -261,7 +261,7 @@ def thumbnails():
             FileList.sort(key=lambda x: os.path.getmtime(x))
             ThumbsToShow = 20 #This will be moved to the INI file in due course
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
-            for loop in range((0 - ThumbnailCount), -1):
+            for loop in range(-1, (0 - ThumbnailCount), -1):
                 sourceFolderTree, imageFileName = os.path.split(FileList[loop])
                 dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
                 dest = os.path.join(dest, imageFileName)
