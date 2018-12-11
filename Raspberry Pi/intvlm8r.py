@@ -249,19 +249,30 @@ def main():
 @app.route("/thumbnails")
 def thumbnails():
 
-    # Pi comms:
-    piLastImage = ''
-    piLastImageFile = ''
+
+
+
     ThumbFiles = []
+
+    if not os.path.exists(iniFile):
+        createConfigFile(iniFile)
+    config = ConfigParser.ConfigParser()
+    config.read(iniFile)
+    try:
+        ThumbsToShow = int(config.get('Global', 'thumbsCount'))
+    except Exception as e:
+        app.logger.debug('INI file error reading:' + str(e))
+        ThumbsToShow = 20
+        
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
-            ThumbsToShow = 20 #This will be moved to the INI file in due course
+
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
-            for loop in range(-1, (0 - (ThumbnailCount + 1)), -1):
+            for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 sourceFolderTree, imageFileName = os.path.split(FileList[loop])
                 dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
                 dest = os.path.join(dest, imageFileName)
@@ -602,6 +613,7 @@ def transferPOST():
 def system():
 
     templateData = {
+        'piThumbCount'  : '80',
         'arduinoDate'   : 'Unknown',
         'arduinoTime'   : 'Unknown',
         'piUptime'      : 'Unknown',
@@ -613,6 +625,16 @@ def system():
         'wakePiTime'    : '',
         'wakePiDuration': ''
         }
+
+    if not os.path.exists(iniFile):
+        createConfigFile(iniFile)
+    config = ConfigParser.ConfigParser()
+    config.read(iniFile)
+    try:
+        templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
+    except Exception as e:
+        app.logger.debug('INI file error reading:' + str(e))
+        templateData['piThumbCount'] = '20'
 
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
@@ -678,6 +700,23 @@ def systemPOST():
         except:
             app.logger.debug('Location set error')
             #pass
+
+    if 'submitThumbsCount' in request.form:
+        try:
+            newCount = str(request.form.get('thumbCount'))
+            if newCount != None:
+                app.logger.debug('New thumbs count set as ' + newCount)
+                if not os.path.exists(iniFile):
+                    createConfigFile(iniFile)
+                config = ConfigParser.ConfigParser()
+                config.read(iniFile)
+                if not config.has_section('Global'):
+                    config.add_section('Global')
+                config.set('Global', 'thumbsCount', newCount)
+                with open(iniFile, "wb") as config_file:
+                    config.write(config_file)
+        except:
+            app.logger.debug('New Thumbs set error')
 
     if 'wakePi' in request.form:
         app.logger.debug('Yes we got the WAKE PI button & values ' + str(request.form.get('wakePiTime')) + ', ' + str(request.form.get('wakePiDuration')) )
@@ -759,7 +798,7 @@ def list_camera_files(camera, path='/'):
 
 def list_Pi_Images(path):
     result = []
-    for root, dirs, files in os.walk(os.path.expanduser(PI_PHOTO_DIR)):
+    for root, dirs, files in os.walk(os.path.expanduser(path)):
         for name in files:
             if '.thumbs' in dirs:
                 dirs.remove('.thumbs')
@@ -810,7 +849,7 @@ def CreateDestPath(folder, NewDestDir):
         ImageSubDir = re.search(("DCIM/\S*"), folder)
         if ImageSubDir != None:
             subdir = os.path.join(NewDestDir, ImageSubDir.group(0))
-            app.logger.debug('Subdir = ' + subdir)
+            app.logger.debug('Subdir =  ' + subdir)
             try:
                 if not os.path.isdir(subdir):
                     os.makedirs(subdir)
