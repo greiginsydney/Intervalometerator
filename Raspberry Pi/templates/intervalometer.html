@@ -15,7 +15,7 @@
 						<option disabled selected value style="display:none"> -- choose -- </option>
 					{% endif %}
 					{% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						<option value="{{day}}" {% if day in piDoW %}SELECTED{% endif %} >{{day}}</option>"
+						<option value="{{day}}" {% if day in piDoW %}SELECTED{% endif %} >{{day}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -28,7 +28,7 @@
 					<select name="startHour" >
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							<option value="{{hour}}" {% if hour == piStartHour %}SELECTED{% endif %} >{{hour}}</option>"
+							<option value="{{hour}}" {% if hour == piStartHour %}SELECTED{% endif %} >{{hour}}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -41,7 +41,7 @@
 					<select name="endHour" >
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24'] %}
-							<option value="{{hour}}" {% if hour == piEndHour %}SELECTED{% endif %} >{{hour}}</option>"
+							<option value="{{hour}}" {% if hour == piEndHour %}SELECTED{% endif %} >{{hour}}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -54,7 +54,7 @@
 					<select name="interval" >
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
-							<option value="{{int}}" {% if int == piInterval %}SELECTED{% endif %} >{{int}}</option>"
+							<option value="{{int}}" {% if int == piInterval %}SELECTED{% endif %} >{{int}}</option>
 						{% endfor %}
 					</select>
 				</div>
