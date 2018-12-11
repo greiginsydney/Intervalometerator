@@ -19,56 +19,82 @@
 				<button name="submitLocation" type="submit" class="hwbutton" >Submit</button>
 			</td>
 		</tr>
+	</table>
+</form>
+
+<form name="setThumbsCount" method="post" >
+	<table>
 		<tr>
-			<td>
-				<div class="alignleft">System (Arduino) Date:</div>
-				<div class="alignright">{{ arduinoDate }}</div>
+			<td class="noborder">
+				<div class="alignleft">Thumbnail count:</div>
+				<div class="alignright">
+					<select name="thumbCount" >
+						{% for count in ['20','40','80','160'] %}
+							<option value="{{count}}" {% if count == piThumbCount %}SELECTED{% endif %} >{{count}}</option>
+						{% endfor %}
+					</select>
+				</div>
 			</td>
 		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">System (Arduino) Time:</div>
-				<div class="alignright">{{ arduinoTime }}</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Pi Model:</div>
-				<div class="alignright">{{ piModel }}</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Pi Linux Version:</div>
-				<div class="alignright">{{ piLinuxVer }}</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Pi Available Storage:</div>
-				<div class="alignright">{{ piSpaceFree }}</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Pi Uptime:</div>
-				<div class="alignright">{{ piUptime }}</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Arduino Temperature:</div>
-				<div class="alignright">{{ arduinoTemp }}{% if arduinoTemp != "Unknown" %}&deg;C{% endif %}</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Pi Temperature:</div>
-				<div class="alignright">{{ piTemp }}{% if piTemp != "Unknown" %}&deg;C{% endif %}</div>
+		<tr>	
+			<td class="noborder">
+				<button name="submitThumbsCount" type="submit" class="hwbutton" >Submit</button>
 			</td>
 		</tr>
 	</table>
 </form>
+
+<table>
+	<tr>
+		<td>
+			<div class="alignleft">System (Arduino) Date:</div>
+			<div class="alignright">{{ arduinoDate }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">System (Arduino) Time:</div>
+			<div class="alignright">{{ arduinoTime }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi Model:</div>
+			<div class="alignright">{{ piModel }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi Linux Version:</div>
+			<div class="alignright">{{ piLinuxVer }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi Available Storage:</div>
+			<div class="alignright">{{ piSpaceFree }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi Uptime:</div>
+			<div class="alignright">{{ piUptime }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Arduino Temperature:</div>
+			<div class="alignright">{{ arduinoTemp }}{% if arduinoTemp != "Unknown" %}&deg;C{% endif %}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi Temperature:</div>
+			<div class="alignright">{{ piTemp }}{% if piTemp != "Unknown" %}&deg;C{% endif %}</div>
+		</td>
+	</tr>
+</table>
+
 
 <form name="PiEnable" method="post" >
 	<table>
@@ -156,7 +182,7 @@
 	</table>
 </form>
 
-<script>
+<script> 
 
 function update_time(){
 	var refresh=1000; // Refresh rate in milli seconds
@@ -165,7 +191,7 @@ function update_time(){
 
 function sendTimeToServer()
 {
-	var today = new Date();
+    var today = new Date();
 	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
 	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
 	var dateTime = date + time;
@@ -173,10 +199,10 @@ function sendTimeToServer()
 	var options = { year: 'numeric', month: 'short', day: 'numeric', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'};
 	document.getElementById("now").innerHTML = today.toLocaleString('en-AU', options); // Customise (or customIZE) as appropriate for your locale
 	update_time();
-}
+	}
 
 sendTimeToServer();
-
+	
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
 var piHour = document.getElementById("piHour");
 var piMinutes = document.getElementById("piMinutes");
@@ -186,7 +212,6 @@ piHour.onchange = function()
 {
 	piMinutes.style.display = (piHour.value == "25") ? "none":"";
 };
-
 </script>
 
 {% endblock %}
