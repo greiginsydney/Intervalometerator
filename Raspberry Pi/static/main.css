@@ -155,7 +155,7 @@ input, select, date, time, text {
 	margin-right: 0;
 }
 
-@media screen and (min-width: 50em) {
+@media screen and (min-width: 400px) {
 	.thumbs  a {
 		  width: calc(25% - 6px);
 	}
