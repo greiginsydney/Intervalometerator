@@ -107,22 +107,25 @@ def readString(value):
     return status
 
 
-try:
-    with open('/proc/uptime', 'r') as f:
-        uptime_seconds = float(f.readline().split()[0])
-        uptime_string = str(timedelta(seconds = round(uptime_seconds)))
-except:
-    pass
-
-
-def get_Pi_Temp():
+def getPiUptime():
+    uptime_string = "Unknown"
     try:
-        temp = "Unknown"
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+            uptime_string = str(timedelta(seconds = round(uptime_seconds)))
+    except:
+        pass
+    return uptime_string
+
+
+def getPiTemp():
+    temp = "Unknown"
+    try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as tempfile:
             temp= str(round(int(tempfile.read()) / 1000, 2))
     except Exception as e:
         app.logger.debug('Pi temp error:' + str(e))
-    app.logger.debug('Pi temp = ' + str(temp))
+    app.logger.debug('Pi temp = ' + temp)
     return temp
 
 
@@ -668,12 +671,12 @@ def system():
         pass
     
     try:
-        templateData['piUptime'] =  uptime_string
+        templateData['piUptime']    = getPiUptime()
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
 
-    templateData['piTemp'] = get_Pi_Temp()
+    templateData['piTemp'] = getPiTemp()
     return render_template('system.html', **templateData)
 
 
