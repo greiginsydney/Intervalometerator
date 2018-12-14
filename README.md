@@ -14,7 +14,7 @@ The Arduino's code ('sketch') is largely bespoke, whilst the Pi is totally relia
 ### Use your choice of DSLR
 With gPhoto and python-gphoto2 providing all the camera interfacing, the intent is that any camera compatible with these projects should be able to be used.
 
-Note that in its initial published version, the intvlm8r has been developed with Canon 6D and 60D cameras. The unit deployed in NZ contained a 60D - read why on the [Design Decisions](DESIGNDECISIONS.md) page.
+In its initial published version the intvlm8r has been tested with Canon 6D, 60D & 600D cameras. The unit deployed in NZ contains the 600D - read why on the [Design Decisions](DESIGNDECISIONS.md) page.
 
 gPhoto (running on the Pi) is only used for the camera management, with the Arduino handling the core role of waking the camera and taking the shot using the camera's manual shutter input.
 
