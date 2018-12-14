@@ -129,6 +129,14 @@ def getPiTemp():
     return temp
 
 
+def errorLookup(error):
+    if error == gp.GP_ERROR_MODEL_NOT_FOUND:
+        return "Camera not responding"
+    if error == gp.GP_ERROR_IO_USB_CLAIM:
+        return "Camera busy"
+    return "Unhandled camera error"
+
+
 @app.context_processor
 def customisation():
     loc = cache.get('locationName')
@@ -223,10 +231,8 @@ def main():
         templateData['lastImage']                = lastImage
         templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
-
-    except gp.GPhoto2Error as ex:
-        if ex.code == gp.GP_ERROR_MODEL_NOT_FOUND:
-            pass
+    except gp.GPhoto2Error as e:
+        flash(str(errorLookup(e.code)))
     
     # Pi comms:
     piLastImage = ''
@@ -251,10 +257,6 @@ def main():
 
 @app.route("/thumbnails")
 def thumbnails():
-
-
-
-
     ThumbFiles = []
 
     if not os.path.exists(iniFile):
@@ -381,9 +383,9 @@ def camera():
         cameraData['expselected']   = expselected
         cameraData['expoptions']    = expoptions
 
-    except gp.GPhoto2Error as ex:
-        flash("Where's the camera gone?")
-        app.logger.debug('Camera GET error:' + str(ex))
+    except gp.GPhoto2Error as e:
+        flash(str(errorLookup(e.code)))
+        app.logger.debug('Camera GET error:' + str(e))
 
     templateData = cameraData.copy()    
     return render_template('camera.html', **templateData)
@@ -426,8 +428,8 @@ def cameraPOST():
             gp.check_result(gp.gp_camera_exit(camera))
             return redirect(url_for('camera', preview=1))
             
-    except gp.GPhoto2Error as ex:
-        flash('Where&apos;s the camera gone? Error writing to it')
+    except gp.GPhoto2Error as e:
+        flash(str(errorLookup(e.code)))
 
     return redirect(url_for('camera'))
 
@@ -510,9 +512,9 @@ def transfer():
             copy_files(camera)
             gp.check_result(gp.gp_camera_exit(camera))
             return redirect(url_for('main')) #If we transfer OK, return to main
-        except Exception as e:
+        except gp.GPhoto2Error as e:
+            flash(str(errorLookup(e.code)))
             app.logger.debug("Transfer wasn't able to connect to the camera: " + str(e))
-            flash('Unable to connect to the camera')
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
@@ -914,6 +916,7 @@ def getDiskSpace():
         disk_free = "Unknown"
     return disk_free
 
+
 def createConfigFile(iniFile):
     """ Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/ """
     try:
@@ -929,6 +932,7 @@ def createConfigFile(iniFile):
         app.logger.debug('createConfigFile Threw creating ', iniFile)
 
     return
+
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
