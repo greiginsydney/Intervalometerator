@@ -19,34 +19,42 @@
 # A pre-req task is that the Arduino has woken the camera, which we assume has taken place by the time the script runs.
 
 from urllib2 import urlopen, URLError
+import logging
 import os
+from datetime import datetime
 
-logfilepath = os.path.expanduser('/home/pi/')
-logfilename = os.path.join(logfilepath, 'cameraTransfer.log')
+LOGFILE_PATH = os.path.expanduser('/home/pi')
+LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'cameraTransfer.log')
 
 htmltext = ''
-resultcode = ''
-
-try:
-    response = urlopen('http://localhost/transfer?copyNow=1')
-    resultcode = str(response.getcode())
-    htmltext = response.read()
-except URLError as e:
-    if hasattr(e, 'reason'):
-        resultcode = str(e.reason)
-    elif hasattr(e, 'code'):
-        resultcode = str(e.code)
 
 
-try:
-    # 'w' creates a new file each time, else 'a' to append.
-    # I went with 'w' so I don't need to worry about the size of the file growing too large (or managing same).
-    with open(logfilename, 'w') as logfile:
-        logfile.write(resultcode + '\n')
-        logfile.write('=========================\n')
-        logfile.write(htmltext + '\n')
-        logfile.write('=========================\n')
-        logfile.close()
-except Exception as e:
-    #print 'error:' + str(e)
-    pass
+def main():
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.DEBUG)
+    try:
+        response = urlopen('http://localhost/transfer?copyNow=1')
+        log('Response code = ' + str(response.getcode()))
+        htmltext = response.read()
+        if 'Unable to connect to the camera' in htmltext:
+            log('Unable to connect to the camera')
+        log('=========================')    
+        log(str(htmltext))
+    except URLError as e:
+        if hasattr(e, 'reason'):
+            log(str(e.reason))
+        elif hasattr(e, 'code'):
+            log(str(e.code))
+    except Exception as e:
+        log('Unhandled error: ' + str(e))
+
+
+def log(message):
+    try:
+        logging.info(message)
+    except Exception as e:
+        #print 'error:' + str(e)
+        pass
+
+
+if __name__ == '__main__':
+    main()
