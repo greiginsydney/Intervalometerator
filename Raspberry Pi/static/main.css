@@ -43,6 +43,10 @@ th {
 	background-color: #FF0000; 
 }
 
+.orange {
+	background-color: #FFA500; 
+}
+
 .green {
 	background-color: #008000; 
 }
@@ -80,7 +84,6 @@ input, select, date, time, text {
 	box-sizing: border-box;
 	width: 200px;
 }
-
 
 .noborder {
 	border-style: none;
