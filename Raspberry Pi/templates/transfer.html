@@ -13,9 +13,9 @@
 					<select name="tfrMethod" id="tfrMethod">
 					{% for method in ['sftp','fileshare', 'manual'] %}
 						{% if method == tfrMethod %}
-							<option value="{{ method }}" SELECTED >{{ method }}</option>"
+							<option value="{{ method }}" SELECTED>{{ method }}</option>"
 						{% else %}	
-							<option value="{{ method}}" >{{ method }}</option>"
+							<option value="{{ method}}">{{ method }}</option>"
 						{% endif %}
 					{% endfor %}
 					</select>
@@ -63,9 +63,9 @@
 					<select name="sftpDay">
 					{% for day in ['Daily','Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						{% if day == sftpDay %}
-							<option value="{{ day }}" SELECTED >{{ day }}</option>
+							<option value="{{ day }}" SELECTED>{{ day }}</option>
 						{% else %}	
-							<option value="{{ day }}" >{{ day }}</option>
+							<option value="{{ day }}">{{ day }}</option>
 						{% endif %}
 					{% endfor %}
 					</select>
@@ -79,9 +79,9 @@
 					<select name="sftpHour" >
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							{% if hour == sftpHour %}
-								<option value="{{ hour }}" SELECTED >{{ hour }}</option>
+								<option value="{{ hour }}" SELECTED>{{ hour }}</option>
 							{% else %}	
-								<option value="{{ hour }}" >{{ hour }}</option>
+								<option value="{{ hour }}">{{ hour }}</option>
 							{% endif %}
 						{% endfor %}
 					</select>
@@ -128,9 +128,9 @@
 					<select name="fileDay">
 					{% for day in ['Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						{% if day == fileDay %}
-							<option value="{{ day }}" SELECTED >{{ day }}</option>
+							<option value="{{ day }}" SELECTED>{{ day }}</option>
 						{% else %}	
-							<option value="{{ day }}" >{{ day }}</option>
+							<option value="{{ day }}">{{ day }}</option>
 						{% endif %}
 					{% endfor %}
 					</select>
@@ -144,9 +144,9 @@
 					<select name="fileHour" >
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							{% if hour == fileHour %}
-								<option value="{{ hour }}" SELECTED >{{ hour }}</option>
+								<option value="{{ hour }}" SELECTED>{{ hour }}</option>
 							{% else %}	
-								<option value="{{ hour }}" >{{ hour }}</option>
+								<option value="{{ hour }}">{{ hour }}</option>
 							{% endif %}
 						{% endfor %}
 					</select>
@@ -166,9 +166,9 @@
 					<select name="copyDay" id="copyDay">
 					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						{% if day == copyDay %}
-							<option value="{{ day }}" SELECTED >{{ day }}</option>
+							<option value="{{ day }}" SELECTED>{{ day }}</option>
 						{% else %}	
-							<option value="{{ day }}" >{{ day }}</option>
+							<option value="{{ day }}">{{ day }}</option>
 						{% endif %}
 					{% endfor %}
 					</select>
@@ -182,9 +182,9 @@
 					<select name="copyHour" >
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							{% if hour == copyHour %}
-								<option value="{{ hour }}" SELECTED >{{ hour }}</option>
+								<option value="{{ hour }}" SELECTED>{{ hour }}</option>
 							{% else %}
-								<option value="{{ hour }}" >{{ hour }}</option>
+								<option value="{{ hour }}">{{ hour }}</option>
 							{% endif %}
 						{% endfor %}
 					</select>
@@ -197,7 +197,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" >Copy Now</button>
+					<button type="button" name="copy" id="copy">Copy Now</button>
 				</div>
 				<div class="alignright">
 					<button type="submit" name="TfrApply">Apply</button>
