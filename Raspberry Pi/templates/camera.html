@@ -57,7 +57,7 @@
 			<div class="alignright">
 				<select name="img" >
 					{% for img in imgfmtoptions %}
-						<option value="{{img}}" {{ 'SELECTED' if img == imgfmtselected }} >{{img}}</option>
+						<option value="{{img}}"{{ ' SELECTED' if img == imgfmtselected }}>{{img}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -69,7 +69,7 @@
 			<div class="alignright">
 				<select name="wb" >
 					{% for wb in wboptions %}
-						<option value="{{wb}}" {{ 'SELECTED' if wb == wbselected }}>{{wb}}</option>
+						<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -81,7 +81,7 @@
 			<div class="alignright">
 				<select name="iso" >
 					{% for iso in isooptions %}
-						<option value="{{iso}}" {{ 'SELECTED' if iso == isoselected }} >{{iso}}</option>
+						<option value="{{iso}}"{{ ' SELECTED' if iso == isoselected }}>{{iso}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -93,7 +93,7 @@
 			<div class="alignright">
 				<select name="aperture" >
 					{% for aperture in apoptions %}
-						<option value="{{aperture}}" {{ 'SELECTED' if aperture == apselected }} >{{aperture}}</option>
+						<option value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -105,7 +105,7 @@
 			<div class="alignright">
 				<select name="shutter" >
 					{% for shutterspeed in shutoptions %}
-						<option value="{{shutterspeed}}" {{ 'SELECTED' if shutterspeed == shutselected }} >{{shutterspeed}}</option>
+						<option value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -117,7 +117,7 @@
 			<div class="alignright">
 				<select name="exp" >
 					{% for exp in expoptions %}
-						<option value="{{exp}}" {{ 'SELECTED' if exp == expselected }} >{{exp}}</option>
+						<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -139,11 +139,11 @@
 	<tr>
 		<td class="noborder">
 		<div class="alignleft">
-			<button name="CamSubmit" type="submit" value="preview" {{ 'DISABLED' if cameraDate == "" }} >Preview</button>
+			<button name="CamSubmit" type="submit" value="preview"{{ ' DISABLED' if cameraDate == "" }}>Preview</button>
 			<!-- See "capture preview" in focus-gui.py -->
 		</div>
 		<div class="alignright">
-			<button name="CamSubmit" type="submit" value="apply" {{ 'DISABLED' if cameraDate == "" }}>Apply</button>
+			<button name="CamSubmit" type="submit" value="apply"{{ ' DISABLED' if cameraDate == "" }}>Apply</button>
 		</div>
 		</td>
 	</tr>
