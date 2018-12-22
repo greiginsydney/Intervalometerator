@@ -12,11 +12,7 @@
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod">
 					{% for method in ['sftp','fileshare', 'manual'] %}
-						{% if method == tfrMethod %}
-							<option value="{{ method }}" SELECTED>{{ method }}</option>"
-						{% else %}	
-							<option value="{{ method}}">{{ method }}</option>"
-						{% endif %}
+						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %}>{{ method }}</option>"
 					{% endfor %}
 					</select>
 				</div>
@@ -62,11 +58,7 @@
 				<div class="alignright">
 					<select name="sftpDay">
 					{% for day in ['Daily','Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						{% if day == sftpDay %}
-							<option value="{{ day }}" SELECTED>{{ day }}</option>
-						{% else %}	
-							<option value="{{ day }}">{{ day }}</option>
-						{% endif %}
+						<option value="{{ day }}"{% if day == sftpDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
 					</select>
 				</div>
@@ -78,11 +70,7 @@
 				<div class="alignright">
 					<select name="sftpHour" >
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							{% if hour == sftpHour %}
-								<option value="{{ hour }}" SELECTED>{{ hour }}</option>
-							{% else %}	
-								<option value="{{ hour }}">{{ hour }}</option>
-							{% endif %}
+							<option value="{{ hour }}"{% if hour == sftpHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -127,11 +115,7 @@
 				<div class="alignright">
 					<select name="fileDay">
 					{% for day in ['Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						{% if day == fileDay %}
-							<option value="{{ day }}" SELECTED>{{ day }}</option>
-						{% else %}	
-							<option value="{{ day }}">{{ day }}</option>
-						{% endif %}
+						<option value="{{ day }}"{% if day == fileDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
 					</select>
 				</div>
@@ -143,11 +127,7 @@
 				<div class="alignright">
 					<select name="fileHour" >
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							{% if hour == fileHour %}
-								<option value="{{ hour }}" SELECTED>{{ hour }}</option>
-							{% else %}	
-								<option value="{{ hour }}">{{ hour }}</option>
-							{% endif %}
+							<option value="{{ hour }}"{% if hour == fileHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -165,11 +145,7 @@
 				<div class="alignright">
 					<select name="copyDay" id="copyDay">
 					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						{% if day == copyDay %}
-							<option value="{{ day }}" SELECTED>{{ day }}</option>
-						{% else %}	
-							<option value="{{ day }}">{{ day }}</option>
-						{% endif %}
+						<option value="{{ day }}"{% if day == copyDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
 					</select>
 				</div>
@@ -181,11 +157,7 @@
 				<div class="alignright">
 					<select name="copyHour" >
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							{% if hour == copyHour %}
-								<option value="{{ hour }}" SELECTED>{{ hour }}</option>
-							{% else %}
-								<option value="{{ hour }}">{{ hour }}</option>
-							{% endif %}
+							<option value="{{ hour }}"{% if hour == copyHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -211,8 +183,6 @@
 <form style="display: none">
 	<button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button>
 </form>
-
-
 
 <script>
 	var method = document.getElementById("tfrMethod");
