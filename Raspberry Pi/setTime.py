@@ -22,49 +22,60 @@
 
 from urllib2 import urlopen, URLError
 from datetime import datetime
+import logging
 import os
 import re
+import subprocess
 
-logfilepath = os.path.expanduser('/home/pi/')
-logfilename = os.path.join(logfilepath, 'setTime.log')
+LOGFILE_PATH = os.path.expanduser('/home/pi')
+LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
 
 htmltext = ''
-resultcode = ''
 newTime = 'Unknown'
 
-try:
-    response = urlopen('http://localhost/')
-    resultcode = str(response.getcode())
-    htmltext = response.read()
-    tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
-    if tempTime != None:
-        newTime = tempTime.group(1)
-    else:
+
+def main():
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    try:
+        response = urlopen('http://localhost/')
+        log('Response code = ' + str(response.getcode()))
+        htmltext = response.read()
+        tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
+        if tempTime != None:
+            newTime = tempTime.group(1)
+            log('New time is ' + newTime)
+        else:
+            log('Failed to detect the time')
+
+    except URLError as e:
+        if hasattr(e, 'reason'):
+            log(str(e.reason))
+        elif hasattr(e, 'code'):
+            log(str(e.code))
+    except Exception as e:
+        log('Unhandled web error: ' + str(e))
+
+    try:
+        #convert it to a form the date command will accept: Incoming is "2018 Nov 29 21:58:00"
+        if "Unknown" not in newTime:
+            timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y %b %d %H:%M:%S')]
+            result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+            (stdoutdata, stderrdata) = result.communicate()
+            if stdoutdata != None:
+                log('Result = ' + str(stdoutdata))
+            if stderrdata != None:
+                log('Error = ' + str(stderrdata))
+    except Exception as e:
+        log('Unhandled time error: ' + str(e))
+
+
+def log(message):
+    try:
+        logging.info(message)
+    except Exception as e:
+        #print 'error:' + str(e)
         pass
 
-except URLError as e:
-    if hasattr(e, 'reason'):
-        resultcode = str(e.reason)
-    elif hasattr(e, 'code'):
-        resultcode = str(e.code)
 
-try:
-    #convert it to a form the date command will accept: Incoming is "2018 Nov 29 21:58:00"
-    if newTime != "Unknown":
-        os.system('sudo date --set="%s"' % datetime.strptime(newTime, '%Y %b %d %H:%M:%S' ))
-        resultcode += '\nCalculated = ' + str(datetime.strptime(newTime, '%Y %b %d %H:%M:%S' ))
-except Exception as e:
-    resultcode += '\n' + str(e)
-     
-try:
-    # 'w' creates a new file each time, else 'a' to append.
-    # I went with 'w' so I don't need to worry about the size of the file growing too large (or managing same).
-    with open(logfilename, 'w') as logfile:
-        logfile.write(resultcode + '\n')
-        logfile.write('=========================\n')
-        logfile.write(htmltext + '\n')
-        logfile.write('=========================\n')
-        logfile.close()
-except Exception as e:
-    #print 'error:' + str(e)
-    pass
+if __name__ == '__main__':
+    main()
