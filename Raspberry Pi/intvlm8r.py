@@ -44,7 +44,8 @@ cache = SimpleCache()
 from flask import Flask, flash, render_template, request, redirect, url_for
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F12&$$%F*<>\n\xec]/' #Cookie for session messages
-
+app.jinja_env.lstrip_blocks = True
+app.jinja_env.trim_blocks = True
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
