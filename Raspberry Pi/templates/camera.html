@@ -14,7 +14,7 @@
 				<div class="alignright">{{ cameraDate }}</div>
 			</td>
 		</tr>
-		<tr {{ 'class="red"' if focusmode == "Manual" }}>
+		<tr {{ 'class="red"' if focusmode != "Manual" }}>
 			<td>
 				<div class="alignleft">Focus Mode:</div>
 				<div class="alignright">{{ focusmode }}</div>
