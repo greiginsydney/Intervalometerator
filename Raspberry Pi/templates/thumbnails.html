@@ -1,16 +1,10 @@
 {% extends "index.html" %}
 {% block content %}
 
-
-	<table >
-		<tr>
-			<td>
-				{% for thumbFilename in ThumbFiles %}
-					<a href="{{ url_for('static',filename=('photos/' + thumbFilename)) | replace('-thumb', '')}}" target="_blank"><img src="{{ url_for('static',filename=('thumbs/' + thumbFilename))}}" alt="{{thumbFilename}}" width="100%"></a>
-				{% endfor %}
-			</td>
-		</tr>
-		<tr>
-	</table>
+	<div class="thumbs">
+		{% for thumbFilename in ThumbFiles %}
+			<a href="{{ url_for('static',filename=('photos/' + thumbFilename)) | replace('-thumb', '')}}" target="_blank"><thumb><img src="{{ url_for('static',filename=('thumbs/' + thumbFilename))}}" alt="{{thumbFilename | replace('-thumb', '')}}" width="100%"></thumb></a>
+		{% endfor %}
+	</div>
 
 {% endblock %}
