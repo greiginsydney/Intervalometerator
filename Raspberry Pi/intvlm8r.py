@@ -289,9 +289,12 @@ def thumbnails():
                 if dest in ThumbList:
                     app.logger.debug('Thumbnail exists')
                     continue
-                thumb = Image.open(str(FileList[loop]))
-                thumb.thumbnail((128, 128), Image.ANTIALIAS)
-                thumb.save(dest, "JPEG")
+                try:
+                    thumb = Image.open(str(FileList[loop]))
+                    thumb.thumbnail((128, 128), Image.ANTIALIAS)
+                    thumb.save(dest, "JPEG")
+                except Exception as e:
+                    app.logger.debug('Thumbs Pillow error: ' + str(e))
     #except:
      #   flash('Error talking to the Pi')
     except Exception as e:
