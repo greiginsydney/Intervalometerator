@@ -25,7 +25,7 @@
 			<td>
 				<div class="alignleft">Daily Start Hour:</div>
 				<div class="alignright">
-					<select name="startHour">
+					<select name="startHour" id="startHour" onchange="calculateShots()">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							<option value="{{hour}}"{% if hour == piStartHour %} SELECTED{% endif %}>{{hour}}</option>
@@ -38,7 +38,7 @@
 			<td>
 				<div class="alignleft">Daily End Hour:</div>
 				<div class="alignright">
-					<select name="endHour">
+					<select name="endHour" id="endHour" onchange="calculateShots()">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24'] %}
 							<option value="{{hour}}"{% if hour == piEndHour %} SELECTED{% endif %}>{{hour}}</option>
@@ -51,7 +51,7 @@
 			<td>
 				<div class="alignleft">Interval (Minutes):</div>
 				<div class="alignright">
-					<select name="interval">
+					<select name="interval" id="interval" onchange="calculateShots()">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
 							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}}</option>
@@ -64,13 +64,67 @@
 
 	<table class="noborder">
 		<tr>
+			<td>
+				<div class="alignleft">Shots / day:</div>
+				<div class="alignright" id="shotsperday"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Est days in camera:</div>
+				<div class="alignright" id="shotsincamera"></div>
+			</td>
+		</tr>
+	</table>
+
+	<table class="noborder">
+		<tr>
 			<td class="noborder">
-			<div class="alignright">
-				<button type="submit">Apply</button>
-			</div>
+				<div class="alignright">
+					<button type="submit">Apply</button>
+				</div>
 			</td>
 		</tr>
 	</table>
 </form>
-	
+
+<script>
+calculateShots() <!-- Forces a run when the form first loads -->
+function calculateShots()
+{
+	var selectedStart    = document.getElementById("startHour");
+	var selectedEnd      = document.getElementById("endHour");
+	var selectedInterval = document.getElementById("interval");
+	var result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value)) * (60 / parseInt(selectedInterval.value)));
+	if (result == result) <!-- A value that is NotANumber(NaN) != itself -->
+	{
+		<!-- So we know the numbers are valid -->
+		if (result < 0 ) <!-- We need to correct for the wrap-around midnight -->
+		{
+			result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value) + 24) * (60 / parseInt(selectedInterval.value)));
+		}
+		document.getElementById("shotsperday").innerHTML = result;
+		calculateCameraDays(result);
+	}
+	else
+	{
+		document.getElementById("shotsperday").innerHTML = "Unknown";
+		document.getElementById("shotsincamera").innerHTML = "Unknown";
+	}
+}
+function calculateCameraDays(shotsperday)
+{
+	var availableShots = {{ availableShots }};
+	var result = ~~(availableShots / shotsperday); 
+	if (result == result)
+	{
+		document.getElementById("shotsincamera").innerHTML = result;
+	}
+	else
+	{
+		document.getElementById("shotsincamera").innerHTML = "Unknown";
+	}
+}
+</script>
+
 {% endblock %}
