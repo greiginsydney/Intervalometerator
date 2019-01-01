@@ -420,7 +420,7 @@ def cameraPOST():
             if (request.form.get('shutter') != "auto"):
                 node = config.get_child_by_name('shutterspeed') 
                 node.set_value(str(request.form.get('shutter')))
-            if (request.form.get('exp') != ''):
+            if (request.form.get('exp') != None):
                 node = config.get_child_by_name('exposurecompensation') 
                 node.set_value(str(request.form.get('exp')))
             camera.set_config(config, context)
