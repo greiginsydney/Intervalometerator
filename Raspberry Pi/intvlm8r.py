@@ -130,14 +130,6 @@ def getPiTemp():
     return temp
 
 
-def errorLookup(error):
-    if error == gp.GP_ERROR_MODEL_NOT_FOUND:
-        return "Camera not responding"
-    if error == gp.GP_ERROR_IO_USB_CLAIM:
-        return "Camera busy"
-    return "Unhandled camera error"
-
-
 @app.context_processor
 def customisation():
     loc = cache.get('locationName')
@@ -233,7 +225,7 @@ def main():
         templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
     except gp.GPhoto2Error as e:
-        flash(str(errorLookup(e.code)))
+        flash(e.string)
     
     # Pi comms:
     piLastImage = ''
@@ -388,8 +380,8 @@ def camera():
         cameraData['expoptions']    = expoptions
 
     except gp.GPhoto2Error as e:
-        flash(str(errorLookup(e.code)))
-        app.logger.debug('Camera GET error:' + str(e))
+        flash(e.string)
+        app.logger.debug('Camera GET error: ' + e.string)
 
     templateData = cameraData.copy()    
     return render_template('camera.html', **templateData)
@@ -433,7 +425,8 @@ def cameraPOST():
             return redirect(url_for('camera', preview=1))
             
     except gp.GPhoto2Error as e:
-        flash(str(errorLookup(e.code)))
+        app.logger.debug('Camera POST error: ' + e.string)
+        flash(e.string)
 
     return redirect(url_for('camera'))
 
@@ -517,8 +510,8 @@ def transfer():
             gp.check_result(gp.gp_camera_exit(camera))
             return redirect(url_for('main')) #If we transfer OK, return to main
         except gp.GPhoto2Error as e:
-            flash(str(errorLookup(e.code)))
-            app.logger.debug("Transfer wasn't able to connect to the camera: " + str(e))
+            flash(e.string)
+            app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
