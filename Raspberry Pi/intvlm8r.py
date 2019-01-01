@@ -439,9 +439,22 @@ def intervalometer():
         'piDoW' : '',
         'piStartHour' : '',
         'piEndHour' : '',
-        'piInterval' : ''
+        'piInterval' : '',
+        'availableShots': 'Unknown'
     }
     app.logger.debug('This is a GET to Intervalometer')
+    
+    # Camera comms:
+    try:
+        camera = gp.Camera()
+        context = gp.gp_context_new()
+        camera.init(context)
+        config = camera.get_config(context)
+        templateData['availableShots'] = readValue (config, 'availableshots')
+        gp.check_result(gp.gp_camera_exit(camera))
+    except gp.GPhoto2Error as e:
+        flash(e.string)
+    
     ArdInterval = str(readString("3"))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug('Int query returned: ' + ArdInterval)
@@ -468,11 +481,6 @@ def intervalometerPOST():
     endHour   = str(request.form.get('endHour'))
     interval  = '{:0>2}'.format(str(request.form.get('interval'))) #"Padright" : https://docs.python.org/2/library/string.html#formatstrings
 
-    if endHour <= startHour:
-        flash('endHour is <= startHour')
-        app.logger.debug('endHour is <= startHour')
-        return redirect(url_for('intervalometer'))
-        
     if (len(shootDaysList) != 0) & (startHour != 'None') & (endHour != 'None') & (interval != 'None'):
         for day in shootDaysList:
             bit = (time.strptime(day, "%A").tm_wday) + 2
