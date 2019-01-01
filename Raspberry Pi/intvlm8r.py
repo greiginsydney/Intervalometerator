@@ -1,10 +1,10 @@
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along with this program.  If not, see 
+# You should have received a copy of the GNU General Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # This script is part of the Intervalometerator project, a time-lapse camera controller for DSLRs:
@@ -13,7 +13,7 @@
 # https://intvlm8r.com
 #
 # This script incorporates code from python-gphoto2, and we are incredibly indebted to Jim Easterbrook for it.
-# python-gphoto2 - Python interface to libgphoto2 http://github.com/jim-easterbrook/python-gphoto2 Copyright (C) 2015-17 Jim 
+# python-gphoto2 - Python interface to libgphoto2 http://github.com/jim-easterbrook/python-gphoto2 Copyright (C) 2015-17 Jim
 # Easterbrook jim@jim-easterbrook.me.uk
 
 
@@ -81,14 +81,14 @@ def writeString(value):
     time.sleep(0.5) # Give the Arduino time to act on the data sent
     return -1
 
-    
+
 def readString(value):
     status = ""
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
     rxLength = 32
     if (ascii == 48 ): rxLength = 8  #Date - 8
-    if (ascii == 49 ): rxLength = 8  #Time 
+    if (ascii == 49 ): rxLength = 8  #Time
     if (ascii == 50 ): rxLength = 11 #Last/next shots
     if (ascii == 51 ): rxLength = 7  #Interval
     for x in range(0, 2):
@@ -137,7 +137,7 @@ def customisation():
         #The cache is empty? Read the location from the Ini file
         config = ConfigParser.SafeConfigParser({'locationName' : 'Intervalometerator'})
         config.read(iniFile)
-        try: 
+        try:
             loc = config.get('Global', 'locationName') #This will fail the VERY first time the script runs
         except:
             loc = 'Intervalometerator'
@@ -147,7 +147,6 @@ def customisation():
 
 @app.route("/")
 def main():
-    
     templateData = {
         'arduinoDate'       : 'Unknown',
         'arduinoTime'       : '',
@@ -163,18 +162,18 @@ def main():
         'piImageCount'      : 'Unknown',
         'piLastImage'       : 'Unknown',
         'piSpaceFree'       : 'Unknown',
-        'piLastImageFile'   : 'Unknown' 
+        'piLastImageFile'   : 'Unknown'
     }
-    
+
     app.logger.debug('YES - this bit of MAIN fired!')
-    
+
     args = request.args.to_dict()
     if args.get('wakeCamera'):
         writeString("WC") # Sends the WAKE command to the Arduino
         time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
-    
+
     #Arduino comms. Each is wrapped in a separate try/except to quarantine individual failures
     try:
         rawDate = str(readString("0"))
@@ -200,7 +199,7 @@ def main():
         pass
     #except Exception as e:
     #    app.logger.debug('Time template error: ' + str(e))
-    
+
     # Camera comms:
     try:
         camera = gp.Camera()
@@ -226,7 +225,7 @@ def main():
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
     except gp.GPhoto2Error as e:
         flash(e.string)
-    
+
     # Pi comms:
     piLastImage = ''
     piLastImageFile = ''
@@ -244,7 +243,6 @@ def main():
     templateData['piLastImage']     = piLastImage
     templateData['piSpaceFree']     = getDiskSpace()
     templateData['piLastImageFile'] = piLastImageFile
-    
     return render_template('main.html', **templateData)
 
 
@@ -261,7 +259,7 @@ def thumbnails():
     except Exception as e:
         app.logger.debug('INI file error reading:' + str(e))
         ThumbsToShow = 20
-        
+
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -287,17 +285,13 @@ def thumbnails():
                     thumb.save(dest, "JPEG")
                 except Exception as e:
                     app.logger.debug('Thumbs Pillow error: ' + str(e))
-    #except:
-     #   flash('Error talking to the Pi')
     except Exception as e:
         app.logger.debug('Thumbs error: ' + str(e))
-    
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
-    
+
 
 @app.route("/camera")
 def camera():
-    
     cameraData = {
         'cameraDate'    : '',
         'focusmode'     : '',
@@ -383,7 +377,7 @@ def camera():
         flash(e.string)
         app.logger.debug('Camera GET error: ' + e.string)
 
-    templateData = cameraData.copy()    
+    templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
 
 
@@ -401,29 +395,29 @@ def cameraPOST():
             #This *does* write a new setting to the camera:
             node = config.get_child_by_name('imageformat') #
             node.set_value(str(request.form.get('img')))
-            node = config.get_child_by_name('whitebalance') 
+            node = config.get_child_by_name('whitebalance')
             node.set_value(str(request.form.get('wb')))
-            node = config.get_child_by_name('iso') 
+            node = config.get_child_by_name('iso')
             node.set_value(str(request.form.get('iso')))
             # Don't bother sending any of the "read only" settings:
             if (request.form.get('aperture') != 'implicit auto'):
-                node = config.get_child_by_name('aperture') 
+                node = config.get_child_by_name('aperture')
                 node.set_value(str(request.form.get('aperture')))
             if (request.form.get('shutter') != "auto"):
-                node = config.get_child_by_name('shutterspeed') 
+                node = config.get_child_by_name('shutterspeed')
                 node.set_value(str(request.form.get('shutter')))
             if (request.form.get('exp') != None):
-                node = config.get_child_by_name('exposurecompensation') 
+                node = config.get_child_by_name('exposurecompensation')
                 node.set_value(str(request.form.get('exp')))
             camera.set_config(config, context)
             gp.check_result(gp.gp_camera_exit(camera))
-            
+
         if request.form['CamSubmit'] == 'preview':
             app.logger.debug('-- Camera Preview selected')
             getPreviewImage(camera, context, config)
             gp.check_result(gp.gp_camera_exit(camera))
             return redirect(url_for('camera', preview=1))
-            
+
     except gp.GPhoto2Error as e:
         app.logger.debug('Camera POST error: ' + e.string)
         flash(e.string)
@@ -443,7 +437,7 @@ def intervalometer():
         'availableShots': 'Unknown'
     }
     app.logger.debug('This is a GET to Intervalometer')
-    
+
     # Camera comms:
     try:
         camera = gp.Camera()
@@ -454,7 +448,7 @@ def intervalometer():
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
         flash(e.string)
-    
+
     ArdInterval = str(readString("3"))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug('Int query returned: ' + ArdInterval)
@@ -497,14 +491,13 @@ def intervalometerPOST():
     else:
         app.logger.debug('Detected an *invalid* POST')
         flash('Invalid data posted to the page')
-        
-    return redirect(url_for('intervalometer'))
+
+        return redirect(url_for('intervalometer'))
 
 
 @app.route("/transfer")
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    
     args = request.args.to_dict()
     if args.get('copyNow'):
         app.logger.debug('Detected COPY NOW')
@@ -523,7 +516,7 @@ def transfer():
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-            
+
     # Initialise the dictionary:
     templateData = {
         'tfrMethod'     : 'manual',    # Hides all options if the file isn't found or is bad
@@ -575,17 +568,15 @@ def transfer():
     except Exception as e:
         app.logger.debug('INI file error:' + str(e))
         flash('Error reading from the Ini file')
-        
+
     return render_template('transfer.html', **templateData)
 
 
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
 def transferPOST():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-
     config = ConfigParser.ConfigParser()
     try:
         config.read(iniFile)
@@ -676,7 +667,7 @@ def system():
         templateData['wakePiDuration'] = rawWakePi [2:4]
     except:
         pass
-    
+
     try:
         templateData['piUptime']    = getPiUptime()
         templateData['piSpaceFree'] = getDiskSpace()
@@ -738,7 +729,7 @@ def systemPOST():
     if 'SyncSystem' in request.form:
         app.logger.debug('Yes we got the SyncSystem button & value ' + str(request.form.get('SyncSystem')))
         writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new interval data to the Arduino
-    
+
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == 'sayonara':
             writeString("RA")
@@ -759,10 +750,11 @@ def readValue ( camera, attribute ):
         value = '<Error>'
     return value
 
+
 def readRange ( camera, context, group, attribute ):
-    """ 
+    """
     Reads an attribute within a given group and returns the current setting and all the possible options
-    It's only called by "camera", so in that context we already have an established connection to the 
+    It's only called by "camera", so in that context we already have an established connection to the
     camera, so it's inappropriate (and inefficient) to attempt a reconnection here.
     """
     options = []
@@ -787,7 +779,8 @@ def readRange ( camera, context, group, attribute ):
     except:
         app.logger.debug('readRange Threw')
     return currentValue, options
-    
+
+
 def list_camera_files(camera, path='/'):
     """ Returns a list of all the image files on the camera """
     result = []
@@ -854,7 +847,6 @@ def copy_files(camera):
 
 
 def CreateDestPath(folder, NewDestDir):
-    
     try:
         ImageSubDir = re.search(("DCIM/\S*"), folder)
         if ImageSubDir != None:
