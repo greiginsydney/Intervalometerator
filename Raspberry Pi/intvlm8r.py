@@ -491,8 +491,7 @@ def intervalometerPOST():
     else:
         app.logger.debug('Detected an *invalid* POST')
         flash('Invalid data posted to the page')
-
-        return redirect(url_for('intervalometer'))
+    return redirect(url_for('intervalometer'))
 
 
 @app.route("/transfer")
