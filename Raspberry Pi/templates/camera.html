@@ -14,13 +14,13 @@
 				<div class="alignright">{{ cameraDate }}</div>
 			</td>
 		</tr>
-		<tr {{ ('class="red"' | safe) if focusmode != "Manual" }}>
+		<tr{{ (' class="red"' | safe) if focusmode != "Manual" }}>
 			<td>
 				<div class="alignleft">Focus Mode:</div>
 				<div class="alignright">{{ focusmode }}</div>
 			</td>
 		</tr>
-		<tr {{ ('class="red"' | safe) if exposuremode == "M" or exposuremode == "AV" }}>
+		<tr{{ (' class="red"' | safe) if exposuremode == "M" or exposuremode == "Manual" or exposuremode == "AV" }}>
 			<td>
 				<div class="alignleft">Exposure Mode:</div>
 				<div class="alignright">{{ exposuremode }}</div>
@@ -55,7 +55,7 @@
 			<td>
 			<div class="alignleft">Image Format:</div>
 			<div class="alignright">
-				<select name="img" >
+				<select name="img">
 					{% for img in imgfmtoptions %}
 						<option value="{{img}}"{{ ' SELECTED' if img == imgfmtselected }}>{{img}}</option>
 					{% endfor %}
@@ -67,7 +67,7 @@
 			<td>
 			<div class="alignleft">White Balance:</div>
 			<div class="alignright">
-				<select name="wb" >
+				<select name="wb">
 					{% for wb in wboptions %}
 						<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
 					{% endfor %}
@@ -79,7 +79,7 @@
 			<td>
 			<div class="alignleft">ISO:</div>
 			<div class="alignright">
-				<select name="iso" >
+				<select name="iso">
 					{% for iso in isooptions %}
 						<option value="{{iso}}"{{ ' SELECTED' if iso == isoselected }}>{{iso}}</option>
 					{% endfor %}
@@ -91,7 +91,7 @@
 			<td>
 			<div class="alignleft">Aperture:</div>
 			<div class="alignright">
-				<select name="aperture" >
+				<select name="aperture">
 					{% for aperture in apoptions %}
 						<option value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
 					{% endfor %}
@@ -103,7 +103,7 @@
 			<td>
 			<div class="alignleft">Shutter Speed:</div>
 			<div class="alignright">
-				<select name="shutter" >
+				<select name="shutter">
 					{% for shutterspeed in shutoptions %}
 						<option value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
 					{% endfor %}
@@ -115,10 +115,14 @@
 			<td>
 			<div class="alignleft">Exposure Comp:</div>
 			<div class="alignright">
-				<select name="exp" >
+				<select name="exp">
+				{% if exposuremode == "M" or exposuremode == "Manual" %}
+					<option disabled selected value style="display:none">N/A</option>
+				{% else %}
 					{% for exp in expoptions %}
-						<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
+					<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
 					{% endfor %}
+				{% endif %}
 				</select>
 			</div>
 			</td>
