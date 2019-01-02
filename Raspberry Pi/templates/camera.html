@@ -7,7 +7,6 @@
 		<tr>
 			<th>Camera Settings</th>
 		</tr>
-		
 		<tr>
 			<td>
 				<div class="alignleft">Camera Date:</div>
@@ -20,7 +19,7 @@
 				<div class="alignright">{{ focusmode }}</div>
 			</td>
 		</tr>
-		<tr{{ (' class="red"' | safe) if exposuremode == "M" or exposuremode == "Manual" or exposuremode == "AV" }}>
+		<tr{{ (' class="red"' | safe) if (exposuremode != "Manual" and exposuremode != "AV") }}>
 			<td>
 				<div class="alignleft">Exposure Mode:</div>
 				<div class="alignright">{{ exposuremode }}</div>
@@ -55,7 +54,7 @@
 			<td>
 			<div class="alignleft">Image Format:</div>
 			<div class="alignright">
-				<select name="img">
+				<select name="img" id="img" onchange="newSelected(this.id)">
 					{% for img in imgfmtoptions %}
 						<option value="{{img}}"{{ ' SELECTED' if img == imgfmtselected }}>{{img}}</option>
 					{% endfor %}
@@ -67,7 +66,7 @@
 			<td>
 			<div class="alignleft">White Balance:</div>
 			<div class="alignright">
-				<select name="wb">
+				<select name="wb" id="wb" onchange="newSelected(this.id)">
 					{% for wb in wboptions %}
 						<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
 					{% endfor %}
@@ -79,7 +78,7 @@
 			<td>
 			<div class="alignleft">ISO:</div>
 			<div class="alignright">
-				<select name="iso">
+				<select name="iso" id="iso" onchange="newSelected(this.id)">
 					{% for iso in isooptions %}
 						<option value="{{iso}}"{{ ' SELECTED' if iso == isoselected }}>{{iso}}</option>
 					{% endfor %}
@@ -91,7 +90,7 @@
 			<td>
 			<div class="alignleft">Aperture:</div>
 			<div class="alignright">
-				<select name="aperture">
+				<select name="aperture" id="aperture" onchange="newSelected(this.id)">
 					{% for aperture in apoptions %}
 						<option value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
 					{% endfor %}
@@ -103,7 +102,7 @@
 			<td>
 			<div class="alignleft">Shutter Speed:</div>
 			<div class="alignright">
-				<select name="shutter">
+				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
 					{% for shutterspeed in shutoptions %}
 						<option value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
 					{% endfor %}
@@ -115,7 +114,7 @@
 			<td>
 			<div class="alignleft">Exposure Comp:</div>
 			<div class="alignright">
-				<select name="exp">
+				<select name="exp" id="exp" onchange="newSelected(this.id)">
 				{% if exposuremode == "M" or exposuremode == "Manual" %}
 					<option disabled selected value style="display:none">N/A</option>
 				{% else %}
@@ -143,14 +142,62 @@
 	<tr>
 		<td class="noborder">
 		<div class="alignleft">
-			<button name="CamSubmit" type="submit" value="preview"{{ ' DISABLED' if cameraDate == "" }}>Preview</button>
+			<button name="CamSubmit" id="CamPreview" type="submit" value="preview">Preview</button>
 			<!-- See "capture preview" in focus-gui.py -->
 		</div>
 		<div class="alignright">
-			<button name="CamSubmit" type="submit" value="apply"{{ ' DISABLED' if cameraDate == "" }}>Apply</button>
+			<button name="CamSubmit" id="CamSubmit" type="submit" value="apply">Apply</button>
 		</div>
 		</td>
 	</tr>
 </table>
 </form>
+
+<script>
+var SelectionByte = 0;
+var SelectionBits = new Array();
+	SelectionBits["img"]      =  1;
+	SelectionBits["wb"]       =  2;
+	SelectionBits["iso"]      =  4;
+	SelectionBits["aperture"] =  8;
+	SelectionBits["shutter"]  = 16;
+	SelectionBits["exp"]      = 32;
+
+lightButtons(); <!--  Forces a run when the form first loads -->
+function newSelected(id)
+{
+	var option = document.getElementById(id);
+	if (!option.options[option.selectedIndex].defaultSelected)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	lightButtons();
+}
+function lightButtons()
+{
+	if ("{{cameraDate}}" == "")
+	{
+		document.getElementById("CamPreview").disabled = true;
+		document.getElementById("CamSubmit").disabled  = true;
+	}
+	else
+	{
+		if (SelectionByte == 0)
+		{
+			document.getElementById("CamPreview").disabled = false;
+			document.getElementById("CamSubmit").disabled  = true;
+		}
+		else
+		{
+			document.getElementById("CamPreview").disabled = true;
+			document.getElementById("CamSubmit").disabled  = false;
+		}
+	}
+}
+</script>
+
 {% endblock %}
