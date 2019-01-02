@@ -68,7 +68,7 @@
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr id="wbRow">
 			<td>
 			<div class="alignleft">White Balance:</div>
 			<div class="alignright">
@@ -170,6 +170,7 @@ var SelectionBits = new Array();
 	SelectionBits["exp"]      = 32;
 
 lightButtons(); <!--  Forces a run when the form first loads -->
+checkWhiteBalance();
 function newSelected(id)
 {
 	var option = document.getElementById(id);
@@ -182,6 +183,7 @@ function newSelected(id)
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
 	}
 	lightButtons();
+	if (id = "wb") checkWhiteBalance();
 }
 function lightButtons()
 {
@@ -202,6 +204,18 @@ function lightButtons()
 			document.getElementById("CamPreview").disabled = true;
 			document.getElementById("CamSubmit").disabled  = false;
 		}
+	}
+}
+function checkWhiteBalance()
+{
+	var wbselected = document.getElementById("wb");
+	if (wbselected.value == "Auto")
+	{
+		document.getElementById("wbRow").className = "red";
+	}
+	else
+	{
+		document.getElementById("wbRow").className = "";
 	}
 }
 </script>
