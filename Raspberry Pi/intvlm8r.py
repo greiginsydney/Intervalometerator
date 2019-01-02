@@ -395,19 +395,21 @@ def cameraPOST():
             #This *does* write a new setting to the camera:
             node = config.get_child_by_name('imageformat') #
             node.set_value(str(request.form.get('img')))
-            node = config.get_child_by_name('whitebalance')
-            node.set_value(str(request.form.get('wb')))
-            node = config.get_child_by_name('iso')
-            node.set_value(str(request.form.get('iso')))
             # Don't bother sending any of the "read only" settings:
+            if (request.form.get('wb') != None):
+                node = config.get_child_by_name('whitebalance') 
+                node.set_value(str(request.form.get('wb')))
+            if (request.form.get('iso') != None):
+                node = config.get_child_by_name('iso') 
+                node.set_value(str(request.form.get('iso')))
             if (request.form.get('aperture') != 'implicit auto'):
-                node = config.get_child_by_name('aperture')
+                node = config.get_child_by_name('aperture') 
                 node.set_value(str(request.form.get('aperture')))
             if (request.form.get('shutter') != "auto"):
-                node = config.get_child_by_name('shutterspeed')
+                node = config.get_child_by_name('shutterspeed') 
                 node.set_value(str(request.form.get('shutter')))
             if (request.form.get('exp') != None):
-                node = config.get_child_by_name('exposurecompensation')
+                node = config.get_child_by_name('exposurecompensation') 
                 node.set_value(str(request.form.get('exp')))
             camera.set_config(config, context)
             gp.check_result(gp.gp_camera_exit(camera))
