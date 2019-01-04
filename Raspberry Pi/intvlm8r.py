@@ -729,7 +729,7 @@ def systemPOST():
 
     if 'SyncSystem' in request.form:
         app.logger.debug('Yes we got the SyncSystem button & value ' + str(request.form.get('SyncSystem')))
-        writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new interval data to the Arduino
+        writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new time and date to the Arduino
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == 'sayonara':
