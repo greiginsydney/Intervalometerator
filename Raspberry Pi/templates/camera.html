@@ -73,9 +73,13 @@
 			<div class="alignleft">White Balance:</div>
 			<div class="alignright">
 				<select name="wb" id="wb" onchange="newSelected(this.id)">
+				{% if wboptions %}
 					{% for wb in wboptions %}
-						<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
-					{% endfor %}
+					<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
+				{% endfor %}
+				{% else %}
+					<option disabled selected value style="display:none">n/a</option>
+				{% endif %}
 				</select>
 			</div>
 			</td>
@@ -121,12 +125,12 @@
 			<div class="alignleft">Exposure Comp:</div>
 			<div class="alignright">
 				<select name="exp" id="exp" onchange="newSelected(this.id)">
-				{% if exposuremode == "M" or exposuremode == "Manual" %}
-					<option disabled selected value style="display:none">N/A</option>
-				{% else %}
+				{% if expoptions %}
 					{% for exp in expoptions %}
 					<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
 					{% endfor %}
+				{% else %}	
+					<option disabled selected value style="display:none">n/a</option>
 				{% endif %}
 				</select>
 			</div>
