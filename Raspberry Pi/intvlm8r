@@ -17,7 +17,7 @@
 
 server {
     listen 80 default_server;
-    server_name intvlm8r.yourdomainname.com;
+    server_name intvlm8r intvlm8r.yourdomainname.com;
 
     location / {
         include proxy_params;
