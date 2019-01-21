@@ -90,6 +90,7 @@
 
 <script>
 
+var numDaysSelected = 1;
 var SelectionByte = 0;
 var SelectionBits = new Array();
 	SelectionBits["shootDays"] =  1;
@@ -119,21 +120,21 @@ function newSelected(id)
 function newDaySelected()
 {
 	var daySelected = document.getElementById("shootDays");
-	var numDaysSelected = 0;
 	var daysChanged = false;
+	numDaysSelected = 0
 	for (loop = 0; loop < daySelected.options.length; loop++)
 	{
 		var opt = daySelected.options[loop];
 		if (opt.selected) numDaysSelected++;
 		daysChanged = daysChanged || (opt.selected != opt.defaultSelected);
 	}
-	if ((!daysChanged) || (numDaysSelected == 0))
+	if (daysChanged)
 	{
-		SelectionByte = SelectionByte & 14; // AND with everything else (0b1110) turns it off 
+		SelectionByte = SelectionByte | 1; // OR turns the bit on if changes were made
 	}
 	else
 	{
-		SelectionByte = SelectionByte | 1; // OR turns the bit on if changes were made
+		SelectionByte = SelectionByte ^ 1;
 	}
 	lightButtons();
 }
@@ -184,7 +185,7 @@ function calculateCameraDays(shotsperday)
 
 function lightButtons()
 {
-	if (SelectionByte == 0)
+	if ((SelectionByte == 0) || (numDaysSelected == 0))
 	{
 		document.getElementById("apply").disabled  = true;
 	}
