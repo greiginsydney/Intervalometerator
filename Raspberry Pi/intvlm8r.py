@@ -56,6 +56,7 @@ PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
 PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 gunicorn_logger = logging.getLogger('gunicorn.error')
+REBOOT_SAFE_WORD = 'sayonara'
 
 
 app.logger.handlers = gunicorn_logger.handlers
@@ -615,17 +616,18 @@ def transferPOST():
 def system():
 
     templateData = {
-        'piThumbCount'  : '80',
-        'arduinoDate'   : 'Unknown',
-        'arduinoTime'   : 'Unknown',
-        'piUptime'      : 'Unknown',
-        'piModel'       : 'Unknown',
-        'piLinuxVer'    : 'Unknown',
-        'piSpaceFree'   : 'Unknown',
-        'arduinoTemp'   : 'Unknown',
-        'piTemp'        : 'Unknown',
-        'wakePiTime'    : '',
-        'wakePiDuration': ''
+        'piThumbCount'   : '80',
+        'arduinoDate'    : 'Unknown',
+        'arduinoTime'    : 'Unknown',
+        'piUptime'       : 'Unknown',
+        'piModel'        : 'Unknown',
+        'piLinuxVer'     : 'Unknown',
+        'piSpaceFree'    : 'Unknown',
+        'arduinoTemp'    : 'Unknown',
+        'piTemp'         : 'Unknown',
+        'wakePiTime'     : '',
+        'wakePiDuration' : '',
+        'rebootSafeWord' : REBOOT_SAFE_WORD
         }
 
     if not os.path.exists(iniFile):
@@ -732,12 +734,12 @@ def systemPOST():
         writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new time and date to the Arduino
 
     if 'Reboot' in request.form:
-        if str(request.form.get('rebootString')) == 'sayonara':
+        if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
             writeString("RA")
-            #app.logger.debug('Yes we got SAYONARA')
+            #app.logger.debug('Yes we got reboot safe word - ' + REBOOT_SAFE_WORD)
         else:
             pass
-            #app.logger.debug('Button pressed but no SAYONARA')
+            #app.logger.debug('Button pressed but no reboot safe word - ' + REBOOT_SAFE_WORD)
 
     return redirect(url_for('system'))
 
