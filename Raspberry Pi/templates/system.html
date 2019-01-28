@@ -10,13 +10,13 @@
 			<td class="noborder">
 				<div class="alignleft">Location Name:</div>
 				<div class="alignright">
-					<input name="newName" type="text" value="{{ locationName }}">
+					<input name="newName" id="newName" type="text" value="{{ locationName }}" oninput="newText(this.id)">
 				</div>
 			</td>
 		</tr>
 		<tr>	
 			<td class="noborder">
-				<button name="submitLocation" type="submit" class="hwbutton">Submit</button>
+				<button name="submitLocation" id="submitLocation" type="submit" class="hwbutton">Submit</button>
 			</td>
 		</tr>
 	</table>
@@ -28,7 +28,7 @@
 			<td class="noborder">
 				<div class="alignleft">Thumbnail count:</div>
 				<div class="alignright">
-					<select name="thumbCount">
+					<select name="thumbsCount" id="thumbsCount" onchange="newThumbsCount(this.id)">
 						{% for count in ['20','40','80','160'] %}
 							<option value="{{count}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{count}}</option>
 						{% endfor %}
@@ -38,7 +38,7 @@
 		</tr>
 		<tr>	
 			<td class="noborder">
-				<button name="submitThumbsCount" type="submit" class="hwbutton">Submit</button>
+				<button name="submitThumbsCount" id="submitThumbsCount" type="submit" class="hwbutton">Submit</button>
 			</td>
 		</tr>
 	</table>
@@ -102,7 +102,7 @@
 			<td class="noborder">
 				<div class="alignleft">Pi on at (hour):</div>
 				<div class="alignright">
-					<select name="wakePiTime" id="piHour">>
+					<select name="wakePiTime" id="wakePiTime" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['25', '00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							<option value="{{ hour }}"{{ ' SELECTED' if hour == wakePiTime }}>{{ 'Always On' if hour == '25' else hour }}</option>
@@ -115,7 +115,7 @@
 			<td class="noborder">
 				<div class="alignleft">Pi on for (minutes):</div>
 				<div class="alignright">
-					<select name="wakePiDuration" >
+					<select name="wakePiDuration" id="wakePiDuration" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for window in ['05','10','15','20','30','60'] %}
 							<option value="{{window}}"{{ ' SELECTED' if window == wakePiDuration }}>{{window}}</option>"
@@ -126,7 +126,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<button name="wakePi" type="submit" class="hwbutton" value="wakePi">Submit</button>
+				<button name="wakePi" id="submitWakePi" type="submit" class="hwbutton" value="wakePi">Submit</button>
 			</td>
 		</tr>
 	</table>
@@ -159,9 +159,9 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">Reboot Arduino?</div>
-				<div class="alignright">(Enter "sayonara")</div>
+				<div class="alignright">(Enter "{{rebootSafeWord}}")</div>
 				<div class="alignright">
-					<input name="rebootString" type="text" value="">
+					<input name="rebootString" id="rebootString" type="text" value="" oninput="newRebootText(this.id)">
 				</div>
 			</td>
 		</tr>
@@ -176,7 +176,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<button name="Reboot" type="submit" class="hwbutton" value="Reboot">Reboot</button>
+				<button name="Reboot" id="submitReboot" type="submit" class="hwbutton" value="Reboot">Reboot</button>
 			</td>
 		</tr>
 	</table>
@@ -184,14 +184,31 @@
 
 <script> 
 
-function update_time(){
-	var refresh=1000; // Refresh rate in milli seconds
+var SelectionByte = 0;
+var SelectionBits = new Array();
+SelectionBits["wakePiTime"]     = 1;
+SelectionBits["wakePiDuration"] = 2;
+
+// This drives the default display on load:
+document.getElementById("submitLocation").disabled = true;
+document.getElementById("submitThumbsCount").disabled = true;
+document.getElementById("submitWakePi").disabled = true;
+document.getElementById("submitReboot").disabled = true;
+
+// This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
+var piHour = document.getElementById("wakePiTime");
+var piMinutes = document.getElementById("piMinutes");
+piMinutes.style.display = (piHour.value == "25") ? "none":"";
+
+function update_time()
+{
+	var refresh=1000; // Refresh rate in milliseconds
 	newtime=setTimeout('sendTimeToServer()', refresh);
 }
 
 function sendTimeToServer()
 {
-    var today = new Date();
+	var today = new Date();
 	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
 	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
 	var dateTime = date + time;
@@ -202,16 +219,77 @@ function sendTimeToServer()
 	}
 
 sendTimeToServer();
-	
-// This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
-var piHour = document.getElementById("piHour");
-var piMinutes = document.getElementById("piMinutes");
-piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
-piHour.onchange = function()
+function newText(id)
 {
+	var option = document.getElementById(id);
+	var button = document.getElementById("submitLocation");
+	if (option.defaultValue != option.value)
+	{
+		button.disabled  = false;
+	}
+	else
+	{
+		button.disabled  = true;
+	}
+}
+
+function newThumbsCount(id)
+{
+	var option = document.getElementById(id);
+	if (!option.options[option.selectedIndex].defaultSelected)
+	{
+		document.getElementById("submitThumbsCount").disabled  = false;
+	}
+	else
+	{
+		document.getElementById("submitThumbsCount").disabled  = true;
+	}
+}
+
+function newSelected(id)
+{
+	var option = document.getElementById(id);
+	// Reveal/hide fields as appropriate:
 	piMinutes.style.display = (piHour.value == "25") ? "none":"";
-};
+
+	if (!option.options[option.selectedIndex].defaultSelected)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	lightButtons();
+}
+	
+function newRebootText(id)
+{
+	var option = document.getElementById(id);
+	var button = document.getElementById("submitReboot");
+	if ("{{rebootSafeWord}}" == option.value)
+	{
+		button.disabled  = false;
+	}
+	else
+	{
+		button.disabled  = true;
+	}
+}
+	
+function lightButtons()
+{
+	if (SelectionByte == 0)
+	{
+		document.getElementById("submitWakePi").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("submitWakePi").disabled  = false;
+	}
+}
+
 </script>
 
 {% endblock %}
