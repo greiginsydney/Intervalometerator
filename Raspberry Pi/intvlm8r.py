@@ -196,7 +196,10 @@ def login():
     if str(request.form['password']) == str(users[username]['password']):
         user = User()
         user.id = username
-        login_user(user)
+        remember = 'false';
+        if request.form.get('rememberme'):
+            remember = 'true';
+        login_user(user,'remember='remember)
         return flask.redirect(flask.url_for('main'))
 
     return 'Bad login'
