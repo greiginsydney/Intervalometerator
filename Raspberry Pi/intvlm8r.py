@@ -42,10 +42,17 @@ from werkzeug.contrib.cache import SimpleCache
 cache = SimpleCache()
 
 from flask import Flask, flash, render_template, request, redirect, url_for
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F12&$$%F*<>\n\xec]/' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -57,6 +64,9 @@ PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
+
+# Our user database:
+users = {'admin': {'password': 'time-lapse'}}
 
 
 app.logger.handlers = gunicorn_logger.handlers
@@ -146,7 +156,66 @@ def customisation():
     return dict (locationName = loc )
 
 
+class User(UserMixin):
+    pass
+
+
+@login_manager.user_loader
+def user_loader(username):
+    if username not in users:
+        return
+
+    user = User()
+    user.id = username
+    return user
+
+
+@login_manager.request_loader
+def request_loader(request):
+    username = request.form.get('username')
+    if username not in users:
+        return
+
+    user = User()
+    user.id = username
+
+    user.is_authenticated = request.form['password'] == users[username]['password']
+
+    return user
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if is_authenticated:
+        return flask.redirect(flask.url_for('main'))
+
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    username = str(request.form['username'])
+    if str(request.form['password']) == str(users[username]['password']):
+        user = User()
+        user.id = username
+        login_user(user)
+        return flask.redirect(flask.url_for('main'))
+
+    return 'Bad login'
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return flask.redirect(flask.url_for('login'))
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return 'Unauthorised'
+
+
 @app.route("/")
+@login_required
 def main():
     templateData = {
         'arduinoDate'       : 'Unknown',
@@ -248,6 +317,7 @@ def main():
 
 
 @app.route("/thumbnails")
+@login_required
 def thumbnails():
     ThumbFiles = []
 
@@ -292,6 +362,7 @@ def thumbnails():
 
 
 @app.route("/camera")
+@login_required
 def camera():
     cameraData = {
         'cameraDate'    : '',
@@ -383,6 +454,7 @@ def camera():
 
 
 @app.route("/camera", methods = ['POST'])    # The camera's POST method
+@login_required
 def cameraPOST():
     """ This page is where you manage all the camera settings."""
     try:
@@ -429,6 +501,7 @@ def cameraPOST():
 
 
 @app.route("/intervalometer")
+@login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
 
@@ -469,6 +542,7 @@ def intervalometer():
 
 
 @app.route("/intervalometer", methods = ['POST'])    # The intervalometer's POST method
+@login_required
 def intervalometerPOST():
     """ This page is where you manage all the interval settings for the Arduino."""
     newInterval = ""
@@ -498,6 +572,7 @@ def intervalometerPOST():
 
 
 @app.route("/transfer")
+@login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
     args = request.args.to_dict()
@@ -575,6 +650,7 @@ def transfer():
 
 
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
+@login_required
 def transferPOST():
     """ This page is where you manage how the images make it from the camera to the real world."""
     if not os.path.exists(iniFile):
@@ -613,6 +689,7 @@ def transferPOST():
 
 
 @app.route("/system")
+@login_required
 def system():
 
     templateData = {
@@ -682,6 +759,7 @@ def system():
 
 
 @app.route("/system", methods = ['POST'])    # The camera's POST method
+@login_required
 def systemPOST():
 
     app.logger.debug('This is the /system POST page')
@@ -742,6 +820,7 @@ def systemPOST():
             #app.logger.debug('Button pressed but no reboot safe word - ' + REBOOT_SAFE_WORD)
 
     return redirect(url_for('system'))
+
 
 
 def readValue ( camera, attribute ):

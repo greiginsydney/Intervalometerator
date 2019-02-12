@@ -32,6 +32,13 @@
 			<a href="{{ url_for ('intervalometer') }}">Intervalometer Settings</a>
 			<a href="{{ url_for ('transfer') }}">Transfer Settings</a>
 			<a href="{{ url_for ('system') }}">System Maintenance</a>
+			<hr />
+			{% if current_user.is_anonymous %}
+				<a href="{{ url_for('login') }}">Login</a>
+			{% else %}
+				<a href="{{ url_for('logout') }}">Logout</a>
+			{% endif %}
+			
 		</div>
 	</div>
 
