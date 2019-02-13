@@ -18,7 +18,9 @@
 	</tr>
 	<tr>
 		<td width="15%" class="noborder"></td>
-		<td class="noborder"><h2>{{ locationName }}</h2></td>
+		{% if current_user.is_authenticated %}
+			<td class="noborder"><h2>{{ locationName }}</h2></td>
+		{% endif %}
 	</td>
 </table>
 <!-- MENU STARTS -->
