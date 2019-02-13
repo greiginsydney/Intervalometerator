@@ -78,7 +78,7 @@ pi@192.168.44.1's password:
 28. `sudo reboot now`
 29. Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue:
 30. `sudo apt-get install python-pip python-flask -y`
-31. `sudo pip install flask flask-bootstrap gunicorn configparser`
+31. `sudo pip install flask flask-bootstrap flask-login gunicorn configparser`
 32. `sudo apt-get install nginx nginx-common supervisor python-dev python-psutil -y`
 33. `sudo apt-get install libgphoto2-dev -y`
 > If the above doesn't install or throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
