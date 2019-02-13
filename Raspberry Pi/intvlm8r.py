@@ -41,6 +41,8 @@ import gphoto2 as gp
 from werkzeug.contrib.cache import SimpleCache
 cache = SimpleCache()
 
+from werkzeug.security import check_password_hash
+
 from flask import Flask, flash, render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
 app = Flask(__name__)
@@ -66,7 +68,7 @@ gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 
 # Our user database:
-users = {'admin': {'password': 'time-lapse'}}
+users = {'admin': {'password': ## Paste the password's hash here. See the Setup docs ###'}}
 
 
 app.logger.handlers = gunicorn_logger.handlers
@@ -159,12 +161,10 @@ def customisation():
 class User(UserMixin):
     pass
 
-
 @login_manager.user_loader
 def user_loader(username):
     if username not in users:
         return
-
     user = User()
     user.id = username
     return user
@@ -175,12 +175,9 @@ def request_loader(request):
     username = request.form.get('username')
     if username not in users:
         return
-
     user = User()
     user.id = username
-
-    user.is_authenticated = request.form['password'] == users[username]['password']
-
+    user.is_authenticated = check_password_hash(users[username]['password'], request.form['password'])
     return user
 
 
@@ -188,10 +185,8 @@ def request_loader(request):
 def login():
     if is_authenticated:
         return flask.redirect(flask.url_for('main'))
-
     if request.method == 'GET':
         return render_template('login.html')
-
     username = str(request.form['username'])
     if str(request.form['password']) == str(users[username]['password']):
         user = User()
@@ -201,7 +196,6 @@ def login():
             remember = 'true';
         login_user(user,'remember='remember)
         return flask.redirect(flask.url_for('main'))
-
     return 'Bad login'
 
 
