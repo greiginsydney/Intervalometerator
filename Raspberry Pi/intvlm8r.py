@@ -183,7 +183,7 @@ def request_loader(request):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if is_authenticated:
+    if current_user.is_authenticated:
         return flask.redirect(flask.url_for('main'))
     if request.method == 'GET':
         return render_template('login.html')
