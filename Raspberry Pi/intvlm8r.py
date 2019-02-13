@@ -46,7 +46,7 @@ from werkzeug.security import check_password_hash
 from flask import Flask, flash, render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F12&$$%F*<>\n\xec]/' #Cookie for session messages
+app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
 
@@ -68,7 +68,7 @@ gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 
 # Our user database:
-users = {'admin': {'password': ## Paste the password's hash here. See the Setup docs ###'}}
+users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
 
 
 app.logger.handlers = gunicorn_logger.handlers
