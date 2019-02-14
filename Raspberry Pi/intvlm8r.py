@@ -44,7 +44,7 @@ cache = SimpleCache()
 from werkzeug.security import check_password_hash
 
 from flask import Flask, flash, render_template, request, redirect, url_for
-from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
 app = Flask(__name__)
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
