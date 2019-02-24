@@ -213,7 +213,7 @@ def login():
             # See http://flask.pocoo.org/snippets/62/ for an example.
             if not is_safe_url(next):
                 return abort(400)
-        return redirect(next or url_for('main'))
+            return redirect(next or url_for('main'))
     flash('Bad creds. Try again')
     return redirect(url_for('login'))
 
