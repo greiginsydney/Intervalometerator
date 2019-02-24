@@ -22,6 +22,7 @@ from __future__ import print_function
 from __future__ import division #Added for the benefit of getDiskSpace
 from datetime import timedelta, datetime
 from PIL import Image   #For the camera page / preview button
+from urlparse import urlparse, urljoin
 import calendar
 import ConfigParser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
@@ -44,7 +45,7 @@ cache = SimpleCache()
 from werkzeug.security import check_password_hash
 
 from flask import Flask, flash, render_template, request, redirect, url_for
-from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 app = Flask(__name__)
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
@@ -52,8 +53,7 @@ app.jinja_env.trim_blocks = True
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
-
+login_manager.login_view = ''
 
 
 # ////////////////////////////////
@@ -68,7 +68,8 @@ gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 
 # Our user database:
-users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
+#users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
+users = {'admin': {'password': 'password'}}
 
 
 app.logger.handlers = gunicorn_logger.handlers
@@ -158,8 +159,16 @@ def customisation():
     return dict (locationName = loc )
 
 
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+
 class User(UserMixin):
     pass
+
 
 @login_manager.user_loader
 def user_loader(username):
@@ -177,38 +186,50 @@ def request_loader(request):
         return
     user = User()
     user.id = username
-    user.is_authenticated = check_password_hash(users[username]['password'], request.form['password'])
     return user
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return flask.redirect(flask.url_for('main'))
     if request.method == 'GET':
+        app.logger.debug('Its a GET to LOGIN')
         return render_template('login.html')
-    username = str(request.form['username'])
-    if str(request.form['password']) == str(users[username]['password']):
-        user = User()
-        user.id = username
-        remember = 'false';
-        if request.form.get('rememberme'):
-            remember = 'true';
-        login_user(user,'remember='remember)
-        return flask.redirect(flask.url_for('main'))
-    return 'Bad login'
+    username = (str(request.form['username'])).lower() #Don't care for case in a username
+    app.logger.debug('Here in LOGIN')
+    if username in users:
+        #if (check_password_hash(users[username]['password'], request.form['password'])):
+        if users[username]['password'] == request.form['password']:
+            app.logger.debug('Here2 - we auth good')
+            user = User()
+            user.id = username
+            remember = 'false'
+            if request.form.get('rememberme'):
+                remember = 'true'
+            login_user(user,'remember=' + remember)
+            #return redirect(url_for('main'))
+            next = request.args.get('next')
+            app.logger.debug('next= ' + str(next))
+            # is_safe_url should check if the url is safe for redirects.
+            # See http://flask.pocoo.org/snippets/62/ for an example.
+            if not is_safe_url(next):
+                return abort(400)
+        return redirect(next or url_for('main'))
+    flash('Bad creds. Try again')
+    return redirect(url_for('login'))
 
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for('login'))
+    flash('You have been logged out')
+    return redirect(url_for('login'))
 
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    return 'Unauthorised'
+    flash('You need to sign in before you can access that page!')
+    return redirect(login_url(url_for('login'), request.url))
 
 
 @app.route("/")
