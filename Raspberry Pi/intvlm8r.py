@@ -22,6 +22,7 @@ from __future__ import print_function
 from __future__ import division #Added for the benefit of getDiskSpace
 from datetime import timedelta, datetime
 from PIL import Image   #For the camera page / preview button
+from urlparse import urlparse, urljoin
 import calendar
 import ConfigParser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
@@ -41,11 +42,19 @@ import gphoto2 as gp
 from werkzeug.contrib.cache import SimpleCache
 cache = SimpleCache()
 
+from werkzeug.security import check_password_hash
+
 from flask import Flask, flash, render_template, request, redirect, url_for
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F12&$$%F*<>\n\xec]/' #Cookie for session messages
+app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = ''
+
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -57,6 +66,10 @@ PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
+
+# Our user database:
+#users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
+users = {'admin': {'password': 'password'}}
 
 
 app.logger.handlers = gunicorn_logger.handlers
@@ -146,7 +159,78 @@ def customisation():
     return dict (locationName = loc )
 
 
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+
+class User(UserMixin):
+    pass
+
+
+@login_manager.user_loader
+def user_loader(username):
+    if username not in users:
+        return
+    user = User()
+    user.id = username
+    return user
+
+
+@login_manager.request_loader
+def request_loader(request):
+    username = request.form.get('username')
+    if username not in users:
+        return
+    user = User()
+    user.id = username
+    return user
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        app.logger.debug('Its a GET to LOGIN')
+        return render_template('login.html')
+    username = (str(request.form['username'])).lower() #Don't care for case in a username
+    if username in users:
+        #if (check_password_hash(users[username]['password'], request.form['password'])):
+        if users[username]['password'] == request.form['password']:
+            user = User()
+            user.id = username
+            remember = 'false'
+            if request.form.get('rememberme'):
+                remember = 'true'
+            login_user(user,'remember=' + remember)
+            app.logger.debug('Logged-in ' + username)
+            next = request.args.get('next')
+            # is_safe_url should check if the url is safe for redirects.
+            # See http://flask.pocoo.org/snippets/62/ for an example.
+            if not is_safe_url(next):
+                return abort(400)
+            return redirect(next or url_for('main'))
+    flash('Bad creds. Try again')
+    return redirect(url_for('login'))
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out')
+    return redirect(url_for('login'))
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    flash('You need to sign in before you can access that page!')
+    return redirect(login_url(url_for('login'), request.url))
+
+
 @app.route("/")
+@login_required
 def main():
     templateData = {
         'arduinoDate'       : 'Unknown',
@@ -248,6 +332,7 @@ def main():
 
 
 @app.route("/thumbnails")
+@login_required
 def thumbnails():
     ThumbFiles = []
 
@@ -292,6 +377,7 @@ def thumbnails():
 
 
 @app.route("/camera")
+@login_required
 def camera():
     cameraData = {
         'cameraDate'    : '',
@@ -383,6 +469,7 @@ def camera():
 
 
 @app.route("/camera", methods = ['POST'])    # The camera's POST method
+@login_required
 def cameraPOST():
     """ This page is where you manage all the camera settings."""
     try:
@@ -429,6 +516,7 @@ def cameraPOST():
 
 
 @app.route("/intervalometer")
+@login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
 
@@ -469,6 +557,7 @@ def intervalometer():
 
 
 @app.route("/intervalometer", methods = ['POST'])    # The intervalometer's POST method
+@login_required
 def intervalometerPOST():
     """ This page is where you manage all the interval settings for the Arduino."""
     newInterval = ""
@@ -498,6 +587,7 @@ def intervalometerPOST():
 
 
 @app.route("/transfer")
+@login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
     args = request.args.to_dict()
@@ -575,6 +665,7 @@ def transfer():
 
 
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
+@login_required
 def transferPOST():
     """ This page is where you manage how the images make it from the camera to the real world."""
     if not os.path.exists(iniFile):
@@ -613,6 +704,7 @@ def transferPOST():
 
 
 @app.route("/system")
+@login_required
 def system():
 
     templateData = {
@@ -682,6 +774,7 @@ def system():
 
 
 @app.route("/system", methods = ['POST'])    # The camera's POST method
+@login_required
 def systemPOST():
 
     app.logger.debug('This is the /system POST page')
@@ -742,6 +835,7 @@ def systemPOST():
             #app.logger.debug('Button pressed but no reboot safe word - ' + REBOOT_SAFE_WORD)
 
     return redirect(url_for('system'))
+
 
 
 def readValue ( camera, attribute ):
