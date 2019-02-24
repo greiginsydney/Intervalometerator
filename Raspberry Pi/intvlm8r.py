@@ -195,20 +195,17 @@ def login():
         app.logger.debug('Its a GET to LOGIN')
         return render_template('login.html')
     username = (str(request.form['username'])).lower() #Don't care for case in a username
-    app.logger.debug('Here in LOGIN')
     if username in users:
         #if (check_password_hash(users[username]['password'], request.form['password'])):
         if users[username]['password'] == request.form['password']:
-            app.logger.debug('Here2 - we auth good')
             user = User()
             user.id = username
             remember = 'false'
             if request.form.get('rememberme'):
                 remember = 'true'
             login_user(user,'remember=' + remember)
-            #return redirect(url_for('main'))
+            app.logger.debug('Logged-in ' + username)
             next = request.args.get('next')
-            app.logger.debug('next= ' + str(next))
             # is_safe_url should check if the url is safe for redirects.
             # See http://flask.pocoo.org/snippets/62/ for an example.
             if not is_safe_url(next):
