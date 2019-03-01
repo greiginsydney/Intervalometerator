@@ -1,5 +1,9 @@
 # Intervalometerator (aka "intvlm8r")
 
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/53620457-26a1e700-3c47-11e9-84f2-2e83b4aa596f.png" width="80%">
+ </p>
+ 
 The Intervalometerator (aka "intvlm8r") is a flexible, low-cost time-lapse camera controller for DSLRs.
 
 It came into being after we were unable to find a suitable time-lapse controller for a planned time-lapse shoot for which we wanted the image quality of a DSLR. The first unit deployed is recording the construction of our friends' house in rural New Zealand, off-grid and with no network connectivity.
