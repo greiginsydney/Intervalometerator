@@ -87,7 +87,7 @@ pi@192.168.44.1's password:
 35. `sudo apt-get install libjpeg-dev -y`
 36. `sudo pip install -v pillow`
 37. `sudo apt-get install python-smbus i2c-tools -y`
-38. We don't want Bluetooth, so uninstall it[1]:
+38. We don't want Bluetooth, so uninstall it<sup>[1](#uninstallbluetooth)</sup>:
     * `sudo apt-get purge bluez -y`
     * `sudo apt-get autoremove -y`
 
@@ -183,7 +183,7 @@ pi@intervlm8r:/usr/local/share/python-gphoto2/examples $
 
 ## Build a Website
 
-Here's where you start to build the website. This process is largely a copy/mashup of these posts.[2] [3] [4]
+Here's where you start to build the website. This process is largely a copy/mashup of these posts.<sup>[2](#deployflask)</sup><sup>[3](#pythonflask)</sup><sup>[4](#serveflask)</sup>
 
 48. `cd ~`
 49. Create some sub-directories to keep the various components separate from each other:
@@ -288,7 +288,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 80. You should again see a status that's "Active: active (running)". If not, re-check your steps here.
 81. If you now browse to the site on Port 80 it should respond with the intvlm8r's home-page, not the default page that showed at Step 64.
 
-> If you get a "502 Bad Gateway" that's usually indicative of a permissions problem[5]. Check out the "access.log" and "error.log" files at /var/log/nginx. (Don't burn a lot of effort here without first giving it a cleansing reboot - we've done a lot!)
+> If you get a "502 Bad Gateway" that's usually indicative of a permissions problem<sup>[1](#502badgateway)</sup>. Check out the "access.log" and "error.log" files at /var/log/nginx. (Don't burn a lot of effort here without first giving it a cleansing reboot - we've done a lot!)
 
 ## Startup Tasks
 ### NTP
@@ -301,7 +301,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 84. `sudo chmod 644 /etc/systemd/system/setTime.service`
 85. `sudo systemctl enable setTime.service`
 
-86. Should your Pi ever have intermittent network connectivity - even if it's only on the bench when you're building it - it's going to automatically suck the real-time from debian.pool.ntp.org, which will potentially confuse issues[6]. To kill this (and so you KNOW your Arduino is its authoritative clock-source), run:
+86. Should your Pi ever have intermittent network connectivity - even if it's only on the bench when you're building it - it's going to automatically suck the real-time from debian.pool.ntp.org, which will potentially confuse issues<sup>[6](#timedatectl)</sup>. To kill this (and so you KNOW your Arduino is its authoritative clock-source), run:
 * `sudo systemctl disable systemd-timesyncd` to stop it launching at boot, and 
 * `sudo systemctl stop systemd-timesyncd` to stop it NOW.
 
@@ -371,14 +371,14 @@ dtoverlay=gpio-poweroff,gpiopin=27,active_low
 <br>
 <hr >
 
-[1]: [Disabling BlueTooth](https://scribles.net/disabling-bluetooth-on-raspberry-pi/)
+<a name="uninstallbluetooth">1</a>: [Disabling BlueTooth](https://scribles.net/disabling-bluetooth-on-raspberry-pi/)
 
-[2]: [Deploy flask app with nginx using gunicorn and supervisor](https://medium.com/ymedialabs-innovation/deploy-flask-app-with-nginx-using-gunicorn-and-supervisor-d7a93aa07c18)
+<a name="deployflask">2</a>: [Deploy flask app with nginx using gunicorn and supervisor](https://medium.com/ymedialabs-innovation/deploy-flask-app-with-nginx-using-gunicorn-and-supervisor-d7a93aa07c18)
 
-[3]: [Python Flask + nginx + gunicorn](https://gist.github.com/xaratustrah/0e648a0dca74c661c1a1c78acbd5e224)
+<a name="pythonflask">3</a>: [Python Flask + nginx + gunicorn](https://gist.github.com/xaratustrah/0e648a0dca74c661c1a1c78acbd5e224)
 
-[4]: [How To Serve Flask Applications with Gunicorn and Nginx on Ubuntu 16.04](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04)
+<a name="serveflask">4</a>: [How To Serve Flask Applications with Gunicorn and Nginx on Ubuntu 16.04](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04)
 
-[5]: [502 BAD Gateway](https://stackoverflow.com/questions/39919053/django-gunicorn-sock-file-not-created-by-wsgi)
+<a name="502badgateway">5</a>: [502 BAD Gateway](https://stackoverflow.com/questions/39919053/django-gunicorn-sock-file-not-created-by-wsgi)
 
-[6]: [Raspbian Jessie Systemctl TimeDateCtl replacement for NTP](https://www.raspberrypi.org/forums/viewtopic.php?t=178763)
+<a name="timedatectl">6</a>: [Raspbian Jessie Systemctl TimeDateCtl replacement for NTP](https://www.raspberrypi.org/forums/viewtopic.php?t=178763)
