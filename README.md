@@ -18,7 +18,7 @@ The Arduino's code ('sketch') is largely bespoke, whilst the Pi is totally relia
 ### Use your choice of DSLR
 With gPhoto and python-gphoto2 providing all the camera interfacing, the intent is that any camera compatible with these projects should be able to be used.
 
-In its initial published version the intvlm8r has been tested with Canon 6D, 60D & 600D cameras. The unit deployed in NZ contains the 600D - read why on the [Design Decisions](DESIGNDECISIONS.md) page.
+In its initial published version the intvlm8r has been tested with Canon 6D, 60D & 600D cameras. The unit deployed in NZ contains the 600D - read why on the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/design-decisions.md) page of the project's Wiki.
 
 gPhoto (running on the Pi) is only used for the camera management, with the Arduino handling the core role of waking the camera and taking the shot using the camera's manual shutter input.
 
@@ -60,7 +60,7 @@ Should the backup battery in the DeadOn RTC fail while the intvlm8r is not power
 # Where to next?
 
 Check out these documents for more information:
-* [Design Decisions](DESIGNDECISIONS.md). This provides a detailed explanation of some of the design decisions and compromises.
+* [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/design-decisions.md). This provides a detailed explanation of some of the design decisions and compromises.
 * [Shopping list](SHOPPINGLIST.md). All the items you need to make this.
 * [Construction](CONSTRUCTION.md). Some images of the assembly of the Pelican case.
 * [Board assembly](BOARDASSEMBLY.md). Putting the PCB together.
