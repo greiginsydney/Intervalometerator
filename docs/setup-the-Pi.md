@@ -183,7 +183,7 @@ pi@intervlm8r:/usr/local/share/python-gphoto2/examples $
 
 ## Build a Website
 
-Here's where you start to build the website. This process is largely a copy/mashup of these posts.<sup>[2](#deployflask)</sup><sup>[3](#pythonflask)</sup><sup>[4](#serveflask)</sup>
+Here's where you start to build the website. This process is largely a copy/mashup of these posts.<sup>[2](#deployflask)</sup> <sup>[3](#pythonflask)</sup> <sup>[4](#serveflask)</sup>
 
 48. `cd ~`
 49. Create some sub-directories to keep the various components separate from each other:
