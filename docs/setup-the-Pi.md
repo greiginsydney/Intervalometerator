@@ -1,6 +1,6 @@
 # Setup the Pi
 
-If you're starting from scratch, start here at step 1.
+If you're starting from scratch, start here at Step 1.
 
 
 1. Install the Rasbian Stretch image onto the memory card.
@@ -29,7 +29,7 @@ In so doing however, your average Windows PC will no longer be able to read the 
 14. Navigate to `Finish` and DECLINE the prompt to reboot.
 15. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
 
-16. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to step 18.
+16. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 18.
 17. Run `sudo nano /etc/dhcpcd.conf`. Add the lines highlighted under the appropriate interface type, customising the addresses to suit your network:
 
 ```txt
@@ -49,7 +49,7 @@ static domain_name_servers=192.168.44.254
 18. Set a hostname with `sudo hostname <YourNewHostname>`
 19. Reboot the Pi to pickup its new IP address and lock in all the changes made above, including the change to the hostname: `sudo reboot now`
 
-20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you changed in step 18.
+20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you changed in Step 18.
 (Alternatively, just see if it responds to pings and you can SSH to it on its new IP).
 
 ## Remote config via SSH
@@ -213,7 +213,7 @@ cd ~/www
 gunicorn --bind 0.0.0.0:5000 wsgi:app
 ```
 (Ctrl-C to escape this).
-> If this fails with `ImportError: No module named wsgi`, make sure you ran the command from the /www/ directory, and that it contains the wsgi.py file copied in from step 76.
+> If this fails with `ImportError: No module named wsgi`, make sure you ran the command from the /www/ directory, and that it contains the wsgi.py file copied in from Step 61.
 
 66. Now we create a "service" that will run the website/script. Assuming the file 'intvlm8r.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
 `sudo mv ~/intvlm8r.service /etc/systemd/system/intvlm8r.service`
@@ -293,7 +293,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 ## Startup Tasks
 ### NTP
 
-82. If your Pi has no network connectivity, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). If you have connectivity, skip the next steps and resume at Step 102.
+82. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). If you have connectivity, skip the next steps and resume at Step 87.
 
 83. Create a service for the time sync. This runs once when-ever the Pi boots, reading the real time from the Arduino and then using this to set its own internal clock. Assuming the file 'setTime.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
 `sudo mv ~/setTime.service /etc/systemd/system/setTime.service`
@@ -301,7 +301,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 84. `sudo chmod 644 /etc/systemd/system/setTime.service`
 85. `sudo systemctl enable setTime.service`
 
-86. Should your Pi ever have intermittent network connectivity - even if it's only on the bench when you're building it - it's going to automatically suck the real-time from debian.pool.ntp.org, which will potentially confuse issues<sup>[6](#timedatectl)</sup>. To kill this (and so you KNOW your Arduino is its authoritative clock-source), run:
+86. Should your Pi ever have intermittent network connectivity - even if it's only on the bench when you're building it - it's going to automatically suck the real-time from debian.pool.ntp.org, which will potentially confuse it and/or you<sup>[6](#timedatectl)</sup>. To kill this (and so you KNOW the Arduino is the Pi's authoritative clock-source), run:
 * `sudo systemctl disable systemd-timesyncd` to stop it launching at boot, and 
 * `sudo systemctl stop systemd-timesyncd` to stop it NOW.
 
