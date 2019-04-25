@@ -62,8 +62,8 @@ Should the backup battery in the DeadOn RTC fail while the intvlm8r is not power
 Check out these documents for more information:
 * [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/design-decisions.md). This provides a detailed explanation of some of the design decisions and compromises.
 * [Shopping list](SHOPPINGLIST.md). All the items you need to make this.
-* [Construction](CONSTRUCTION.md). Some images of the assembly of the Pelican case.
-* [Board assembly](BOARDASSEMBLY.md). Putting the PCB together.
+* [Case assembly](docs/case-assembly.md). A walk-through of preparing the Pelican case.
+* [PCB assembly](docs/pcb-assembly.md). Putting the PCB together.
 
 The Arduino's Sketch is in its own folder, and the Raspberry Pi's Python script and HTML pages can be found in their respective folders under RaspberryPi.
 
