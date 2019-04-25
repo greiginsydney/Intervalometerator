@@ -305,7 +305,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 * `sudo systemctl disable systemd-timesyncd` to stop it launching at boot, and 
 * `sudo systemctl stop systemd-timesyncd` to stop it NOW.
 
-### Camera Transfer
+### Camera Transfer - Script
 
 87. Now create a service for the backup script. This runs once when the Pi boots, copying any new images from the camera to the Pi. Assuming the file 'cameraTransfer.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
 `sudo mv ~/cameraTransfer.service /etc/systemd/system/cameraTransfer.service`
@@ -318,18 +318,63 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 89. `sudo chmod 644 /etc/systemd/system/cameraTransfer.service`
 90. `sudo systemctl enable cameraTransfer.service`
 
+### Camera Transfer - Cron Job
+
+If your setup will be powered by a mains supply you may choose to leave the Pi running permanently. If that's the case, the above camera transfer script will never run, as it only executes when the Pi boots. To resolve this, we create a 'cron' job that runs every hour (or at a frequency you prefer) to trigger a run of the script. You can skip these steps if you're building for an off-grid or low-power setup. Jump to Step 99.
+
+91. `crontab -e` will edit this user's 'crontab' file. You should receive this prompt:
+```txt
+no crontab for pi - using an empty one
+
+Select an editor.  To change later, run 'select-editor'.
+  1. /bin/ed
+  2. /bin/nano        <---- easiest
+  3. /usr/bin/vim.tiny
+  
+Choose 1-3 [2]:
+```
+92. Select your preferred editor (1, 2 or 3) and press return. (I went with nano.)
+93. Add this line to the bottom of the file:
+`0 * * * * /usr/bin/python /home/pi/www/cameraTransfer.py`
+
+The first 5 fields represent minute, hour, day of month, month & day of week, so as shown this task will execute every day at the top of every hour.
+
+94. Save and exit the editor.
+95. Logging the cron job will be beneficial, so enable that with `sudo nano /etc/rsyslog.conf`
+96. Scroll down the file until you reach this line:
+`#cron.*                          /var/log/cron.log`
+97. Delete the leading '#' to un-comment the line, then save and exit the editor.
+98. You can confirm the cron service is running with `sudo service cron status`. It should output something like this:
+```txt
+● cron.service - Regular background program processing daemon
+   Loaded: loaded (/lib/systemd/system/cron.service; enabled; vendor preset: enabled)
+   Active: active (running) since Thu 2018-12-27 12:25:30 AEDT; 3 months 27 days ago
+     Docs: man:cron(8)
+ Main PID: 266 (cron)
+   CGroup: /system.slice/cron.service
+           └─266 /usr/sbin/cron -f
+
+Apr 25 08:17:01 raspberrypi CRON[10604]: pam_unix(cron:session): session closed for user root
+Apr 25 09:00:01 raspberrypi CRON[10636]: pam_unix(cron:session): session opened for user pi by (uid=0)
+Apr 25 09:00:01 raspberrypi CRON[10640]: (pi) CMD (/usr/bin/python /home/pi/www/cameraTransfer.py)
+Apr 25 09:00:01 raspberrypi CRON[10636]: pam_unix(cron:session): session closed for user pi
+Apr 25 09:17:01 raspberrypi CRON[10648]: pam_unix(cron:session): session opened for user root by (uid=0)
+Apr 25 09:17:01 raspberrypi CRON[10652]: (root) CMD (   cd / && run-parts --report /etc/cron.hourly)
+```
+> This example was captured some time AFTER the cron job was created, and so it's showing that the task has previously run. You are unlikely to see the bottom 6 lines looking like this straight away. If you're concerned or curious, repeat this step after the Pi has ticked over an hour.
+
 ## Continue with the Pi/Arduino Interfacing
 
 Now the web-server is up and running there are a few settings to be made in the Pi to establish the interfacing between it and the Arduino.
 
-91. Fine-tune some of the config settings with `sudo nano /boot/config.txt`
-92. Add the following text to the bottom of the file. (It might already be there, but possibly commented-out):
+99. Fine-tune some of the config settings with `sudo nano /boot/config.txt`
+100. Add the following text to the bottom of the file. (It might already be there, but possibly commented-out):
 ```txt
 dtparam=i2c1=on
 #This slows the bus, otherwise it's too fast for the poor 8MHz Ardy. (Feel free to change to "100000" or delete the comma and the baudrate command if you don't have this restriction)
 dtparam=i2c_arm=on,i2c_arm_baudrate=40000
 ```
-93. You can paste the following lines in verbatim:
+101. You can paste the following lines in verbatim:
 ```txt
 #The intervalometerator has no need for bluetooth:
 dtoverlay=pi3-disable-bt
@@ -345,8 +390,8 @@ dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 dtoverlay=gpio-poweroff,gpiopin=27,active_low
 ```
 
-94. Having saved this file, `sudo reboot now`.
-95. If you now repeat the I2C test from earlier (`sudo i2cdetect -y 1`) - and assuming the Arduino's up and running, connected - the bus should report a response from device 4:
+102. Having saved this file, `sudo reboot now`.
+103. If you now repeat the I2C test from earlier (`sudo i2cdetect -y 1`) - and assuming the Arduino's up and running, connected - the bus should report a response from device 4:
 
 ```txt
 0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
@@ -360,7 +405,7 @@ dtoverlay=gpio-poweroff,gpiopin=27,active_low
 70: -- -- -- -- -- -- -- --
 ```
 
-96. You're in business! 
+104. You're in business! 
 
 ## Next steps are:
 - Add an SSL certificate:
