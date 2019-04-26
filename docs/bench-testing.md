@@ -10,10 +10,10 @@ This page assumes:
 * (optional) You have an HDMI monitor plugged into the Pi
 * PCB links/jumpers are:
     * J1 - the lower two pins are linked
-    * J2 - the top two and lower two pins are linked
+    * J2 - the top two pins are linked, and the lower two pins are linked
     * MC - these pins are linked
     * Reed - there is no jumper on the Reed terminals, or any connected switch is open-circuit
-    * J3 & J4 - each has diagonal link placement, e.g. on one the upper pins are connected, and on the other the lower two pins are connected.
+    * J3 & J4 - each has diagonal link placement, e.g. on one the upper two pins are connected, and on the other the lower two pins are connected.
 
 ## Power-on
 
@@ -22,13 +22,25 @@ This page assumes:
     * The green "Awake" LED on the top edge of the board should flash either four or eight times:
         * Four times is a 'healthy' power-on of the Arduino, confirming the time was successfully read from the RTC. Normal operation will resume. If you powered the board at the end of [PCB Assembly](docs\pcb-assembly.md) and the Arduino was programmed, it is expected for the LED to flash four times now.
         * Eight times is an 'unhealthy' power-on of the Arduino. It indicates there was a failure reading from the RTC, most likely to be the result of a flat battery, or the very first time the board is powered. An emergency program kicks in at this stage, as the Arduino has no idea if it's day or night. It will shoot a photo every 15 minutes until the clock is set/reset.
-    * The green LED will go out for two seconds, then flash three times, before remaining lit, but at a lesser intensity. On power-up the Arduino wakes the Pi, and the "dim" LED is in fact it toggling with every pass through the main program loop.
+    * The green LED will go out for two seconds, then flash three times, before remaining lit, but at a lesser intensity. (On power-up the Arduino wakes the Pi, and the "dim" LED is in fact it toggling with every pass through the main program loop.)
 
-2. If the LED didn't flash at all, check the 3.3V supply is OK and make sure the Arduino is seated correctly. Failure here probably warrants reconnecting the programming header and interrogating the Arduino.
+2. If the LED didn't flash at all:
+    1. Check the 3.3V supply is OK
+    2. Make sure the Arduino is seated correctly, with no pins bent underneath, etc
+    3. Check the LED is oriented the right way (refer the pictures and component overlay diagram)
+    4. Check the right-hand resistor under J1 is 150r
+    5. If you socketed the Arduino:
+         1. remove power
+         2. remove the Arduino
+         3. reapply power
+         4. using a test lead or jumper wire, apply 3.3V to the **bottom** of the 150r resistor immediately to the left of the Arduino. (This is the RH one underneath J1.) If the LED _still_ doesn't light, this confirms you have a hardware problem on the board. Check the LED's pointing the right way, and that you didn't put a wrong value resistor in there. 
+         5. If the LED _does_ light, it's pointing to an issue back into the Arduino. Remove power, replace the Arduino, reconnect the programming header and check the Arduino's happy, the code verifies and is loaded OK.
 
-3. Regardless of the flash count, the board will trigger a photo on power-up. If that didn't happen, check the camera is plugged in OK and powered on. You should be able to wake the camera by shorting pins 4 & 5 of the right-hand opto with a small screwdriver, and take a photo by doing same to the left-hand opto.
+3. If you've reached this point, the LED must have flashed. Contratulate yourself!
+
+4. Regardless of the flash count, the board will trigger a photo on power-up. If that didn't happen, check the camera is plugged in OK and powered on. You should be able to wake the camera by shorting pins 4 & 5 of the right-hand opto with a small screwdriver, and take a photo by doing same to the left-hand opto.
     
-4. When the Maintenance Connector pins are linked the LED will be steadily lit (or as good as) when-ever the Arduino is awake.
+5. When the Maintenance Connector pins are linked the LED will be steadily lit (or as good as) when-ever the Arduino is awake.
 
 > In normal use, DON'T leave the MC link present, as the LED may leak sufficient light into the case to be captured in photos.
 
