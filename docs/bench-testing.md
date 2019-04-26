@@ -28,12 +28,12 @@ This page assumes:
     1. Check the 3.3V supply is OK
     2. Make sure the Arduino is seated correctly, with no pins bent underneath, etc
     3. Check the LED is oriented the right way (refer the pictures and component overlay diagram)
-    4. Check the right-hand resistor under J1 is 150r
+    4. Check the right-hand resistor under J1 is 150 ohms
     5. If you socketed the Arduino:
          1. remove power
          2. remove the Arduino
          3. reapply power
-         4. using a test lead or jumper wire, apply 3.3V to the **bottom** of the 150r resistor immediately to the left of the Arduino. (This is the RH one underneath J1.) If the LED _still_ doesn't light, this confirms you have a hardware problem on the board. Check the LED's pointing the right way, and that you didn't put a wrong value resistor in there. 
+         4. using a test lead or jumper wire, apply 3.3V to the **bottom** of the 150 ohm resistor immediately to the left of the Arduino. (This is the RH one underneath J1.) If the LED _still_ doesn't light, this confirms you have a hardware problem on the board. Check the LED's pointing the right way, and that you didn't put a wrong value resistor in there. (If you remove the test lead, it's safe to put your multimeter across the resistor at this point and read its resistance).
          5. If the LED _does_ light, it's pointing to an issue back into the Arduino. Remove power, replace the Arduino, reconnect the programming header and check the Arduino's happy, the code verifies and is loaded OK.
 
 3. If you've reached this point, the LED must have flashed. Contratulate yourself!
@@ -46,13 +46,15 @@ This page assumes:
 
 > The MC link and LED are diagnostic aids - you're welcome to customise either/both.
 
-5. To conserve power the Arduino is normally asleep. It is woken by hardware interrupts from one of two sources: the RTC triggers an alarm, or on the falling-edge transition of the Reed pin. (A reed trigger is simulated in code on power-up.)
+5. To conserve power the Arduino is normally asleep. It is woken by hardware interrupts from one of two sources: the RTC (signalling an alarm has fired), or on the falling-edge transition of the Reed pin - a human wakeup call. (A reed trigger is simulated in code on power-up.)
 
 6. By this stage the Pi should have almost completed booting. At around the time it reaches the login prompt on the monitor it should start responding to pings.
 
-7. If the Pi hasn't shown any sign of life on the screen, check the 5V rail. <MORE HERE>
+7. If the Pi hasn't shown any sign of life on the screen, check the 5V test point, which should be at ~5V.
+    * If it's not, check the bottom "Enable" pin on the 5V (left-hand) regulator is at 0V, and if that's reading anything higher, make sure the J1 link is on the bottom pins. Moving J1 to the TOP two pins should force the regulator to start and the Pi to boot. This scenario would point to a problem with the Arduino's IO pins and/or programming.
+    * If the 5V rail is good and there's no sign of life on the HDMI monitor, check the Pi's wiring, or your HDMI monitor/connection.
 
-8. Responds to pings, might give 502 bad gateway - copying images.
+8. With the Pi now responding to pings, try and browse to it from your PC. Don't worry if it fails with an error page reporting "502 Bad Gateway". This is expected - and unavoidable - if the Pi is busy, which it will typically be immediately on boot, as it's busy trying to copy all of the images from the camera to its SD card. F5 to refresh your browser, or if there are lots of images on the camera, go make a coffee.
 
 TEXT HERE
 
