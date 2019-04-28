@@ -1,7 +1,7 @@
 # Setup the Pi as an Access Point
 
 ## Starting from scratch?
-Jump to [setup the Pi](/docs/step1-setup-the-Pi.md)
+Jump to [setup the Pi](/docs/step1-setup-the-Pi.md).
 
 ## Setup the Pi as an Access Point
 You should only perform the steps here once you've completed the config steps and tested the Pi.
