@@ -1,7 +1,7 @@
 # Setup the Pi for a public or private PKI certificate
 
 ## Starting from scratch?
-Jump to [setup the Pi.md](/docs/setup-the-Pi.md)
+Jump to [setup the Pi.md](/docs/step1-setup-the-Pi.md)
 
 
 ## Security
@@ -121,7 +121,7 @@ server {
 
 
 ## Next steps:
-- [Configure the Pi as a DHCP server & WiFi Access Point (if required)](/docs/setup-the-Pi-as-an-access-point.md)
+- [Configure the Pi as a DHCP server & WiFi Access Point (if required)](/docs/step3-setup-the-Pi-as-an-access-point.md)
 - Start taking photos!
 
 <br>
