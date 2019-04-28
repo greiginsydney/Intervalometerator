@@ -1,7 +1,7 @@
 # Setup the Pi for a public or private PKI certificate
 
 ## Starting from scratch?
-Jump to [setup the Pi.md](/docs/step1-setup-the-Pi.md)
+Jump to [setup the Pi](/docs/step1-setup-the-Pi.md).
 
 
 ## Security
