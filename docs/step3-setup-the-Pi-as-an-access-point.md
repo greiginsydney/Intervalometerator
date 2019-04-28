@@ -1,7 +1,7 @@
 # Setup the Pi as an Access Point
 
 ## Starting from scratch?
-Jump to [setup the Pi.md](/docs/setup-the-Pi.md)
+Jump to [setup the Pi](/docs/step1-setup-the-Pi.md)
 
 ## Setup the Pi as an Access Point
 You should only perform the steps here once you've completed the config steps and tested the Pi.
@@ -66,7 +66,8 @@ After this reboot you'll need to connect to it on its new IP address, and you'll
 
 ## Next steps:
 - Configure the Arduino
-- Complete the physical assembly
+- Complete the physical assembly:
+   - [PCB assembly](/docs/step4-pcb-assembly.md)  
 - Start taking photos!
 
 
