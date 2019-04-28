@@ -54,6 +54,8 @@ This page assumes:
     * If it's not, check the bottom "Enable" pin on the 5V (left-hand) regulator is at 0V, and if that's reading anything higher, make sure the J1 jumper is on the bottom two pins. Removing the J1 jumper should force the regulator to start and the Pi to boot. If this is the case, it points to a problem with the Arduino's IO pins and/or programming.
     * If the 5V rail is good and there's no sign of life on the HDMI monitor, check the wire links from the Pi to the PCB are going through the correct holes, or your HDMI monitor/connection.
 
+## Browse to the Pi
+
 8. With the Pi now responding to pings, try and browse to it from your PC. Don't worry if it fails with an error page reporting "502 Bad Gateway". This is expected - and unavoidable - if the Pi is busy, which it will typically be immediately on boot, as it's busy trying to copy all of the images from the camera to its SD card. F5 to refresh your browser, or if there are lots of images on the camera, go make a coffee. (While images are being transferred, the red LED on the back of the Canon 6-series cameras flickers. Other cameras may provide similar on-body feedback.)
 
 9. Assuming the website has loaded, you'll need to login before you can do or see anything. The default credentials are admin/password.
@@ -90,8 +92,18 @@ This page assumes:
    * remove the MC jumper.
    * wait for the Pi to go to sleep, then remove power from the PCB. 
    * If you've set the Pi to be "Always On", or want to send it off to sleep without waiting, you can shut it down by either:
-      * ssh-ing to it and initiating a shutdown command (`sudo shutdown now`), or 
+      * ssh-ing to it and initiating the shutdown command `sudo shutdown now`, or 
       * remove the jumper that's on the top two pins of J2.
    * Once the Pi has shutdown, remove power from the board and reinstate the top J2 jumper.
 
 Happy time-lapsing!!
+
+<br>
+<hr >
+
+
+## Further Reading
+
+- [Advanced config options](https://github.com/greiginsydney/Intervalometerator/wiki/Advanced-Config)
+- [Troubleshooting](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting)
+
