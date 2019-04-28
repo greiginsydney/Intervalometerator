@@ -1,7 +1,7 @@
 # Setup the Pi for Let's Encrypt SSL Certificates
 
 ## Starting from scratch?
-Jump to [setup the Pi.md](/docs/setup-the-Pi.md)
+Jump to [setup the Pi.md](/docs/step1-setup-the-Pi.md)
 
 
 ## Security
@@ -78,7 +78,7 @@ You can now browse to the website securely!
 
 
 ## Next steps:
-- [Configure the Pi as a DHCP server & WiFi Access Point (if required)](/docs/setup-the-Pi-as-an-access-point.md)
+- [Configure the Pi as a DHCP server & WiFi Access Point (if required)](/docs/step3-setup-the-Pi-as-an-access-point.md)
 > Be careful using the Pi as a WiFi AP and a Let's Encrypt certificate. The Pi must have internet access in order for the relatively short lifespan certificates to be renewed. Without this your cert will expire in-situ and your browser will show a warning each time you access the site. Consider a public certificate (e.g. from [Digicert.com](https://digicert.com)) or your private internal PKI CA (if you have one).
 - Start taking photos!
 
