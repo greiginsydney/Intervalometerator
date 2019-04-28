@@ -409,9 +409,9 @@ dtoverlay=gpio-poweroff,gpiopin=27,active_low
 
 ## Next steps are:
 - Add an SSL certificate:
-	- [Use Lets Encrypt](/docs/setup-the-Pi-lets-encrypt.md)
-	- [Public or Private PKI](/docs/setup-the-Pi-public-or-private-pki.md)
-- [Setup the Pi as a Wifi Access Point](/docs/setup-the-Pi-as-an-access-point.md)
+	- [Use Lets Encrypt](/docs/step2-setup-the-Pi-lets-encrypt.md)
+	- [Public or Private PKI](/docs/step2-setup-the-Pi-public-or-private-pki.md)
+- [Setup the Pi as a Wifi Access Point](/docs/step3-setup-the-Pi-as-an-access-point.md)
 
 <br>
 <hr >
