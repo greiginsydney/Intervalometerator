@@ -1,7 +1,7 @@
 # Setup the Pi for Let's Encrypt SSL Certificates
 
 ## Starting from scratch?
-Jump to [setup the Pi](/docs/step1-setup-the-Pi.md)
+Jump to [setup the Pi](/docs/step1-setup-the-Pi.md).
 
 
 ## Security
