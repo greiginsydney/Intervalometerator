@@ -3,7 +3,7 @@
 Having fully assembled the board, it's time to test it out and make sure it's working as expected.
 
 This page assumes:
-* All tests on the [PCB Assembly](docs\pcb-assembly.md) page passed
+* All tests on the [PCB Assembly](docs\step4-pcb-assembly.md) page passed
 * Both micro-controllers are programmed
 * Your PC and the Pi are on the same network, and that you know the Pi's IP address
 * The camera is plugged in (both the remote cable _and_ USB). Try to use a fresh memory card with (ideally) just one photo on it. Any more and the process of transferring the images to the Pi will bog down your testing.
