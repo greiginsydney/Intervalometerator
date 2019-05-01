@@ -1,6 +1,6 @@
 # Shopping List
 
-All components were sourced in Sydney, Australia through 2018. We won't anticipate you'll have any problems sourcing these items.
+All components were sourced in Sydney, Australia through 2018 & 2019. We won't anticipate you'll have any problems sourcing these items.
 
 ## Photographic
 #### A camera (Canon 60D)
@@ -8,7 +8,7 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 - <a href="https://google.com" target="_blank">eBay</a>
     
-$AUD400
+    $AUD400
 
 #### 18-55mm EF-S Lens
 
@@ -16,7 +16,7 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 - <a href="https://google.com" target="_blank">eBay</a>
     
-$AUD75
+    $AUD75
 
 #### DC  Power Coupler to suit
 
@@ -24,13 +24,13 @@ Aka a "fake battery". We cut off the USB plugs and soldered the cable directly t
 
 - <a href="https://www.ebay.com/itm/Power-bank-usb-for-Canon-EOS-5D-7D-Mark-II-6D-80D-camera-DR-E6-dc-coupler-LP-E6/123101336453?hash=item1ca9695385:g:dWAAAOSwsQFa4ZVV:rk:1:pf:0" target="_blank">eBay</a>
     
-$USD25, ~$AUD35
+    $USD25, ~$AUD35
 
 #### Shutter Release cable to suit
 
 - <a href="https://google.com" target="_blank">PhotoShopStudio (AU)</a>
     
-$10
+    $10
 
 ### Manfrotto Rapid Connect Adapter with 357PLV Camera Plate
 
@@ -38,8 +38,8 @@ $10
 - [Amazon]()
 - <a href="https://www.bhphotovideo.com/c/product/554151-REG/Manfrotto_357_357_Pro_Quick_Release.html" target="_blank">B&H</a>
 
-~$AUD83
-~$USD60
+    ~$AUD83
+    ~$USD60
 
 #### 77-82mm filter step-up ring
 
@@ -47,7 +47,7 @@ $10
 - <a href="https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357" target="_blank">John Barry Group (AU)</a>
 - [Amazon]()
 
-$10	
+    $10	
 
 #### 82mm UV (or ND) filter
 
@@ -55,7 +55,7 @@ $10
 - <a href="https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357" target="_blank">John Barry Group (AU)</a>
 [Amazon]()
     
-$50
+    $50
 
 #### Right-Angle Mini-B USB cable
 
@@ -63,7 +63,7 @@ This one's optional, and depends on your choice of housing and camera. We wanted
 
 - <a href="https://www.ebay.com.au/itm/112701227087" target="_blank">eBay</a>
 
-$AUD2
+    $AUD2
 
 
 ### SUBTOTAL: $582
@@ -77,7 +77,7 @@ Careful with this one. The battery we went with only *just* fits inside the Peli
 
 - <a href="https://www.jaycar.com.au/12v-2-2ah-sla-battery/p/SB2482" target="_blank">Jaycar Electronics (AU)</a>
     
-$AUD24
+    $AUD24
 
 #### 12V Solar Charger
 
@@ -85,7 +85,7 @@ $AUD24
 
 - <a href="https://www.jaycar.com.au/12v-6a-battery-charging-regulator-for-solar-panels/p/AA0348" target="_blank">Jaycar Electronics (AU)</a>
 
-$AUD30
+    $AUD30
 
 #### 20 watt solar panel
 
@@ -93,7 +93,7 @@ $AUD30
 
 - <a href="https://www.ebay.com.au/itm/112750149497" target="_blank">eBay</a>
     
-$AUD49
+    $AUD49
 
 
 #### Cable entry gland
@@ -104,13 +104,13 @@ You should be able to source these from your nearest electrical wholesaler, hobb
 
 - <a href="https://www.cabac.com.au/product-specs/13450510/GN12S" target="_blank">Cabac (AU)</a>
 
-$AUD2 (?)
+    $AUD2 (?)
 
 #### Miscellaneous
 
 Your choice of solar panel might require some bracing or a bracket in order for it to mount to a pole. For ours we used two lengths of some 2" aluminium angle that we had to hand, resulting in a U-shaped support.
 
-$AUD ??
+    $AUD ??
 
 ### SUBTOTAL: $103
 
@@ -123,7 +123,7 @@ I went with the 3.3V 8MHz model for its minimal current consumption and pin-comp
 - <a href="https://www.sparkfun.com/products/11114" target="_blank">3.3V - SparkFun</a>
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/1993-Arduino-Pro-Mini-328-3-3V-8MHzhttps://www.robotgear.com.au/Product.aspx/Details/1993-Arduino-Pro-Mini-328-3-3V-8MHz" target="_blank">3.3V - Robot Gear (Australia)</a>
 
-$AUD16
+    $AUD16
 
 #### FTDI programming cable
 
@@ -131,7 +131,7 @@ Don't be tempted to go with a generic 5V programming cable - stick with a 3.3V v
 
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/1615-SparkFun-FTDI-Basic-Breakout-3-3V" target="_blank">Robot Gear (AU)</a>
 
-$AUD25
+    $AUD25
 
 #### Raspberry Pi Zero W
 
@@ -139,7 +139,7 @@ I went for the Pi Zero as it met my needs for a low-current, low-cost unit in a 
 
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/5288-Raspberry-Pi-Zero-Whttps://www.robotgear.com.au/Product.aspx/Details/5288-Raspberry-Pi-Zero-W" target="_blank">Robot Gear (Australia)</a>
 
-$AUD25
+    $AUD25
 
 #### USB "OTG" cable
 
@@ -148,7 +148,7 @@ You will recognise this as a micro-USB plug to a USB-A socket, but it's official
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/5287-USB-OTG-Cable-Female-A-to-Micro-B-5in" target="_blank">Robot Gear (AU)</a>
 - <a href="https://core-electronics.com.au/micro-usb-otg-host-cable-for-raspberry-pi-zero.html" target="_blank">Core Electronics (AU)</a>
 
-$AUD5
+    $AUD5
 
 ### Mini HDMI cable/adapter
 
@@ -157,7 +157,7 @@ As with the OTG cable, your Pi supplier will surely offer these with the Pi, as 
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/5285-Mini-HDMI-Cable-3ft" target="_blank">Robot Gear (AU) - cable</a>
 - <a href="https://core-electronics.com.au/mini-hdmi-to-standard-hdmi-jack-adapter-for-raspberry-pi-zero.html" target="_blank">Core Electronics (AU) - adapter</a>
 
-$AUD8
+    $AUD8
 
 
 #### SanDisk 128GB Ultra Micro SDXC Memory Card
@@ -166,7 +166,7 @@ Choosing a larger size allows you to maximise the off-camera storage in the Pi. 
 
 - <a href="https://wwhttps://www.officeworks.com.au/shop/officeworks/p/sandisk-128gb-ultra-micro-sdxc-memory-card-sdsq128gbw.officeworks.com.au/shop/officeworks/p/sandisk-128gb-ultra-micro-sdxc-memory-card-sdsq128gb" target="_blank">Officeworks (AU)</a>
 
-$AUD50
+    $AUD50
 
 
 #### Real-Time Clock
@@ -175,7 +175,7 @@ DeadOn RTC Breakout - DS3234
 - <a href="https://www.sparkfun.com/products/10160" target="_blank">SparkFun BOB-10160</a>
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/1693-SparkFun-DeadOn-RTC-Breakout-DS3234https://www.robotgear.com.au/Product.aspx/Details/1693-SparkFun-DeadOn-RTC-Breakout-DS3234" target="_blank">Robot Gear (Australia)</a>
 
-$AUD24
+    $AUD24
 
 #### Coin-cell Backup Battery
 
@@ -183,7 +183,7 @@ The DeadOn RTC requires a 3V lithium backup battery. The common CR1225 or the sl
 
 - <a href="https://www.jaycar.com.au/cr1220-3v-lithium-battery/p/SB2527" target="_blank">CR1220 - Jaycar Electronics (AU)</a>
 
-$AUD3
+    $AUD3
 
 #### 3.3V regulator (Arduino)
 
@@ -193,7 +193,7 @@ Pololu 3.3V, 500mA Step-Down Voltage Regulator D24V5F3
 - <a href="https://core-electronics.com.au/pololu-3-3v-500ma-step-down-voltage-regulator-d24v5f3.html" target="_blank">Core Electronics (AU)</a>
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/1017-3-3V-500mA-Pololu-Step-Down-Voltage-Regulator-D24V5F3" target="_blank">Robot Gear (AU)</a>
 
-$AUD7
+    $AUD7
 
 
 #### 5.0V regulator (Raspberry Pi)
@@ -204,7 +204,7 @@ Pololu 5V, 500mA Step-Down Voltage Regulator D24V5F5
 - <a href="https://core-electronics.com.au/pololu-5v-500ma-step-down-voltage-regulator-d24v5f5.html" target="_blank">Core Electronics (AU)</a>
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/1018-5V-500mA-Pololu-Step-Down-Voltage-Regulator-D24V5F5" target="_blank">Robot Gear (AU)</a>
 
-$AUD7
+    $AUD7
 
 #### 7.5V regulator (Camera)
 
@@ -213,7 +213,7 @@ Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 - <a href="https://www.pololu.com/product/2860" target="_blank">Pololu 2860</a>
 - <a href="https://www.robotgear.com.au/Product.aspx/Details/1007-7-5V-2-4A-Pololu-Step-Down-Voltage-Regulator-D24V22F7" target="_blank">Robot Gear (AU)</a>
 
-$AUD13
+    $AUD13
 
 #### Opto-Isolators
 
@@ -221,14 +221,14 @@ I went with bog-standard Motorola 4N25 6-pin DIP opto-isolators. These (or an eq
 
 - <a href="https://au.element14.com/vishay/4n25/optocoupler-transistor-5300vrms/dp/1612453?st=4n25" target="_blank">Element 14</a>
 
-$AUD1 (each - you need two)
+    $AUD1 (each - you need two)
 
 ### Concealed Timber Door Frame Reed Switch
 So as to save opening the case when its in situ, we added a standard door reed switch you might find used in a burglar alarm. Wave a magnet on the outside of the box, and in the configuration presented here it will wake the Raspberry Pi for the previously-set "WakeTime" duration. (Again, this presumes a low-power setup with the Pi normally turned off).
 
 - <a href="https://www.jaycar.com.au/concealed-timber-door-frame-reed-switch/p/LA5075" target="_blank">Jaycar (AU)</a>
 
-$AUD5
+    $AUD5
 
 
 #### 2.5mm stereo socket
@@ -239,7 +239,7 @@ This is to connect the intervalm8r to the camera's shutter cable. I went with a 
 
 As the project is presented, this LED lights when the Arduino is awake, but only if the adjacent jumper is connected (taking Arduino input A0 to ground). I used it as a generic headless debugging aid. You should be able to find this just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
 
-$AUD1
+    $AUD1
 
 #### Veroboard / stripboard
 
@@ -247,7 +247,7 @@ As shown here, the intvlm8r is built onto a piece of Veroboard, aka stripboard.
 
 - <a href="https://www.jaycar.com.au/pc-boards-vero-type-strip-95mm-x-75mm/p/HP9540" target="_blank">Jaycar (AU)</a>
 
-$AUD4.50
+    $AUD4.50
 
 #### Resistors
 
@@ -257,7 +257,7 @@ Resistors are used on the board for two purposes. They're either current-limitin
 * Arduino pin A8: 1 x 4.7k 1/4W
 * Arduino pin A2: 1 x 4.7k 1/4W
 
-$AUD1
+    $AUD1
 
 
 #### Capacitor
@@ -266,13 +266,13 @@ I really love the DeadOn RTC, however SparkFun appear to have omitted the chip m
 
 - <a href="https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155?st=100pf%20ceramic" target="_blank">Element 14</a>
 
-$AUD0.30
+    $AUD0.30
 
 #### Miscellaneous
 
 Header pins, jumpers, bolts, spacers, backmount, interconnecting wires.
 
-$AUD10 (Approx)
+    $AUD10 (Approx)
 
 ### SUBTOTAL: $201.80
 
@@ -280,11 +280,11 @@ $AUD10 (Approx)
 
 #### Pelican 1300 case
 
-$95
+    $95
 
 #### CCTV Camera Mount
 
-$AUD15
+    $AUD15
 
 #### Ram Mounts
 
