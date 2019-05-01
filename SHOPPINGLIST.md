@@ -32,7 +32,7 @@ Aka a "fake battery". We cut off the USB plugs and soldered the cable directly t
     
     $10
 
-### Manfrotto Rapid Connect Adapter with 357PLV Camera Plate
+#### Manfrotto Rapid Connect Adapter with 357PLV Camera Plate
 
 - <a href="https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357" target="_blank">John Barry Group (AU)</a>
 - [Amazon]()
@@ -53,7 +53,7 @@ Aka a "fake battery". We cut off the USB plugs and soldered the cable directly t
 
 - <a href="https://google.com" target="_blank">PhotoShopStudio (AU)</a>
 - <a href="https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357" target="_blank">John Barry Group (AU)</a>
-[Amazon]()
+- [Amazon]()
     
     $50
 
@@ -71,9 +71,7 @@ This one's optional, and depends on your choice of housing and camera. We wanted
 ## Power
 
 #### 12V Sealed Lead-Acid Battery
-Careful with this one. The battery we went with only *just* fits inside the Pelican case.
-
-12V 2.2Ah SLA Battery
+Careful with this one. The 12V 2.2Ah SLA battery we went with only *just* fits inside the Pelican case.
 
 - <a href="https://www.jaycar.com.au/12v-2-2ah-sla-battery/p/SB2482" target="_blank">Jaycar Electronics (AU)</a>
     
