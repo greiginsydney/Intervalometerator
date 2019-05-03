@@ -48,13 +48,12 @@ Aka a "fake battery". We cut off the USB plugs and soldered the cable directly t
 
     $10	
 
-#### 82mm UV (or ND) filter
+#### 82mm UV or ND filter
 
-- [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/neutral-density/)
-- [John Barry Group (AU)](https://secure.johnbarry.com.au/)
+- [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/search.php?search_query=Hoya+82mm+filter)
 - [Amazon]()
     
-    $50  ($100 for a 6 stop ND)
+    $50 - $100
 
 #### Right-Angle Mini-B USB cable
 
