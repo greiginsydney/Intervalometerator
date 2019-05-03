@@ -6,7 +6,7 @@ All components were sourced in Sydney, Australia through 2018 & 2019. We won't a
 #### A camera (Canon 60D)
 See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions#why-i-chose-the-60d) page on the project's Wiki for the logic behind specifying this.
 
-- [eBay](https://google.com)
+- [eBay](https://www.ebay.com/bhp/canon-60d)
     
     $AUD400
 
@@ -14,7 +14,7 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions#why-i-chose-the-60d) page on the project's Wiki for the logic behind specifying this.
 
-- [eBay](https://google.com)
+- [eBay](https://www.ebay.com/sch/i.html?_nkw=18-55mm+EF-S)
     
     $AUD75
 
@@ -28,7 +28,7 @@ Aka a "fake battery". We cut off the USB plugs and soldered the cable directly t
 
 #### Shutter Release cable to suit
 
-- [PhotoShopStudio (AU)](https://google.com)
+- [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/remote-control-trigger/cable-release/jjc-shutter-release-cable-a-canon-rs-80n3/)
     
     $10
 
@@ -43,19 +43,18 @@ Aka a "fake battery". We cut off the USB plugs and soldered the cable directly t
 
 #### 77-82mm filter step-up ring
 
-- [PhotoShopStudio (AU)](https://google.com)
-- [John Barry Group (AU)](https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357)
+- [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/filters-step-rings/step-ring/fotolux-step-up-ring-77-82mm/)
 - [Amazon]()
 
     $10	
 
 #### 82mm UV (or ND) filter
 
-- [PhotoShopStudio (AU)](https://google.com)
-- [John Barry Group (AU)](https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357)
+- [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/neutral-density/)
+- [John Barry Group (AU)](https://secure.johnbarry.com.au/)
 - [Amazon]()
     
-    $50
+    $50  ($100 for a 6 stop ND)
 
 #### Right-Angle Mini-B USB cable
 
