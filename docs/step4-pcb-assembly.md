@@ -44,7 +44,11 @@ The Arduino requires some attention before we get too involved with the build. W
 
 ## Adding the Components
 
-8. The first thing to add to the board is the PCB-mount 2.5mm socket that connects to the camera's remote control. The board has been laid out for 4 common styles, including those on offer from Farnell/Element14 and Amazon. Gently push the socket through the holes. Its body should be square with the board and the face should align with the front of the board, or protrude slightly. If it's not square you might have it in the wrong holes, or it's not one we've catered for.
+8. The first component to add to the board is the PCB-mount 2.5mm socket that connects to the camera's remote control. The board has been laid out for 4 common styles, including those on offer from Newark/Farnell/Element14 and Amazon. Gently push the socket through the holes. Its body should be square with the board and the face should align with the front of the board, or protrude slightly. If it's not square you might have it in the wrong holes, or it's not one we've catered for.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/57212022-bab47400-7025-11e9-97d0-0e348453577f.png" width="50%">
+</p>
 
 9. Before soldering it into place, confirm that the three pins route to the 3 adjacent test points labelled "SLV", "TP1" and "TP2". Note that there are tracks on both sides of the board, so it might not be immediately apparent. If all looks OK, solder the socket to the board.
 
