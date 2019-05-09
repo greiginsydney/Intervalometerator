@@ -66,6 +66,14 @@ button{
 	border-radius: 5px;
 }
 
+.resetbutton{
+	width: 4em;
+	height: 1.5em;
+	font-size: 1em;
+	border-radius: 3px;
+	margin: 0px 4px 0px 4px;
+}
+
 .hwbutton{
 	width: 80%;
 	display: block;
@@ -269,6 +277,21 @@ thumb {
 		width: 50%;
 	}
 	
+	.alignright button {
+		float: right;
+		width: calc(40% * 100vw);
+	}
+	
+	.alignleft button {
+		float: left;
+		width: calc(40% * 100vw);
+	}
+	
+	.alignleft .resetbutton {
+		float: right;
+		width: calc(40% * 100vw);
+		padding: 0px;
+	}
 }
 
 @media screen and (max-width: 900px) {
