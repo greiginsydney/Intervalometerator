@@ -1,0 +1,96 @@
+{% extends "index.html" %}
+{% block content %}
+
+<form method="POST">
+	<table>
+		<tr>
+			<th>Thermal</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Units:</div>
+				<div class="alignright">
+					<input type="radio" name="thermalUnits" value="Celsius" onclick="handleRadioClick();"{% if thermalUnits == "Celsius" %} SELECTED{% endif %}>&deg;C</input>
+					<input type="radio" name="thermalUnits" value="Fahrenheit" onclick="handleRadioClick();"{% if thermalUnits == "Fahrenheit" %} SELECTED{% endif %}>&deg;F</input>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Arduino Temperature:</div>
+				<div class="alignright" id="arduinoTemp"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Arduino Min:
+					<button class="resetbutton" type="submit" id="resetMin">Reset</button>
+				</div>
+				<div class="alignright" id="arduinoMin"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Arduino Max:
+					<button class="resetbutton" type="submit" id="resetMax">Reset</button>
+				</div>
+				<div class="alignright" id="arduinoMax"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi Temperature:</div>
+				<div class="alignright" id="piTemp"></div>
+			</td>
+		</tr>
+	</table>
+
+	<table class="noborder">
+		<tr>
+			<td class="noborder">
+				<div class="alignright">
+					<button type="submit" id="apply">Apply</button>
+				</div>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<script>
+// Run when the form first loads:
+handleRadioClick() // This makes sure the values are recalculated correctly if F is selected
+
+function handleRadioClick()
+{
+	var units = document.getElementsByName("thermalUnits");
+	var val;
+	for(var i = 0; i < units.length; i++){
+		if(units[i].checked){
+			val = units[i].value;
+		}
+	}
+	if (val == 'Celsius')
+	{
+		document.getElementById("arduinoTemp").innerHTML = "{{ arduinoTemp }} {% if arduinoTemp != 'Unknown' %}&deg;C{% endif %}"
+		document.getElementById("arduinoMin").innerHTML = "{{ arduinoMin }} {% if arduinoMin != 'Unknown' %}&deg;C{% endif %}"
+		document.getElementById("arduinoMax").innerHTML = "{{ arduinoMax }} {% if arduinoMax != 'Unknown' %}&deg;C{% endif %}"
+		document.getElementById("piTemp").innerHTML = "{{ piTemp }} {% if piTemp != 'Unknown' %}&deg;C{% endif %}"
+	}
+	else
+	{
+		document.getElementById("arduinoTemp").innerHTML = convertToF("{{ arduinoTemp }}")
+		document.getElementById("arduinoMin").innerHTML = convertToF("{{ arduinoMin }}")
+		document.getElementById("arduinoMax").innerHTML = convertToF("{{ arduinoMax }}")
+		document.getElementById("piTemp").innerHTML = convertToF("{{ piTemp }}")
+	}
+}
+
+function convertToF(DegreesCelsius)
+{
+	if (DegreesCelsius == "Unknown") { return "Unknown"; }
+	return ((parseInt(DegreesCelsius) * 9/5) + 32) + " &deg;F";
+}
+
+</script>
+
+{% endblock %}
