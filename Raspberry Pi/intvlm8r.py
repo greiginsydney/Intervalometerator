@@ -715,8 +715,6 @@ def system():
         'piModel'        : 'Unknown',
         'piLinuxVer'     : 'Unknown',
         'piSpaceFree'    : 'Unknown',
-        'arduinoTemp'    : 'Unknown',
-        'piTemp'         : 'Unknown',
         'wakePiTime'     : '',
         'wakePiDuration' : '',
         'rebootSafeWord' : REBOOT_SAFE_WORD
@@ -755,8 +753,6 @@ def system():
         rawTime = str(readString("1"))
         templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
-        templateData['arduinoTemp'] = str(readString("4"))
-        time.sleep(0.5);
         rawWakePi = str(readString("5"))
         templateData['wakePiTime']     = rawWakePi[0:2]
         templateData['wakePiDuration'] = rawWakePi [2:4]
@@ -768,8 +764,7 @@ def system():
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
-
-    templateData['piTemp'] = getPiTemp()
+  
     return render_template('system.html', **templateData)
 
 
