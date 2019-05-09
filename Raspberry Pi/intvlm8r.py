@@ -703,6 +703,53 @@ def transferPOST():
     return redirect(url_for('transfer'))
 
 
+@app.route("/thermal")
+@login_required
+def thermal():
+    """ This page is where you monitor and manage the thermal settings & alarms."""
+
+    res = make_response("")
+
+    templateData = {
+        'thermalUnits'   : "Celsius",
+        'arduinoTemp'    : 'Unknown',
+        'arduinoMin'     : 'Unknown',
+        'arduinoMax'     : 'Unknown',
+        'piTemp'         : 'Unknown'
+        }
+
+    thermalUnits = request.cookies.get('thermalUnits')
+    if thermalUnits == None: res.set_cookie('thermalUnits', 'Celsius', 7 * 24 * 60 * 60)
+    if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
+
+    try:
+        templateData['arduinoTemp'] = str(readString("4"))
+        time.sleep(0.5);
+        templateData['arduinoMin']  = str(readString("6"))
+        time.sleep(0.5);
+        templateData['arduinoMax']  = str(readString("7"))
+        time.sleep(0.5);
+    except:
+        pass
+    templateData['piTemp'] = getPiTemp()
+
+    res.headers['location'] = url_for('thermal')
+    return res, 302
+
+
+@app.route("/thermal", methods = ['POST'])    # The camera's POST method
+@login_required
+def thermalPOST():
+    """ This page is where we act on the Reset buttons for max/min temp."""
+    
+    if 'resetMin' in request.form:
+        writeString("RN") # Sends the Reset Min command to the Arduino
+    if 'resetMax' in request.form:
+        writeString("RX") # Sends the Reset Max command to the Arduino
+
+    return redirect(url_for('transfer'))
+
+
 @app.route("/system")
 @login_required
 def system():
