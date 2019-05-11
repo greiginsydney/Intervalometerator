@@ -486,19 +486,19 @@ def cameraPOST():
             node.set_value(str(request.form.get('img')))
             # Don't bother sending any of the "read only" settings:
             if (request.form.get('wb') != None):
-                node = config.get_child_by_name('whitebalance') 
+                node = config.get_child_by_name('whitebalance')
                 node.set_value(str(request.form.get('wb')))
             if (request.form.get('iso') != None):
-                node = config.get_child_by_name('iso') 
+                node = config.get_child_by_name('iso')
                 node.set_value(str(request.form.get('iso')))
             if (request.form.get('aperture') != 'implicit auto'):
-                node = config.get_child_by_name('aperture') 
+                node = config.get_child_by_name('aperture')
                 node.set_value(str(request.form.get('aperture')))
             if (request.form.get('shutter') != "auto"):
-                node = config.get_child_by_name('shutterspeed') 
+                node = config.get_child_by_name('shutterspeed')
                 node.set_value(str(request.form.get('shutter')))
             if (request.form.get('exp') != None):
-                node = config.get_child_by_name('exposurecompensation') 
+                node = config.get_child_by_name('exposurecompensation')
                 node.set_value(str(request.form.get('exp')))
             camera.set_config(config, context)
             gp.check_result(gp.gp_camera_exit(camera))
@@ -738,13 +738,20 @@ def thermal():
 @login_required
 def thermalPOST():
     """ This page is where we act on the Reset buttons for max/min temp."""
-    
+    res = make_response("")
+
+    if request.form.get('thermalUnits') == 'Celsius':
+        res.set_cookie('thermalUnits', 'Celsius', 7 * 24 * 60 * 60)
+    else:
+        res.set_cookie('thermalUnits', 'Fahrenheit', 7 * 24 * 60 * 60)
+
     if 'resetMin' in request.form:
         writeString("RN") # Sends the Reset Min command to the Arduino
     if 'resetMax' in request.form:
         writeString("RX") # Sends the Reset Max command to the Arduino
 
-    return redirect(url_for('transfer'))
+    res.headers['location'] = url_for('thermal')
+    return res, 302
 
 
 @app.route("/system")
@@ -811,7 +818,7 @@ def system():
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
-  
+
     return render_template('system.html', **templateData)
 
 
