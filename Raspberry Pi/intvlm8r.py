@@ -44,7 +44,7 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 app = Flask(__name__)
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
@@ -97,7 +97,7 @@ def writeString(value):
 
 
 def readString(value):
-    status = ""
+    status = "Unknown"
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
     rxLength = 32
@@ -262,24 +262,25 @@ def main():
     #Arduino comms. Each is wrapped in a separate try/except to quarantine individual failures
     try:
         rawDate = str(readString("0"))
-        if rawDate != "":
+        if rawDate != "Unknown":
             templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
     except:
         pass
     try:
         rawTime = str(readString("1"))
-        if rawTime != "":
+        if rawTime != "Unknown":
             templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
     except:
         pass
     try:
         arduinoStats = str(readString("2"))
-        lastShot= arduinoStats.split(":")[0]
-        nextShot = arduinoStats.split(":")[1]
-        templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
-        templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+        if arduinoStats != "Unknown":
+            lastShot= arduinoStats.split(":")[0]
+            nextShot = arduinoStats.split(":")[1]
+            templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
+            templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
     except:
         pass
     #except Exception as e:
@@ -485,19 +486,19 @@ def cameraPOST():
             node.set_value(str(request.form.get('img')))
             # Don't bother sending any of the "read only" settings:
             if (request.form.get('wb') != None):
-                node = config.get_child_by_name('whitebalance') 
+                node = config.get_child_by_name('whitebalance')
                 node.set_value(str(request.form.get('wb')))
             if (request.form.get('iso') != None):
-                node = config.get_child_by_name('iso') 
+                node = config.get_child_by_name('iso')
                 node.set_value(str(request.form.get('iso')))
             if (request.form.get('aperture') != 'implicit auto'):
-                node = config.get_child_by_name('aperture') 
+                node = config.get_child_by_name('aperture')
                 node.set_value(str(request.form.get('aperture')))
             if (request.form.get('shutter') != "auto"):
-                node = config.get_child_by_name('shutterspeed') 
+                node = config.get_child_by_name('shutterspeed')
                 node.set_value(str(request.form.get('shutter')))
             if (request.form.get('exp') != None):
-                node = config.get_child_by_name('exposurecompensation') 
+                node = config.get_child_by_name('exposurecompensation')
                 node.set_value(str(request.form.get('exp')))
             camera.set_config(config, context)
             gp.check_result(gp.gp_camera_exit(camera))
@@ -543,7 +544,7 @@ def intervalometer():
     ArdInterval = str(readString("3"))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug('Int query returned: ' + ArdInterval)
-    if len(ArdInterval) == 7:
+    if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
         for bit in range(1,8): # i.e. 1-7 inclusive
             if (ord(ArdInterval[0]) & (0b00000001<<bit)):
                 app.logger.debug('Added ' + arduinoDoW[bit])
@@ -703,6 +704,56 @@ def transferPOST():
     return redirect(url_for('transfer'))
 
 
+@app.route("/thermal")
+@login_required
+def thermal():
+    """ This page is where you monitor and manage the thermal settings & alarms."""
+
+    templateData = {
+        'thermalUnits'   : "Celsius",
+        'arduinoTemp'    : 'Unknown',
+        'arduinoMin'     : 'Unknown',
+        'arduinoMax'     : 'Unknown',
+        'piTemp'         : 'Unknown'
+        }
+
+    thermalUnits = request.cookies.get('thermalUnits')
+    if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
+
+    try:
+        templateData['arduinoTemp'] = str(readString("4"))
+        time.sleep(0.5);
+        templateData['arduinoMin']  = str(readString("6"))
+        time.sleep(0.5);
+        templateData['arduinoMax']  = str(readString("7"))
+        time.sleep(0.5);
+    except:
+        pass
+    templateData['piTemp'] = getPiTemp()
+
+    return render_template('thermal.html', **templateData)
+
+
+@app.route("/thermal", methods = ['POST'])    # The camera's POST method
+@login_required
+def thermalPOST():
+    """ This page is where we act on the Reset buttons for max/min temp."""
+    res = make_response("")
+
+    if request.form.get('thermalUnits') == 'Celsius':
+        res.set_cookie('thermalUnits', 'Celsius', 7 * 24 * 60 * 60)
+    else:
+        res.set_cookie('thermalUnits', 'Fahrenheit', 7 * 24 * 60 * 60)
+
+    if 'resetMin' in request.form:
+        writeString("RN") # Sends the Reset Min command to the Arduino
+    if 'resetMax' in request.form:
+        writeString("RX") # Sends the Reset Max command to the Arduino
+
+    res.headers['location'] = url_for('thermal')
+    return res, 302
+
+
 @app.route("/system")
 @login_required
 def system():
@@ -715,8 +766,6 @@ def system():
         'piModel'        : 'Unknown',
         'piLinuxVer'     : 'Unknown',
         'piSpaceFree'    : 'Unknown',
-        'arduinoTemp'    : 'Unknown',
-        'piTemp'         : 'Unknown',
         'wakePiTime'     : '',
         'wakePiDuration' : '',
         'rebootSafeWord' : REBOOT_SAFE_WORD
@@ -750,16 +799,17 @@ def system():
 
     try:
         rawDate = str(readString("0"))
-        templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
-        time.sleep(0.5);
+        if rawDate != "Unknown":
+            templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
+            time.sleep(0.5);
         rawTime = str(readString("1"))
-        templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
-        time.sleep(0.5);
-        templateData['arduinoTemp'] = str(readString("4"))
-        time.sleep(0.5);
+        if rawTime != "Unknown":
+            templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
+            time.sleep(0.5);
         rawWakePi = str(readString("5"))
-        templateData['wakePiTime']     = rawWakePi[0:2]
-        templateData['wakePiDuration'] = rawWakePi [2:4]
+        if rawWakePi != "Unknown":
+            templateData['wakePiTime']     = rawWakePi[0:2]
+            templateData['wakePiDuration'] = rawWakePi [2:4]
     except:
         pass
 
@@ -769,7 +819,6 @@ def system():
     except:
         pass
 
-    templateData['piTemp'] = getPiTemp()
     return render_template('system.html', **templateData)
 
 

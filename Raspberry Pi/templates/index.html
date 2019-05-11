@@ -35,6 +35,7 @@
 			<a href="{{ url_for ('camera') }}">Camera Settings</a>
 			<a href="{{ url_for ('intervalometer') }}">Intervalometer Settings</a>
 			<a href="{{ url_for ('transfer') }}">Transfer Settings</a>
+			<a href="{{ url_for ('thermal') }}">Thermal Settings</a>
 			<a href="{{ url_for ('system') }}">System Maintenance</a>
 			{% if current_user.is_anonymous %}
 				<a href="{{ url_for('login') }}">Login</a>
