@@ -97,7 +97,7 @@ def writeString(value):
 
 
 def readString(value):
-    status = ""
+    status = "Unknown"
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
     rxLength = 32
@@ -262,24 +262,25 @@ def main():
     #Arduino comms. Each is wrapped in a separate try/except to quarantine individual failures
     try:
         rawDate = str(readString("0"))
-        if rawDate != "":
+        if rawDate != "Unknown":
             templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
     except:
         pass
     try:
         rawTime = str(readString("1"))
-        if rawTime != "":
+        if rawTime != "Unknown":
             templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
     except:
         pass
     try:
         arduinoStats = str(readString("2"))
-        lastShot= arduinoStats.split(":")[0]
-        nextShot = arduinoStats.split(":")[1]
-        templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
-        templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+        if arduinoStats != "Unknown":
+            lastShot= arduinoStats.split(":")[0]
+            nextShot = arduinoStats.split(":")[1]
+            templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
+            templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
     except:
         pass
     #except Exception as e:
@@ -543,7 +544,7 @@ def intervalometer():
     ArdInterval = str(readString("3"))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug('Int query returned: ' + ArdInterval)
-    if len(ArdInterval) == 7:
+    if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
         for bit in range(1,8): # i.e. 1-7 inclusive
             if (ord(ArdInterval[0]) & (0b00000001<<bit)):
                 app.logger.debug('Added ' + arduinoDoW[bit])
@@ -791,14 +792,17 @@ def system():
 
     try:
         rawDate = str(readString("0"))
-        templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
-        time.sleep(0.5);
+        if rawDate != "Unknown":
+            templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
+            time.sleep(0.5);
         rawTime = str(readString("1"))
-        templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
-        time.sleep(0.5);
+        if rawTime != "Unknown":
+            templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
+            time.sleep(0.5);
         rawWakePi = str(readString("5"))
-        templateData['wakePiTime']     = rawWakePi[0:2]
-        templateData['wakePiDuration'] = rawWakePi [2:4]
+        if rawWakePi != "Unknown":
+            templateData['wakePiTime']     = rawWakePi[0:2]
+            templateData['wakePiDuration'] = rawWakePi [2:4]
     except:
         pass
 
