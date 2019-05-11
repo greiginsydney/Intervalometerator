@@ -10,8 +10,14 @@
 			<td>
 				<div class="alignleft">Units:</div>
 				<div class="alignright">
-					<input type="radio" name="thermalUnits" value="Celsius" onclick="handleRadioClick();"{% if thermalUnits == "Celsius" %} SELECTED{% endif %}>&deg;C</input>
-					<input type="radio" name="thermalUnits" value="Fahrenheit" onclick="handleRadioClick();"{% if thermalUnits == "Fahrenheit" %} SELECTED{% endif %}>&deg;F</input>
+					<label class="radio">&deg;C
+						<input type="radio" name="thermalUnits" id="thermalC" value="Celsius" onclick="handleRadioClick();"{% if thermalUnits == "Celsius" %} checked="checked"{% endif %}>
+						<span class="checkmark"></span>
+					</label>
+					<label class="radio">&deg;F
+						<input type="radio" name="thermalUnits" id="thermalF" value="Fahrenheit" onclick="handleRadioClick();"{% if thermalUnits == "Fahrenheit" %} checked="checked"{% endif %}>
+						<span class="checkmark"></span>
+					</label>
 				</div>
 			</td>
 		</tr>
