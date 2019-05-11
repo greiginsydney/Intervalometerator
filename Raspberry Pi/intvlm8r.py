@@ -44,7 +44,7 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 app = Flask(__name__)
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
@@ -708,8 +708,6 @@ def transferPOST():
 def thermal():
     """ This page is where you monitor and manage the thermal settings & alarms."""
 
-    res = make_response("")
-
     templateData = {
         'thermalUnits'   : "Celsius",
         'arduinoTemp'    : 'Unknown',
@@ -719,7 +717,6 @@ def thermal():
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
-    if thermalUnits == None: res.set_cookie('thermalUnits', 'Celsius', 7 * 24 * 60 * 60)
     if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
 
     try:
@@ -733,8 +730,7 @@ def thermal():
         pass
     templateData['piTemp'] = getPiTemp()
 
-    res.headers['location'] = url_for('thermal')
-    return res, 302
+    return render_template('thermal.html', **templateData)
 
 
 @app.route("/thermal", methods = ['POST'])    # The camera's POST method
