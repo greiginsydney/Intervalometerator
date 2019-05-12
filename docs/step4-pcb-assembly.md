@@ -62,11 +62,11 @@ The Arduino requires some attention before we get too involved with the build. W
 
 > If neither test woke the camera, check first the camera cable, then double-check the socket and your soldering. Disconnect the camera first then use your multimeter to confirm the T, R & S pins all appear on the test points, and that there are no short circuits between them.
 
-> Picture goes here - TP jumper wires
-
 13. Note these two links MUST be installed diagonally, so position "A" requires you to link the bottom two pins on the left-hand side and the upper two pins on the right. These settings should never need to change, but you may choose to use 3-pin header connectors here if you like.
 
-> Picture goes here - Wake/Fire headers
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/57581997-f4441e00-7502-11e9-9afa-60455c3ca3d2.png" width="50%">
+</p>
 
 14. With the camera working correctly, add the rest of the passive components, starting with the resistors, then the capacitors and the 2, 3 and 4-way headers. Take care that you solder the 47uF capacitor with its negative lead on the left, and that you don't mix up the two 100nF capacitors. The brown ceramic capacitor is between the Arduino and the RTC, whilst the polyester is below the 47uF electrolytic.
 
@@ -109,6 +109,10 @@ Now the board's essentially complete and the supply rails tested, it's time to a
 28. Mount the Raspberry Pi to the board using 2.5mm screws and spacers. I used 6mm-long bolts and threaded spacers from Farnell, but 1"/25mm long bolts and unthreaded spacers will do the job just as well - just make sure the bolt heads aren't encroaching on any of the neighbouring tracks. (In this case I suggest the bolt head should be on the top of the Pi with the washer and nut underneath the PCB.)
 
 29. With the Pi firmly mounted on the board, thread 9 small lengths of tinned copper wire through the mating holes to the pads underneath. Solder them all on the top-side of the Pi, then flip the board over and solder the underneath.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/57582022-39685000-7503-11e9-9054-01651223adad.png" width="50%">
+</p>
 
 30. You're done!
 
