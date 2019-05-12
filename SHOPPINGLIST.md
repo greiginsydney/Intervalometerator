@@ -20,7 +20,7 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 #### DC  Power Coupler to suit
 
-Aka a "fake battery". We cut off the USB plugs and soldered the cable directly to the PCB. If your camera has an auxiliary power input this won't be necessary. Substitute a suitable plug and cable.
+Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminated it directly to the matching plug for the PCB-mounted socket. If your camera has an auxiliary power input this coupler won't be necessary - substitute a suitable plug and cable instead.
 
 - [eBay](https://www.ebay.com/itm/Power-bank-usb-for-Canon-EOS-5D-7D-Mark-II-6D-80D-camera-DR-E6-dc-coupler-LP-E6/123101336453?hash=item1ca9695385:g:dWAAAOSwsQFa4ZVV:rk:1:pf:0)
     
@@ -117,6 +117,7 @@ Your choice of solar panel might require some bracing or a bracket in order for 
 I went with the 3.3V 8MHz model for its minimal current consumption and pin-compatibility with the Pi's 3.3V IO pins. You *will* get better performance out of the 5V version, but also inherit an obligation to add a level converter for the pins (not described here). 
 
 - [3.3V - SparkFun](https://www.sparkfun.com/products/11114)
+- [Amazon](https://amzn.to/2JAzSue)
 - [3.3V - Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1993-Arduino-Pro-Mini-328-3-3V-8MHz)
 
     $AUD16
@@ -125,6 +126,8 @@ I went with the 3.3V 8MHz model for its minimal current consumption and pin-comp
 
 Don't be tempted to go with a generic 5V programming cable - stick with a 3.3V version to match the Arduino, otherwise your in-situ programming will result in the Arduino presenting 5V into the 3.3V pins of the Pi.
 
+- [3.3V - SparkFun](https://www.sparkfun.com/products/9873)
+- [Amazon](https://amzn.to/2YsdbfV)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1615-SparkFun-FTDI-Basic-Breakout-3-3V)
 
     $AUD25
@@ -133,6 +136,7 @@ Don't be tempted to go with a generic 5V programming cable - stick with a 3.3V v
 
 I went for the Pi Zero as it met my needs for a low-current, low-cost unit in a small footprint - and less than half the cost of the larger models. There's nothing stopping you upgrading to a Model 2 or 3, but be aware that some of the config options will be slightly different.
 
+- [Amazon](https://amzn.to/2HcmVVA)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/5288-Raspberry-Pi-Zero-W)
 
     $AUD25
@@ -141,6 +145,7 @@ I went for the Pi Zero as it met my needs for a low-current, low-cost unit in a 
 
 You will recognise this as a micro-USB plug to a USB-A socket, but it's officially known as an On-The-Go (OTG) cable. Your Pi supplier probably offers these as an option with the Pi, so you can connect "standard" USB peripherals to the Pi. It's only required in the finished unit if you can't source a single USB cable to run from the camera to the Pi.
 
+- [Amazon](https://amzn.to/2Hf45gI)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/5287-USB-OTG-Cable-Female-A-to-Micro-B-5in)
 - [Core Electronics (AU)](https://core-electronics.com.au/micro-usb-otg-host-cable-for-raspberry-pi-zero.html)
 
@@ -150,6 +155,7 @@ You will recognise this as a micro-USB plug to a USB-A socket, but it's official
 
 As with the OTG cable, your Pi supplier will surely offer these with the Pi, as you'll need it to connect your desktop monitor for the initial config steps.
 
+- [Amazon](https://amzn.to/2JH5oH1)
 - [Robot Gear (AU) - cable](https://www.robotgear.com.au/Product.aspx/Details/5285-Mini-HDMI-Cable-3ft)
 - [Core Electronics (AU) - adapter](https://core-electronics.com.au/mini-hdmi-to-standard-hdmi-jack-adapter-for-raspberry-pi-zero.html)
 
@@ -160,6 +166,7 @@ As with the OTG cable, your Pi supplier will surely offer these with the Pi, as 
 
 Choosing a larger size allows you to maximise the off-camera storage in the Pi. Be careful though, as once you go over 32G you're beyond the capabilities of the FAT file system and you're at greater risk of finding the Pi won't read the card. I used ["RPi SD cards"](https://elinux.org/RPi_SD_cards) as a helpful reference to find the card we went with here.
 
+- [Amazon](https://amzn.to/2VtwU1D)
 - [Officeworks (AU)](https://wwhttps://www.officeworks.com.au/shop/officeworks/p/sandisk-128gb-ultra-micro-sdxc-memory-card-sdsq128gb)
 
     $AUD50
@@ -168,7 +175,8 @@ Choosing a larger size allows you to maximise the off-camera storage in the Pi. 
 #### Real-Time Clock
 DeadOn RTC Breakout - DS3234
 
-- [SparkFun](https://www.sparkfun.com/products/10160
+- [Amazon](https://amzn.to/2YnBGup)
+- [SparkFun](https://www.sparkfun.com/products/10160)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1693-SparkFun-DeadOn-RTC-Breakout-DS3234)
 
     $AUD24
@@ -177,6 +185,7 @@ DeadOn RTC Breakout - DS3234
 
 The DeadOn RTC requires a 3V lithium backup battery. The common CR1225 or the slightly thinner CR1220 are compatible here. Your DeadOn supplier will probably have these in stock, otherwise they're the sort of item you might get from the local electronics hobby store or key-cutting kiosk.
 
+- [Amazon](https://amzn.to/2JzfRUC)
 - [Jaycar Electronics (AU)](https://www.jaycar.com.au/cr1220-3v-lithium-battery/p/SB2527)
 
     $AUD3
@@ -186,6 +195,7 @@ The DeadOn RTC requires a 3V lithium backup battery. The common CR1225 or the sl
 Pololu 3.3V, 500mA Step-Down Voltage Regulator D24V5F3
 
 - [Pololu](https://www.pololu.com/product/2842)
+- [Amazon](https://amzn.to/2E2tHeB)
 - [Core Electronics (AU)](https://core-electronics.com.au/pololu-3-3v-500ma-step-down-voltage-regulator-d24v5f3.html)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1017-3-3V-500mA-Pololu-Step-Down-Voltage-Regulator-D24V5F3)
 
@@ -197,6 +207,7 @@ Pololu 3.3V, 500mA Step-Down Voltage Regulator D24V5F3
 Pololu 5V, 500mA Step-Down Voltage Regulator D24V5F5
 
 - [Pololu](https://www.pololu.com/product/2843)
+- [Amazon](https://amzn.to/2Jy7SY1)
 - [Core Electronics (AU)](https://core-electronics.com.au/pololu-5v-500ma-step-down-voltage-regulator-d24v5f5.html)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1018-5V-500mA-Pololu-Step-Down-Voltage-Regulator-D24V5F5)
 
@@ -207,6 +218,7 @@ Pololu 5V, 500mA Step-Down Voltage Regulator D24V5F5
 Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 
 - [Pololu](https://www.pololu.com/product/2860)
+- (not available on Amazon)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1007-7-5V-2-4A-Pololu-Step-Down-Voltage-Regulator-D24V22F7)
 
     $AUD13
@@ -215,6 +227,7 @@ Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 
 I went with bog-standard Motorola 4N25 6-pin DIP opto-isolators. These (or an equivalent) should be easy enough to find anywhere.
 
+- [Amazon](https://amzn.to/2E31nJk)
 - [Element 14](https://au.element14.com/vishay/4n25/optocoupler-transistor-5300vrms/dp/1612453?st=4n25)
 
     $AUD1 (each - you need two)
@@ -260,7 +273,7 @@ Resistors are used on the board for two purposes. They're either current-limitin
 
 #### 47uF electrolytic capacitor
 
-Every supply needs some smoothing. 
+Every supply needs some smoothing. Optional but recommended.
 
 - [Element 14]()
 
@@ -268,7 +281,7 @@ Every supply needs some smoothing.
     
 #### 100nF polyester capacitor
 
-Every supply needs a 100nF poly smoothing capacitor.
+Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 
 - [Element 14]()
 
@@ -312,3 +325,7 @@ If your budget allows for it, check out some of the mounting options in the Ram 
 # GRAND TOTAL: $AUD1081.80
 # (Approx $USD 780)
 
+<br/>
+
+### Declaration:
+The Amazon links above are affiliate links. We may earn a small commission from purchases, however you pay no more for this.
