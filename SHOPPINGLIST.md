@@ -116,9 +116,9 @@ Your choice of solar panel might require some bracing or a bracket in order for 
 
 I went with the 3.3V 8MHz model for its minimal current consumption and pin-compatibility with the Pi's 3.3V IO pins. You *will* get better performance out of the 5V version, but also inherit an obligation to add a level converter for the pins (not described here). 
 
-- [3.3V - SparkFun](https://www.sparkfun.com/products/11114)
+- [SparkFun](https://www.sparkfun.com/products/11114)
 - [Amazon](https://amzn.to/2JAzSue)
-- [3.3V - Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1993-Arduino-Pro-Mini-328-3-3V-8MHz)
+- [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1993-Arduino-Pro-Mini-328-3-3V-8MHz)
 
     $AUD16
 
@@ -126,7 +126,7 @@ I went with the 3.3V 8MHz model for its minimal current consumption and pin-comp
 
 Don't be tempted to go with a generic 5V programming cable - stick with a 3.3V version to match the Arduino, otherwise your in-situ programming will result in the Arduino presenting 5V into the 3.3V pins of the Pi.
 
-- [3.3V - SparkFun](https://www.sparkfun.com/products/9873)
+- [SparkFun](https://www.sparkfun.com/products/9873)
 - [Amazon](https://amzn.to/2YsdbfV)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1615-SparkFun-FTDI-Basic-Breakout-3-3V)
 
@@ -227,7 +227,7 @@ Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 
 I went with bog-standard Motorola 4N25 6-pin DIP opto-isolators. These (or an equivalent) should be easy enough to find anywhere.
 
-- [Amazon](https://amzn.to/2E31nJk)
+- [Amazon](https://amzn.to/2E31nJk) (Pack of 10)
 - [Element 14](https://au.element14.com/vishay/4n25/optocoupler-transistor-5300vrms/dp/1612453?st=4n25)
 
     $AUD1 (each - you need two)
@@ -263,7 +263,7 @@ As shown here, the intvlm8r is built onto a piece of Veroboard, aka stripboard.
 
 #### Resistors
 
-Resistors are used on the board for two purposes. They're either current-limiting the supply to the LEDs (the green one and the 2 optos) or providing pull-up or pull-down assistance to the IO pins. You should be able to find these just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc
+Resistors are used on the board for two purposes. They're either current-limiting the supply to the LEDs (the green one and the 2 optos) or providing pull-up or pull-down assistance to the IO pins. You should be able to find these just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
 * Green LED: 1 x 150R 1/4W
 * Optos: 2 x 150R 1/4W
 * Arduino pin A8: 1 x 4.7k 1/4W
@@ -275,7 +275,7 @@ Resistors are used on the board for two purposes. They're either current-limitin
 
 Every supply needs some smoothing. Optional but recommended.
 
-- [Element 14]()
+- [Element 14](https://au.element14.com/multicomp/mcrh35v476m6-3x11/cap-47-f-35v-20/dp/9451935?rpsku=rel3:667894&isexcsku=false)
 
     $AUD0.30
     
@@ -283,7 +283,7 @@ Every supply needs some smoothing. Optional but recommended.
 
 Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 
-- [Element 14]()
+- [Element 14](https://au.element14.com/epcos/b32529c0104k000/cap-0-1-f-63v-10-pet-potted/dp/9750878?st=0.1%20uF%20polyester)
 
     $AUD0.30
     
@@ -291,14 +291,31 @@ Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 
 I really love the DeadOn RTC, however SparkFun appear to have omitted the chip manufacturer's recommended power supply capacitor. I went with a 100pF ceramic.
 
-- [Element 14](https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155?st=100pf%20ceramic)
+- [Element 14](https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155?st=100pf%20ceramic) (MOQ = 5)
 
     $AUD0.30
 
 
 #### Miscellaneous
 
-Header pins, jumpers, bolts, spacers, backmount, interconnecting wires.
+Header pins
+
+Jumpers
+- [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) (Pack of 25)
+
+2.0mm Bolts (Raspberry Pi)
+- [Element 14](https://au.element14.com/tr-fastenings/m2-6-prstmc-z100/screw-pozi-pan-steel-bzp-m2x6/dp/1420386) (Pack of 100)
+
+2.0mm threaded spacers
+- [Element 14](https://au.element14.com/ettinger/05-01-103/standoff-hex-female-brass-10mm/dp/2494574) (MOQ = 10)
+
+Backmount (for mounting the PCB to)
+
+3.0mm bolts (PCB to backmount)
+
+3.0mm (dia) spacers
+
+interconnecting wires.
 
     $AUD10 (Approx)
 
