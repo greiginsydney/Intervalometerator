@@ -723,9 +723,9 @@ def thermal():
     try:
         templateData['arduinoTemp'] = str(readString("4"))
         time.sleep(0.5);
-        templateData['arduinoMin']  = str(readString("6"))
+        templateData['arduinoMin']  = str(readString("5"))
         time.sleep(0.5);
-        templateData['arduinoMax']  = str(readString("7"))
+        templateData['arduinoMax']  = str(readString("6"))
         time.sleep(0.5);
     except:
         pass
@@ -806,7 +806,7 @@ def system():
         if rawTime != "Unknown":
             templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
             time.sleep(0.5);
-        rawWakePi = str(readString("5"))
+        rawWakePi = str(readString("7"))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
