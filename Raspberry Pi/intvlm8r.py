@@ -97,7 +97,7 @@ def writeString(value):
 
 
 def readString(value):
-    status = "Unknown"
+    status = ""
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
     rxLength = 32
@@ -117,8 +117,8 @@ def readString(value):
         except Exception as e:
             app.logger.debug('readString error:' + str(e))
             time.sleep(1) # Wait a second before each retry
-    #if status == "":
-    #    status = "error"
+    if status == "":
+        status = "Unknown"
     return status
 
 
