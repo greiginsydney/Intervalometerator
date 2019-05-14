@@ -101,10 +101,14 @@ def readString(value):
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
     rxLength = 32
-    if (ascii == 48 ): rxLength = 8  #Date - 8
-    if (ascii == 49 ): rxLength = 8  #Time
-    if (ascii == 50 ): rxLength = 11 #Last/next shots
-    if (ascii == 51 ): rxLength = 7  #Interval
+    if (ascii == 48 ): rxLength = 8  # "0" - Date - 8
+    if (ascii == 49 ): rxLength = 8  # "1" - Time
+    if (ascii == 50 ): rxLength = 11 # "2" - Last/next shots
+    if (ascii == 51 ): rxLength = 7  # "3" - Interval
+    # if (ascii == 52 ): rxLength = 7  # "4" - Current temp
+    # if (ascii == 53 ): rxLength = 7  # "5" - Min temp
+    # if (ascii == 54 ): rxLength = 7  # "6" - Max temp
+    
     for x in range(0, 2):
         try:
             array = bus.read_i2c_block_data(address, ascii, rxLength)
@@ -734,7 +738,7 @@ def thermal():
     return render_template('thermal.html', **templateData)
 
 
-@app.route("/thermal", methods = ['POST'])    # The camera's POST method
+@app.route("/thermal", methods = ['POST'])    # The thermal page's POST method
 @login_required
 def thermalPOST():
     """ This page is where we act on the Reset buttons for max/min temp."""
@@ -746,8 +750,10 @@ def thermalPOST():
         res.set_cookie('thermalUnits', 'Fahrenheit', 7 * 24 * 60 * 60)
 
     if 'resetMin' in request.form:
+        app.logger.debug('thermal sent RN')
         writeString("RN") # Sends the Reset Min command to the Arduino
     if 'resetMax' in request.form:
+        app.logger.debug('thermal sent RX')
         writeString("RX") # Sends the Reset Max command to the Arduino
 
     res.headers['location'] = url_for('thermal')
