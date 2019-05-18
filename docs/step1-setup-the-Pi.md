@@ -37,7 +37,6 @@ interface wlan0
 static ip_address=192.168.44.1/24
 static routers=192.168.44.254
 static domain_name_servers=192.168.44.254
-nohook wpa_supplicant
 ```
 
 18. Set a hostname with `sudo hostname <YourNewHostname>`
