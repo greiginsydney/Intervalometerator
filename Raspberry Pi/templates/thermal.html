@@ -95,7 +95,7 @@ function updateValues()
 function convertToF(DegreesCelsius)
 {
 	if (DegreesCelsius == "Unknown") { return "Unknown"; }
-	return ((parseInt(DegreesCelsius) * 9/5) + 32) + " &deg;F";
+	return Math.round((parseInt(DegreesCelsius) * 9/5) + 32) + " &deg;F";
 }
 
 function getCookie(cname)
