@@ -105,9 +105,8 @@ def readString(value):
     if (ascii == 49 ): rxLength = 8  # "1" - Time
     if (ascii == 50 ): rxLength = 11 # "2" - Last/next shots
     if (ascii == 51 ): rxLength = 7  # "3" - Interval
-    # if (ascii == 52 ): rxLength = 7  # "4" - Current temp
-    # if (ascii == 53 ): rxLength = 7  # "5" - Min temp
-    # if (ascii == 54 ): rxLength = 7  # "6" - Max temp
+    # if (ascii == 52 ): rxLength = 7  # "4" - All temps (current, max, min)
+    # if (ascii == 53 ): rxLength = 4  # "5" - WakePi hour and runtime
     
     for x in range(0, 2):
         try:
@@ -725,12 +724,12 @@ def thermal():
     if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
 
     try:
-        templateData['arduinoTemp'] = str(readString("4"))
-        time.sleep(0.5);
-        templateData['arduinoMin']  = str(readString("5"))
-        time.sleep(0.5);
-        templateData['arduinoMax']  = str(readString("6"))
-        time.sleep(0.5);
+        writeString("GT") # Asks the Arduino to update its temperature string
+        time.sleep(1);
+        temperatures = str(readString("4")) # Reads the resulting string, a csv array
+        templateData['arduinoTemp'] = temperatures.split(",")[0]
+        templateData['arduinoMin']  = temperatures.split(",")[2]
+        templateData['arduinoMax']  = temperatures.split(",")[1]
     except:
         pass
     templateData['piTemp'] = getPiTemp()
@@ -812,7 +811,7 @@ def system():
         if rawTime != "Unknown":
             templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
             time.sleep(0.5);
-        rawWakePi = str(readString("7"))
+        rawWakePi = str(readString("5"))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
