@@ -1,5 +1,5 @@
 
-/* General CSS */
+/* Start: General CSS */
 
 body {
 	font-family: "Open Sans", sans-serif;
@@ -21,7 +21,7 @@ table {
 	border-collapse: collapse;
 	margin-left:auto; 
 	margin-right:auto;
-	width: 30em
+	width: 30em;
 }
 
 table, td {
@@ -54,6 +54,7 @@ th {
 .alignleft {
 	float: left;
 }
+
 
 .alignright {
 	float: right;
@@ -93,53 +94,78 @@ input, select, date, time, text {
 	width: 200px;
 }
 
-input[type=checkbox],
+
 input[type=radio] {
 	opacity: 0;
-}
-
-.rememberme {
-	width: 25px;
-	margin: 5px 50%; 
-	padding: 4px 4px 4px 4px;
-	position: relative;
-}
-
-.rememberme label {
-	cursor: pointer;
 	position: absolute;
-	width: 25px;
-	height: 25px;
+	cursor: pointer;
+}
+
+/* End: General CSS */
+/* ---------------------------------------------------------*/
+/* Start: checkbox */
+
+/* The loginChkbox */
+.loginChkbox {
+	display: block;
+	position: relative;
+	padding-left: 25px;
+	margin-bottom: 20px;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.loginChkbox input[type=checkbox] {
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	height: 0;
+	width: 0;
+}
+
+/* Create a custom checkbox */
+.rememberme {
+	position: absolute;
 	top: 0;
 	left: 0;
-	background: #eee;
-	border:1px solid #ddd;
+	height: 20px;
+	width: 20px;
+	background-color: #eee;
 }
 
-.rememberme label:after {
-	opacity: 0;
-	content: '';
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.rememberme:after {
+	content: "";
 	position: absolute;
-	width: 9px;
-	height: 5px;
-	background: transparent;
-	top: 6px;
-	left: 7px;
+	display: none;
+}
+
+/* Show the checkmark when checked */
+.loginChkbox input:checked ~ .rememberme:after {
+	display: block;
+}
+
+/* Style the checkmark/indicator */
+.loginChkbox .rememberme:after {
+	top: 3px;
+	left: 6px;
 	border: 3px solid #333;
-	border-top: none;
-	border-right: none;
-	transform: rotate(-45deg);
+	width: 5px;
+	height: 10px;
+	border-width: 0 3px 3px 0;
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transform: rotate(45deg);
 }
 
-/* Create the hover event of the tick */
-.rememberme label:hover::after {
-	opacity: 0.2;
-}
-
-/* Create the checkbox state for the tick */
-.rememberme input[type=checkbox]:checked + label:after {
-	opacity: 1;
-}
+/* End: checkbox */
+/* ---------------------------------------------------------*/
+/* Start: radio button */
 
 .radio {
 	display: block;
@@ -189,7 +215,7 @@ input[type=radio] {
 
 /* Style the indicator (dot/circle) */
 .radio .checkmark:after {
- 	top: 3px;
+	top: 3px;
 	left: 3px;
 	width: 6px;
 	height: 6px;
@@ -202,7 +228,8 @@ input[type=radio] {
 	border-style: none;
 }
 
-/* Menu */
+/* ---------------------------------------------------------*/
+/* Start: Menu */
 
 .overlay {
 	height: 0%;
@@ -249,10 +276,9 @@ input[type=radio] {
 	width: 100%;
 }
 
-/* Menu */
-
+/* End: Menu */
 /* ----------------------------------------------------------------------------------*/
-/* -- Thumbnail handling. Thank you George: https://codepen.io/SitePoint/pen/XXEmXj --*/
+/* Start: Thumbnails. Thank you George: https://codepen.io/SitePoint/pen/XXEmXj --*/
 
 .thumbs {
 	font-size: 0;
@@ -305,7 +331,7 @@ thumb {
 /* END  Thumbs  */
 /* END General CSS */
 /* ---------------------------------------------------------*/
-/* Mobile Devices */
+/* Start: Mobile Devices */
 
 
 @media screen and (max-height: 450px) {
@@ -357,5 +383,4 @@ thumb {
 }
 /* END Mobile Devices */
 
-/* Thanks to https://paulund.co.uk/how-to-style-a-checkbox-with-css for the checkbox styling */
-/* The radio buttons came from https://www.w3schools.com/howto/howto_css_custom_checkbox.asp*/
+/* The radio buttons & checkbox came from https://www.w3schools.com/howto/howto_css_custom_checkbox.asp*/
