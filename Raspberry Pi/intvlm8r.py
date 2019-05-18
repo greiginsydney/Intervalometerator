@@ -141,7 +141,7 @@ def getPiTemp():
     temp = "Unknown"
     try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as tempfile:
-            temp= str(round(int(tempfile.read()) / 1000, 2))
+            temp = '%.0f' % round(int(tempfile.read()) / 1000, 0)
     except Exception as e:
         app.logger.debug('Pi temp error:' + str(e))
     app.logger.debug('Pi temp = ' + temp)
