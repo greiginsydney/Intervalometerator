@@ -50,8 +50,8 @@ References:
 #define MEMEndHour    0x04
 #define MEMWakePiHour 0x05
 #define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  //4 bytes to store a float.
-#define MEMTempMax    0x0B  // "
+#define MEMTempMin    0x07  //2 bytes to store an int.
+#define MEMTempMax    0x09  // "
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -170,12 +170,12 @@ void setup()
     EEPROM.write(MEMInterval, interval);
     EEPROM.write(MEMWakePiHour, WakePiHour);
     EEPROM.write(MEMWakePiDuration, WakePiDuration);
-    EEPROM.put(MEMTempMin, (float)200); //Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.put(MEMTempMax, (float)-200);
+    EEPROM.put(MEMTempMin, (int)200); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.put(MEMTempMax, (int)-200);
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
-  UpdateTempMinMax(); //Reset or initialise the temperature readings on boot
+  UpdateTempMinMax(""); //Reset or initialise the temperature readings on boot
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
@@ -534,18 +534,19 @@ void DelaymS(int pauseFor)
 
 
 // Called once on boot and every hour thereafter
-void UpdateTempMinMax()
+void UpdateTempMinMax(String resetOption)
 {
-  float tempy = round(rtc.temperature()*10)/10.0; // Rounds the temp to 1 decimal (is 2 by default)
-  float currentMin;
-  float currentMax;
+  float tempy = rtc.temperature();
+  tempy < 0 ? tempy -= 0.5 : tempy += 0.5;
+  int roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
+  int currentMin;
+  int currentMax;
   EEPROM.get(MEMTempMin, currentMin);
   EEPROM.get(MEMTempMin, currentMax);
   if (isnan(currentMin)) { currentMin = 200 ; }
   if (isnan(currentMax)) { currentMax = -200 ; }
-  if (tempy  < currentMin) { EEPROM.put(MEMTempMin, tempy); }
-  if (tempy  > currentMax) { EEPROM.put(MEMTempMax, tempy); }
-  Serial.print("RTC says " + String(tempy) + " ,Min = " + String(currentMin) + ", Max = " + String(currentMax) + "\r\n"); // GREIG
+  if (resetOption == "Min" || roundedTemp  < currentMin) { EEPROM.put(MEMTempMin, roundedTemp); }
+  if (resetOption == "Max" || roundedTemp  > currentMax) { EEPROM.put(MEMTempMax, roundedTemp); }
 }
 
 void softReset()
@@ -633,22 +634,38 @@ void receiveEvent(int howMany) {
     else if (incoming == "4")
     {
       //It wants to know the temperature:
-      float tempy = round(rtc.temperature()*10)/10.0; // Rounds the temp to 1 decimal (is 2 by default)
-      dtostrf(tempy, 6, 1, sendToPi);
+      float tempy = rtc.temperature();
+      tempy < 0 ? tempy -= 0.5 : tempy += 0.5;
+      int roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
+      sprintf(sendToPi, "%2d", roundedTemp); 
     }
     else if (incoming == "5")
     {
       //It wants to know the minimum temperature:
-      float tempy;
+      int tempy;
       EEPROM.get(MEMTempMin, tempy);
-      dtostrf(tempy, 6, 1, sendToPi);
+      if (isnan(tempy))
+      {
+        sprintf(sendToPi, "%s", "Unknown");
+      }
+      else
+      {
+        sprintf(sendToPi, "%2d", tempy);      
+      }
     }
     else if (incoming == "6")
     {
       //It wants to know the maximum temperature:
-      float tempy;
+      int tempy;
       EEPROM.get(MEMTempMax, tempy);
-      dtostrf(tempy, 6, 1, sendToPi);
+      if (isnan(tempy))
+      {
+        sprintf(sendToPi, "%s", "Unknown");
+      }
+      else
+      {
+        sprintf(sendToPi, "%2d", tempy);      
+      }
     }
     else if (incoming == "7")
     {
@@ -747,7 +764,7 @@ void loop()
     if (rtc.alarm2())
     {
       //Serial.println(" - ALARM 2 fired");
-      if  (rtc.getMinute() == 0) { UpdateTempMinMax(); }
+      if  (rtc.getMinute() == 0) { UpdateTempMinMax(""); }
       if ((rtc.getMinute() == 0) && (rtc.getHour() == WakePiHour))
       {
         //Serial.println(" -           " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + "       WAKING the Pi");
@@ -826,19 +843,13 @@ void loop()
 
   if (resetTempMinFlag == true)
   {
-    float tempy = round(rtc.temperature()*10)/10.0;
-    EEPROM.put(MEMTempMin, tempy);
-    Serial.print("Wrote new min  = >" + String(tempy) );
-    Serial.print("<\r\n");
+    UpdateTempMinMax("Min");
     resetTempMinFlag = false;
   }
 
   if (resetTempMaxFlag == true)
   {
-    float tempy = round(rtc.temperature()*10)/10.0;
-    EEPROM.put(MEMTempMax, tempy);
-    Serial.print("Wrote new max  = >" + String(tempy) );
-    Serial.print("<\r\n");
+    UpdateTempMinMax("Max");
     resetTempMaxFlag = false;
   }
   
