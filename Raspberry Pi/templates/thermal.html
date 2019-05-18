@@ -54,7 +54,7 @@
 
 <script>
 // Run when the form first loads:
-handleRadioClick() // This makes sure the values are recalculated correctly if F is selected
+updateValues() // This makes sure the values are recalculated correctly if F is selected
 
 function handleRadioClick()
 {
@@ -65,7 +65,18 @@ function handleRadioClick()
 			val = units[i].value;
 		}
 	}
-	if (val == 'Celsius')
+	var d = new Date();
+	d.setTime(d.getTime() + (365 * 24 * 60 * 60));
+	var expires = "expires="+d.toUTCString();
+	document.cookie = "thermalUnits=" + val + ";" + expires + ";path=/";
+	updateValues()
+}
+
+function updateValues()
+{
+	var thermalUnits = getCookie("thermalUnits");
+	if (thermalUnits == "" || thermalUnits == null) { thermalUnits = "Celsius" }
+	if (thermalUnits == 'Celsius')
 	{
 		document.getElementById("arduinoTemp").innerHTML = "{{ arduinoTemp }} {% if arduinoTemp != 'Unknown' %}&deg;C{% endif %}"
 		document.getElementById("arduinoMin").innerHTML = "{{ arduinoMin }} {% if arduinoMin != 'Unknown' %}&deg;C{% endif %}"
@@ -85,6 +96,27 @@ function convertToF(DegreesCelsius)
 {
 	if (DegreesCelsius == "Unknown") { return "Unknown"; }
 	return ((parseInt(DegreesCelsius) * 9/5) + 32) + " &deg;F";
+}
+
+function getCookie(cname)
+{
+	// Thank you https://www.w3schools.com/js/js_cookies.asp
+	var name = cname + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(';');
+	for(var i = 0; i <ca.length; i++)
+	{
+		var c = ca[i];
+		while (c.charAt(0) == ' ')
+		{
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) 
+		{
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
 }
 
 </script>
