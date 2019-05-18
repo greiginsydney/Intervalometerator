@@ -72,6 +72,7 @@ volatile bool   setWakePiFlag   = false; //
 volatile bool   resetArduinoFlag = false; //
 volatile bool   resetTempMinFlag = false; //
 volatile bool   resetTempMaxFlag = false; //
+volatile bool   getTempsFlag     = false; //
 
 bool   LastRunningState = LOW;  // Used in loop() to tell for a falling Edge of the Pi state
 bool   LastMaintState = HIGH;   // Used in loop() to tell if the maint/debug jumper has been removed
@@ -90,9 +91,10 @@ String newInterval = "";        // A new interval sent by the Pi
 String newWakePiTime = "";      // A new time and duration sent by the Pi
 
 char sendToPi[32];              // This is the string we send to the Pi when it asks for data
-char LastShotMsg[6] = "19999";  // Sent to the Pi. Is <d><hh><mm> where d is Sunday=1...
-char NextShotMsg[6] = "19999";  // Sent to the Pi. "
-char Intervalstring[8];         // Sent to the Pi. Is <d><startHour><EndHour><Interval>
+char LastShotMsg[6] = "19999";  // Sent to the Pi. Is "<d><hh><mm>" where d is Sunday=1...
+char NextShotMsg[6] = "19999";  // Sent to the Pi. Same as above.
+char Intervalstring[8];         // Sent to the Pi. Is "<d><startHour><EndHour><Interval>"
+char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<MinTemp>"
 
 
 //////////////////////////////////
@@ -533,11 +535,12 @@ void DelaymS(int pauseFor)
 }
 
 
-// Called once on boot and every hour thereafter
+// Called once on boot and every hour thereafter, as Alarm2 fires
+// Also called by the Pi as a precursor to requesting the temps be fed back to it.
 void UpdateTempMinMax(String resetOption)
 {
   float tempy = rtc.temperature();
-  tempy < 0 ? tempy -= 0.5 : tempy += 0.5;
+  tempy < 0 ? tempy -= 0.5 : tempy += 0.5; // Need to cater for negative temps. Round all numbers away from zero
   int roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
   int currentMin;
   int currentMax;
@@ -545,8 +548,20 @@ void UpdateTempMinMax(String resetOption)
   EEPROM.get(MEMTempMin, currentMax);
   if (isnan(currentMin)) { currentMin = 200 ; }
   if (isnan(currentMax)) { currentMax = -200 ; }
-  if (resetOption == "Min" || roundedTemp  < currentMin) { EEPROM.put(MEMTempMin, roundedTemp); }
-  if (resetOption == "Max" || roundedTemp  > currentMax) { EEPROM.put(MEMTempMax, roundedTemp); }
+  if (resetOption == "Min" || roundedTemp  < currentMin)
+  {
+    EEPROM.put(MEMTempMin, roundedTemp);
+    currentMin = roundedTemp;
+  }
+  if (resetOption == "Max" || roundedTemp  > currentMax)
+  {
+    EEPROM.put(MEMTempMax, roundedTemp); 
+    currentMax = roundedTemp;
+  }
+  sprintf(TemperaturesString, "%d,%d,%d", roundedTemp, currentMax, currentMin);
+  TemperaturesString[strlen(TemperaturesString)+1] = '\0'; //Add a null terminator as strlen will vary
+  //Serial.println(String(TemperaturesString) + "\r\n");
+  return;
 }
 
 void softReset()
@@ -604,7 +619,7 @@ void receiveEvent(int howMany) {
   //Serial.print("Incoming = >" + incoming + "<\r\n");
   if (howMany == 1)
   {
-    // It's a "notification of imminent request"
+    // These values require a response:
     if (incoming == "0")
     {
       //It wants to know the date:
@@ -633,51 +648,21 @@ void receiveEvent(int howMany) {
     }
     else if (incoming == "4")
     {
-      //It wants to know the temperature:
-      float tempy = rtc.temperature();
-      tempy < 0 ? tempy -= 0.5 : tempy += 0.5;
-      int roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
-      sprintf(sendToPi, "%2d", roundedTemp); 
+      //It wants to know the temperature values:
+      sprintf(sendToPi, TemperaturesString); 
     }
     else if (incoming == "5")
-    {
-      //It wants to know the minimum temperature:
-      int tempy;
-      EEPROM.get(MEMTempMin, tempy);
-      if (isnan(tempy))
-      {
-        sprintf(sendToPi, "%s", "Unknown");
-      }
-      else
-      {
-        sprintf(sendToPi, "%2d", tempy);      
-      }
-    }
-    else if (incoming == "6")
-    {
-      //It wants to know the maximum temperature:
-      int tempy;
-      EEPROM.get(MEMTempMax, tempy);
-      if (isnan(tempy))
-      {
-        sprintf(sendToPi, "%s", "Unknown");
-      }
-      else
-      {
-        sprintf(sendToPi, "%2d", tempy);      
-      }
-    }
-    else if (incoming == "7")
     {
       //It wants to know the Pi on time and duration:
       sprintf(sendToPi, "%02d%02d", WakePiHour, WakePiDuration);
     }
-    return; //We've done all we need to here - get back to loop() and start preparing a response
+    return; //Requests have all been responded to. OK to exit the ISR
   }
 
+  //These requests all require an action. Most of these set a flag here and let loop() do the work:
   if (incoming == "WC")
   {
-    wakeCameraFlag = true; //Can't do time-consuming things in an ISR. Let the main loop do this.
+    wakeCameraFlag = true;
   }
   else if (incoming.startsWith("ST="))
   {
@@ -697,6 +682,10 @@ void receiveEvent(int howMany) {
   else if (incoming == "RA")
   {
     resetArduinoFlag = true;
+  }
+  else if (incoming == "GT")
+  {
+    getTempsFlag = true;
   }
   else if (incoming == "RN")
   {
@@ -839,6 +828,12 @@ void loop()
       DelaymS(1000); //Just to be sure the above has 'taken'
       softReset();
     }
+  }
+
+  if (getTempsFlag == true)
+  {
+    UpdateTempMinMax("");
+    getTempsFlag = false;
   }
 
   if (resetTempMinFlag == true)
