@@ -30,20 +30,14 @@ In so doing however, your average Windows PC will no longer be able to read the 
 15. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
 
 16. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 18.
-17. Run `sudo nano /etc/dhcpcd.conf`. Add the lines highlighted under the appropriate interface type, customising the addresses to suit your network:
+17. Run `sudo nano /etc/dhcpcd.conf`. Add the lines highlighted, customising the addresses to suit your network:
 
 ```txt
-interface eth0
-
-static ip_address=10.10.16.31/23
-static routers=10.10.16.1
-static domain_name_servers=10.10.16.59
-
 interface wlan0
-
 static ip_address=192.168.44.1/24
 static routers=192.168.44.254
 static domain_name_servers=192.168.44.254
+nohook wpa_supplicant
 ```
 
 18. Set a hostname with `sudo hostname <YourNewHostname>`
