@@ -545,7 +545,7 @@ void UpdateTempMinMax(String resetOption)
   int currentMin;
   int currentMax;
   EEPROM.get(MEMTempMin, currentMin);
-  EEPROM.get(MEMTempMin, currentMax);
+  EEPROM.get(MEMTempMax, currentMax);
   if (isnan(currentMin)) { currentMin = 200 ; }
   if (isnan(currentMax)) { currentMax = -200 ; }
   if (resetOption == "Min" || roundedTemp  < currentMin)
