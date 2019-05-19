@@ -858,7 +858,7 @@ def systemPOST():
 
     if 'submitThumbsCount' in request.form:
         try:
-            newCount = str(request.form.get('thumbCount'))
+            newCount = str(request.form.get('thumbsCount'))
             if newCount != None:
                 app.logger.debug('New thumbs count set as ' + newCount)
                 if not os.path.exists(iniFile):
