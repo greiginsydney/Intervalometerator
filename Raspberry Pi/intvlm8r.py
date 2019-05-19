@@ -297,7 +297,7 @@ def main():
 
         storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
         if len(storage_info) == 0:
-            flash('No storage info available') //The memory card is missing or faulty
+            flash('No storage info available') # The memory card is missing or faulty
             
         abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
         config = camera.get_config(context)
