@@ -9,7 +9,7 @@
 #
 # This script is part of the Intervalometerator project, a time-lapse camera controller for DSLRs:
 # https://github.com/greiginsydney/Intervalometerator
-# https://greiginsydney.com/Intervalometerator
+# https://greiginsydney.com/intvlm8r
 # https://intvlm8r.com
 
 # Reference: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04
