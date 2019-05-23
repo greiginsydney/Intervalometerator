@@ -9,7 +9,7 @@
 #
 # This script is part of the Intervalometerator project, a time-lapse camera controller for DSLRs:
 # https://github.com/greiginsydney/Intervalometerator
-# https://greiginsydney.com/Intervalometerator
+# https://greiginsydney.com/intvlm8r
 # https://intvlm8r.com
 #
 # This script incorporates code from python-gphoto2, and we are incredibly indebted to Jim Easterbrook for it.
