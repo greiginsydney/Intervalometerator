@@ -151,7 +151,7 @@ You will recognise this as a micro-USB plug to a USB-A socket, but it's official
 
     $AUD5
 
-### Mini HDMI cable/adapter
+#### Mini HDMI cable/adapter
 
 As with the OTG cable, your Pi supplier will surely offer these with the Pi, as you'll need it to connect your desktop monitor for the initial config steps.
 
@@ -232,7 +232,7 @@ I went with bog-standard Motorola 4N25 6-pin DIP opto-isolators. These (or an eq
 
     $AUD1 (each - you need two)
 
-### Concealed Timber Door Frame Reed Switch
+#### Concealed Timber Door Frame Reed Switch
 So as to save opening the case when its in situ, we added a standard door reed switch you might find used in a burglar alarm. Wave a magnet on the outside of the box, and in the configuration presented here it will wake the Raspberry Pi for the previously-set "WakeTime" duration. (Again, this presumes a low-power setup with the Pi normally turned off).
 
 - [Jaycar (AU)](https://www.jaycar.com.au/concealed-timber-door-frame-reed-switch/p/LA5075)
@@ -242,20 +242,28 @@ So as to save opening the case when its in situ, we added a standard door reed s
 
 #### 2.5mm stereo socket
 
-This is to connect the intervalm8r to the camera's shutter cable. I went with a though-hole plate-mounted version here, but you could just as easily choose PCM mount or in-line instead. Change this to a suitable connector if your camera shutter release cable has a different connector.
+This is to connect the intervalm8r to the camera's shutter cable. The PCB has been designed to accommodate all the thru-hole PCB-mounted sockets we could buy online. You could just as easily choose in-line instead, or a directly-connected cable. Change this to a suitable connector if your camera shutter release cable uses a different type. (See ["adding the components"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-pcb-assembly.md#adding-the-components) in the PCB assembly.md for more details and options.)
 
 - [Element 14]()
 - [Amazon]()
 
-### 3mm Green LED (optional)
+#### 3mm Green LED (optional)
 
 As the project is presented, this LED lights when the Arduino is awake, but only if the adjacent jumper is connected (taking Arduino input A0 to ground). I used it as a generic headless debugging aid. You should be able to find this just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
 
     $AUD1
 
-#### Veroboard / stripboard
+#### Custom PCB
 
-As shown here, the intvlm8r is built onto a piece of Veroboard, aka stripboard.
+The custom PCB for the project is available on eBay.
+
+- [eBay]()
+
+    $AUD25.00, + shipping
+
+#### Veroboard (alternative PCB)
+
+An alternative to the PCB will be to build the board on Veroboard, aka stripboard. (There's an image of the Veroboard prototype on the [Wiki / history](https://github.com/greiginsydney/Intervalometerator/wiki/History) page.)   
 
 - [Jaycar (AU)](https://www.jaycar.com.au/pc-boards-vero-type-strip-95mm-x-75mm/p/HP9540)
 
