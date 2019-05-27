@@ -46,8 +46,8 @@
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
-					{% for method in ['sftp','fileshare', 'manual'] %}
-						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %}>{{ method }}</option>"
+					{% for method in ['Off', 'SFTP','Fileshare'] %}
+						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% else %} DISABLED{% endif %}>{{ method }}</option>"
 					{% endfor %}
 					</select>
 				</div>
@@ -148,8 +148,8 @@
 				<div class="alignleft">Transfer day:</div>
 				<div class="alignright">
 					<select name="fileDay" id="fileDay" onchange="newSelected(this.id)">
-					{% for day in ['Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						<option value="{{ day }}"{% if day == fileDay %} SELECTED{% endif %}>{{ day }}</option>
+					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+						<option value="{{ day }}"{% if day == fileDay %} SELECTED{% else %} DISABLED{% endif %}>{{ day }}</option>
 					{% endfor %}
 					</select>
 				</div>
