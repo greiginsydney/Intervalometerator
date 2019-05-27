@@ -9,19 +9,19 @@
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Camera Date:</div>
+				<div class="alignleft">Camera date:</div>
 				<div class="alignright">{{ cameraDate }}</div>
 			</td>
 		</tr>
 		<tr{{ (' class="red"' | safe) if focusmode != "Manual" }}>
 			<td>
-				<div class="alignleft">Focus Mode:</div>
+				<div class="alignleft">Focus mode:</div>
 				<div class="alignright">{{ focusmode }}</div>
 			</td>
 		</tr>
 		<tr{{ (' class="red"' | safe) if (exposuremode != "Manual" and exposuremode != "AV") }}>
 			<td>
-				<div class="alignleft">Exposure Mode:</div>
+				<div class="alignleft">Exposure mode:</div>
 				<div class="alignright">{{ exposuremode }}</div>
 			</td>
 		</tr>
@@ -33,7 +33,7 @@
 		<tr>
 		{% endif %}
 			<td>
-				<div class="alignleft">Auto Power-off:</div>
+				<div class="alignleft">Auto power-off:</div>
 				<div class="alignright">{{ autopoweroff }}</div>
 			</td>
 		</tr>
@@ -46,7 +46,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the Camera</button>
+				<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the camera</button>
 			</td>
 		</tr>
 	{% endif %}
@@ -58,7 +58,7 @@
 	<table>
 		<tr>
 			<td>
-			<div class="alignleft">Image Format:</div>
+			<div class="alignleft">Image format:</div>
 			<div class="alignright">
 				<select name="img" id="img" onchange="newSelected(this.id)">
 					{% for img in imgfmtoptions %}
@@ -70,7 +70,7 @@
 		</tr>
 		<tr id="wbRow">
 			<td>
-			<div class="alignleft">White Balance:</div>
+			<div class="alignleft">White balance:</div>
 			<div class="alignright">
 				<select name="wb" id="wb" onchange="newSelected(this.id)">
 				{% if wboptions %}
@@ -110,7 +110,7 @@
 		</tr>
 		<tr>
 			<td>
-			<div class="alignleft">Shutter Speed:</div>
+			<div class="alignleft">Shutter speed:</div>
 			<div class="alignright">
 				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
 					{% for shutterspeed in shutoptions %}
@@ -122,7 +122,7 @@
 		</tr>
 		<tr>
 			<td>
-			<div class="alignleft">Exposure Comp:</div>
+			<div class="alignleft">Exposure comp:</div>
 			<div class="alignright">
 				<select name="exp" id="exp" onchange="newSelected(this.id)">
 				{% if expoptions %}
