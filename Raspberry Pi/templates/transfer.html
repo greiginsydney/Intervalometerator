@@ -162,6 +162,11 @@
 				</div>
 			</td>
 		</tr>
+		{% if wakePiTime != '25' %}
+		<tr>
+			<td class="noborder">(A copy takes place each day at {{wakePiTime}}:00 when the Pi starts.)</td>
+		</tr>
+		{% endif %}
 	</table>
 	
 	<table class="noborder">
