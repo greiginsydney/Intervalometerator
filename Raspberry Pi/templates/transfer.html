@@ -8,7 +8,7 @@
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Upload Method:</div>
+				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
 					{% for method in ['sftp','fileshare', 'manual'] %}
@@ -23,7 +23,7 @@
 	<table id="sftp">
 		<tr>
 			<td>
-				<div class="alignleft">SFTP Server URL:</div>
+				<div class="alignleft">SFTP server URL:</div>
 				{% if sftpServer == '' %}
 					<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="ftp.somewhere.com" oninput="newText(this.id)"></div>
 				{% else %}
@@ -168,7 +168,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy Now</button>
+					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
 				</div>
 				<div class="alignright">
 					<button type="submit" name="TfrApply" id="apply">Apply</button>
