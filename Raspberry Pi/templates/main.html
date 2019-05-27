@@ -6,7 +6,7 @@
 		<th>System Information</th>
 	<tr>
 		<td>
-			<div class="alignleft">System Date:</div>
+			<div class="alignleft">System date:</div>
 			<div class="alignright" id="dateTime">{{ arduinoDate }} {{ arduinoTime }}</div>
 		</td>
 	</tr>
@@ -41,19 +41,19 @@
 			</tr>
 			<tr>
 				<td>
-					<div class="alignleft">Images on Camera:</div>
+					<div class="alignleft">Images on damera:</div>
 					<div class="alignright">{{ fileCount }}</div>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<div class="alignleft">Last Image on Camera:</div>
+					<div class="alignleft">Last image on camera:</div>
 					<div class="alignright">{{ lastImage }}</div>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<div class="alignleft">Available Shots:</div>
+					<div class="alignleft">Available shots:</div>
 					<div class="alignright">{{ availableShots }}</div>
 				</td>
 			</tr>
@@ -72,7 +72,7 @@
 			</tr>
 			<tr class="noborder">
 				<td>
-					<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the Camera</button>
+					<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the camera</button>
 				</td>
 			</tr>
 		{% endif %}
@@ -88,13 +88,13 @@
 	</tr>
 	<tr class="{{ 'green' if lastImage|string() == piLastImage|string() }}">
 		<td>
-			<div class="alignleft">Last Image on Pi:</div>
+			<div class="alignleft">Last image on Pi:</div>
 			<div class="alignright">{{ piLastImage }}</div>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<div class="alignleft">Pi Storage Free:</div>
+			<div class="alignleft">Pi storage free:</div>
 			<div class="alignright">{{ piSpaceFree }}</div>
 		</td>
 	</tr>
