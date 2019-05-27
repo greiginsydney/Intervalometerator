@@ -4,6 +4,41 @@
 <form method="post">
 	<table>
 		<tr>
+			<th>Copy Settings - camera to Pi</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Copy day:</div>
+				<div class="alignright">
+					<select name="copyDay" id="copyDay" onchange="newSelected(this.id)">
+					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+						<option value="{{ day }}"{% if day == copyDay %} SELECTED{% endif %}>{{ day }}</option>
+					{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr id="showHideCopyHour">
+			<td>
+				<div class="alignleft">Copy hour:</div>
+				<div class="alignright">
+					<select name="copyHour" id="copyHour" onchange="newSelected(this.id)">
+						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
+							<option value="{{ hour }}"{% if hour == copyHour %} SELECTED{% endif %}>{{ hour }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		{% if wakePiTime != '25' %}
+		<tr>
+			<td class="noborder">(A copy takes place each day at {{wakePiTime}}:00 when the Pi starts.)</td>
+		</tr>
+		{% endif %}
+	</table>
+	
+	<table>
+		<tr>
 			<th>Transfer Settings - from the Pi</th>
 		</tr>
 		<tr>
@@ -132,41 +167,6 @@
 				</div>
 			</td>
 		</tr>
-	</table>
-
-	<table>
-		<tr>
-			<th>Copy Settings - camera to Pi</th>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Copy day:</div>
-				<div class="alignright">
-					<select name="copyDay" id="copyDay" onchange="newSelected(this.id)">
-					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						<option value="{{ day }}"{% if day == copyDay %} SELECTED{% endif %}>{{ day }}</option>
-					{% endfor %}
-					</select>
-				</div>
-			</td>
-		</tr>
-		<tr id="showHideCopyHour">
-			<td>
-				<div class="alignleft">Copy hour:</div>
-				<div class="alignright">
-					<select name="copyHour" id="copyHour" onchange="newSelected(this.id)">
-						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							<option value="{{ hour }}"{% if hour == copyHour %} SELECTED{% endif %}>{{ hour }}</option>
-						{% endfor %}
-					</select>
-				</div>
-			</td>
-		</tr>
-		{% if wakePiTime != '25' %}
-		<tr>
-			<td class="noborder">(A copy takes place each day at {{wakePiTime}}:00 when the Pi starts.)</td>
-		</tr>
-		{% endif %}
 	</table>
 	
 	<table class="noborder">
