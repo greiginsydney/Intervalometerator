@@ -631,7 +631,8 @@ def transfer():
         'fileDay'       : '',
         'fileHour'      : '',
         'copyDay'       : '',
-        'copyHour'      : ''
+        'copyHour'      : '',
+        'wakePiTime'    : '25'
     }
     config = ConfigParser.SafeConfigParser(
         {
@@ -647,7 +648,8 @@ def transfer():
         'fileDay'       : '',
         'fileHour'      : '',
         'copyDay'       : 'Off',
-        'copyHour'      : ''
+        'copyHour'      : '',
+        'wakePiTime'    : '25'
         })
     try:
         config.read(iniFile)
@@ -669,6 +671,9 @@ def transfer():
         app.logger.debug('INI file error:' + str(e))
         flash('Error reading from the Ini file')
 
+    rawWakePi = str(readString("5"))
+    templateData['wakePiTime']     = rawWakePi[0:2] 
+        
     return render_template('transfer.html', **templateData)
 
 
