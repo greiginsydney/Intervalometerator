@@ -619,7 +619,7 @@ def transfer():
 
     # Initialise the dictionary:
     templateData = {
-        'tfrMethod'     : 'manual',    # Hides all options if the file isn't found or is bad
+        'tfrMethod'     : 'Off',    # Hides all options if the file isn't found or is bad
         'sftpServer'    : '',
         'sftpUser'      : '',
         'sftpPassword'  : '',
@@ -636,7 +636,7 @@ def transfer():
     }
     config = ConfigParser.SafeConfigParser(
         {
-        'tfrmethod'     : 'manual',
+        'tfrmethod'     : 'Off',
         'sftpServer'    : '',
         'sftpUser'      : '',
         'sftpPassword'  : '',
@@ -654,19 +654,19 @@ def transfer():
     try:
         config.read(iniFile)
         #app.logger.debug('Found the file in GET')
-        templateData['tfrMethod']    = config.get('Transfer', 'tfrmethod')
+        templateData['tfrMethod']     = config.get('Transfer', 'tfrmethod')
         templateData['sftpServer']    = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']    = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']= config.get('Transfer', 'sftpPassword')
-        templateData['sftpDay']        = config.get('Transfer', 'sftpDay')
-        templateData['sftpHour']    = config.get('Transfer', 'sftpHour')
+        templateData['sftpUser']      = config.get('Transfer', 'sftpUser')
+        templateData['sftpPassword']  = config.get('Transfer', 'sftpPassword')
+        templateData['sftpDay']       = config.get('Transfer', 'sftpDay')
+        templateData['sftpHour']      = config.get('Transfer', 'sftpHour')
         templateData['fileServer']    = config.get('Transfer', 'fileServer')
-        templateData['fileUser']    = config.get('Transfer', 'fileUser')
-        templateData['filePassword']= config.get('Transfer', 'filePassword')
-        templateData['fileDay']        = config.get('Transfer', 'fileDay')
-        templateData['fileHour']    = config.get('Transfer', 'fileHour')
-        templateData['copyDay']        = config.get('Copy', 'copyDay')
-        templateData['copyHour']    = config.get('Copy', 'copyHour')
+        templateData['fileUser']      = config.get('Transfer', 'fileUser')
+        templateData['filePassword']  = config.get('Transfer', 'filePassword')
+        templateData['fileDay']       = config.get('Transfer', 'fileDay')
+        templateData['fileHour']      = config.get('Transfer', 'fileHour')
+        templateData['copyDay']       = config.get('Copy', 'copyDay')
+        templateData['copyHour']      = config.get('Copy', 'copyHour')
     except Exception as e:
         app.logger.debug('INI file error:' + str(e))
         flash('Error reading from the Ini file')
