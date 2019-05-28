@@ -156,9 +156,9 @@
 		<tr>
 			<td class="noborder">
 				{% if wakePiTime == '25' %}
-				<p>If you request a reboot, the Arduino first shuts down the Pi and then reboots itself, after which the Pi will be restarted.</p>
+				<p>If you request a reboot, the Arduino first shuts down the Pi, reboots itself, then restarts the Pi.</p>
 				{% else %}
-				<p>If you request a reboot, the Arduino first shuts down the Pi and then reboots itself. As the Pi is not set to 24x7 operation, it won't come back until {{wakePiTime}}:00 or you manually override on site.</p>
+				<p>If you request a reboot, the Arduino first shuts down the Pi, reboots itself, then restarts the Pi. The Pi will then run for a further {{wakePiDuration}} minutes.</p>
 				{% endif %}
 			</td>
 		</tr>
