@@ -32,7 +32,7 @@ The mount is also quite a long way forward in the case purely so the camera can 
 <img src="https://user-images.githubusercontent.com/44954153/58521201-10340900-81ff-11e9-86f2-146f72d02111.png">
 
 2. Drill a pilot hole where the centre of the lens will be.
-3. Using the pilot hole as a guide, drill the hole for the lens using a 3” hole saw. Be sure to hold the case and drill firmly to keep the final hole as close to 3” as possible. 
+3. Using the pilot hole as a guide, drill the hole for the lens using a 3” hole saw. Be sure to hold the case and drill firmly to keep the final hole as close to 3” as possible. (I actually tested the hole saw size on a spare piece of plastic sheet beforehand to make sure I wasn't about to drill a hole in an expensive case that I couldn't fill.)
 4. Clean up the hole with some fine sandpaper. The 77-82mm step-up ring should fit neatly into the opening.
 5. Carefully apply glue around the front of the opening and glue in the step-up ring. Be careful not to get any glue on the filter thread inside the ring. Apply some weight to keep everything in place and allow the glue to dry. 
 6. Clean up any excess glue around the step-up ring and apply a bead of silicon sealant around the outside edge for extra water protection.
@@ -46,7 +46,7 @@ The mount is also quite a long way forward in the case purely so the camera can 
 
 8. Drill a pilot hole for the 1/4” mounting bolt.
 9. Drill the final 1/4” bolt hole.
-10. Apply a small amount of glue to the base of the Manfrotto mount for extra security.
+10. Apply a small amount of silicon sealant to the base of the Manfrotto mount for extra security and water proofing.
 11. Screw in the mount with a 1/4" bolt or screw. Pay attention that the front of the lens sits as close to parallel to the front of the case, to avoid any potential reflections in the case. 
 12. Allow the glue to dry.
 
