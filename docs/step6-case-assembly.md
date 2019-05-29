@@ -42,7 +42,7 @@ The mount is also quite a long way forward in the case purely so the camera can 
 ## Base – The Camera Mount
 7. Measure and mark up the base of the case as shown below, using the moulded feet as references.
 
-<img src="images/Case_Bottom.jpg">
+<img src="https://user-images.githubusercontent.com/44954153/58521528-69e90300-8200-11e9-99af-134a52feb108.png">
 
 8. Drill a pilot hole for the 1/4” mounting bolt.
 9. Drill the final 1/4” bolt hole.
@@ -50,7 +50,7 @@ The mount is also quite a long way forward in the case purely so the camera can 
 11. Screw in the mount with a 1/4" bolt or screw. Pay attention that the front of the lens sits as close to parallel to the front of the case, to avoid any potential reflections in the case. 
 12. Allow the glue to dry.
 
-<img src="images/IMG_3755.jpg" height="200"> <img src="images/IMG_3850.jpg" width="200">
+<img src="https://user-images.githubusercontent.com/44954153/58521691-a452a000-8200-11e9-9f52-1104095314c2.png" height="200"> <img src="https://user-images.githubusercontent.com/44954153/58521726-c77d4f80-8200-11e9-9e82-49239ecd0414.png" width="200">
 
 ## Side – The Cable Entry
 The exact location of the cable entry gland isn't critical. Just be sure that it - and the cable - won't foul any of the internal components or the case's catches. Also consider how easy it will be for the cable to the solar panel to accidentally move in front of the lens once it is deployed.
