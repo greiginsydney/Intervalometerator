@@ -281,9 +281,11 @@ def main():
         arduinoStats = str(readString("2"))
         if arduinoStats != "Unknown":
             lastShot= arduinoStats.split(":")[0]
+            if lastShot != "19999":
+                templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
             nextShot = arduinoStats.split(":")[1]
-            templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
-            templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+            if nextShot != "19999":
+                templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
     except:
         pass
     #except Exception as e:
