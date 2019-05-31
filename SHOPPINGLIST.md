@@ -2,6 +2,15 @@
 
 All components were sourced in Sydney, Australia through 2018 & 2019. We won't anticipate you'll have any problems sourcing these items.
 
+| Section | Approx pricing |
+| :--- | ---: |
+| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $ |
+| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $ |
+| [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $ |
+| __TOTAL__ | $ |
+
+<br>
+
 ## Photographic
 #### A camera (Canon 60D)
 See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions#why-i-chose-the-60d) page on the project's Wiki for the logic behind specifying this.
@@ -346,9 +355,6 @@ If your budget allows for it, check out some of the mounting options in the Ram 
 
 
 ## SUBTOTAL: $195
-
-# GRAND TOTAL: $AUD1081.80
-# (Approx $USD 780)
 
 <br/>
 
