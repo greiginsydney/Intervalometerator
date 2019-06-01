@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the latest [Rasbian Stretch](https://www.raspberrypi.org/downloads/raspbian/) image.
+1. Prepare the memory card with the latest [Rasbian Stretch Lite](https://www.raspberrypi.org/downloads/raspbian/) image. 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
 3. The boot process ends at a login screen. The default credentials are `pi` / `raspberry`.
 4. Login.
