@@ -78,7 +78,7 @@ pi@192.168.44.1's password:
 
 34. `sudo pip install -v gphoto2`
 35. `sudo apt-get install libjpeg-dev -y`
-36. `sudo pip install -v pillow`
+36. `sudo pip install -v pillow --no-cache-dir`
 37. `sudo apt-get install python-smbus i2c-tools -y`
 38. We don't want Bluetooth, so uninstall it<sup>[1](#uninstallbluetooth)</sup>:
     * `sudo apt-get purge bluez -y`
