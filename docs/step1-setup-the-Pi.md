@@ -11,7 +11,7 @@ If you're starting from scratch, start here at Step 1.
 6. Run `sudo raspi-config`.
 7. Select `(4) Localisation Options` then:
     * `(I3) - change keyboard layout`
-    I've never need to do anything but accept the defaults here. I found the Pi stopped responding for >10s after selecting "no compose key", so just wait for it and it will take you back to the main page.
+    I've never needed to do anything but accept the defaults here. I found the Pi stopped responding for >10s after selecting "no compose key", so just wait for it and it will take you back to the main page.
 8. Return to (4) and set `(I2) the timezone`. Select the appropriate options and you'll be returned to the menu.
 9. Select `(5) - Interfacing Options`
     * `(P2) Enable SSH` and at the prompt "Would you like the SSH server to be enabled?" change the selection to `<Yes>` and hit return, then return again at the `OK`.
