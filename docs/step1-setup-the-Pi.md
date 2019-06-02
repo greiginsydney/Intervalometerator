@@ -192,9 +192,9 @@ ls
 ```
 58. Now copy the script and web files across. (I used WinSCP):
 59. Into the "static" folder, copy the "main.css" file & the "favicon.ico".
-60. Into the "templates" folder, copy the 7 HTML files (main, index, camera, thumbnails, intervalometer, transfer & system).
-61. Into the "www" folder, copy the 4 ".py" files (intvlm8r.py, cameraTransfer.py, setTime.py & wsgi.py).
-62. Into /home/pi/ copy the 3 ".service" files, plus "hostapd.conf" & "intvlm8r". (We'll move them to their final locations in forthcoming steps)
+60. Into the "templates" folder, copy the nine HTML files (camera, index, intervalometer, login, main, system, thermal, thumbnails & transfer).
+61. Into the "www" folder, copy the four ".py" files (intvlm8r.py, cameraTransfer.py, setTime.py & wsgi.py).
+62. Into /home/pi/ copy the three ".service" files, plus "hostapd.conf" & "intvlm8r". (We'll move them to their final locations in forthcoming steps)
 
 63. `sudo chown -R pi:www-data /home/pi`
 
