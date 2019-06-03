@@ -381,6 +381,8 @@ def thumbnails():
                     thumb.save(dest, "JPEG")
                 except Exception as e:
                     app.logger.debug('Thumbs Pillow error: ' + str(e))
+        else:
+            flash("The are no images on the Pi. Copy some from the Transfer page.")
     except Exception as e:
         app.logger.debug('Thumbs error: ' + str(e))
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
