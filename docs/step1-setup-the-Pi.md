@@ -244,7 +244,7 @@ Oct 20 15:30:07 intervlm8r systemd[1]: intvlm8r.service: Unit entered failed sta
 Oct 20 15:30:07 intervlm8r systemd[1]: intvlm8r.service: Failed with result 'exit-code'.
 ```
 
-73: Assuming the file 'intvlm8r' (provided as part of the repo) is in the home directory, move it to /etc/nginx/sites-available/ with this:
+73. Assuming the file 'intvlm8r' (provided as part of the repo) is in the home directory, move it to /etc/nginx/sites-available/ with this:
 `sudo mv ~/intvlm8r /etc/nginx/sites-available/intvlm8r`
 
 74. `sudo ln -s /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled`
@@ -283,39 +283,41 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 
 > If you get a "502 Bad Gateway" that's usually indicative of a permissions problem<sup>[1](#502badgateway)</sup>. Check out the "access.log" and "error.log" files at /var/log/nginx. (Don't burn a lot of effort here without first giving it a cleansing reboot - we've done a lot!)
 
+82. One final config step for the web-server is to edit invtlm8r.py (`sudo nano invtlm8r.py`) to paste a unique "secret key" into app.secret_key at line 50. Replace the example text with a random string of your own - or use a site like the [Online GUID Generator](https://www.guidgenerator.com/online-guid-generator.aspx) to generate a GUID/UUID and use that instead.
+
 ## Startup Tasks
 ### NTP
 
-82. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). If you have connectivity, skip the next steps and resume at Step 87.
+83. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). If you have connectivity, skip the next steps and resume at Step 88.
 
-83. Create a service for the time sync. This runs once when-ever the Pi boots, reading the real time from the Arduino and then using this to set its own internal clock. Assuming the file 'setTime.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
+84. Create a service for the time sync. This runs once when-ever the Pi boots, reading the real time from the Arduino and then using this to set its own internal clock. Assuming the file 'setTime.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
 `sudo mv ~/setTime.service /etc/systemd/system/setTime.service`
 
-84. `sudo chmod 644 /etc/systemd/system/setTime.service`
-85. `sudo systemctl enable setTime.service`
+85. `sudo chmod 644 /etc/systemd/system/setTime.service`
+86. `sudo systemctl enable setTime.service`
 
-86. Should your Pi ever have intermittent network connectivity - even if it's only on the bench when you're building it - it's going to automatically suck the real-time from debian.pool.ntp.org, which will potentially confuse it and/or you<sup>[6](#timedatectl)</sup>. To kill this (and so you KNOW the Arduino is the Pi's authoritative clock-source), run:
+87. Should your Pi ever have intermittent network connectivity - even if it's only on the bench when you're building it - it's going to automatically suck the real-time from debian.pool.ntp.org, which will potentially confuse it and/or you<sup>[6](#timedatectl)</sup>. To kill this (and so you KNOW the Arduino is the Pi's authoritative clock-source), run:
 * `sudo systemctl disable systemd-timesyncd` to stop it launching at boot, and 
 * `sudo systemctl stop systemd-timesyncd` to stop it NOW.
 
 ### Camera Transfer - Script
 
-87. Now create a service for the backup script. This runs once when the Pi boots, copying any new images from the camera to the Pi. Assuming the file 'cameraTransfer.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
+88. Now create a service for the backup script. This runs once when the Pi boots, copying any new images from the camera to the Pi. Assuming the file 'cameraTransfer.service' (provided as part of the repo) is in the home directory, move it to /etc/systemd/system/ with this:
 `sudo mv ~/cameraTransfer.service /etc/systemd/system/cameraTransfer.service`
 
-88. Only do this step if you SKIPPED the "setTime" steps above. You now need to break a dependency baked into the cameraTransfer.service file. Edit this (with `sudo nano /etc/systemd/system/cameraTransfer.service`) to remove the reference to setTime.service. Change the "After=" line so it looks like this:
+89. Only do this step if you SKIPPED the "setTime" steps above. You now need to break a dependency baked into the cameraTransfer.service file. Edit this (with `sudo nano /etc/systemd/system/cameraTransfer.service`) to remove the reference to setTime.service. Change the "After=" line so it looks like this:
 
 `After=intvlm8r.service`
 
 
-89. `sudo chmod 644 /etc/systemd/system/cameraTransfer.service`
-90. `sudo systemctl enable cameraTransfer.service`
+90. `sudo chmod 644 /etc/systemd/system/cameraTransfer.service`
+91. `sudo systemctl enable cameraTransfer.service`
 
 ### Camera Transfer - Cron Job
 
-If your setup will be powered by a mains supply you may choose to leave the Pi running permanently. If that's the case, the above camera transfer script will never run, as it only executes when the Pi boots. To resolve this, we create a 'cron' job that runs every hour (or at a frequency you prefer) to trigger a run of the script. You can skip these steps if you're building for an off-grid or low-power setup. Jump to Step 99.
+If your setup will be powered by a mains supply you may choose to leave the Pi running permanently. If that's the case, the above camera transfer script will never run, as it only executes when the Pi boots. To resolve this, we create a 'cron' job that runs every hour (or at a frequency you prefer) to trigger a run of the script. You can skip these steps if you're building for an off-grid or low-power setup. Jump to Step 100.
 
-91. `crontab -e` will edit this user's 'crontab' file. You should receive this prompt:
+92. `crontab -e` will edit this user's 'crontab' file. You should receive this prompt:
 ```txt
 no crontab for pi - using an empty one
 
@@ -326,18 +328,18 @@ Select an editor.  To change later, run 'select-editor'.
   
 Choose 1-3 [2]:
 ```
-92. Select your preferred editor (1, 2 or 3) and press return. (I went with nano.)
-93. Add this line to the bottom of the file:
+93. Select your preferred editor (1, 2 or 3) and press return. (I went with nano.)
+94. Add this line to the bottom of the file:
 `0 * * * * /usr/bin/python /home/pi/www/cameraTransfer.py`
 
 The first 5 fields represent minute, hour, day of month, month & day of week, so as shown this task will execute every day at the top of every hour.
 
-94. Save and exit the editor.
-95. Logging the cron job will be beneficial, so enable that with `sudo nano /etc/rsyslog.conf`
-96. Scroll down the file until you reach this line:
+95. Save and exit the editor.
+96. Logging the cron job will be beneficial, so enable that with `sudo nano /etc/rsyslog.conf`
+97. Scroll down the file until you reach this line:
 `#cron.*                          /var/log/cron.log`
-97. Delete the leading '#' to un-comment the line, then save and exit the editor.
-98. You can confirm the cron service is running with `sudo service cron status`. It should output something like this:
+98. Delete the leading '#' to un-comment the line, then save and exit the editor.
+99. You can confirm the cron service is running with `sudo service cron status`. It should output something like this:
 ```txt
 ● cron.service - Regular background program processing daemon
    Loaded: loaded (/lib/systemd/system/cron.service; enabled; vendor preset: enabled)
@@ -360,14 +362,14 @@ Apr 25 09:17:01 raspberrypi CRON[10652]: (root) CMD (   cd / && run-parts --repo
 
 Now the web-server is up and running there are a few settings to be made in the Pi to establish the interfacing between it and the Arduino.
 
-99. Fine-tune some of the config settings with `sudo nano /boot/config.txt`
-100. Add the following text to the bottom of the file. (It might already be there, but possibly commented-out):
+100. Fine-tune some of the config settings with `sudo nano /boot/config.txt`
+101. Add the following text to the bottom of the file. (It might already be there, but possibly commented-out):
 ```txt
 dtparam=i2c1=on
 #This slows the bus, otherwise it's too fast for the poor 8MHz Ardy. (Feel free to change to "100000" or delete the comma and the baudrate command if you don't have this restriction)
 dtparam=i2c_arm=on,i2c_arm_baudrate=40000
 ```
-101. You can paste the following lines in verbatim:
+102. You can paste the following lines in verbatim:
 ```txt
 #The intervalometerator has no need for bluetooth:
 dtoverlay=pi3-disable-bt
@@ -383,8 +385,8 @@ dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 dtoverlay=gpio-poweroff,gpiopin=27,active_low
 ```
 
-102. Having saved this file, `sudo reboot now`.
-103. If you now repeat the I2C test from earlier (`sudo i2cdetect -y 1`) - and assuming the Arduino's up and running, connected - the bus should report a response from device 4:
+103. Having saved this file, `sudo reboot now`.
+104. If you now repeat the I2C test from earlier (`sudo i2cdetect -y 1`) - and assuming the Arduino's up and running, connected - the bus should report a response from device 4:
 
 ```txt
 0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
@@ -398,7 +400,7 @@ dtoverlay=gpio-poweroff,gpiopin=27,active_low
 70: -- -- -- -- -- -- -- --
 ```
 
-104. You're in business! 
+105. You're in business! 
 
 ## Next steps are:
 - Add an SSL certificate:
