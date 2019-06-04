@@ -1,1 +1,1 @@
-delete me
+This is the images folder.
