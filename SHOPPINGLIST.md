@@ -280,27 +280,31 @@ So as to save opening the case when its in situ, we added a standard door reed s
 
 This is to connect the intervalm8r to the camera's shutter cable. The PCB has been designed to accommodate all the thru-hole PCB-mounted sockets we could buy online. You could just as easily choose in-line instead, or a directly-connected cable. Change this to a suitable connector if your camera shutter release cable uses a different type. (See ["adding the components"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-pcb-assembly.md#adding-the-components) in the PCB assembly.md for more details and options.)
 
-- [Element 14]()
-- [Amazon]()
+- [Element 14 (AU)](https://au.element14.com/lumberg/1501-05/socket-2-5mm-jack/dp/1216978) - $AUD2.04 ea
+- [Amazon](https://amzn.to/2Wo0y3R) - pack of 10, $USD3.11
+- [Amazon](https://amzn.to/2WnkOmq) - pack of 5, $USD2.77
 
-    $AUDnn</br>
-    $USDnn
+    $AUD2.00</br>
+    $USD1.00
 
 #### 3mm Green LED (optional)
 
 As the project is presented, this LED lights when the Arduino is awake, but only if the adjacent jumper is connected (taking Arduino input A0 to ground). I used it as a generic headless debugging aid. You should be able to find this just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
 
-    $AUD1</br>
-    $USD1
+- [Element 14 (AU)](https://au.element14.com/multicomp/mcl034gd/led-3mm-70-green/dp/1581114) - MOQ 10, $AUD2.83
+- [Amazon](https://amzn.to/2MxRBW9) - pack of 100, $USD6.36
+
+    $AUD0.28</br>
+    $USD0.06
 
 #### Custom PCB
 
 The custom PCB for the project is available on eBay.
 
-- [eBay]()
+- [eBay](https://www.ebay.com.au/itm/264353662332)
 
-    $AUD25.00, + shipping</br>
-    $USD
+    $AUD17.00, + shipping</br>
+    $USD12.00
 
 #### Veroboard (alternative PCB)
 
@@ -310,17 +314,25 @@ An alternative to the PCB will be to build the board on Veroboard, aka stripboar
 - [Amazon](https://amzn.to/2WB3Yoc)
 
     $AUD4.50</br>
-    $USD11
+    $USD11.00
 
 #### Resistors
 
 Resistors are used on the board for two purposes. They're either current-limiting the supply to the LEDs (the green one and the 2 optos) or providing pull-up or pull-down assistance to the IO pins. You should be able to find these just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
 * Green LED: 1 x 150R 1/4W
 * Optos: 2 x 150R 1/4W
+
+- [Element 14](https://au.element14.com/multicomp/mf25-150r/res-150r-1-250mw-axial-metal-film/dp/9341315) - MOQ 50, AUD$2.70
+
+    $AUD0.03 (ea)</br>
+    $USDnn
+
 * Arduino pin A8: 1 x 4.7k 1/4W
 * Arduino pin A2: 1 x 4.7k 1/4W
 
-    $AUD1</br>
+- [Element 14](https://au.element14.com/multicomp/mf25-4k7/res-4k7-1-250mw-axial-metal-film/dp/9341951) - MOQ 10, AUD$0.54
+
+    $AUD0.03 (ea)</br>
     $USDnn
 
 #### 47uF electrolytic capacitor
@@ -328,52 +340,70 @@ Resistors are used on the board for two purposes. They're either current-limitin
 Every supply needs some smoothing. Optional but recommended.
 
 - [Element 14](https://au.element14.com/multicomp/mcrh35v476m6-3x11/cap-47-f-35v-20/dp/9451935?rpsku=rel3:667894&isexcsku=false)
-
+- [Amazon](https://amzn.to/2Mzjtt0) - pack of 5, $USD6.11
     $AUD0.30</br>
-    $USD
+    $USD1.00
     
-#### 100nF polyester capacitor
+#### 100nF MKT polyester capacitor
 
 Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 
-- [Element 14](https://au.element14.com/epcos/b32529c0104k000/cap-0-1-f-63v-10-pet-potted/dp/9750878?st=0.1%20uF%20polyester)
-
+- [Element 14](https://au.element14.com/epcos/b32529c0104k000/cap-0-1-f-63v-10-pet-potted/dp/9750878)
+- [Amazon](https://amzn.to/2WRrzkK) - pack of 20, $USD4.99
     $AUD0.30</br>
-    $USD
+    $USD0.25
     
 #### 100nF ceramic capacitor
 
 I really love the DeadOn RTC, however SparkFun appear to have omitted the chip manufacturer's recommended power supply capacitor. I went with a 100pF ceramic.
 
-- [Element 14](https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155?st=100pf%20ceramic) (MOQ = 5)
-
+- [Element 14](https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155)
+- [Amazon](https://amzn.to/2MzJxUW) - pack of 10, $USD8
     $AUD0.30</br>
-    $USD
+    $USD0.80
 
 
 #### Miscellaneous
 
-Header pins
+##### Header pins
 
-Jumpers
+- [Amazon](https://amzn.to/2Wr6Xex) - 10 strips, $USD5.69
+
+    $AUD0.30</br>
+    $USD
+
+##### Jumpers
+
+You need either 4 or 6, depending on how you assemble the board.
 - [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) (Pack of 25)
 
-2.0mm Bolts (Raspberry Pi)
-- [Element 14](https://au.element14.com/tr-fastenings/m2-6-prstmc-z100/screw-pozi-pan-steel-bzp-m2x6/dp/1420386) (Pack of 100)
+    $AUD0.30</br>
+    $USD
 
-2.0mm threaded spacers
+##### 2.0mm Bolts (to mount the Raspberry Pi)
+
+You might find these a challenge to source. Try a shop selling model aircraft, drones, etc.
+- [Element 14](https://au.element14.com/tr-fastenings/m2-6-prstmc-z100/screw-pozi-pan-steel-bzp-m2x6/dp/1420386) - Pack of 100, $AUD2.59
+
+    $AUD0.30</br>
+    $USD
+
+##### 2.0mm threaded spacers
 - [Element 14](https://au.element14.com/ettinger/05-01-103/standoff-hex-female-brass-10mm/dp/2494574) (MOQ = 10)
 
-Backmount (for mounting the PCB to)
-
-3.0mm bolts (PCB to backmount)
-
-3.0mm (dia) spacers
-
-interconnecting wires.
-
-    $AUD10</br>
+    $AUD0.30</br>
     $USD
+
+##### Backmount (for mounting the PCB to)
+
+##### 3.0mm bolts (PCB to backmount)
+
+##### 3.0mm (dia) spacers
+
+##### Interconnecting wires.
+
+    Let's call it $AUD10</br>
+    $USD10
     
 
 ### SUBTOTAL: $201.80
