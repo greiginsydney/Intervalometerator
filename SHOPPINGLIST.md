@@ -9,12 +9,14 @@ Notes:
 
 
 <br>
+
 | Section | Approx pricing AU | Approx pricing USA |
 | :--- | ---: | ---: |
-| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $ | $ |
-| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $ | $ |
-| [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $ | $ |
-| __TOTAL__ | $ | $ |
+| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $690 | $501 |
+| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $212 | $159 |
+| [Power](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#power) | $113 | $83 |
+| [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $112 | $76 |
+| __TOTAL__ | __$1127__ | __$819__ |
 
 <br>
 
@@ -22,9 +24,11 @@ Notes:
 #### A camera (Canon 60D)
 See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions#why-i-chose-the-60d) page on the project's Wiki for the logic behind specifying this.
 
-- [eBay](https://www.ebay.com/bhp/canon-60d)
+- [eBay (US)](https://www.ebay.com/b/Canon-EOS-60D-Body-Only-Digital-Cameras/31388/bn_105856154)
     
-    $AUD400
+    ~ $AUD400</br>
+    ~ $USD250
+    
 
 #### 18-55mm EF-S Lens
 
@@ -32,7 +36,8 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 - [eBay](https://www.ebay.com/sch/i.html?_nkw=18-55mm+EF-S)
     
-    $AUD75
+    ~ $AUD75
+    ~ $USD75
 
 #### DC  Power Coupler to suit
 
@@ -84,59 +89,11 @@ This one's optional, and depends on your choice of housing and camera. We wanted
 
 - [eBay](https://www.ebay.com.au/itm/112701227087)
 
+    $AUD2</br>
     $AUD2
 
 
-### SUBTOTAL: $582
-
-## Power
-
-#### 12V Sealed lead-acid (SLA) battery
-Be careful selecting a battery. The 12V 2.2Ah SLA battery we went with only *just* fits inside the Pelican case.
-
-- [Jaycar Electronics (AU)](https://www.jaycar.com.au/12v-2-2ah-sla-battery/p/SB2482)
-    
-    $AUD24
-
-#### 12V Solar charger
-
-We used this "12V 6A Battery Charging Regulator for Solar Panels".
-
-- [Jaycar Electronics (AU)](https://www.jaycar.com.au/12v-6a-battery-charging-regulator-for-solar-panels/p/AA0348)
-
-    $AUD30
-
-#### Solar panel
-
-Choose a panel and matching charger to suit your installed environment. If you're lucky enough to have mains power, perhaps omit the panel but retain the battery and charger to sustain the system through any unexpected mains failures.
-
-- [eBay](https://www.ebay.com.au/itm/112750149497) - 20W
-- [Amazon](https://amzn.to/2Mq516y) - 10W
-- [Amazon](https://amzn.to/2HQndln) - 20W
-
-    $AUD49</br>
-    $USD21 - 34
-
-
-#### Cable entry gland
-
-You only need two holes in the box - one to let the light in, and another for the power. For the power input, you'll need some sort of gland to provide a water-tight seal.
-
-You should be able to source these from your nearest electrical wholesaler, hobbyist electronics shop, or maybe a marine supplies shop (if you're near water).
-
-- [Cabac (AU)](https://www.cabac.com.au/product-specs/13450510/GN12S)
-- [Amazon](https://amzn.to/2Wylqd5) - pack of 6, $USD6
-
-    $AUD2 (?)</br>
-    $USD1
-
-#### Miscellaneous
-
-Your choice of solar panel might require some bracing or a bracket in order for it to mount to a pole. For ours we used two lengths of some 2" aluminium angle that we had to hand, resulting in a U-shaped support.
-
-    $AUD ??
-
-### SUBTOTAL: $103
+### SUBTOTAL: AUD$690 / $USD501
 
 
 ##  Electronics
@@ -259,7 +216,8 @@ Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 - (not available on Amazon)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1007-7-5V-2-4A-Pololu-Step-Down-Voltage-Regulator-D24V22F7)
 
-    $AUD13
+    $AUD13</br>
+    $USD10
 
 #### Opto-Isolators
 
@@ -413,7 +371,46 @@ You might find these a challenge to source. Try a shop selling model aircraft, d
     $USD10
     
 
-### SUBTOTAL: $201.80
+### SUBTOTAL: AUD$212 / $USD159
+
+
+## Power
+
+#### 12V Sealed lead-acid (SLA) battery
+Be careful selecting a battery. The 12V 2.2Ah SLA battery we went with only *just* fits inside the Pelican case.
+
+- [Jaycar Electronics (AU)](https://www.jaycar.com.au/12v-2-2ah-sla-battery/p/SB2482)
+    
+    $AUD24
+
+#### 12V Solar charger
+
+We used this "12V 6A Battery Charging Regulator for Solar Panels".
+
+- [Jaycar Electronics (AU)](https://www.jaycar.com.au/12v-6a-battery-charging-regulator-for-solar-panels/p/AA0348)
+
+    $AUD30
+
+#### Solar panel
+
+Choose a panel and matching charger to suit your installed environment. If you're lucky enough to have mains power, perhaps omit the panel but retain the battery and charger to sustain the system through any unexpected mains failures.
+
+- [eBay](https://www.ebay.com.au/itm/112750149497) - 20W
+- [Amazon](https://amzn.to/2Mq516y) - 10W
+- [Amazon](https://amzn.to/2HQndln) - 20W
+
+    $AUD49</br>
+    $USD21 - 34
+
+#### Miscellaneous
+
+Your choice of solar panel might require some bracing or a bracket in order for it to mount to a pole. For ours we used two lengths of some 2" aluminium angle that we had to hand, resulting in a U-shaped support.
+
+    Let's call it $AUD10</br>
+    Let's call it $USD10
+
+### SUBTOTAL: AUD$113 / $USD83
+
 
 ## Hardware - casing and mounts
 
@@ -424,11 +421,22 @@ You might find these a challenge to source. Try a shop selling model aircraft, d
     $AUD95</br>
     $USD60
 
-
 #### CCTV Camera Mount
 
     $AUD15</br>
     $USD
+
+#### Cable entry gland
+
+You only need two holes in the box - one to let the light in, and another for the power. For the power input, you'll need some sort of gland to provide a water-tight seal.
+
+You should be able to source these from your nearest electrical wholesaler, hobbyist electronics shop, or maybe a marine supplies shop (if you're near water).
+
+- [Cabac (AU)](https://www.cabac.com.au/product-specs/13450510/GN12S)
+- [Amazon](https://amzn.to/2Wylqd5) - pack of 6, $USD6
+
+    $AUD2 (est)</br>
+    $USD1
 
 #### Ram Mounts
 
@@ -436,7 +444,7 @@ If your budget allows for it, check out some of the mounting options in the Ram 
 
 
 
-## SUBTOTAL: $195
+## SUBTOTAL: $AUD112 / $USD76
 
 <br/>
 
