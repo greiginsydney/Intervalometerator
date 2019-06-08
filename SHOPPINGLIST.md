@@ -36,7 +36,7 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 - [eBay](https://www.ebay.com/sch/i.html?_nkw=18-55mm+EF-S)
     
-    ~ $AUD75
+    ~ $AUD75</br>
     ~ $USD75
 
 #### DC  Power Coupler to suit
@@ -287,6 +287,7 @@ Optos: 2 x 150R 1/4W
 
 - [Element 14 (AU)](https://au.element14.com/multicomp/mf25-150r/res-150r-1-250mw-axial-metal-film/dp/9341315) - MOQ 50, AUD$2.70
 - [Amazon](https://amzn.to/2XvrT5r) - pack of 100, $US5.69
+    
     $AUD0.03 (ea)</br>
     $USD0.06 (ea)
 
@@ -305,6 +306,7 @@ Every supply needs some smoothing. Optional but recommended.
 
 - [Element 14](https://au.element14.com/multicomp/mcrh35v476m6-3x11/cap-47-f-35v-20/dp/9451935?rpsku=rel3:667894&isexcsku=false)
 - [Amazon](https://amzn.to/2Mzjtt0) - pack of 5, $USD6.11
+    
     $AUD0.30</br>
     $USD1.00
     
@@ -314,6 +316,7 @@ Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 
 - [Element 14](https://au.element14.com/epcos/b32529c0104k000/cap-0-1-f-63v-10-pet-potted/dp/9750878)
 - [Amazon](https://amzn.to/2WRrzkK) - pack of 20, $USD4.99
+    
     $AUD0.30</br>
     $USD0.25
     
@@ -323,6 +326,7 @@ I really love the DeadOn RTC, however SparkFun appear to have omitted the chip m
 
 - [Element 14](https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155)
 - [Amazon](https://amzn.to/2MzJxUW) - pack of 10, $USD8
+    
     $AUD0.30</br>
     $USD0.80
 
@@ -342,6 +346,7 @@ I really love the DeadOn RTC, however SparkFun appear to have omitted the chip m
 You need either 4 or 6, depending on how you assemble the board.
 - [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) - Pack of 25, $AUD
 - [Amazon](https://amzn.to/2I2mTjq) - pack of 120, $USD7.88
+    
     $AUD0.30</br>
     $USD0.40
 
