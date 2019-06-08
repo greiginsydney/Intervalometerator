@@ -1,15 +1,20 @@
 # Shopping List
 
-All components were sourced in Sydney, Australia through 2018 & 2019. We won't anticipate you'll have any problems sourcing these items.
+All components were sourced in Sydney, Australia through 2018 & 2019. We won't anticipate you'll have too many problems sourcing these items.
 
-All pricing shown here is approximate.
+Notes:
+- All pricing shown here is approximate, and excludes shipping costs.
+- The totals reflect the unit price and don't take into account that some merchants require you to purchase more than 1.
+- All Element 14 links should readily translate to Avnet and Farnell links for other markets. (They're the same company).
 
-| Section | Approx pricing |
-| :--- | ---: |
-| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $ |
-| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $ |
-| [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $ |
-| __TOTAL__ | $ |
+
+<br>
+| Section | Approx pricing AU | Approx pricing USA |
+| :--- | ---: | ---: |
+| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $ | $ |
+| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $ | $ |
+| [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $ | $ |
+| __TOTAL__ | $ | $ |
 
 <br>
 
@@ -280,7 +285,7 @@ So as to save opening the case when its in situ, we added a standard door reed s
 
 This is to connect the intervalm8r to the camera's shutter cable. The PCB has been designed to accommodate all the thru-hole PCB-mounted sockets we could buy online. You could just as easily choose in-line instead, or a directly-connected cable. Change this to a suitable connector if your camera shutter release cable uses a different type. (See ["adding the components"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-pcb-assembly.md#adding-the-components) in the PCB assembly.md for more details and options.)
 
-- [Element 14 (AU)](https://au.element14.com/lumberg/1501-05/socket-2-5mm-jack/dp/1216978) - $AUD2.04 ea
+- [Element 14 (AU)](https://au.element14.com/lumberg/1501-05/socket-2-5mm-jack/dp/1216978)
 - [Amazon](https://amzn.to/2Wo0y3R) - pack of 10, $USD3.11
 - [Amazon](https://amzn.to/2WnkOmq) - pack of 5, $USD2.77
 
@@ -303,7 +308,7 @@ The custom PCB for the project is available on eBay.
 
 - [eBay](https://www.ebay.com.au/itm/264353662332)
 
-    $AUD17.00, + shipping</br>
+    $AUD17.00</br>
     $USD12.00
 
 #### Veroboard (alternative PCB)
@@ -319,21 +324,22 @@ An alternative to the PCB will be to build the board on Veroboard, aka stripboar
 #### Resistors
 
 Resistors are used on the board for two purposes. They're either current-limiting the supply to the LEDs (the green one and the 2 optos) or providing pull-up or pull-down assistance to the IO pins. You should be able to find these just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
-* Green LED: 1 x 150R 1/4W
-* Optos: 2 x 150R 1/4W
+Green LED: 1 x 150R 1/4W
+Optos: 2 x 150R 1/4W
 
-- [Element 14](https://au.element14.com/multicomp/mf25-150r/res-150r-1-250mw-axial-metal-film/dp/9341315) - MOQ 50, AUD$2.70
-
+- [Element 14 (AU)](https://au.element14.com/multicomp/mf25-150r/res-150r-1-250mw-axial-metal-film/dp/9341315) - MOQ 50, AUD$2.70
+- [Amazon](https://amzn.to/2XvrT5r) - pack of 100, $US5.69
     $AUD0.03 (ea)</br>
-    $USDnn
+    $USD0.06 (ea)
 
-* Arduino pin A8: 1 x 4.7k 1/4W
-* Arduino pin A2: 1 x 4.7k 1/4W
+Arduino pin A8: 1 x 4.7k 1/4W
+Arduino pin A2: 1 x 4.7k 1/4W
 
 - [Element 14](https://au.element14.com/multicomp/mf25-4k7/res-4k7-1-250mw-axial-metal-film/dp/9341951) - MOQ 10, AUD$0.54
+- [Amazon](https://amzn.to/2XyFWHE) - pack of 100, $US5.69
 
     $AUD0.03 (ea)</br>
-    $USDnn
+    $USD0.06 (ea)
 
 #### 47uF electrolytic capacitor
 
@@ -367,18 +373,19 @@ I really love the DeadOn RTC, however SparkFun appear to have omitted the chip m
 
 ##### Header pins
 
+- [Element 14 (AU)](https://au.element14.com/mcm/ph1-40-ua/break-away-2-54mm-40-pin-strip/dp/2802331) - strip of 40
 - [Amazon](https://amzn.to/2Wr6Xex) - 10 strips, $USD5.69
 
-    $AUD0.30</br>
-    $USD
+    $AUD0.40</br>
+    $USD0.56
 
 ##### Jumpers
 
 You need either 4 or 6, depending on how you assemble the board.
-- [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) (Pack of 25)
-
+- [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) - Pack of 25, $AUD
+- [Amazon](https://amzn.to/2I2mTjq) - pack of 120, $USD7.88
     $AUD0.30</br>
-    $USD
+    $USD0.40
 
 ##### 2.0mm Bolts (to mount the Raspberry Pi)
 
