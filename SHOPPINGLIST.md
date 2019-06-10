@@ -282,7 +282,9 @@ An alternative to the PCB will be to build the board on Veroboard, aka stripboar
 #### Resistors
 
 Resistors are used on the board for two purposes. They're either current-limiting the supply to the LEDs (the green one and the 2 optos) or providing pull-up or pull-down assistance to the IO pins. You should be able to find these just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
+
 Green LED: 1 x 150R 1/4W
+
 Optos: 2 x 150R 1/4W
 
 - [Element 14 (AU)](https://au.element14.com/multicomp/mf25-150r/res-150r-1-250mw-axial-metal-film/dp/9341315) - MOQ 50, AUD$2.70
@@ -292,6 +294,7 @@ Optos: 2 x 150R 1/4W
     $USD0.06 (ea)
 
 Arduino pin A8: 1 x 4.7k 1/4W
+
 Arduino pin A2: 1 x 4.7k 1/4W
 
 - [Element 14](https://au.element14.com/multicomp/mf25-4k7/res-4k7-1-250mw-axial-metal-film/dp/9341951) - MOQ 10, AUD$0.54
@@ -385,8 +388,10 @@ You might find these a challenge to source. Try a shop selling model aircraft, d
 Be careful selecting a battery. The 12V 2.2Ah SLA battery we went with only *just* fits inside the Pelican case.
 
 - [Jaycar Electronics (AU)](https://www.jaycar.com.au/12v-2-2ah-sla-battery/p/SB2482)
+- [Amazon](https://amzn.to/2IA6VMv)
     
-    $AUD24
+    $AUD24</br>
+    $USD15
 
 #### 12V Solar charger
 
