@@ -333,6 +333,21 @@ I really love the DeadOn RTC, however SparkFun appear to have omitted the chip m
     $AUD0.30</br>
     $USD0.80
 
+#### 5.08mm / 0.2" PCB-mount sockets
+
+These are the green power connectors for the power input and camera power output on the PCB. You want two.
+
+- [Element 14](https://au.element14.com/camdenboss/ctb9350-2a/header-right-angle-2way/dp/3882093)
+
+    $AUD0.50 (ea)</br>
+    
+#### 5.08mm / 0.2" PCB-mount plugs
+    
+These mate with the above. You want two.
+
+- [Element 14](https://au.element14.com/camdenboss/ctb9200-2a/terminal-block-pluggable-2pos/dp/3881854)
+
+    $AUD1.36 (ea)</br>
 
 #### Miscellaneous
 
