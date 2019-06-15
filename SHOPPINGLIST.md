@@ -388,10 +388,10 @@ You might find these a challenge to source. Try a shop selling model aircraft, d
 
 ##### 3.0mm (dia) spacers
 
-##### Interconnecting wires.
+##### Interconnecting wires
 
-    Let's call it $AUD10</br>
-    $USD10
+ Let's call it $AUD10</br>
+Let's call it $USD10
     
 
 ### SUBTOTAL: AUD$212 / $USD159
@@ -431,8 +431,9 @@ Choose a panel and matching charger to suit your installed environment. If you'r
 
 Your choice of solar panel might require some bracing or a bracket in order for it to mount to a pole. For ours we used two lengths of some 2" aluminium angle that we had to hand, resulting in a U-shaped support.
 
-    Let's call it $AUD10</br>
-    Let's call it $USD10
+
+     Let's call it $AUD10</br>
+Let's call it $USD10
 
 ### SUBTOTAL: AUD$113 / $USD83
 
@@ -448,8 +449,9 @@ Your choice of solar panel might require some bracing or a bracket in order for 
 
 #### CCTV Camera Mount
 
-    $AUD15</br>
-    $USD
+
+ $AUD15</br>
+$USD
 
 #### Cable entry gland
 
