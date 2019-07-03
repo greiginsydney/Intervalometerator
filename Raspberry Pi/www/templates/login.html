@@ -1,0 +1,46 @@
+{% extends "index.html" %}
+{% block content %}
+
+<form method="post">
+	<table class="noborder">
+		<tr>
+			<th>Login</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">User name:</div>
+				<div class="alignright">
+					<input type='text' name='username' id='username' placeholder='username'/>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Password:</div>
+				<div class="alignright">
+					<input type='password' name='password' id='password' placeholder='password'/>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Remember me:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" value="1" id="remembermeInput" name="" />
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<div class="alignright">
+					<button type="submit" id="login">Login</button>
+				</div>
+			</td>
+		</tr>
+	</table>
+</form>
+
+{% endblock %}

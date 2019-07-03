@@ -1,0 +1,111 @@
+{% extends "index.html" %}
+{% block content %}
+
+<table>
+	<tr>
+		<th>System Information</th>
+	<tr>
+		<td>
+			<div class="alignleft">System date:</div>
+			<div class="alignright" id="dateTime">{{ arduinoDate }} {{ arduinoTime }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Last shot:</div>
+			<div class="alignright">{{ arduinoLastShot }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Next shot:</div>
+			<div class="alignright">{{ arduinoNextShot }}</div>
+		</td>
+	</tr>
+</table> 
+
+<form method="get">
+	<table>
+		{% if cameraModel != "" %}
+			<tr>
+				<td>
+					<div class="alignleft">Camera:</div>
+					<div class="alignright">{{ cameraModel }}</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div class="alignleft">Lens:</div>
+					<div class="alignright">{{ cameraLens }}</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div class="alignleft">Images on damera:</div>
+					<div class="alignright">{{ fileCount }}</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div class="alignleft">Last image on camera:</div>
+					<div class="alignright">{{ lastImage }}</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div class="alignleft">Available shots:</div>
+					<div class="alignright">{{ availableShots }}</div>
+				</td>
+			</tr>
+			<tr {{ 'class="red"' if cameraBattery == "Low" }}>
+				<td>
+					<div class="alignleft">Battery:</div>
+					<div class="alignright">{{ cameraBattery }}</div>
+				</td>
+			</tr>
+		{% else %}
+			<tr class="red">
+				<td>
+					<div class="alignleft">Camera:</div>
+					<div class="alignright">No or unknown camera detected</div>
+				</td>
+			</tr>
+			<tr class="noborder">
+				<td>
+					<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the camera</button>
+				</td>
+			</tr>
+		{% endif %}
+	</table>
+</form>
+	
+<table>
+	<tr>
+		<td>
+			<div class="alignleft">Images on Pi:</div>
+			<div class="alignright">{{ piImageCount }}</div>
+		</td>
+	</tr>
+	<tr class="{{ 'green' if lastImage|string() == piLastImage|string() }}">
+		<td>
+			<div class="alignleft">Last image on Pi:</div>
+			<div class="alignright">{{ piLastImage }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi storage free:</div>
+			<div class="alignright">{{ piSpaceFree }}</div>
+		</td>
+	</tr>
+</table> 
+
+<table>
+	<tr>
+		<td>
+			<a href="{{ url_for('static',filename=('photos/' + piLastImageFile))}}" target="_blank"><img src="{{ url_for('static',filename=('photos/' + piLastImageFile))}}" alt="last image" width="100%"></a>
+		</td>
+	</tr>
+</table> 
+
+{% endblock %}

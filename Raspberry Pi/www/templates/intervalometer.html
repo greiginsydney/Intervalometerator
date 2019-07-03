@@ -1,0 +1,199 @@
+{% extends "index.html" %}
+{% block content %}
+
+<form method="POST">
+	<table>
+		<tr>
+			<th>Intervalometer Settings</th>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Shoot day of week:</div>
+			<div class="alignright">
+				<select multiple name="shootDays" id="shootDays" onchange="newDaySelected()">
+					{% if piDoW == "" %}
+						<option disabled selected value style="display:none"> -- choose -- </option>
+					{% endif %}
+					{% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+						<option value="{{day}}"{% if day in piDoW %} SELECTED{% endif %}>{{day}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Daily start hour:</div>
+				<div class="alignright">
+					<select name="startHour" id="startHour" onchange="newSelected(this.id)">
+						<option disabled selected value style="display:none"> -- choose -- </option>
+						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
+							<option value="{{hour}}"{% if hour == piStartHour %} SELECTED{% endif %}>{{hour}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Daily end hour:</div>
+				<div class="alignright">
+					<select name="endHour" id="endHour" onchange="newSelected(this.id)">
+						<option disabled selected value style="display:none"> -- choose -- </option>
+						{% for hour in ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24'] %}
+							<option value="{{hour}}"{% if hour == piEndHour %} SELECTED{% endif %}>{{hour}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Interval (minutes):</div>
+				<div class="alignright">
+					<select name="interval" id="interval" onchange="newSelected(this.id)">
+						<option disabled selected value style="display:none"> -- choose -- </option>
+						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
+							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<table class="noborder">
+		<tr>
+			<td>
+				<div class="alignleft">Shots / day:</div>
+				<div class="alignright" id="shotsperday"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Est days in camera:</div>
+				<div class="alignright" id="shotsincamera"></div>
+			</td>
+		</tr>
+	</table>
+
+	<table class="noborder">
+		<tr>
+			<td class="noborder">
+				<div class="alignright">
+					<button type="submit" id="apply">Apply</button>
+				</div>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<script>
+
+var numDaysSelected = 1;
+var SelectionByte = 0;
+var SelectionBits = new Array();
+	SelectionBits["shootDays"] =  1;
+	SelectionBits["startHour"] =  2;
+	SelectionBits["endHour"]   =  4;
+	SelectionBits["interval"]  =  8;
+
+// Run when the form first loads:
+lightButtons(); 
+calculateShots() 
+
+function newSelected(id)
+{
+	var option = document.getElementById(id);
+	if (!option.options[option.selectedIndex].defaultSelected)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	lightButtons();
+	calculateShots();
+}
+
+function newDaySelected()
+{
+	var daySelected = document.getElementById("shootDays");
+	var daysChanged = false;
+	numDaysSelected = 0
+	for (loop = 0; loop < daySelected.options.length; loop++)
+	{
+		var opt = daySelected.options[loop];
+		if (opt.selected) numDaysSelected++;
+		daysChanged = daysChanged || (opt.selected != opt.defaultSelected);
+	}
+	if (daysChanged)
+	{
+		SelectionByte = SelectionByte | 1; // OR turns the bit on if changes were made
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ 1;
+	}
+	lightButtons();
+}
+
+function calculateShots()
+{
+	var selectedStart    = document.getElementById("startHour");
+	var selectedEnd      = document.getElementById("endHour");
+	var selectedInterval = document.getElementById("interval");
+	var result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value)) * (60 / parseInt(selectedInterval.value)));
+	if (result == result) // A value that is NotANumber(NaN) != itself
+	{
+		// So we know the numbers are valid
+		if (result < 0 ) // We need to correct for the wrap-around midnight
+		{
+			result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value) + 24) * (60 / parseInt(selectedInterval.value)));
+		}
+		document.getElementById("shotsperday").innerHTML = result;
+		calculateCameraDays(result);
+	}
+	else
+	{
+		document.getElementById("shotsperday").innerHTML = "Unknown";
+		document.getElementById("shotsincamera").innerHTML = "Unknown";
+	}
+}
+
+function calculateCameraDays(shotsperday)
+{
+	var availableShots = "{{ availableShots }}";
+	if (availableShots != "Unknown")
+	{
+		var result = ~~(availableShots / shotsperday); 
+		if (result == result)
+		{
+			document.getElementById("shotsincamera").innerHTML = result;
+		}
+		else
+		{
+			document.getElementById("shotsincamera").innerHTML = "Unknown";
+		}
+	}
+	else
+	{
+		document.getElementById("shotsincamera").innerHTML = "Unknown";
+	}
+}
+
+function lightButtons()
+{
+	if ((SelectionByte == 0) || (numDaysSelected == 0))
+	{
+		document.getElementById("apply").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("apply").disabled  = false;
+	}
+}
+</script>
+
+{% endblock %}

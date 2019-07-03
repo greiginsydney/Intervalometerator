@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Intvlm8r</title>
+   <link rel="icon" href="/static/favicon.ico">
+   <!-- Intvlm8r custom style sheet -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=1">
+   <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+<header>
+<div class="container">
+<table class="noborder">
+	<tr>
+		<td width="15%" class="noborder"></td>
+		<td class="noborder"><h1>Intervalometerator</h1></td>
+		<td width="15%" style="text-align:right; font-size:2em;cursor:pointer" onclick="openNav()" class="noborder">&#9776;</td>		
+	</tr>
+	<tr>
+		<td width="15%" class="noborder"></td>
+		{% if current_user.is_authenticated %}
+			<td class="noborder"><h2>{{ locationName }}</h2></td>
+		{% else %}
+			<td class="noborder"><h2>&nbsp;</h2></td>
+		{% endif %}
+	</td>
+</table>
+<!-- MENU STARTS -->
+<div class="menu">
+	<div id="myNav" class="overlay">
+		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+		<div class="overlay-content">
+			<a href="{{ url_for ('main') }}">Home</a>
+			<a href="{{ url_for ('thumbnails') }}">Thumbnails</a>
+			<a href="{{ url_for ('camera') }}">Camera Settings</a>
+			<a href="{{ url_for ('intervalometer') }}">Intervalometer Settings</a>
+			<a href="{{ url_for ('transfer') }}">Transfer Settings</a>
+			<a href="{{ url_for ('thermal') }}">Thermal Settings</a>
+			<a href="{{ url_for ('system') }}">System Maintenance</a>
+			{% if current_user.is_anonymous %}
+				<a href="{{ url_for('login') }}">Login</a>
+			{% else %}
+				<a href="{{ url_for('logout') }}">Logout</a>
+			{% endif %}
+			
+		</div>
+	</div>
+
+	<script>
+	function openNav() {
+		document.getElementById("myNav").style.height = "80%";
+	}
+
+	function closeNav() {
+		document.getElementById("myNav").style.height = "0%";
+	}
+	</script>
+</div>
+</header>
+<div class="container">
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <table>
+	<tr class="red">
+    {% for message in messages %}
+      <td style="text-align:center">{{ message }}</td>
+    {% endfor %}
+    </tr>
+	</table>
+  {% endif %}
+{% endwith %}
+	{% block content %}
+	{% endblock %}
+</div>	
+</body>
+</html>
+<!--MENU ENDS -->

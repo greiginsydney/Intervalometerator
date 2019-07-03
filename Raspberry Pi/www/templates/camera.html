@@ -1,0 +1,227 @@
+{% extends "index.html" %}
+{% block content %}
+
+<form method="get">
+	<table>
+	{% if cameraDate != "" %}
+		<tr>
+			<th>Camera Settings</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Camera date:</div>
+				<div class="alignright">{{ cameraDate }}</div>
+			</td>
+		</tr>
+		<tr{{ (' class="red"' | safe) if focusmode != "Manual" }}>
+			<td>
+				<div class="alignleft">Focus mode:</div>
+				<div class="alignright">{{ focusmode }}</div>
+			</td>
+		</tr>
+		<tr{{ (' class="red"' | safe) if (exposuremode != "Manual" and exposuremode != "AV") }}>
+			<td>
+				<div class="alignleft">Exposure mode:</div>
+				<div class="alignright">{{ exposuremode }}</div>
+			</td>
+		</tr>
+		{% if autopoweroff|int == 0 or autopoweroff|int > 300 %}
+		<tr class="red">
+		{% elif autopoweroff|int > 60 %}
+		<tr class="orange">
+		{% else %}
+		<tr>
+		{% endif %}
+			<td>
+				<div class="alignleft">Auto power-off:</div>
+				<div class="alignright">{{ autopoweroff }}</div>
+			</td>
+		</tr>
+	{% else %}
+		<tr class="red">
+			<td>
+				<div class="alignleft">Camera:</div>
+				<div class="alignright">No or unknown camera detected</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the camera</button>
+			</td>
+		</tr>
+	{% endif %}
+	</table>	
+</form>
+
+
+<form method="post">
+	<table>
+		<tr>
+			<td>
+			<div class="alignleft">Image format:</div>
+			<div class="alignright">
+				<select name="img" id="img" onchange="newSelected(this.id)">
+					{% for img in imgfmtoptions %}
+						<option value="{{img}}"{{ ' SELECTED' if img == imgfmtselected }}>{{img}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr id="wbRow">
+			<td>
+			<div class="alignleft">White balance:</div>
+			<div class="alignright">
+				<select name="wb" id="wb" onchange="newSelected(this.id)">
+				{% if wboptions %}
+					{% for wb in wboptions %}
+					<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
+				{% endfor %}
+				{% else %}
+					<option disabled selected value style="display:none">n/a</option>
+				{% endif %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">ISO:</div>
+			<div class="alignright">
+				<select name="iso" id="iso" onchange="newSelected(this.id)">
+					{% for iso in isooptions %}
+						<option value="{{iso}}"{{ ' SELECTED' if iso == isoselected }}>{{iso}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Aperture:</div>
+			<div class="alignright">
+				<select name="aperture" id="aperture" onchange="newSelected(this.id)">
+					{% for aperture in apoptions %}
+						<option value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Shutter speed:</div>
+			<div class="alignright">
+				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
+					{% for shutterspeed in shutoptions %}
+						<option value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<div class="alignleft">Exposure comp:</div>
+			<div class="alignright">
+				<select name="exp" id="exp" onchange="newSelected(this.id)">
+				{% if expoptions %}
+					{% for exp in expoptions %}
+					<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
+					{% endfor %}
+				{% else %}	
+					<option disabled selected value style="display:none">n/a</option>
+				{% endif %}
+				</select>
+			</div>
+			</td>
+		</tr>
+	</table>
+
+{% if piPreviewFile != '' %}	
+<table>
+	<tr>
+		<td>
+		<a href="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" target="_blank"><img src="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" alt="preview image" width="100%"></a>
+		</td>
+	</tr>
+</table> 
+{% endif %}
+
+<table class="noborder">
+	<tr>
+		<td class="noborder">
+		<div class="alignleft">
+			<button name="CamSubmit" id="CamPreview" type="submit" value="preview">Preview</button>
+			<!-- See "capture preview" in focus-gui.py -->
+		</div>
+		<div class="alignright">
+			<button name="CamSubmit" id="CamSubmit" type="submit" value="apply">Apply</button>
+		</div>
+		</td>
+	</tr>
+</table>
+</form>
+
+<script>
+var SelectionByte = 0;
+var SelectionBits = new Array();
+	SelectionBits["img"]      =  1;
+	SelectionBits["wb"]       =  2;
+	SelectionBits["iso"]      =  4;
+	SelectionBits["aperture"] =  8;
+	SelectionBits["shutter"]  = 16;
+	SelectionBits["exp"]      = 32;
+
+lightButtons(); <!--  Forces a run when the form first loads -->
+checkWhiteBalance();
+function newSelected(id)
+{
+	var option = document.getElementById(id);
+	if (!option.options[option.selectedIndex].defaultSelected)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	lightButtons();
+	if (id = "wb") checkWhiteBalance();
+}
+function lightButtons()
+{
+	if ("{{cameraDate}}" == "")
+	{
+		document.getElementById("CamPreview").disabled = true;
+		document.getElementById("CamSubmit").disabled  = true;
+	}
+	else
+	{
+		if (SelectionByte == 0)
+		{
+			document.getElementById("CamPreview").disabled = false;
+			document.getElementById("CamSubmit").disabled  = true;
+		}
+		else
+		{
+			document.getElementById("CamPreview").disabled = true;
+			document.getElementById("CamSubmit").disabled  = false;
+		}
+	}
+}
+function checkWhiteBalance()
+{
+	var wbselected = document.getElementById("wb");
+	if (wbselected.value == "Auto")
+	{
+		document.getElementById("wbRow").className = "red";
+	}
+	else
+	{
+		document.getElementById("wbRow").className = "";
+	}
+}
+</script>
+
+{% endblock %}
