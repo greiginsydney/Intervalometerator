@@ -79,9 +79,9 @@ svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%2
 ```txt
 sudo chmod +x AutoSetup.sh
 ```
-30. Now run it!
+30. Now run it! (Be careful here: the "-E" switch is critical. It ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all.)
 ```txt
-sudo ./AutoSetup.sh start
+sudo -E ./AutoSetup.sh start
 ```
 This step could easily take half an hour or longer to complete, depending on how slow your Internet connection is. 
 
@@ -98,7 +98,7 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 32. Assuming all's well and the Pi has rebooted OK, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
-sudo ./AutoSetup.sh web
+sudo -E ./AutoSetup.sh web
 ```
 
 MORE DOCUMENTATION TO COME.
