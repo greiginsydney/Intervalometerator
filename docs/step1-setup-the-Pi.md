@@ -65,7 +65,7 @@ pi@192.168.44.1's password:
 25. Enter the password and press Return.
 26. It's STRONGLY recommended that you change the password. Run `passwd` and follow your nose.
 
-#### Here's where all the software modules are installed. This might take a while:
+## Here's where all the software modules are installed. This might take a while:
 
 27. We need to install Subversion so we can download *just* the Pi bits of the repo from GitHub:
 ```txt
@@ -75,7 +75,7 @@ sudo apt-get install subversion
 ```txt
 svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%20Pi/ ~ --force
 ```
-29. All the hard work is done by a script, but it needs to be made executable first:
+29. All the hard work is done by a script in the repo, but it needs to be made executable first:
 ```txt
 sudo chmod +x AutoSetup.sh
 ```
@@ -85,6 +85,10 @@ sudo -E ./AutoSetup.sh start
 ```
 This step could easily take half an hour or longer to complete, depending on how slow your Internet connection is. 
 
+> If any step fails, the script will abort and on-screen info should reveal the component that failed. You can simply re-run the script at any time and it will simply skip over those steps where no changes are required.
+
+> If libgphoto throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you will need to edit back into the script before your repeat attempt at this step.
+
 31. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
 Exited install_apps OK.
@@ -92,19 +96,49 @@ Reboot now? [Y/n]:
 ```
 Pressing return or anything but n/N will cause the Pi to reboot.
 
-> If any step fails, the script will abort and on-screen info should reveal the component that failed. You can simply re-run the script at any time and it will simply skip over those steps where no changes are required.
-
-> If libgphoto throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you will need to edit back into the script before your repeat attempt at this step.
-
-32. Assuming all's well and the Pi has rebooted OK, sign back in again and resume. The next step is to re-run the script, but with a new switch:
+32. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
 sudo -E ./AutoSetup.sh web
 ```
 
-MORE DOCUMENTATION TO COME.
+The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
+It will output its progress to the screen:
+```txt
+pi@raspberrypi:~ $ sudo -E ./AutoSetup.sh web
+mkdir: created directory 'photos'
+mkdir: created directory 'preview'
+mkdir: created directory 'thumbs'
+'intvlm8r.service' -> '/etc/systemd/system/intvlm8r.service'
+'intvlm8r' -> '/etc/nginx/sites-available/intvlm8r'
+```
+33. If your setup will be powered by a mains supply you may choose to leave the Pi running permanently. If that's the case, the inbuilt camera transfer script will never run, as it only executes when the Pi boots. To resolve this, we create a 'cron' job that runs every hour (or at a frequency you prefer) to trigger a run of the script. 
 
-105. You're in business! 
+```txt
+Cron job. If the Pi is set to always run, a scheduled 'cron job' will copy images off the camera.
+Shall we create one of those? [Y/n]:
+```
+
+Respond 'n' to the prompt if you're building for an off-grid or low-power setup.
+
+> If you want to change the schedule, just edit it after with `crontab -e`, and access the documentation if you need it with `man crontab`.
+
+34. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
+
+```txt
+NTP Step. Does the Pi have network connectivity? [Y/n]:
+```
+
+If you respond 'n' to the prompt, the script will move the repo's "setTime.service" file to /etc/systemd/system/. This will in turn cause the provided "setTime.py" script to be run when-ever the Pi boots, reading the real time from the Arduino and then using this to set the Pi's own internal clock.
+
+35. If all goes well, you'll be presented with a prompt to reboot:
+```txt
+Exited install_website OK.
+Reboot now? [Y/n]:
+```
+Pressing return or anything but n/N will cause the Pi to reboot.
+
+36. You're in business! 
 
 ## Next steps are:
 - Add an SSL certificate:
