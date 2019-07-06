@@ -77,11 +77,11 @@ svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%2
 ```
 29. All the hard work is done by a script in the repo, but it needs to be made executable first:
 ```txt
-sudo chmod +x AutoSetup.sh
+sudo chmod +x setup.sh
 ```
 30. Now run it! (Be careful here: the "-E" switch is critical. It ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all.)
 ```txt
-sudo -E ./AutoSetup.sh start
+sudo -E ./setup.sh start
 ```
 This step could easily take half an hour or longer to complete, depending on how slow your Internet connection is. 
 
@@ -98,14 +98,14 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 32. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
-sudo -E ./AutoSetup.sh web
+sudo -E ./setup.sh web
 ```
 
 The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
-pi@raspberrypi:~ $ sudo -E ./AutoSetup.sh web
+pi@raspberrypi:~ $ sudo -E ./setup.sh web
 mkdir: created directory 'photos'
 mkdir: created directory 'preview'
 mkdir: created directory 'thumbs'
