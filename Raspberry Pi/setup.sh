@@ -1,0 +1,237 @@
+#!/bin/bash
+set -e # The -e switch will cause the script to exit should any command return a non-zero value
+
+# keep track of the last executed command
+# https://intoli.com/blog/exit-on-errors-in-bash-scripts/
+trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+# echo an error message before exiting
+trap 'echo "\"${last_command}\"" command failed with exit code $?.' EXIT
+
+#Shell note for n00bs like me: in Shell scripting, 0 is success and true. Anything else is shades of false/fail.
+
+
+# -----------------------------------
+# START FUNCTIONS
+# -----------------------------------
+
+
+install_apps ()
+{
+	apt-get install subversion # Used later in this script to clone the RPi dir's of the Github repo
+	apt-get install python-pip python-flask -y
+	pip install flask flask-bootstrap flask-login gunicorn configparser
+	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
+	apt-get install libgphoto2-dev -y
+	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
+	pip install -v gphoto2
+	apt-get install libjpeg-dev -y
+	pip install -v pillow --no-cache-dir
+	apt-get install python-smbus i2c-tools -y
+	# We don't want Bluetooth, so uninstall it:
+	apt-get purge bluez -y
+	apt-get autoremove -y
+	apt autoremove
+	apt-get clean
+	# Prepare for reboot/restart:
+	echo "Exited install_apps OK."
+}
+
+
+install_website ()
+{
+	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
+	cd  ${HOME}
+	mkdir -pv photos
+	mkdir -pv preview
+	mkdir -pv thumbs
+	mkdir -pv www
+	mkdir -pv www/static
+	mkdir -pv www/templates
+	# Now create a 'symbolic link' (a shortcut) to the photos, preview and thumbs folders so they appear in the path for the webserver to access them: 
+	ln -sfn photos  www/static
+	ln -sfn preview www/static
+	ln -sfn thumbs  www/static
+	chown -R pi:www-data /home/pi
+
+	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
+	systemctl start intvlm8r
+	systemctl enable intvlm8r
+
+	[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
+	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
+
+	#Step 76 goes here - edit sites-enabled/default
+	if grep -qi "8080 default_server" /etc/nginx/sites-enabled/default;
+	then
+		echo -e "Skipped: Default server is already on port 8080"
+	else
+		sed -i 's/80 default_server/8080 default_server/g' /etc/nginx/sites-enabled/default # Move default from port 80 to 8080
+	fi
+
+	if grep -qi "root ~/www/templates;" /etc/nginx/sites-enabled/default;
+	then
+		echo -e "Skipped: 'root ~/www/templates;' exists in /etc/nginx/sites-enabled/default"
+	else
+		sed -i 's+root /var/www/html;+root ~/www/templates;+g' /etc/nginx/sites-enabled/default # Point to correct www path
+	fi
+
+	if grep -qi "intvlm8r.sock" /etc/nginx/sites-enabled/default;
+	then
+		echo -e "Skipped: location data has already been customised in /etc/nginx/sites-enabled/default"
+	else
+		sed -i $"/^[[:space:]]\+try_files/a include proxy_params;\nproxy_pass http://unix:${HOME}/www/intvlm8r.sock;" /etc/nginx/sites-enabled/default
+	fi
+
+	#Generate a secret key here & paste in to intvlm8r.py:
+	UUID=$(cat /proc/sys/kernel/random/uuid)
+	sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+
+
+	#Camera Transfer
+	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
+	chmod 644 /etc/systemd/system/cameraTransfer.service
+	systemctl enable cameraTransfer.service
+
+	#Camera Transfer - Cron Job
+
+	#Thank you SO:
+	# https://stackoverflow.com/questions/878600/how-to-create-a-cron-job-using-bash-automatically-without-the-interactive-editor
+	# https://stackoverflow.com/questions/4880290/how-do-i-create-a-crontab-through-a-script
+	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
+
+	if grep -q cameraTransfer.py "cronTemp";
+	then
+		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
+	else
+		echo "Cron job. If the Pi is set to always run, a scheduled 'cron job' will copy images off the camera."
+		read -p "Shall we create one of those? [Y/n]: " Response
+		case $Response in
+			(y|Y|"")
+				echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
+				crontab -u $SUDO_USER cronTemp #install new cron file
+				sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+				;;
+			(*)
+				#Skip
+				;;
+		esac
+	fi
+	rm cronTemp
+
+	#NTP
+	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
+	case $Response in
+		(y|Y|"")
+			sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
+			;;
+		(*)
+			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service
+			chmod 644 /etc/systemd/system/setTime.service
+			systemctl enable setTime.service
+			systemctl disable systemd-timesyncd
+			systemctl stop systemd-timesyncd
+			;;
+	esac
+
+
+	# Step 101 - slows the I2C speed
+	if  grep -q "dtparam=i2c1=on" /boot/config.txt;
+		then
+				echo 'Skipped: "/boot/config.txt" already contains "dtparam=i2c1=on"'
+		else
+		sed -i "/dtparam=i2c_arm=on/i dtparam=i2c1=on" /boot/config.txt
+	fi
+
+	if  grep -q "i2c_arm_baudrate" /boot/config.txt;
+		then
+				echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
+		else
+				sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000 /'g /boot/config.txt
+		fi
+
+	# Step 102
+	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
+	if  grep -Fq "intervalometerator" "/boot/config.txt"
+	then
+		echo 'Skipped: "/boot/config.txt" already contains our added config lines'
+	else
+cat <<END >> /boot/config.txt
+
+#The intervalometerator has no need for bluetooth:
+dtoverlay=pi3-disable-bt
+
+#This kills the on-board LED (to conserve power):
+dtparam=act_led_trigger=none
+dtparam=act_led_activelow=on
+
+#This sets up the ability for the Arduino to shut it down:
+dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
+
+#Set GPIO27 to follow the running state: it's High while running and 0 when shutdown is complete. The Arduino will monitor this pin.
+dtoverlay=gpio-poweroff,gpiopin=27,active_low
+END
+	fi
+	# Prepare for reboot/restart:
+	echo "Exited install_website OK."
+}
+
+
+test_install ()
+{
+	echo "TEST!"
+}
+
+prompt_for_reboot()
+{
+	read -p "Reboot now? [Y/n]: " rebootResponse
+	case $rebootResponse in
+		(y|Y|"")
+			echo "Bye!"
+			exec reboot now
+			;;
+		(*)
+			return
+			;;
+	esac
+}
+
+# -----------------------------------
+# END FUNCTIONS 
+# -----------------------------------
+
+
+# -----------------------------------
+# THE FUN STARTS HERE
+# -----------------------------------
+
+
+if [ "$EUID" -ne 0 ]
+  then echo -e "\nPlease re-run as 'sudo ./AutoSetup.sh <step>'"
+  exit 1
+fi
+
+case "$1" in
+	("start")
+		install_apps
+		prompt_for_reboot
+		;;
+	("web")
+		install_website
+		prompt_for_reboot
+		;;
+	("test")
+		test_install
+		prompt_for_reboot
+		;;
+	("")
+		echo -e "\nNo option specified. Re-run with 'start', 'web' or 'test' after the script name\n"
+		exit 1
+		;;
+	(*) 
+		echo -e "\nThe switch '$1' is invalid. Try again.\n"
+		exit 1
+		;;
+esac
+
+# Exit from the script with success (0)
+exit 0
