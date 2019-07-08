@@ -148,15 +148,3 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 <br>
 <hr >
-
-<a name="uninstallbluetooth">1</a>: [Disabling BlueTooth](https://scribles.net/disabling-bluetooth-on-raspberry-pi/)
-
-<a name="deployflask">2</a>: [Deploy flask app with nginx using gunicorn and supervisor](https://medium.com/ymedialabs-innovation/deploy-flask-app-with-nginx-using-gunicorn-and-supervisor-d7a93aa07c18)
-
-<a name="pythonflask">3</a>: [Python Flask + nginx + gunicorn](https://gist.github.com/xaratustrah/0e648a0dca74c661c1a1c78acbd5e224)
-
-<a name="serveflask">4</a>: [How To Serve Flask Applications with Gunicorn and Nginx on Ubuntu 16.04](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04)
-
-<a name="502badgateway">5</a>: [502 BAD Gateway](https://stackoverflow.com/questions/39919053/django-gunicorn-sock-file-not-created-by-wsgi)
-
-<a name="timedatectl">6</a>: [Raspbian Jessie Systemctl TimeDateCtl replacement for NTP](https://www.raspberrypi.org/forums/viewtopic.php?t=178763)
