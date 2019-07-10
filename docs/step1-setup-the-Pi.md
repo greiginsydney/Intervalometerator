@@ -146,7 +146,9 @@ Reboot now? [Y/n]:
 ```
 Pressing return or anything but n/N will cause the Pi to reboot.
 
-38. You're in business! 
+38. You're in business!  After the Pi reboots you should be able to browse to its IP address, where you'll be presented the message "You need to sign in before you can access that page!" and the login form.
+
+39. Login with the default credentials (admin/password). You'll want to change those, which you do by editing the /www/intvlm8r.py script.
 
 ## Next steps are:
 - Add an SSL certificate:
