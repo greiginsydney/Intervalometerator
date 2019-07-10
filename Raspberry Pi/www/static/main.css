@@ -311,6 +311,20 @@ input[type=radio] {
 	}
 }
 
+@media screen and (min-width: 800px) {
+	.thumbs  a {
+		  width: calc(12% - 6px);
+	}
+
+	.thumbs a:nth-of-type(2n) {
+		margin-right: 8px;
+	}
+
+	.thumbs a:nth-of-type(8n) {
+		margin-right: 0;
+	}
+}
+
 .thumbs a:hover img {
 	transform: scale(1.15);
 }
