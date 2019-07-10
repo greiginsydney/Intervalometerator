@@ -677,7 +677,8 @@ def transfer():
         flash('Error reading from the Ini file')
 
     rawWakePi = str(readString("5"))
-    templateData['wakePiTime']     = rawWakePi[0:2] 
+    if rawWakePi != "Unknown":
+        templateData['wakePiTime']     = rawWakePi[0:2] 
         
     return render_template('transfer.html', **templateData)
 
