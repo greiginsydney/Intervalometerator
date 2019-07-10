@@ -64,9 +64,9 @@ install_website ()
 	mkdir -pv www/static
 	mkdir -pv www/templates
 	# Now create a 'symbolic link' (a shortcut) to the photos, preview and thumbs folders so they appear in the path for the webserver to access them: 
-	ln -sfn photos  www/static
-	ln -sfn preview www/static
-	ln -sfn thumbs  www/static
+	ln -sfnv ${HOME}/photos  ${HOME}/www/static
+	ln -sfnv ${HOME}/preview ${HOME}/www/static
+	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 	chown -R pi:www-data /home/pi
 
 	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
