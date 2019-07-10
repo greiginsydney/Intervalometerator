@@ -69,7 +69,7 @@ pi@192.168.44.1's password:
 
 27. We need to install Subversion so we can download *just* the Pi bits of the repo from GitHub:
 ```txt
-sudo apt-get install subversion
+sudo apt-get install subversion -y
 ```
 28. This downloads the repo, dropping the structure into the home directory:
 ```txt
