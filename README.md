@@ -22,6 +22,8 @@ In its initial published version the intvlm8r has been tested with Canon 6D, 60D
 
 gPhoto (running on the Pi) is only used for the camera management, with the Arduino handling the core role of waking the camera and taking the shot using the camera's manual shutter input.
 
+[Check to see if your camera's been tested on this page](https://github.com/greiginsydney/Intervalometerator/wiki/Tested---supported-cameras) (and please update it if you have tried). 
+
 ### Flexible interval settings
 
 From the web interface you select the days of the week to shoot, within what span of hours, and how many shots per hour. A typical building construction might shoot Monday through Friday, from 6am to 6pm, and take 4 shots an hour.
