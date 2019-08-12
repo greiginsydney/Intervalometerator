@@ -19,7 +19,7 @@ To assemble the board you'll require:
 
 ## Before you Start
 
-1. Before you start, give the board a good visual check. Look for any places where solder may have bridged adjacent pads during manufafcturing process. We've deliberately kept the board as spaced out as possible, so the risk of this should be negligible, but it *is* a bit cosy around the 2.5mm socket.
+1. Before you start, give the board a good visual check. Look for any places where solder may have bridged adjacent pads during manufacturing process. We've deliberately kept the board as spaced out as possible, so the risk of this should be negligible, but it *is* a bit cosy around the 2.5mm socket.
 
 2. Check the mounting holes are the right size for your intended case or housing. If you plan to mount the PCB directly to another piece of material, use the board now as a drilling template.
 
