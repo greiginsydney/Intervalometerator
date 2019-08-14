@@ -102,6 +102,8 @@ install_website ()
 	UUID=$(cat /proc/sys/kernel/random/uuid)
 	sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
 
+	# Prompt the user to change the default web login from admin/password:
+	chg_web_login ()
 
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
@@ -192,6 +194,45 @@ END
 }
 
 
+chg_web_login ()
+{
+	# This matches the format of the  user/password dictionary, even allowing for some random spaces:
+	matchRegex="^users\s*=\s*\{'(\w+)':\s*\{'password':\s*'(.?*)'}}$"
+
+	# Read the current username:
+	while read line; do
+	  	if [[ $line =~ $matchRegex ]] ;
+		then
+		        oldLoginName=${BASH_REMATCH[1]}
+	        	oldPassword=${BASH_REMATCH[2]}
+		        break
+	  	fi
+	done <~/www/intvlm8r.py
+
+	if [ ! -z "$oldLoginName" ];
+	then
+        	read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
+        	if [ ! -z "$loginName" ];
+        	then
+	                sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
+	                if [ ! -z "$oldPassword" ];
+	                then
+	                        read -e -i "$oldPassword" -p "Change the website's password  : " password
+	                        if [ ! -z "$password" ];
+				then
+					sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':\s*)'($oldPassword)'}}$/\1'$password'}}/" ~/www/intvlm8r.py
+				else
+					echo -e "Error: An empty password is invalid. Skipping"
+				fi
+	                else
+	                        echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
+	                fi
+	        fi
+	else
+        	echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
+	fi
+}
+
 test_install ()
 {
 	echo "TEST!"
@@ -235,12 +276,15 @@ case "$1" in
 		install_website
 		prompt_for_reboot
 		;;
+	("login")	
+		chg_web_login
+		;;
 	("test")
 		test_install
 		prompt_for_reboot
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login' or 'test' after the script name\n"
 		exit 1
 		;;
 	(*) 
