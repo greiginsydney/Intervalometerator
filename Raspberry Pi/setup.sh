@@ -154,22 +154,22 @@ install_website ()
 
 	# Step 101 - slows the I2C speed
 	if  grep -q "dtparam=i2c1=on" /boot/config.txt;
-		then
-				echo 'Skipped: "/boot/config.txt" already contains "dtparam=i2c1=on"'
-		else
+	then
+		echo 'Skipped: "/boot/config.txt" already contains "dtparam=i2c1=on"'
+	else
 		sed -i "/dtparam=i2c_arm=on/i dtparam=i2c1=on" /boot/config.txt
 	fi
 
 	if  grep -q "i2c_arm_baudrate" /boot/config.txt;
-		then
-				echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
-		else
-				sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000 /'g /boot/config.txt
-		fi
+	then
+		echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
+	else
+		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000 /'g /boot/config.txt
+	fi
 
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
-	if  grep -Fq "intervalometerator" "/boot/config.txt"
+	if  grep -Fq "intervalometerator" "/boot/config.txt";
 	then
 		echo 'Skipped: "/boot/config.txt" already contains our added config lines'
 	else
@@ -262,9 +262,10 @@ prompt_for_reboot()
 # -----------------------------------
 
 
-if [ "$EUID" -ne 0 ]
-  then echo -e "\nPlease re-run as 'sudo ./AutoSetup.sh <step>'"
-  exit 1
+if [ "$EUID" -ne 0 ];
+then
+	echo -e "\nPlease re-run as 'sudo ./AutoSetup.sh <step>'"
+	exit 1
 fi
 
 case "$1" in
