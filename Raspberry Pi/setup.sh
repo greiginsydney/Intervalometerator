@@ -103,7 +103,7 @@ install_website ()
 	sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
 
 	# Prompt the user to change the default web login from admin/password:
-	chg_web_login ()
+	chg_web_login
 
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
@@ -277,7 +277,7 @@ case "$1" in
 		install_website
 		prompt_for_reboot
 		;;
-	("login")	
+	("login")
 		chg_web_login
 		;;
 	("test")
