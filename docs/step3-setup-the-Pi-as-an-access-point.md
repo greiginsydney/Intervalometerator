@@ -56,10 +56,12 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
 
 13. Control-X to save and Exit the file.
 
-14. `sudo service hostapd start`
-15. `sudo service dnsmasq start`
+14. `sudo service hostapd unmask`
+15. `sudo service hostapd enable`
+16. `sudo service hostapd start`
+17. `sudo service dnsmasq start`
 
-16. `sudo reboot now` cleans the IP settings and brings the Pi back up as an AP.
+18. `sudo reboot now` cleans the IP settings and brings the Pi back up as an AP.
 
 
 After this reboot you'll need to connect to it on its new IP address, and you'll be again prompted to trust it.
