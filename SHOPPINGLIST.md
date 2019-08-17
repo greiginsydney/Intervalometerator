@@ -416,6 +416,14 @@ We used this "12V 6A Battery Charging Regulator for Solar Panels".
 
     $AUD30
 
+Or this 3A version will also do the trick. 
+
+- [Jaycar Electronics (AU)](https://www.jaycar.com.au/miniature-12v-3a-pwm-solar-charge-controller/p/MP3762)
+
+    $AUD15
+    
+Both these are easily sourced on the usual websites.
+
 #### Solar panel
 
 Choose a panel and matching charger to suit your installed environment. If you're lucky enough to have mains power, perhaps omit the panel but retain the battery and charger to sustain the system through any unexpected mains failures.
