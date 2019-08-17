@@ -59,8 +59,7 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
 14. `sudo systemctl unmask hostapd`
 15. `sudo systemctl enable hostapd`
 
-16. `sudo reboot now` cleans the IP settings and brings the Pi back up as an AP. Note that you can now only connect directly via the access point. 
-
+16. `sudo reboot now` cleans the IP settings and brings the Pi back up as an AP. 
 
 After this reboot you'll need to connect to it on its new IP address, and you'll be again prompted to trust it.
 
