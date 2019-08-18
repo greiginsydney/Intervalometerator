@@ -212,6 +212,8 @@ Pololu 5V, 500mA Step-Down Voltage Regulator D24V5F5
 
 Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 
+> This regulator is *purely* for the camera, so choose a different voltage here if required.
+
 - [Pololu](https://www.pololu.com/product/2860)
 - (not available on Amazon)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1007-7-5V-2-4A-Pololu-Step-Down-Voltage-Regulator-D24V22F7)
