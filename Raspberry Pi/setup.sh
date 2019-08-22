@@ -233,6 +233,12 @@ chg_web_login ()
 	fi
 }
 
+make_ap ()
+{
+
+
+}
+
 test_install ()
 {
 	echo "TEST!"
@@ -280,12 +286,15 @@ case "$1" in
 	("login")
 		chg_web_login
 		;;
+	("ap")
+		make_ap
+		;;
 	("test")
 		test_install
 		prompt_for_reboot
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap' or 'test' after the script name\n"
 		exit 1
 		;;
 	(*) 
