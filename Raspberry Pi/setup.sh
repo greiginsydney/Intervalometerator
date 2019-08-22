@@ -235,8 +235,17 @@ chg_web_login ()
 
 make_ap ()
 {
-
-
+	echo ""
+	echo "Set your Pi as a WiFi Access Point. (Ctrl-C to abort)"
+	echo "If unsure, go with the defaults until you get to the SSID and password"
+	echo ""
+	read -e -i '10.10.10.1' -p    "Choose an IP address for the Pi        : " piIpV4
+	read -e -i '10.10.10.10' -p   "Choose the starting IP address for DCHP: " dhcpStartIp
+	read -e -i '10.10.10.100' -p  "Choose  the  ending IP address for DCHP: " dhcpEndIp
+	read -e -i '255.255.255.0' -p "Set the appropriate subnet mask        : " dhcpSubnetMask
+	read -e -i 'myPi_SSID' -p     "Pick a nice SSID                       : " wifiSsid
+	read -e -i 'P@$$w0rd' -p      "Choose a better password than this     : " wifiPwd
+	
 }
 
 test_install ()
