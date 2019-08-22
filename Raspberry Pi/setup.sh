@@ -257,6 +257,7 @@ make_ap ()
 	read -e -i '255.255.255.0' -p "Set the appropriate subnet mask        : " dhcpSubnetMask
 	read -e -i 'myPi_SSID' -p     "Pick a nice SSID                       : " wifiSsid
 	read -e -i 'P@$$w0rd' -p      "Choose a better password than this     : " wifiPwd
+	read -e -i '5' -p             "Choose an appropriate WiFi channel     : " wifiChannel
 	
 	#TODO: Validate these inputs. Make sure none are null
 	
@@ -276,7 +277,24 @@ interface wlan0
    nohook wpa_supplicant
 END
 	fi
+	
+	#Create a backup copy of your DHCP config before continuing:
+	mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
 
+cat <<END >> /etc/dnsmasq.conf
+interface=wlan0      # Use the require wireless interface - usually wlan0
+  dhcp-range=$dhcpStartIp,$dhcpEndIp,$dhcpSubnetMask,24h
+END
+	#Move the file to its new home:
+	[ -f hostapd.conf ] && mv -fv hostapd.conf /etc/hostapd/hostapd.conf
+	#Paste in the new settings
+	sed -i -E "s/^channel=(.*)$/channel=$wifiChannel/" /etc/hostapd/hostapd.conf
+	sed -i -E "s/^ssid=(.*)$/ssid=$wifiSsid/" /etc/hostapd/hostapd.conf
+	sed -i -E "s/^wpa_passphrase=(.*)$/wpa_passphrase=$wifiPwd/" /etc/hostapd/hostapd.conf
+
+	systemctl unmask hostapd
+	systemctl enable hostapd
+	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
 }
 
 
@@ -331,6 +349,7 @@ case "$1" in
 		;;
 	("ap")
 		make_ap
+		prompt_for_reboot
 		;;
 	("test")
 		test_install
