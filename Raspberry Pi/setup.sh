@@ -233,6 +233,18 @@ chg_web_login ()
 	fi
 }
 
+
+# https://stackoverflow.com/questions/50413579/bash-convert-netmask-in-cidr-notation/50414560
+IPprefix_by_netmask ()
+{ 
+   c=0 x=0$( printf '%o' ${1//./ } )
+   while [ $x -gt 0 ]; do
+       let c+=$((x%2)) 'x>>=1'
+   done
+   echo $c ;
+}
+
+
 make_ap ()
 {
 	echo ""
@@ -246,12 +258,33 @@ make_ap ()
 	read -e -i 'myPi_SSID' -p     "Pick a nice SSID                       : " wifiSsid
 	read -e -i 'P@$$w0rd' -p      "Choose a better password than this     : " wifiPwd
 	
+	#TODO: Validate these inputs. Make sure none are null
+	
+	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+	
+	apt-get install dnsmasq hostapd -y
+	systemctl stop dnsmasq
+	systemctl stop hostapd
+	if  grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
+	then
+		echo 'Skipped: "/etc/dhcpcd.conf" already contains interface wlan0 config'
+	else
+cat <<END >> /etc/dhcpcd.conf
+
+interface wlan0
+   static ip_address=$piIpV4/$cidr_mask
+   nohook wpa_supplicant
+END
+	fi
+
 }
+
 
 test_install ()
 {
 	echo "TEST!"
 }
+
 
 prompt_for_reboot()
 {
@@ -266,6 +299,7 @@ prompt_for_reboot()
 			;;
 	esac
 }
+
 
 # -----------------------------------
 # END FUNCTIONS 
