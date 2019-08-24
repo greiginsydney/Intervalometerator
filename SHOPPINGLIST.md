@@ -13,10 +13,10 @@ Notes:
 | Section | Approx pricing AU | Approx pricing USA |
 | :--- | ---: | ---: |
 | [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $690 | $501 |
-| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $212 | $159 |
+| [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $213 | $160 |
 | [Power](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#power) | $113 | $83 |
 | [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $112 | $76 |
-| __TOTAL__ | __$1127__ | __$819__ |
+| __TOTAL__ | __$1128__ | __$820__ |
 
 <br>
 
@@ -268,8 +268,8 @@ The custom PCB for the project is available on eBay.
 
 - [eBay](https://www.ebay.com.au/itm/264353662332)
 
-    $AUD17.00</br>
-    $USD12.00
+    $AUD15.00</br>
+    $USD10.00
 
 #### Veroboard (alternative PCB)
 
@@ -340,16 +340,21 @@ I really love the DeadOn RTC, however SparkFun appear to have omitted the chip m
 These are the green power connectors for the power input and camera power output on the PCB. You want two.
 
 - [Element 14](https://au.element14.com/camdenboss/ctb9350-2a/header-right-angle-2way/dp/3882093)
+- [Newark (US)](https://www.newark.com/camdenboss/ctb9350-2a/pluggable-terminal-block-header/dp/68C9100) (MOQ=10)
 
     $AUD0.50 (ea)</br>
+    $USD0.48 (ea)</br>
     
 #### 5.08mm / 0.2" PCB-mount plugs
     
 These mate with the above. You want two.
 
 - [Element 14](https://au.element14.com/camdenboss/ctb9200-2a/terminal-block-pluggable-2pos/dp/3881854)
+- [Newark (US)](https://www.newark.com/camdenboss/ctb9200-2a/terminal-block-pcb-2-position/dp/68C9081)
 
     $AUD1.36 (ea)</br>
+    $AUD1.09 (ea)</br>
+    
 
 #### Miscellaneous
 
