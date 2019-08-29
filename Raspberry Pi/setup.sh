@@ -268,7 +268,10 @@ make_ap ()
 	systemctl stop hostapd
 	if  grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
 	then
-		echo 'Skipped: "/etc/dhcpcd.conf" already contains interface wlan0 config'
+		#Un-comment the lines if they're present but inactive:
+		sed -i -E "s/^#(interface wlan0\s*)/\1/" /etc/dhcpcd.conf
+		sed -i -E "s/^#(\s*static ip_address=*)/\1/" /etc/dhcpcd.conf
+		sed -i -E "s/^#(\s*nohook wpa_supplicant.*)/\1/" /etc/dhcpcd.conf
 	else
 cat <<END >> /etc/dhcpcd.conf
 
@@ -295,6 +298,27 @@ END
 	systemctl unmask hostapd
 	systemctl enable hostapd
 	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
+}
+
+
+unmake_ap ()
+{
+	systemctl unmask hostapd
+	systemctl stop dnsmasq
+	systemctl stop hostapd
+	
+	if grep -qi "interface wlan0" /etc/dhcpcd.conf;
+	then
+		# Comment out the wlan0 lines:
+		sed -i -E "s/^(interface wlan0\s*)/#\1/" /etc/dhcpcd.conf
+		sed -i -E "s/^(\s*static ip_address=*)/#\1/" /etc/dhcpcd.conf
+		sed -i -E "s/^(\s*nohook wpa_supplicant.*)/#\1/" /etc/dhcpcd.conf
+		
+	else
+		echo -e "Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf"
+	fi
+	
+	echo "WARNING: After the next reboot, the Pi will come up as a WiFi *client*"
 }
 
 
@@ -351,12 +375,16 @@ case "$1" in
 		make_ap
 		prompt_for_reboot
 		;;
+	("noap")
+		unmake_ap
+		prompt_for_reboot
+		;;
 	("test")
 		test_install
 		prompt_for_reboot
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap' or 'test' after the script name\n"
 		exit 1
 		;;
 	(*) 
