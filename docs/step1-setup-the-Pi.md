@@ -71,6 +71,9 @@ pi@192.168.44.1's password:
 ```txt
 sudo apt-get update && sudo apt-get upgrade -y
 ```
+
+> If this ends with an error "Some index files failed to download. They have been ignored, or old ones used instead." just press up-arrow and return to retry the command. You want the Pi healthy and updated before continuing.
+
 28. `sudo reboot now`
 
 Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue
