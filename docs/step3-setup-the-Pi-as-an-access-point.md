@@ -28,7 +28,7 @@ Choose the starting IP address for DCHP: 10.10.10.10
 Choose  the  ending IP address for DCHP: 10.10.10.100
 Set the appropriate subnet mask        : 255.255.255.0
 Pick a nice SSID                       : Intvlm8r
-Choose a better password than this     : P@$$w0rd
+Choose a better password than this     : myPiNetw0rkAccess!
 Choose an appropriate WiFi channel     : 5
 ```
 
