@@ -52,11 +52,16 @@ Reboot now? [Y/n]:
 
 ## Un-make AP
 
-If for some reason you want to revert this AP step, run:
+1. If for some reason you want to revert this AP step, run:
 ```txt
 sudo -E ./setup.sh noap
 ```
 
+2. Upon completion the script will prompt for a reboot. 
+```txt
+WARNING: After the next reboot, the Pi will come up as a WiFi *client*
+Reboot now? [Y/n]:
+```
 
 ## Debugging
 
