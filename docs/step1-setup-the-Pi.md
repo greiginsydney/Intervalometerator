@@ -109,14 +109,14 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 34. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
-sudo -E -H ./setup.sh web
+sudo -E ./setup.sh web
 ```
 
 The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
-pi@raspberrypi:~ $ sudo -E -H ./setup.sh web
+pi@raspberrypi:~ $ sudo -E ./setup.sh web
 mkdir: created directory 'photos'
 mkdir: created directory 'preview'
 mkdir: created directory 'thumbs'
