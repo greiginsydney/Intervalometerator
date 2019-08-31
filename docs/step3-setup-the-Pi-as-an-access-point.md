@@ -20,12 +20,26 @@ sudo -E ./setup.sh ap
 2. The script will prompt you for all the required values. On its first run out of the box it will offer default values. These will usually be safe to use, but by all means change the SSID and WiFi password from the defaults:
 
 ```txt
+Set your Pi as a WiFi Access Point. (Ctrl-C to abort)
+If unsure, go with the defaults until you get to the SSID and password
+
+Choose an IP address for the Pi        : 10.10.10.1
+Choose the starting IP address for DCHP: 10.10.10.10
+Choose  the  ending IP address for DCHP: 10.10.10.100
+Set the appropriate subnet mask        : 255.255.255.0
+Pick a nice SSID                       : Intvlm8r
+Choose a better password than this     : P@$$w0rd
+Choose an appropriate WiFi channel     : 5
 ```
 
 > The default radio channel #5 is valid around the world, HOWEVER you may find it congested in your area and choosing another may provide better connectivity.[3]
 
 3. Upon completion the script will prompt for a reboot. 
 
+```txt
+WARNING: After the next reboot, the Pi will come up as a WiFi access point!
+Reboot now? [Y/n]:
+```
 
 > After this reboot you'll need to connect to it on its new IP address, and you'll be again prompted to trust it.
 
