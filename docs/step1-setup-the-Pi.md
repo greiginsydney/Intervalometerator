@@ -90,9 +90,9 @@ svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%2
 ```txt
 sudo chmod +x setup.sh
 ```
-32. Now run it! (Be careful here: the "-E" switch is critical. It ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all.)
+32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi's home directory.)
 ```txt
-sudo -E ./setup.sh start
+sudo -E -H ./setup.sh start
 ```
 This step could easily take half an hour or longer to complete, depending on how slow your Internet connection is. 
 
@@ -109,14 +109,14 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 34. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
-sudo -E ./setup.sh web
+sudo -E -H ./setup.sh web
 ```
 
 The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
-pi@raspberrypi:~ $ sudo -E ./setup.sh web
+pi@raspberrypi:~ $ sudo -E -H ./setup.sh web
 mkdir: created directory 'photos'
 mkdir: created directory 'preview'
 mkdir: created directory 'thumbs'
