@@ -254,6 +254,7 @@ make_ap ()
 	then
 		#Un-comment the lines if they're present but inactive:
 		sed -i -E "s/^#(interface wlan0\s*)/\1/" /etc/dhcpcd.conf
+		# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
 		sed -i -E '$!N;s/(wlan0\n)#(\s*static)/\1\2/;P;D' /etc/dhcpcd.conf # Replaces only if "static" is on the line AFTER "wlan0"
 		sed -i -E "s/^#(\s*nohook wpa_supplicant.*)/\1/" /etc/dhcpcd.conf
 		#Read the current value:
@@ -346,6 +347,7 @@ unmake_ap ()
 	then
 		# Comment out the wlan0 lines:
 		sed -i -E "s/^(interface wlan0\s*)/#\1/" /etc/dhcpcd.conf
+		# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
 		sed -i -E '$!N;s/(wlan0\n)(\s*static)/\1#\2/;P;D' /etc/dhcpcd.conf # Replaces only if "static" is on the line AFTER "wlan0"
 		sed -i -E "s/^(\s*nohook wpa_supplicant.*)/#\1/" /etc/dhcpcd.conf
 	else
