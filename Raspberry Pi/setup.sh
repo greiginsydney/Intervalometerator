@@ -250,6 +250,7 @@ make_ap ()
 	apt-get install dnsmasq hostapd -y
 	systemctl stop dnsmasq
 	systemctl stop hostapd
+	sed -i -E "s|^#?(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	if  grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
 	then
 		#Un-comment the lines if they're present but inactive:
@@ -339,10 +340,10 @@ END
 
 unmake_ap ()
 {
-	systemctl unmask hostapd
+	systemctl mask hostapd
 	systemctl stop dnsmasq
 	systemctl stop hostapd
-
+	sed -i -E "s|^\s*(DAEMON_CONF=\")(.*)\"|#\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	if grep -qi "interface wlan0" /etc/dhcpcd.conf;
 	then
 		# Comment out the wlan0 lines:
