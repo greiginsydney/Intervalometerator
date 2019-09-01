@@ -63,7 +63,7 @@ install_website ()
 	mkdir -pv www
 	mkdir -pv www/static
 	mkdir -pv www/templates
-	# Now create a 'symbolic link' (a shortcut) to the photos, preview and thumbs folders so they appear in the path for the webserver to access them: 
+	# Now create a 'symbolic link' (a shortcut) to the photos, preview and thumbs folders so they appear in the path for the webserver to access them:
 	ln -sfnv ${HOME}/photos  ${HOME}/www/static
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
@@ -201,42 +201,172 @@ chg_web_login ()
 
 	# Read the current username:
 	while read line; do
-	  	if [[ $line =~ $matchRegex ]] ;
+		if [[ $line =~ $matchRegex ]] ;
 		then
-		        oldLoginName=${BASH_REMATCH[1]}
-	        	oldPassword=${BASH_REMATCH[2]}
-		        break
-	  	fi
+				oldLoginName=${BASH_REMATCH[1]}
+				oldPassword=${BASH_REMATCH[2]}
+				break
+		fi
 	done <~/www/intvlm8r.py
 
 	if [ ! -z "$oldLoginName" ];
 	then
-        	read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
-        	if [ ! -z "$loginName" ];
-        	then
-	                sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
-	                if [ ! -z "$oldPassword" ];
-	                then
-	                        read -e -i "$oldPassword" -p "Change the website's password  : " password
-	                        if [ ! -z "$password" ];
+			read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
+			if [ ! -z "$loginName" ];
+			then
+					sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
+					if [ ! -z "$oldPassword" ];
+					then
+						read -e -i "$oldPassword" -p "Change the website's password  : " password
+						if [ ! -z "$password" ];
 				then
 					sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':\s*)'($oldPassword)'}}$/\1'$password'}}/" ~/www/intvlm8r.py
 				else
 					echo -e "Error: An empty password is invalid. Skipping"
 				fi
-	                else
-	                        echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
-	                fi
-	        fi
+					else
+						echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
+					fi
+			fi
 	else
-        	echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
+			echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
 	fi
 }
+
+
+# https://stackoverflow.com/questions/50413579/bash-convert-netmask-in-cidr-notation/50414560
+IPprefix_by_netmask ()
+{
+	c=0 x=0$( printf '%o' ${1//./ } )
+	while [ $x -gt 0 ]; do
+		let c+=$((x%2)) 'x>>=1'
+	done
+	echo $c ;
+}
+
+
+make_ap ()
+{
+	apt-get install dnsmasq hostapd -y
+	systemctl stop dnsmasq
+	systemctl stop hostapd
+	sed -i -E "s|^#?(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
+	if  grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
+	then
+		#Un-comment the lines if they're present but inactive:
+		sed -i -E "s/^#(interface wlan0\s*)/\1/" /etc/dhcpcd.conf
+		# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
+		sed -i -E '$!N;s/(wlan0\n)#(\s*static)/\1\2/;P;D' /etc/dhcpcd.conf # Replaces only if "static" is on the line AFTER "wlan0"
+		sed -i -E "s/^#(\s*nohook wpa_supplicant.*)/\1/" /etc/dhcpcd.conf
+		#Read the current value:
+		oldPiIpV4=$(sed -n -E 's|^\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
+		#echo $oldPiIpV4
+	else
+		#Add the required lines:
+		cat <<END >> /etc/dhcpcd.conf
+
+interface wlan0
+   static ip_address=10.10.10.1/24
+   nohook wpa_supplicant
+END
+	fi
+	if [ -z "$oldPiIpV4" ]; then oldPiIpV4='10.10.10.1'; fi
+
+	if  grep -Fq "interface=wlan0" "/etc/dnsmasq.conf";
+	then
+		#Read the current values:
+		# This matches the format of the DHCP syntax:
+		matchRegex="\s*(([0-9]{1,3}\.){3}[0-9]{1,3}),(([0-9]{1,3}\.){3}[0-9]{1,3}),(([0-9]{1,3}\.){3}[0-9]{1,3})," # Bash doesn't do digits as "\d"
+		while read line; do
+			if [[ $line =~ $matchRegex ]] ;
+			then
+				oldDhcpStartIp=${BASH_REMATCH[1]}
+				oldDhcpEndIp=${BASH_REMATCH[3]}
+				oldDhcpSubnetMask=${BASH_REMATCH[5]}
+				break
+			fi
+		done </etc/dnsmasq.conf
+	else
+		#Create default values:
+		cat <<END >> /etc/dnsmasq.conf
+interface=wlan0      # Use the required wireless interface - usually wlan0
+	dhcp-range=10.10.10.10,10.10.10.100,255.255.255.0,24h
+END
+	fi
+	#Populate defaults if required:
+	if [ -z "$oldDhcpStartIp" ]; then oldDhcpStartIp='10.10.10.10'; fi
+	if [ -z "$oldDhcpEndIp" ]; then oldDhcpEndIp='10.10.10.100'; fi
+	if [ -z "$oldDhcpSubnetMask" ]; then oldDhcpSubnetMask='255.255.255.0'; fi
+
+	#Only move the hostapd.conf file from the Repo is there isn't an existing one:
+	[ -f hostapd.conf ] && mv -v hostapd.conf /etc/hostapd/hostapd.conf
+	#Extract the required WiFi values:
+	oldWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
+	oldWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
+	oldWifiPwd=$(sed -n -E 's/^\s*wpa_passphrase=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
+	#Populate defaults if required:
+	if [ -z "$oldWifiSsid" ]; then oldWifiSsid='intvlm8r'; fi
+	if [ -z "$oldWifiChannel" ]; then oldWifiChannel='5'; fi
+	if [ -z "$oldWifiPwd" ]; then oldWifiPwd='myPiNetw0rkAccess!'; fi
+
+	echo ""
+	echo "Set your Pi as a WiFi Access Point. (Ctrl-C to abort)"
+	echo "If unsure, go with the defaults until you get to the SSID and password"
+	echo ""
+	read -e -i "$oldPiIpV4" -p         "Choose an IP address for the Pi        : " piIpV4
+	read -e -i "$oldDhcpStartIp" -p    "Choose the starting IP address for DCHP: " dhcpStartIp
+	read -e -i "$oldDhcpEndIp" -p      "Choose  the  ending IP address for DCHP: " dhcpEndIp
+	read -e -i "$oldDhcpSubnetMask" -p "Set the appropriate subnet mask        : " dhcpSubnetMask
+	read -e -i "$oldWifiSsid" -p       "Pick a nice SSID                       : " wifiSsid
+	read -e -i "$oldWifiPwd" -p        "Choose a better password than this     : " wifiPwd
+	read -e -i "$oldWifiChannel" -p    "Choose an appropriate WiFi channel     : " wifiChannel
+
+	#TODO: Validate these inputs. Make sure none are null
+
+	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+
+	#Paste in the new settings
+	sed -i -E "s|^(\s*static ip_address=)(.*)|\1$piIpV4/$cidr_mask|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
+	sed -i -E "s/^(\s*dhcp-range=)(.*)$/\1$dhcpStartIp,$dhcpEndIp,$dhcpSubnetMask,24h/" /etc/dnsmasq.conf
+	sed -i -E "s/^(channel=)(.*)$/\1$wifiChannel/" /etc/hostapd/hostapd.conf
+	sed -i -E "s/^(ssid=)(.*)$/\1$wifiSsid/" /etc/hostapd/hostapd.conf
+	sed -i -E "s/^(wpa_passphrase=)(.*)$/\1$wifiPwd/" /etc/hostapd/hostapd.conf
+
+	systemctl unmask hostapd
+	systemctl enable hostapd
+	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
+}
+
+
+unmake_ap ()
+{
+	systemctl mask hostapd
+	systemctl stop dnsmasq
+	systemctl stop hostapd
+	sed -i -E "s|^\s*(DAEMON_CONF=\")(.*)\"|#\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
+	if grep -qi "interface wlan0" /etc/dhcpcd.conf;
+	then
+		# Comment out the wlan0 lines:
+		sed -i -E "s/^(interface wlan0\s*)/#\1/" /etc/dhcpcd.conf
+		# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
+		sed -i -E '$!N;s/(wlan0\n)(\s*static)/\1#\2/;P;D' /etc/dhcpcd.conf # Replaces only if "static" is on the line AFTER "wlan0"
+		sed -i -E "s/^(\s*nohook wpa_supplicant.*)/#\1/" /etc/dhcpcd.conf
+	else
+		echo -e "Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf"
+	fi
+
+	echo "WARNING: After the next reboot, the Pi will come up as a WiFi *client*"
+	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
+	echo -e "WARNING: It will attempt to connect to this/these SSIDs:\n$ssid"
+	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change"
+}
+
 
 test_install ()
 {
 	echo "TEST!"
 }
+
 
 prompt_for_reboot()
 {
@@ -252,8 +382,9 @@ prompt_for_reboot()
 	esac
 }
 
+
 # -----------------------------------
-# END FUNCTIONS 
+# END FUNCTIONS
 # -----------------------------------
 
 
@@ -280,15 +411,23 @@ case "$1" in
 	("login")
 		chg_web_login
 		;;
+	("ap")
+		make_ap
+		prompt_for_reboot
+		;;
+	("noap")
+		unmake_ap
+		prompt_for_reboot
+		;;
 	("test")
 		test_install
 		prompt_for_reboot
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap' or 'test' after the script name\n"
 		exit 1
 		;;
-	(*) 
+	(*)
 		echo -e "\nThe switch '$1' is invalid. Try again.\n"
 		exit 1
 		;;

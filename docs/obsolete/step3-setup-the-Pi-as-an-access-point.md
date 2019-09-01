@@ -10,39 +10,58 @@ This process will drop it off the current WiFi network and turn it into its own 
 
 Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.[1][2]
 
-## Make AP
+## DHCP Server Config
 
-1. Run the setup script with the "ap" attribute:
+In this task we'll set the WLAN/DHCP config as below. Change these values if you prefer.
+
+Raspberry Pi's IP: 192.168.44.1<br>
+First IP address it issues: 192.168.44.10<br>
+Last IP address it issues: 192.168.44.20<br>
+The subnet mask for this network: 255.255.255.0
+
+1. `sudo apt-get install dnsmasq hostapd -y`
+2. `sudo systemctl stop dnsmasq`
+3. `sudo systemctl stop hostapd`
+
+4. Set the static IP for the Pi: `sudo nano /etc/dhcpcd.conf`
+5. Paste this to the bottom of the file:
+```text
+interface wlan0
+   static ip_address=192.168.44.1/24
+   nohook wpa_supplicant
+```
+6. Control-X to save and Exit the file.
+
+7. Create a backup copy of your DHCP config before continuing: `sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig`  
+
+8. Now create a new 'dnsmasq' file: `sudo nano /etc/dnsmasq.conf`. Paste the below config in:
+
 ```txt
-sudo -E ./setup.sh ap
+interface=wlan0      # Use the require wireless interface - usually wlan0
+  dhcp-range=192.168.44.10,192.168.44.20,255.255.255.0,24h
 ```
 
-2. The script will prompt you for all the required values. On its first run out of the box it will offer default values. These will usually be safe to use, but by all means change the SSID and WiFi password from the defaults:
+9. Control-X to save and Exit the file.
 
+10. Assuming the file 'hostapd.conf' (provided as part of the repo) is in the home directory, move it to /etc/hostapd/ with this:
+`sudo mv ~/hostapd.conf /etc/hostapd/hostapd.conf`
+
+11: Edit the file to customise the SSID, radio channel and password. Make sure you DON'T use any quotes or other punctuation around the password:
+`sudo nano /etc/hostapd/hostapd.conf`
+
+12. Add the following line to the new file 'hostapd' `sudo nano /etc/default/hostapd`
 ```txt
-Set your Pi as a WiFi Access Point. (Ctrl-C to abort)
-If unsure, go with the defaults until you get to the SSID and password
-
-Choose an IP address for the Pi        : 10.10.10.1
-Choose the starting IP address for DCHP: 10.10.10.10
-Choose  the  ending IP address for DCHP: 10.10.10.100
-Set the appropriate subnet mask        : 255.255.255.0
-Pick a nice SSID                       : Intvlm8r
-Choose a better password than this     : myPiNetw0rkAccess!
-Choose an appropriate WiFi channel     : 5
+DAEMON_CONF="/etc/hostapd/hostapd.conf"
 ```
 
-> The default radio channel #5 is valid around the world, HOWEVER you may find it congested in your area and choosing another may provide better connectivity.[3]
+13. Control-X to save and Exit the file.
 
-3. Upon completion the script will prompt for a reboot. 
+14. `sudo systemctl unmask hostapd`
+15. `sudo systemctl enable hostapd`
 
-```txt
-WARNING: After the next reboot, the Pi will come up as a WiFi access point!
-Reboot now? [Y/n]:
-```
+16. `sudo reboot now` cleans the IP settings and brings the Pi back up as an AP. 
 
-> After this reboot you'll need to connect to it on its new IP address, and you'll be again prompted to trust it.
-
+After this reboot you'll need to connect to it on its new IP address, and you'll be again prompted to trust it.
 
 ## Next steps:
 - Configure the Arduino
@@ -50,18 +69,6 @@ Reboot now? [Y/n]:
    - [PCB assembly](/docs/step4-pcb-assembly.md)  
 - Start taking photos!
 
-## Un-make AP
-
-1. If for some reason you want to revert this AP step, run:
-```txt
-sudo -E ./setup.sh noap
-```
-
-2. Upon completion the script will prompt for a reboot. 
-```txt
-WARNING: After the next reboot, the Pi will come up as a WiFi *client*
-Reboot now? [Y/n]:
-```
 
 ## Debugging
 
@@ -85,4 +92,4 @@ Reboot now? [Y/n]:
 
 [1] [Configuring the Pi as a WiFi AP](https://github.com/SurferTim/documentation/blob/6bc583965254fa292a470990c40b145f553f6b34/configuration/wireless/access-point.md)<br>
 [2] [Setting up a Raspberry Pi as an access point in a standalone network (NAT)](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)<br>
-[3] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax))
+[3] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels)
