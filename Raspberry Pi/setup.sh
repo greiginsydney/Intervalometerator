@@ -355,6 +355,9 @@ unmake_ap ()
 	fi
 
 	echo "WARNING: After the next reboot, the Pi will come up as a WiFi *client*"
+	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
+	echo -e "WARNING: It will attempt to connect to this/these SSIDs:\n$ssid"
+	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change"
 }
 
 
