@@ -625,16 +625,14 @@ def transfer():
     # Initialise the dictionary:
     templateData = {
         'tfrMethod'     : 'Off',    # Hides all options if the file isn't found or is bad
-        'sftpServer'    : '',
-        'sftpUser'      : '',
-        'sftpPassword'  : '',
-        'sftpDay'       : '',
-        'sftpHour'      : '',
+        'ftpServer'     : '',
+        'ftpUser'       : '',
+        'ftpPassword'   : '',
         'fileServer'    : '',
         'fileUser'      : '',
         'filePassword'  : '',
-        'fileDay'       : '',
-        'fileHour'      : '',
+        'transferDay'   : '',
+        'transferHour'  : '',
         'copyDay'       : '',
         'copyHour'      : '',
         'wakePiTime'    : '25'
@@ -642,16 +640,14 @@ def transfer():
     config = ConfigParser.SafeConfigParser(
         {
         'tfrmethod'     : 'Off',
-        'sftpServer'    : '',
-        'sftpUser'      : '',
-        'sftpPassword'  : '',
-        'sftpDay'       : '',
-        'sftpHour'      : '',
+        'ftpServer'     : '',
+        'ftpUser'       : '',
+        'ftpPassword'   : '',
         'fileServer'    : '',
         'fileUser'      : '',
         'filePassword'  : '',
-        'fileDay'       : '',
-        'fileHour'      : '',
+        'transferDay'   : '',
+        'transferHour'  : '',
         'copyDay'       : 'Off',
         'copyHour'      : '',
         'wakePiTime'    : '25'
@@ -660,16 +656,14 @@ def transfer():
         config.read(iniFile)
         #app.logger.debug('Found the file in GET')
         templateData['tfrMethod']     = config.get('Transfer', 'tfrmethod')
-        templateData['sftpServer']    = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']      = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']  = config.get('Transfer', 'sftpPassword')
-        templateData['sftpDay']       = config.get('Transfer', 'sftpDay')
-        templateData['sftpHour']      = config.get('Transfer', 'sftpHour')
+        templateData['ftpServer']     = config.get('Transfer', 'ftpServer')
+        templateData['ftpUser']       = config.get('Transfer', 'ftpUser')
+        templateData['ftpPassword']   = config.get('Transfer', 'ftpPassword')
         templateData['fileServer']    = config.get('Transfer', 'fileServer')
         templateData['fileUser']      = config.get('Transfer', 'fileUser')
         templateData['filePassword']  = config.get('Transfer', 'filePassword')
-        templateData['fileDay']       = config.get('Transfer', 'fileDay')
-        templateData['fileHour']      = config.get('Transfer', 'fileHour')
+        templateData['transferDay']   = config.get('Transfer', 'transferDay')
+        templateData['transferHour']  = config.get('Transfer', 'transferHour')
         templateData['copyDay']       = config.get('Copy', 'copyDay')
         templateData['copyHour']      = config.get('Copy', 'copyHour')
     except Exception as e:
@@ -695,18 +689,18 @@ def transferPOST():
         if not config.has_section('Transfer'):
             config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
-        if (request.form.get('tfrMethod') == 'sftp'):
-            config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
-            config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
-            config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
-            config.set('Transfer', 'sftpDay', str(request.form.get('sftpDay') or ''))
-            config.set('Transfer', 'sftpHour', str(request.form.get('sftpHour') or ''))
-        elif (request.form.get('tfrMethod') == 'fileshare'):
+        if (request.form.get('tfrMethod') == 'FTP'):
+            config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
+            config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
+            config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
+            config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
+            config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
+        elif (request.form.get('tfrMethod') == 'Fileshare'):
             config.set('Transfer', 'fileServer', str(request.form.get('fileServer') or ''))
             config.set('Transfer', 'fileUser', str(request.form.get('fileUser') or ''))
             config.set('Transfer', 'filePassword', str(request.form.get('filePassword') or ''))
-            config.set('Transfer', 'fileDay', str(request.form.get('fileDay') or ''))
-            config.set('Transfer', 'fileHour', str(request.form.get('fileHour') or ''))
+            config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
+            config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
         if not config.has_section('Copy'):
             config.add_section('Copy')
         config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
@@ -1088,7 +1082,7 @@ def createConfigFile(iniFile):
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
         config.set('Global', 'thumbscount', 20)
         config.add_section('Transfer')
-        config.set('Transfer', 'tfrMethod', 'manual')
+        config.set('Transfer', 'tfrMethod', 'Off')
         config.add_section('Copy')
         with open(iniFile, "wb") as config_file:
             config.write(config_file)
