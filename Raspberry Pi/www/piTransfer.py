@@ -71,14 +71,20 @@ def main():
         tfrMethod = "Off"
         log('INI file error:' + str(e))
 
-    now = datetime.now()
-    if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
-        # We're OK to transfer now
-        log('OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
-        if (tfrMethod == 'FTP'):
-            uploadFtp(ftpServer, ftpUser, ftpPassword)
+    args = request.args.to_dict()
+    if args.get('transferNow'):
+        pass
     else:
-        log('Not OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+        now = datetime.now()
+        if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
+            # We're OK to transfer now
+            log('OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+        else:    
+            log('Not OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+            return
+    if (tfrMethod == 'FTP'):
+        uploadFtp(ftpServer, ftpUser, ftpPassword)
+        
 
 
 def list_Pi_Images(path):
