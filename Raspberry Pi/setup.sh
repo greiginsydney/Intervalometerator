@@ -136,6 +136,19 @@ install_website ()
 	fi
 	rm cronTemp
 
+	#piTransfer
+	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
+
+	if grep -q piTransfer.py "cronTemp";
+	then
+		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
+	else
+		echo "0 * * * * /usr/bin/python ${HOME}/www/piTransfer.py" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+	fi
+	rm cronTemp
+
 	#NTP
 	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
 	case $Response in
