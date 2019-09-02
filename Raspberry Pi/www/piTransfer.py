@@ -40,7 +40,7 @@ iniFile = os.path.join(LOGFILE_PATH, 'www/intvlm8r.ini')
 
 
 def main():
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     if not os.path.exists(iniFile):
         pass
     config = ConfigParser.SafeConfigParser(
