@@ -71,17 +71,13 @@ def main():
         tfrMethod = "Off"
         log('INI file error:' + str(e))
 
-    args = request.args.to_dict()
-    if args.get('transferNow'):
-        pass
-    else:
-        now = datetime.now()
-        if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
-            # We're OK to transfer now
-            log('OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
-        else:    
-            log('Not OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
-            return
+    now = datetime.now()
+    if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
+        # We're OK to transfer now
+        log('OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+    else:    
+        log('Not OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+        return
     if (tfrMethod == 'FTP'):
         uploadFtp(ftpServer, ftpUser, ftpPassword)
         
