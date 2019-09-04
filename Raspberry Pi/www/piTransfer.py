@@ -71,6 +71,7 @@ def main():
         tfrMethod = "Off"
         log('INI file error:' + str(e))
 
+    
     now = datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
@@ -80,7 +81,6 @@ def main():
         return
     if (tfrMethod == 'FTP'):
         uploadFtp(ftpServer, ftpUser, ftpPassword)
-        
 
 
 def list_Pi_Images(path):
@@ -104,19 +104,35 @@ def list_Pi_Images(path):
 def uploadFtp(ftpServer, ftpUser, ftpPassword):
     ftp = FTP()
     ftp.set_debuglevel(2)
-    ftp.connect(ftpServer, 21)
-    ftp.login(ftpUser,ftpPassword)
-
+    try:
+        ftp.connect(ftpServer, 21)
+    except Exception as e:
+        if 'No route to host' in e:
+            log('ftp connect exception: no route to host. Bad IP address or hostname'
+        else if 'Connection timed out' in e:
+            log('ftp connect exception: connection timed out. Destination valid but not listening on port 21'
+        else:
+            log('ftp login exception. Unknown error: ' + str(e))
+        return
+    try:
+        ftp.login(ftpUser,ftpPassword)
+    except Exception as e:
+        if 'Login or password incorrect' in e:
+            log('ftp login exception: Login or password incorrect'
+        else:
+            log('ftp login exception. Unknown error: ' + str(e))
+        return
+    ftp.set_pasv(False)
     lastlist = []
     for line in fileinput.input(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt")):
         lastlist.append(line.rstrip("\n"))
     currentlist = list_Pi_Images(PI_PHOTO_DIR)
     newfiles = list(set(currentlist) - set(lastlist))
     if len(newfiles) == 0:
-        log("No files need to upload")
+        log("No files need to be uploaded")
     else:
         for needupload in newfiles:
-            log("uploading " + needupload)
+            log("Uploading " + needupload)
             upload_img(ftp, needupload)
             with open(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt"), "a") as myfile:
               myfile.write(needupload + "\n")
@@ -125,13 +141,16 @@ def uploadFtp(ftpServer, ftpUser, ftpPassword):
 
 def ftp_upload(ftp, localfile, remotefile):
     path,filename = os.path.split(remotefile)
-    cdTree(ftp, path)
+    try:
+        ftp.cwd(path)
+    except:
+        ftp.mkd(path)
     fp = open(localfile, 'rb')
     try:
-        ftp.storbinary('STOR %s' % remotefile, fp, 1024)
+        ftp.storbinary('STOR %s' % filename, fp, 1024)
     except Exception as e:
+        fp.close()
         log('ftp_upload exception:' + str(e))
-        log('remotefile not exist error caught: ' + remotefile)
         path,filename = os.path.split(remotefile)
         log("creating directory: " + path)
         ftp.mkd(path)
@@ -142,23 +161,11 @@ def ftp_upload(ftp, localfile, remotefile):
     log ('Successfully uploaded ' + localfile + ' to ' + remotefile)
 
 
-# https://stackoverflow.com/questions/10644608/create-missing-directories-in-ftplib-storbinary
-def cdTree(ftp, currentDir):
-    if currentDir != "":
-        try:
-            ftp.cwd(currentDir)
-        except Exception as e:
-            log('CdTree error')
-            cdTree(ftp, "/".join(currentDir.split("/")[:-1]))
-            ftp.mkd(currentDir)
-            ftp.cwd(currentDir)
-
-
 def upload_img(ftp, piFile):
     # Format the destination path to strip the /home/pi/photos off:
     shortPath = re.search(("DCIM/\S*"), piFile)
     if (shortPath != None):
-        destFile = shortPath.group(0)
+        destFile = "/" + str(shortPath.group(0))
     else:
         destFile = piFile
     ftp_upload(ftp, piFile, destFile)
