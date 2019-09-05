@@ -628,9 +628,7 @@ def transfer():
         'ftpServer'     : '',
         'ftpUser'       : '',
         'ftpPassword'   : '',
-        'fileServer'    : '',
-        'fileUser'      : '',
-        'filePassword'  : '',
+        'dbx_token'     : '',
         'transferDay'   : '',
         'transferHour'  : '',
         'copyDay'       : '',
@@ -643,9 +641,7 @@ def transfer():
         'ftpServer'     : '',
         'ftpUser'       : '',
         'ftpPassword'   : '',
-        'fileServer'    : '',
-        'fileUser'      : '',
-        'filePassword'  : '',
+        'dbx_token'     : '',
         'transferDay'   : '',
         'transferHour'  : '',
         'copyDay'       : 'Off',
@@ -659,9 +655,7 @@ def transfer():
         templateData['ftpServer']     = config.get('Transfer', 'ftpServer')
         templateData['ftpUser']       = config.get('Transfer', 'ftpUser')
         templateData['ftpPassword']   = config.get('Transfer', 'ftpPassword')
-        templateData['fileServer']    = config.get('Transfer', 'fileServer')
-        templateData['fileUser']      = config.get('Transfer', 'fileUser')
-        templateData['filePassword']  = config.get('Transfer', 'filePassword')
+        templateData['dbx_token']     = config.get('Transfer', 'dbx_token')
         templateData['transferDay']   = config.get('Transfer', 'transferDay')
         templateData['transferHour']  = config.get('Transfer', 'transferHour')
         templateData['copyDay']       = config.get('Copy', 'copyDay')
@@ -695,10 +689,8 @@ def transferPOST():
             config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
             config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
             config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
-        elif (request.form.get('tfrMethod') == 'Fileshare'):
-            config.set('Transfer', 'fileServer', str(request.form.get('fileServer') or ''))
-            config.set('Transfer', 'fileUser', str(request.form.get('fileUser') or ''))
-            config.set('Transfer', 'filePassword', str(request.form.get('filePassword') or ''))
+        elif (request.form.get('tfrMethod') == 'Dropbox'):
+            config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
             config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
             config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
         if not config.has_section('Copy'):
