@@ -66,17 +66,17 @@ def main():
         filePassword  = config.get('Transfer', 'filePassword')
         transferDay   = config.get('Transfer', 'transferDay')
         transferHour  = config.get('Transfer', 'transferHour')
-        
+
     except Exception as e:
         tfrMethod = "Off"
         log('INI file error:' + str(e))
 
-    
+
     now = datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
         log('OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
-    else:    
+    else:
         log('Not OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
         return
     if (tfrMethod == 'FTP'):
@@ -108,9 +108,9 @@ def uploadFtp(ftpServer, ftpUser, ftpPassword):
         ftp.connect(ftpServer, 21)
     except Exception as e:
         if 'No route to host' in e:
-            log('ftp connect exception: no route to host. Bad IP address or hostname'
-        else if 'Connection timed out' in e:
-            log('ftp connect exception: connection timed out. Destination valid but not listening on port 21'
+            log('ftp connect exception: no route to host. Bad IP address or hostname')
+        elif 'Connection timed out' in e:
+            log('ftp connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
             log('ftp login exception. Unknown error: ' + str(e))
         return
@@ -118,7 +118,7 @@ def uploadFtp(ftpServer, ftpUser, ftpPassword):
         ftp.login(ftpUser,ftpPassword)
     except Exception as e:
         if 'Login or password incorrect' in e:
-            log('ftp login exception: Login or password incorrect'
+            log('ftp login exception: Login or password incorrect')
         else:
             log('ftp login exception. Unknown error: ' + str(e))
         return
