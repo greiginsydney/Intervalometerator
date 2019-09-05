@@ -36,6 +36,7 @@ install_apps ()
 	apt-get install subversion # Used later in this script to clone the RPi dir's of the Github repo
 	apt-get install python-pip python-flask -y
 	pip install flask flask-bootstrap flask-login gunicorn configparser
+	pip install dropbox
 	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
