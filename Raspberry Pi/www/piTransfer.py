@@ -19,13 +19,15 @@
 # This script is based on the FTP example from http://makble.com/upload-new-files-to-ftp-server-with-python
 
 
-from datetime import datetime
+import datetime
 from ftplib import FTP 
 import ConfigParser # for the ini file
 import fileinput
 import logging
 import os
 import re    #RegEx
+import dropbox
+import time
 
 
 # ////////////////////////////////
@@ -49,9 +51,7 @@ def main():
         'ftpServer'     : '',
         'ftpUser'       : '',
         'ftpPassword'   : '',
-        'fileServer'    : '',
-        'fileUser'      : '',
-        'filePassword'  : '',
+        'dbx_token'     : '',
         'transferDay'   : '',
         'transferHour'  : '',
         })
@@ -61,26 +61,25 @@ def main():
         ftpServer     = config.get('Transfer', 'ftpServer')
         ftpUser       = config.get('Transfer', 'ftpUser')
         ftpPassword   = config.get('Transfer', 'ftpPassword')
-        fileServer    = config.get('Transfer', 'fileServer')
-        fileUser      = config.get('Transfer', 'fileUser')
-        filePassword  = config.get('Transfer', 'filePassword')
+        dbx_token     = config.get('Transfer', 'dbx_token')
         transferDay   = config.get('Transfer', 'transferDay')
         transferHour  = config.get('Transfer', 'transferHour')
 
     except Exception as e:
         tfrMethod = "Off"
-        log('INI file error:' + str(e))
+        log('\nINI file error:' + str(e))
 
-
-    now = datetime.now()
+    now = datetime.datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
-        log('OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+        log('\nOK to transfer. Method = %s' % tfrMethod)
     else:
-        log('Not OK to transfer at ' + (now.strftime("%H:%M:%S on %d %b %Y")))
+        log('\nNot OK to transfer. Method = %s' % tfrMethod)
         return
     if (tfrMethod == 'FTP'):
         uploadFtp(ftpServer, ftpUser, ftpPassword)
+    elif (tfrMethod == 'Dropbox'):
+        uploadDbx(dbx_token)
 
 
 def list_Pi_Images(path):
@@ -122,7 +121,7 @@ def uploadFtp(ftpServer, ftpUser, ftpPassword):
         else:
             log('ftp login exception. Unknown error: ' + str(e))
         return
-    ftp.set_pasv(False)
+    ftp.set_pasv(False) #Filezilla Server defaults to passive, and 2x passive = nothing happens!
     lastlist = []
     for line in fileinput.input(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt")):
         lastlist.append(line.rstrip("\n"))
@@ -133,7 +132,13 @@ def uploadFtp(ftpServer, ftpUser, ftpPassword):
     else:
         for needupload in newfiles:
             log("Uploading " + needupload)
-            upload_img(ftp, needupload)
+            # Format the destination path to strip the /home/pi/photos off:
+            shortPath = re.search(("DCIM/\S*"), needupload)
+            if (shortPath != None):
+                destFile = "/" + str(shortPath.group(0))
+            else:
+                destFile = needupload
+            ftp_upload(ftp, piFile, destFile)
             with open(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt"), "a") as myfile:
               myfile.write(needupload + "\n")
     ftp.quit()
@@ -161,14 +166,63 @@ def ftp_upload(ftp, localfile, remotefile):
     log ('Successfully uploaded ' + localfile + ' to ' + remotefile)
 
 
-def upload_img(ftp, piFile):
-    # Format the destination path to strip the /home/pi/photos off:
-    shortPath = re.search(("DCIM/\S*"), piFile)
-    if (shortPath != None):
-        destFile = "/" + str(shortPath.group(0))
+
+def uploadDbx(token):
+    try:
+        dbx = dropbox.Dropbox(token)
+    except Exception as e:
+        log('Exception signing in to Dropbox: ' + str(e))
+        return
+    lastlist = []
+    for line in fileinput.input(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt")):
+        lastlist.append(line.rstrip("\n"))
+    currentlist = list_Pi_Images(PI_PHOTO_DIR)
+    newfiles = list(set(currentlist) - set(lastlist))
+    if len(newfiles) == 0:
+        log("No files need to be uploaded")
     else:
-        destFile = piFile
-    ftp_upload(ftp, piFile, destFile)
+        for needupload in newfiles:
+            log("Uploading " + needupload)
+            # Format the destination path to strip the /home/pi/photos off:
+            shortPath = re.search(("DCIM/\S*"), needupload)
+            if (shortPath != None):
+                destFile = "/" + str(shortPath.group(0))
+            else:
+                destFile = needupload
+            path,filename = os.path.split(destFile)
+            result = dbx_upload(dbx, needupload, path, '', filename)
+            if result == None:
+                log('Error uploading ' + needupload)
+            else:
+                with open(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt"), "a") as myfile:
+                    myfile.write(needupload + "\n")
+
+
+def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
+    """Upload a file.
+    Return the request response, or None in case of error.
+    """
+    path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
+    while '//' in path:
+        path = path.replace('//', '/')
+    mode = (dropbox.files.WriteMode.overwrite
+            if overwrite
+            else dropbox.files.WriteMode.add)
+    mtime = os.path.getmtime(fullname)
+    with open(fullname, 'rb') as f:
+        data = f.read()
+    try:
+        res = dbx.files_upload(
+            data, path, mode,
+            client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
+            mute=True)
+    except dropbox.exceptions.ApiError as err:
+        log('Dropbox API error' + err)
+        return None
+    #log('Dropbox uploaded as ' + res.name.encode('utf8'))
+    #log('Dropbox result = ' + str(res))
+    return res
+
 
 
 def log(message):
