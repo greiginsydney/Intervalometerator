@@ -46,7 +46,7 @@
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
-					{% for method in ['Off', 'FTP','Fileshare'] %}
+					{% for method in ['Off', 'FTP','Dropbox'] %}
 						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %}>{{ method }}</option>"
 					{% endfor %}
 					</select>
@@ -88,34 +88,14 @@
 		</tr>
 	</table>
 
-	<table id="file">
+	<table id="dbx">
 		<tr>
 			<td>
-				<div class="alignleft">File share path:</div>
-				{% if fileServer == '' %}
-					<div class="alignright"><input type="text" name="fileServer" id="fileServer" value="\\server\folder\" oninput="newText(this.id)"></div>
+				<div class="alignleft">Token:</div>
+				{% if dbx_token == '' %}
+					<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="abcd1234-wxyz789-etc" oninput="newText(this.id)"></div>
 				{% else %}
-					<div class="alignright"><input type="text" name="fileServer" id="fileServer" value="{{ fileServer }}" oninput="newText(this.id)"></div>
-				{% endif %}	
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Username:</div>
-				{% if fileUser == '' %}
-					<div class="alignright"><input type="text" name="fileUser" id="fileUser" value="folder_user" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="fileUser" id="fileUser" value="{{ fileUser }}" oninput="newText(this.id)"></div>
-				{% endif %}	
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Password:</div>
-				{% if filePassword == '' %}
-					<div class="alignright"><input type="password" name="filePassword" id="filePassword" value="" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="password" name="filePassword" id="filePassword" value="{{ filePassword }}" oninput="newText(this.id)"></div>
+					<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="{{ dbx_token }}" oninput="newText(this.id)"></div>
 				{% endif %}	
 			</td>
 		</tr>
@@ -174,24 +154,22 @@ SelectionBits["tfrMethod"]    =     1;
 SelectionBits["ftpServer"]    =     2;
 SelectionBits["ftpUser"]      =     4;
 SelectionBits["ftpPassword"]  =     8;
-SelectionBits["fileServer"]   =    16;
-SelectionBits["fileUser"]     =    32;
-SelectionBits["filePassword"] =    64;
-SelectionBits["transferDay"]  =   128;
-SelectionBits["transferHour"] =   256;
-SelectionBits["copyDay"]      =   512;
-SelectionBits["copyHour"]     =  1024;
+SelectionBits["dbx_token"]   =     16;
+SelectionBits["transferDay"]  =    32;
+SelectionBits["transferHour"] =    64;
+SelectionBits["copyDay"]      =   128;
+SelectionBits["copyHour"]     =   256;
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
 var showHideCopyHour = document.getElementById("showHideCopyHour");
 var ftp = document.getElementById("ftp");
-var file = document.getElementById("file");
+var dbx = document.getElementById("dbx");
 var transfer = document.getElementById("transfer");
 
 // This drives the default display on load:
 ftp.style.display = (method.value != "FTP") ? "none":"";
-file.style.display = (method.value != "Fileshare") ? "none":"";
+dbx.style.display = (method.value != "Dropbox") ? "none":"";
 transfer.style.display = (method.value == "Off") ? "none":"";
 showHideCopyHour.style.display = (copyDay.value == "Off") ? "none":"";
 
@@ -210,7 +188,7 @@ function newSelected(id)
 	if (id == "tfrMethod")
 	{
 		ftp.style.display = (method.value != "FTP") ? "none":"";
-		file.style.display = (method.value != "Fileshare") ? "none":"";
+		dbx.style.display = (method.value != "Dropbox") ? "none":"";
 		transfer.style.display = (method.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
