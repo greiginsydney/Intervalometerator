@@ -138,7 +138,7 @@ def uploadFtp(ftpServer, ftpUser, ftpPassword):
                 destFile = "/" + str(shortPath.group(0))
             else:
                 destFile = needupload
-            ftp_upload(ftp, piFile, destFile)
+            ftp_upload(ftp, needupload, destFile)
             with open(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt"), "a") as myfile:
               myfile.write(needupload + "\n")
     ftp.quit()
