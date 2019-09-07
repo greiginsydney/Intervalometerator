@@ -17,16 +17,18 @@
 # Easterbrook jim@jim-easterbrook.me.uk
 
 # This script is based on the FTP example from http://makble.com/upload-new-files-to-ftp-server-with-python
+# SFTP code from the paramiko project: 
 
 
 import datetime
-from ftplib import FTP 
+from ftplib import FTP
 import ConfigParser # for the ini file
+import dropbox
 import fileinput
 import logging
 import os
+import paramiko
 import re    #RegEx
-import dropbox
 import time
 
 
@@ -40,6 +42,11 @@ LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'piTransfer.log')
 #iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 iniFile = os.path.join(LOGFILE_PATH, 'www/intvlm8r.ini')
 
+# Paramiko client configuration
+UseGSSAPI = True  # enable GSS-API / SSPI authentication
+DoGSSAPIKeyExchange = True
+Port = 22
+
 
 def main():
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
@@ -51,6 +58,9 @@ def main():
         'ftpServer'     : '',
         'ftpUser'       : '',
         'ftpPassword'   : '',
+        'sftpServer'    : '',
+        'sftpUser'      : '',
+        'sftpPassword'  : '',
         'dbx_token'     : '',
         'transferDay'   : '',
         'transferHour'  : '',
@@ -61,25 +71,30 @@ def main():
         ftpServer     = config.get('Transfer', 'ftpServer')
         ftpUser       = config.get('Transfer', 'ftpUser')
         ftpPassword   = config.get('Transfer', 'ftpPassword')
+        sftpServer    = config.get('Transfer', 'sftpServer')
+        sftpUser      = config.get('Transfer', 'sftpUser')
+        sftpPassword  = config.get('Transfer', 'sftpPassword')
         dbx_token     = config.get('Transfer', 'dbx_token')
         transferDay   = config.get('Transfer', 'transferDay')
         transferHour  = config.get('Transfer', 'transferHour')
 
     except Exception as e:
         tfrMethod = "Off"
-        log('\nINI file error:' + str(e))
+        log('INI file error:' + str(e))
 
     now = datetime.datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
-        log('\nOK to transfer. Method = %s' % tfrMethod)
+        log('OK to transfer. Method = %s' % tfrMethod)
     else:
-        log('\nNot OK to transfer. Method = %s' % tfrMethod)
+        log('Not OK to transfer. Method = %s' % tfrMethod)
         return
     if (tfrMethod == 'FTP'):
-        uploadFtp(ftpServer, ftpUser, ftpPassword)
+        commenceFtp(ftpServer, ftpUser, ftpPassword)
+    elif (tfrMethod == 'SFTP'):
+        commenceSftp(sftpServer, sftpUser, sftpPassword)
     elif (tfrMethod == 'Dropbox'):
-        uploadDbx(dbx_token)
+        commenceDbx(dbx_token)
 
 
 def list_Pi_Images(path):
@@ -100,7 +115,7 @@ def list_Pi_Images(path):
     return result
 
 
-def uploadFtp(ftpServer, ftpUser, ftpPassword):
+def commenceFtp(ftpServer, ftpUser, ftpPassword):
     ftp = FTP()
     ftp.set_debuglevel(2)
     try:
@@ -167,7 +182,7 @@ def ftp_upload(ftp, localfile, remotefile):
 
 
 
-def uploadDbx(token):
+def commenceDbx(token):
     try:
         dbx = dropbox.Dropbox(token)
     except Exception as e:
@@ -223,6 +238,79 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
     #log('Dropbox result = ' + str(res))
     return res
 
+
+def commenceSftp(sftpServer, sftpUser, sftpPassword):
+    # get host key, if we know one
+    hostkeytype = None
+    hostkey = None
+    try:
+        host_keys = paramiko.util.load_host_keys(
+            os.path.expanduser("~/.ssh/known_hosts")
+        )
+    except IOError:
+        try:
+            # try ~/ssh/ too, because windows can't have a folder named ~/.ssh/
+            host_keys = paramiko.util.load_host_keys(
+                os.path.expanduser("~/ssh/known_hosts")
+            )
+        except IOError:
+            log('*** Unable to open host keys file')
+            host_keys = {}
+
+    if sftpServer in host_keys:
+        hostkeytype = host_keys[sftpServer].keys()[0]
+        hostkey = host_keys[sftpServer][hostkeytype]
+        log("Using host key of type %s" % hostkeytype)
+
+    # now, connect and use paramiko Transport to negotiate SSH2 across the connection
+    try:
+        t = paramiko.Transport((sftpServer, Port))
+        t.connect(
+            hostkey,
+            sftpUser,
+            sftpPassword,
+            gss_host=socket.getfqdn(sftpServer),
+            gss_auth=UseGSSAPI,
+            gss_kex=DoGSSAPIKeyExchange,
+        )
+        sftp = paramiko.SFTPClient.from_transport(t)
+    except paramiko.AuthenticationException as e:
+        log('Authentication failed: " + e)
+        return
+     except paramiko.SSHException as e:
+        log('Unable to establish SSH connection: ' + str(e))
+        return
+     except paramiko.BadHostKeyException as e:
+        log("Unable to verify server's host key: " + str(e))
+        return
+    except Exception as e:
+        log('Exception signing in to SFTP server: ' + str(e))
+        return
+
+    lastlist = []
+    for line in fileinput.input(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt")):
+        lastlist.append(line.rstrip("\n"))
+    currentlist = list_Pi_Images(PI_PHOTO_DIR)
+    newfiles = list(set(currentlist) - set(lastlist))
+    if len(newfiles) == 0:
+        log("No files need to be uploaded")
+    else:
+        for needupload in newfiles:
+            log("Uploading " + needupload)
+            # Format the destination path to strip the /home/pi/photos off:
+            shortPath = re.search(("DCIM/\S*"), needupload)
+            if (shortPath != None):
+                destFile = "/" + str(shortPath.group(0))
+            else:
+                destFile = needupload
+            try:
+                sftp.put(needupload, destFile)
+                with open(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt"), "a") as myfile:
+                myfile.write(needupload + "\n")
+            except Exception as e:
+                log('Error uploading ' + needupload)
+    sftp.close()
+    t.close()
 
 
 def log(message):
