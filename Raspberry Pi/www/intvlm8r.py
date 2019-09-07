@@ -628,6 +628,9 @@ def transfer():
         'ftpServer'     : '',
         'ftpUser'       : '',
         'ftpPassword'   : '',
+        'sftpServer'    : '',
+        'sftpUser'      : '',
+        'sftpPassword'  : '',
         'dbx_token'     : '',
         'transferDay'   : '',
         'transferHour'  : '',
@@ -641,6 +644,9 @@ def transfer():
         'ftpServer'     : '',
         'ftpUser'       : '',
         'ftpPassword'   : '',
+        'sftpServer'    : '',
+        'sftpUser'      : '',
+        'sftpPassword'  : '',
         'dbx_token'     : '',
         'transferDay'   : '',
         'transferHour'  : '',
@@ -655,6 +661,9 @@ def transfer():
         templateData['ftpServer']     = config.get('Transfer', 'ftpServer')
         templateData['ftpUser']       = config.get('Transfer', 'ftpUser')
         templateData['ftpPassword']   = config.get('Transfer', 'ftpPassword')
+        templateData['sftpServer']    = config.get('Transfer', 'sftpServer')
+        templateData['sftpUser']      = config.get('Transfer', 'sftpUser')
+        templateData['sftpPassword']  = config.get('Transfer', 'sftpPassword')
         templateData['dbx_token']     = config.get('Transfer', 'dbx_token')
         templateData['transferDay']   = config.get('Transfer', 'transferDay')
         templateData['transferHour']  = config.get('Transfer', 'transferHour')
@@ -687,10 +696,13 @@ def transferPOST():
             config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
             config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
             config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
-            config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
-            config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
+        if (request.form.get('tfrMethod') == 'SFTP'):
+            config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
+            config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
+            config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
         elif (request.form.get('tfrMethod') == 'Dropbox'):
             config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
+        if (request.form.get('tfrMethod') != 'Off'):
             config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
             config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
         if not config.has_section('Copy'):
