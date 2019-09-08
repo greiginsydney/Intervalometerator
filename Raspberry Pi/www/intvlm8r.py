@@ -44,7 +44,7 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 app = Flask(__name__)
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
@@ -605,19 +605,9 @@ def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
     args = request.args.to_dict()
     if args.get('copyNow'):
-        app.logger.debug('Detected COPY NOW')
-        writeString("WC") # Sends the WAKE command to the Arduino (just in case)
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
-        try:
-            camera = gp.Camera()
-            context = gp.gp_context_new()
-            camera.init(context)
-            copy_files(camera)
-            gp.check_result(gp.gp_camera_exit(camera))
-            return redirect(url_for('main')) #If we transfer OK, return to main
-        except gp.GPhoto2Error as e:
-            flash(e.string)
-            app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
+        app.logger.debug('Detected /transfer/copyNow')
+        copyNow()
+        return redirect(url_for('main')) #If we transfer OK, return to main
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
@@ -720,6 +710,20 @@ def transferPOST():
         else:
             flash('Error writing to the Ini file')
     return redirect(url_for('transfer'))
+
+
+@app.route("/copyNow")
+def name():
+    """
+    This 'page' is the only one without the "@login_required" decorator. It's only called by the cron job/script
+    and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+    copyNow()
+    res = make_response("")
+    return res, 200
 
 
 @app.route("/thermal")
@@ -1095,6 +1099,21 @@ def createConfigFile(iniFile):
     except:
         app.logger.debug('createConfigFile Threw creating ', iniFile)
 
+    return
+
+
+def copyNow():
+    writeString("WC") # Sends the WAKE command to the Arduino (just in case)
+    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+    try:
+        camera = gp.Camera()
+        context = gp.gp_context_new()
+        camera.init(context)
+        copy_files(camera)
+        gp.check_result(gp.gp_camera_exit(camera))
+    except gp.GPhoto2Error as e:
+        flash(e.string)
+        app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
     return
 
 
