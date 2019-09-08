@@ -226,7 +226,7 @@ function newSelected(id)
 	if (id == "tfrMethod")
 	{
 		ftp.style.display = (method.value != "FTP") ? "none":"";
-		ftp.style.display = (method.value != "SFTP") ? "none":"";
+		sftp.style.display = (method.value != "SFTP") ? "none":"";
 		dbx.style.display = (method.value != "Dropbox") ? "none":"";
 		transfer.style.display = (method.value == "Off") ? "none":"";
 	}
