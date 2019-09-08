@@ -32,7 +32,7 @@ htmltext = ''
 def main():
     logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     try:
-        response = urlopen('http://localhost/transfer?copyNow=1')
+        response = urlopen('http://localhost/copyNow')
         log('Response code = ' + str(response.getcode()))
         htmltext = response.read()
         if 'Unable to connect to the camera' in htmltext:
