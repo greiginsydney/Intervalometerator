@@ -275,12 +275,12 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword):
         )
         sftp = paramiko.SFTPClient.from_transport(t)
     except paramiko.AuthenticationException as e:
-        log('Authentication failed: " + e)
+        log('Authentication failed: ' + str(e))
         return
-     except paramiko.SSHException as e:
+    except paramiko.SSHException as e:
         log('Unable to establish SSH connection: ' + str(e))
         return
-     except paramiko.BadHostKeyException as e:
+    except paramiko.BadHostKeyException as e:
         log("Unable to verify server's host key: " + str(e))
         return
     except Exception as e:
@@ -306,7 +306,7 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword):
             try:
                 sftp.put(needupload, destFile)
                 with open(os.path.join(PI_PHOTO_DIR, "uploadedOK.txt"), "a") as myfile:
-                myfile.write(needupload + "\n")
+                    myfile.write(needupload + "\n")
             except Exception as e:
                 log('Error uploading ' + needupload)
     sftp.close()
