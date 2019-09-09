@@ -30,16 +30,16 @@ import subprocess
 LOGFILE_PATH = os.path.expanduser('/home/pi')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
 
-htmltext = ''
-newTime = 'Unknown'
-
 
 def main():
+    htmltext = ''
+    newTime = 'Unknown'
     logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     try:
-        response = urlopen('http://localhost/')
+        response = urlopen('http://localhost/getTime')
         log('Response code = ' + str(response.getcode()))
         htmltext = response.read()
+        log('HTML text = ' + str(htmltext))
         tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
         if tempTime != None:
             newTime = tempTime.group(1)
