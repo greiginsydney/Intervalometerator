@@ -17,7 +17,7 @@
 # Easterbrook jim@jim-easterbrook.me.uk
 
 # This script is based on the FTP example from http://makble.com/upload-new-files-to-ftp-server-with-python
-# SFTP code from the paramiko project: 
+# SFTP code from the paramiko project: https://github.com/paramiko/paramiko
 
 
 import datetime
