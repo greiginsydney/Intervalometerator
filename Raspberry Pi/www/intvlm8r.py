@@ -44,7 +44,7 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 app = Flask(__name__)
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
@@ -262,21 +262,9 @@ def main():
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
 
-    #Arduino comms. Each is wrapped in a separate try/except to quarantine individual failures
-    try:
-        rawDate = str(readString("0"))
-        if rawDate != "Unknown":
-            templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
-        time.sleep(0.5);
-    except:
-        pass
-    try:
-        rawTime = str(readString("1"))
-        if rawTime != "Unknown":
-            templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
-        time.sleep(0.5);
-    except:
-        pass
+    templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
+    templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
+    
     try:
         arduinoStats = str(readString("2"))
         if arduinoStats != "Unknown":
@@ -339,6 +327,45 @@ def main():
     templateData['piSpaceFree']     = getDiskSpace()
     templateData['piLastImageFile'] = piLastImageFile
     return render_template('main.html', **templateData)
+
+
+@app.route("/getTime")
+def getTime():
+    """
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    the cron job/script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+    arduinoDate = getArduinoDate()
+    arduinoTime = getArduinoTime()
+    res = make_response('<div id="dateTime">' + arduinoDate + ' ' + arduinoTime + '</div>')
+    return res, 200
+
+
+def getArduinoDate():
+    formattedDate = 'Unknown'
+    try:
+        rawDate = str(readString("0"))
+        if rawDate != 'Unknown':
+            formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
+        time.sleep(0.5);
+    except:
+        pass
+    return formattedDate
+
+
+def getArduinoTime():
+    formattedTime = ''
+    try:
+        rawTime = str(readString("1"))
+        if rawTime != 'Unknown':
+            formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
+        time.sleep(0.5);
+    except:
+        pass
+    return formattedTime
 
 
 @app.route("/thumbnails")
@@ -605,19 +632,9 @@ def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
     args = request.args.to_dict()
     if args.get('copyNow'):
-        app.logger.debug('Detected COPY NOW')
-        writeString("WC") # Sends the WAKE command to the Arduino (just in case)
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
-        try:
-            camera = gp.Camera()
-            context = gp.gp_context_new()
-            camera.init(context)
-            copy_files(camera)
-            gp.check_result(gp.gp_camera_exit(camera))
-            return redirect(url_for('main')) #If we transfer OK, return to main
-        except gp.GPhoto2Error as e:
-            flash(e.string)
-            app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
+        app.logger.debug('Detected /transfer/copyNow')
+        copyNow()
+        return redirect(url_for('main')) #If we transfer OK, return to main
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
@@ -722,6 +739,20 @@ def transferPOST():
     return redirect(url_for('transfer'))
 
 
+@app.route("/copyNow")
+def name():
+    """
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    the cron job/script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+    copyNow()
+    res = make_response("")
+    return res, 200
+
+
 @app.route("/thermal")
 @login_required
 def thermal():
@@ -818,14 +849,10 @@ def system():
         pass
 
     try:
-        rawDate = str(readString("0"))
-        if rawDate != "Unknown":
-            templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
-            time.sleep(0.5);
-        rawTime = str(readString("1"))
-        if rawTime != "Unknown":
-            templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
-            time.sleep(0.5);
+        templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
+        tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
+        if tempTime != '':
+                templateData['arduinoTime'] = tempTime
         rawWakePi = str(readString("5"))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
@@ -1095,6 +1122,21 @@ def createConfigFile(iniFile):
     except:
         app.logger.debug('createConfigFile Threw creating ', iniFile)
 
+    return
+
+
+def copyNow():
+    writeString("WC") # Sends the WAKE command to the Arduino (just in case)
+    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+    try:
+        camera = gp.Camera()
+        context = gp.gp_context_new()
+        camera.init(context)
+        copy_files(camera)
+        gp.check_result(gp.gp_camera_exit(camera))
+    except gp.GPhoto2Error as e:
+        flash(e.string)
+        app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
     return
 
 
