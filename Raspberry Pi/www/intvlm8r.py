@@ -262,21 +262,9 @@ def main():
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
 
-    #Arduino comms. Each is wrapped in a separate try/except to quarantine individual failures
-    try:
-        rawDate = str(readString("0"))
-        if rawDate != "Unknown":
-            templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
-        time.sleep(0.5);
-    except:
-        pass
-    try:
-        rawTime = str(readString("1"))
-        if rawTime != "Unknown":
-            templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
-        time.sleep(0.5);
-    except:
-        pass
+    templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
+    templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
+    
     try:
         arduinoStats = str(readString("2"))
         if arduinoStats != "Unknown":
@@ -339,6 +327,45 @@ def main():
     templateData['piSpaceFree']     = getDiskSpace()
     templateData['piLastImageFile'] = piLastImageFile
     return render_template('main.html', **templateData)
+
+
+@app.route("/getTime")
+def getTime():
+    """
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    the cron job/script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+    arduinoDate = getArduinoDate()
+    arduinoTime = getArduinoTime()
+    res = make_response('<div id="dateTime">' + arduinoDate + ' ' + arduinoTime + '</div>')
+    return res, 200
+
+
+def getArduinoDate():
+    formattedDate = 'Unknown'
+    try:
+        rawDate = str(readString("0"))
+        if rawDate != 'Unknown':
+            formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
+        time.sleep(0.5);
+    except:
+        pass
+    return formattedDate
+
+
+def getArduinoTime():
+    formattedTime = ''
+    try:
+        rawTime = str(readString("1"))
+        if rawTime != 'Unknown':
+            formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
+        time.sleep(0.5);
+    except:
+        pass
+    return formattedTime
 
 
 @app.route("/thumbnails")
@@ -715,8 +742,8 @@ def transferPOST():
 @app.route("/copyNow")
 def name():
     """
-    This 'page' is the only one without the "@login_required" decorator. It's only called by the cron job/script
-    and will only execute if the calling IP is itself/localhost.
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    the cron job/script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
@@ -822,14 +849,10 @@ def system():
         pass
 
     try:
-        rawDate = str(readString("0"))
-        if rawDate != "Unknown":
-            templateData['arduinoDate'] = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
-            time.sleep(0.5);
-        rawTime = str(readString("1"))
-        if rawTime != "Unknown":
-            templateData['arduinoTime'] = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
-            time.sleep(0.5);
+        templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
+        tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
+        if tempTime != '':
+                templateData['arduinoTime'] = tempTime
         rawWakePi = str(readString("5"))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
