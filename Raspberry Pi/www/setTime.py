@@ -61,9 +61,9 @@ def main():
             timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y %b %d %H:%M:%S')]
             result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
             (stdoutdata, stderrdata) = result.communicate()
-            if stdoutdata != None:
+            if stdoutdata != '':
                 log('Result = ' + str(stdoutdata))
-            if stderrdata != None:
+            if stderrdata != '':
                 log('Error = ' + str(stderrdata))
     except Exception as e:
         log('Unhandled time error: ' + str(e))
