@@ -39,7 +39,9 @@ install_apps ()
 	
 	#This is ALL for Paramiko (SSH uploads):
 	apt-get install libffi-dev libssl-dev python-dev
-	pip install bcrypt pynacl cryptography paramiko
+	apt install krb5-config krb5-user
+	sudo apt-get install python-pip libkrb5-dev
+	pip install bcrypt pynacl cryptography gssapi paramiko
 	
 	pip install dropbox
 	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
