@@ -624,51 +624,54 @@ def transfer():
 
     # Initialise the dictionary:
     templateData = {
-        'tfrMethod'     : 'Off',    # Hides all options if the file isn't found or is bad
-        'ftpServer'     : '',
-        'ftpUser'       : '',
-        'ftpPassword'   : '',
-        'sftpServer'    : '',
-        'sftpUser'      : '',
-        'sftpPassword'  : '',
-        'dbx_token'     : '',
-        'transferDay'   : '',
-        'transferHour'  : '',
-        'copyDay'       : '',
-        'copyHour'      : '',
-        'wakePiTime'    : '25'
+        'tfrMethod'         : 'Off',    # Hides all options if the file isn't found or is bad
+        'ftpServer'         : '',
+        'ftpUser'           : '',
+        'ftpPassword'       : '',
+        'sftpServer'        : '',
+        'sftpUser'          : '',
+        'sftpPassword'      : '',
+        'sftpRemoteFolder'  : '',
+        'dbx_token'         : '',
+        'transferDay'       : '',
+        'transferHour'      : '',
+        'copyDay'           : '',
+        'copyHour'          : '',
+        'wakePiTime'        : '25'
     }
     config = ConfigParser.SafeConfigParser(
         {
-        'tfrmethod'     : 'Off',
-        'ftpServer'     : '',
-        'ftpUser'       : '',
-        'ftpPassword'   : '',
-        'sftpServer'    : '',
-        'sftpUser'      : '',
-        'sftpPassword'  : '',
-        'dbx_token'     : '',
-        'transferDay'   : '',
-        'transferHour'  : '',
-        'copyDay'       : 'Off',
-        'copyHour'      : '',
-        'wakePiTime'    : '25'
+        'tfrmethod'        : 'Off',
+        'ftpServer'        : '',
+        'ftpUser'          : '',
+        'ftpPassword'      : '',
+        'sftpServer'       : '',
+        'sftpUser'         : '',
+        'sftpPassword'     : '',
+        'sftpRemoteFolder' : '',
+        'dbx_token'        : '',
+        'transferDay'      : '',
+        'transferHour'     : '',
+        'copyDay'          : 'Off',
+        'copyHour'         : '',
+        'wakePiTime'       : '25'
         })
     try:
         config.read(iniFile)
         #app.logger.debug('Found the file in GET')
-        templateData['tfrMethod']     = config.get('Transfer', 'tfrmethod')
-        templateData['ftpServer']     = config.get('Transfer', 'ftpServer')
-        templateData['ftpUser']       = config.get('Transfer', 'ftpUser')
-        templateData['ftpPassword']   = config.get('Transfer', 'ftpPassword')
-        templateData['sftpServer']    = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']      = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']  = config.get('Transfer', 'sftpPassword')
-        templateData['dbx_token']     = config.get('Transfer', 'dbx_token')
-        templateData['transferDay']   = config.get('Transfer', 'transferDay')
-        templateData['transferHour']  = config.get('Transfer', 'transferHour')
-        templateData['copyDay']       = config.get('Copy', 'copyDay')
-        templateData['copyHour']      = config.get('Copy', 'copyHour')
+        templateData['tfrMethod']        = config.get('Transfer', 'tfrmethod')
+        templateData['ftpServer']        = config.get('Transfer', 'ftpServer')
+        templateData['ftpUser']          = config.get('Transfer', 'ftpUser')
+        templateData['ftpPassword']      = config.get('Transfer', 'ftpPassword')
+        templateData['sftpServer']       = config.get('Transfer', 'sftpServer')
+        templateData['sftpUser']         = config.get('Transfer', 'sftpUser')
+        templateData['sftpPassword']     = config.get('Transfer', 'sftpPassword')
+        templateData['sftpRemoteFolder'] = config.get('Transfer', 'sftpRemoteFolder')
+        templateData['dbx_token']        = config.get('Transfer', 'dbx_token')
+        templateData['transferDay']      = config.get('Transfer', 'transferDay')
+        templateData['transferHour']     = config.get('Transfer', 'transferHour')
+        templateData['copyDay']          = config.get('Copy', 'copyDay')
+        templateData['copyHour']         = config.get('Copy', 'copyHour')
     except Exception as e:
         app.logger.debug('INI file error:' + str(e))
         flash('Error reading from the Ini file')
