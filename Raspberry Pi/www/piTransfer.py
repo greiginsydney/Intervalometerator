@@ -270,8 +270,8 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword):
             sftpUser,
             sftpPassword,
             gss_host=socket.getfqdn(sftpServer),
-            gss_auth=UseGSSAPI,
-            gss_kex=DoGSSAPIKeyExchange,
+            gss_auth=False, #gss_auth=UseGSSAPI,
+            gss_kex=False, #gss_kex=DoGSSAPIKeyExchange,
         )
         sftp = paramiko.SFTPClient.from_transport(t)
     except paramiko.AuthenticationException as e:
