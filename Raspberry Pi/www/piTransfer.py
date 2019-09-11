@@ -37,10 +37,10 @@ import time
 # ////////////////////////////////
 
 PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
-LOGFILE_PATH = os.path.expanduser('/home/pi')
-LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'piTransfer.log')
-#iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
-iniFile = os.path.join(LOGFILE_PATH, 'www/intvlm8r.ini')
+INIFILE_PATH = os.path.expanduser('/home/pi')
+INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
+LOGFILE_DIR = os.path.expanduser('/home/pi/www/static')
+LOGFILE_NAME = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 
 # Paramiko client configuration
 UseGSSAPI = True  # enable GSS-API / SSPI authentication
@@ -50,7 +50,7 @@ Port = 22
 
 def main():
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
-    if not os.path.exists(iniFile):
+    if not os.path.exists(INIFILE_NAME):
         pass
     config = ConfigParser.SafeConfigParser(
         {
@@ -65,7 +65,7 @@ def main():
         'transferDay'   : '',
         'transferHour'  : '',
         })
-    config.read(iniFile)
+    config.read(INIFILE_NAME)
     try:
         tfrMethod     = config.get('Transfer', 'tfrmethod')
         ftpServer     = config.get('Transfer', 'ftpServer')
