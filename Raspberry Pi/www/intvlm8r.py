@@ -64,6 +64,9 @@ PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
 PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
 PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
+PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
+PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
+PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer page will link to when you click "View Log"
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 
