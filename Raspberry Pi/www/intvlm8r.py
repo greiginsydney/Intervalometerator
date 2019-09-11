@@ -637,7 +637,8 @@ def transfer():
         'transferHour'      : '',
         'copyDay'           : '',
         'copyHour'          : '',
-        'wakePiTime'        : '25'
+        'wakePiTime'        : '25',
+        'piTransferLogLink' : PI_TRANSFER_LINK
     }
     config = ConfigParser.SafeConfigParser(
         {
@@ -687,39 +688,52 @@ def transfer():
 @login_required
 def transferPOST():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
-    config = ConfigParser.ConfigParser()
-    try:
-        config.read(iniFile)
-        if not config.has_section('Transfer'):
-            config.add_section('Transfer')
-        config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
-        if (request.form.get('tfrMethod') == 'FTP'):
-            config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
-            config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
-            config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
-        if (request.form.get('tfrMethod') == 'SFTP'):
-            config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
-            config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
-            config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
-        elif (request.form.get('tfrMethod') == 'Dropbox'):
-            config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
-        if (request.form.get('tfrMethod') != 'Off'):
-            config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
-            config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
-        if not config.has_section('Copy'):
-            config.add_section('Copy')
-        config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
-        config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
-        with open(iniFile, "wb") as config_file:
-            config.write(config_file)
-    except Exception as e:
-        app.logger.debug('INI file error writing:' + str(e))
-        if 'Permission denied' in str(e):
-            flash('Permission denied writing to the ini file')
-        else:
-            flash('Error writing to the Ini file')
+
+    if 'tfrClear' in request.form:
+        try:
+            piTransferLogfile = open(PI_TRANSFER_FILE, 'w')
+            nowtime = datetime.now().strftime('%Y %b %d @ %H:%M:%S')
+            piTransferLogfile.write('piTransfer.log cleared on ' + nowtime)
+            piTransferLogfile.close()
+        except Exception as e:
+            app.logger.debug('Exception clearing piTransfer.log:' + str(e))
+
+    if 'tfrApply' in request.form:
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = ConfigParser.ConfigParser()
+        try:
+            config.read(iniFile)
+            if not config.has_section('Transfer'):
+                config.add_section('Transfer')
+            config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
+            if (request.form.get('tfrMethod') == 'FTP'):
+                config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
+                config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
+                config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
+            if (request.form.get('tfrMethod') == 'SFTP'):
+                config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
+                config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
+                config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
+                config.set('Transfer', 'sftpRemoteFolder', str(request.form.get('sftpRemoteFolder') or ''))
+            elif (request.form.get('tfrMethod') == 'Dropbox'):
+                config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
+            if (request.form.get('tfrMethod') != 'Off'):
+                config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
+                config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
+            if not config.has_section('Copy'):
+                config.add_section('Copy')
+            config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
+            config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
+            with open(iniFile, "wb") as config_file:
+                config.write(config_file)
+        except Exception as e:
+            app.logger.debug('INI file error writing:' + str(e))
+            if 'Permission denied' in str(e):
+                flash('Permission denied writing to the ini file')
+            else:
+                flash('Error writing to the Ini file')
+
     return redirect(url_for('transfer'))
 
 
