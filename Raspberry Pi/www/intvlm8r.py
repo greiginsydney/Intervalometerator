@@ -696,7 +696,7 @@ def transferPOST():
         try:
             piTransferLogfile = open(PI_TRANSFER_FILE, 'w')
             nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
-            piTransferLogfile.write(nowtime + 'piTransfer.log cleared')
+            piTransferLogfile.write(nowtime + ' piTransfer.log cleared')
             piTransferLogfile.close()
         except Exception as e:
             app.logger.debug('Exception clearing piTransfer.log:' + str(e))
