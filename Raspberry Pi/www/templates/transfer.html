@@ -169,6 +169,16 @@
 				</div>
 			</td>
 		</tr>
+		<tr>
+			<td >
+				<div class="alignleft">
+					<button type="button" name="view" id="view" onClick="openInNewTab('{{ piTransferLogLink }}');">View log</button>
+				</div>
+				<div class="alignright">
+					<button type="submit" name="tfrClear" id="tfrClear" onclick="tfrClear()">Clear log</button>
+				</div>
+			</td>
+		</tr>
 	</table>
 
 	<table class="noborder">
@@ -178,17 +188,19 @@
 					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
 				</div>
 				<div class="alignright">
-					<button type="submit" name="TfrApply" id="apply">Apply</button>
+					<button type="submit" name="tfrApply" id="apply">Apply</button>
 				</div>
 			</td>
 		</tr>
 	</table>
 </form>
 
-<!-- Hidden form for the Copy Now button, as you can't nest forms -->
+<!-- Hidden form for the various "do something now" buttons, as you can't nest forms -->
 <form style="display: none">
-	<button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button>
+	<button type="submit" name="copyNow"  id="copyNow"  value="1">Copy Now</button>
+	<button type="submit" name="clear" id="clear" value="1">Clear log</button>
 </form>
+
 
 <script>
 var SelectionByte = 0;
@@ -229,6 +241,11 @@ function copyNow()
 {
 	document.getElementById("copyNow").click();
 }
+function tfrClear()
+{
+	document.getElementById("tfrClear").click();
+}
+
 
 function newSelected(id)
 {
@@ -283,5 +300,12 @@ function lightButtons()
 		document.getElementById("apply").disabled  = false;
 	}
 }
+
+//https://stackoverflow.com/questions/4907843/open-a-url-in-a-new-tab-and-not-a-new-window-using-javascript
+function openInNewTab(url) {
+  var win = window.open(url, '_blank');
+  win.focus();
+}
+
 </script>
 {% endblock %}
