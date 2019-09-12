@@ -21,41 +21,41 @@ Prior to using Dropbox you need to perform some authentication steps to allow th
 2. Click the "App console" button in the top right-hand corner:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750027-10aca180-d55b-11e9-8945-cb62cceb24e7.jpg" width="80%">
  </p>
 
 3. Sign in to your account.
 4. Click "Create App":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750062-24f09e80-d55b-11e9-95f3-cba0c8ed7ead.jpg" width="80%">
  </p>
 
 5. Choose the radio buttons for "Dropbox API", "App Folder", give it a name and then click Create App:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750082-3174f700-d55b-11e9-98aa-fcb0a58dca5c.jpg" width="80%">
  </p>
 
-6. Under "OAuth 2", click "Generate", and copy the token that this generates:
+6. Under "OAuth 2", click "Generate":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750093-39349b80-d55b-11e9-96be-70bbda39375e.jpg" width="80%">
  </p>
 
-7. Under "OAuth 2", click "Generate", and copy the token that this generates:
+7. Copy the token that this generates:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750099-3fc31300-d55b-11e9-97ce-ac36105b3165.jpg" width="80%">
  </p>
 
 8. If you're using Windows 10 and signed into that Dropbox account, you should get a popup to let you know the app has been created, and that it now appears in your Dropbox folders list:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750110-46ea2100-d55b-11e9-89e4-6ffe30ce95cc.jpg" width="50%">
  </p>
  <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/56710964-f456c680-676b-11e9-9d85-5478c28bdfbd.png" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750119-4d789880-d55b-11e9-9909-a20f83eab524.jpg" width="50%">
  </p>
 
 9. You're done. Now login to the intvlm8r, choose Dropbox for the Transfer Method on the /Transfer page, paste the token into this field and click Apply.
