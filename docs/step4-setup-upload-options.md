@@ -21,7 +21,7 @@ Prior to using Dropbox you need to perform some authentication steps to allow th
 2. Click the "App console" button in the top right-hand corner:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/64750027-10aca180-d55b-11e9-8945-cb62cceb24e7.jpg" width="80%">
+<img src="https://user-images.githubusercontent.com/11004787/64750027-10aca180-d55b-11e9-8945-cb62cceb24e7.jpg" width="80%" style="border:1px solid black">
  </p>
 
 3. Sign in to your account.
@@ -52,16 +52,17 @@ Prior to using Dropbox you need to perform some authentication steps to allow th
 8. If you're using Windows 10 and signed into that Dropbox account, you should get a popup to let you know the app has been created, and see that it now appears in your Dropbox folders list:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/64750110-46ea2100-d55b-11e9-89e4-6ffe30ce95cc.jpg" width="50%">
+<img src="https://user-images.githubusercontent.com/11004787/64750110-46ea2100-d55b-11e9-89e4-6ffe30ce95cc.jpg" width="40%">
  </p>
  <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/64750119-4d789880-d55b-11e9-9909-a20f83eab524.jpg" width="30%">
+<img src="https://user-images.githubusercontent.com/11004787/64750119-4d789880-d55b-11e9-9909-a20f83eab524.jpg" width="25%">
  </p>
 
 9. You're done. Now login to the intvlm8r, choose Dropbox for the Transfer Method on the /Transfer page, paste the token into this field and click Apply.
 
 NB: This process was last confirmed accurate on September 12th, 2019.
 
+<br>
 
 ## Next steps are:
 - [PCB Assembly](/docs/step5-pcb-assembly.md)
