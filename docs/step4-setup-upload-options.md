@@ -21,7 +21,7 @@ Prior to using Dropbox you need to perform some authentication steps to allow th
 2. Click the "App console" button in the top right-hand corner:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/64750027-10aca180-d55b-11e9-8945-cb62cceb24e7.jpg" width="80%" style="border:1px solid black">
+<img src="https://user-images.githubusercontent.com/11004787/64750027-10aca180-d55b-11e9-8945-cb62cceb24e7.jpg" width="80%">
  </p>
 
 3. Sign in to your account.
