@@ -1002,6 +1002,8 @@ def list_Pi_Images(path):
             ext = os.path.splitext(name)[1].lower()
             if ext in ('.db',):
                 continue
+            if ext in ('.txt',):
+                continue
             result.append(os.path.join(root, name))
     return result
 
