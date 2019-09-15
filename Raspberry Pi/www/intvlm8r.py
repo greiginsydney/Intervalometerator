@@ -253,6 +253,8 @@ def main():
         'piImageCount'      : 'Unknown',
         'piLastImage'       : 'Unknown',
         'piSpaceFree'       : 'Unknown',
+        'lastTrnResult'     : 'Unknown',
+        'lastTrnLogFile'    : PI_TRANSFER_LINK,
         'piLastImageFile'   : 'Unknown'
     }
 
@@ -341,6 +343,12 @@ def main():
     templateData['piLastImage']     = piLastImage
     templateData['piSpaceFree']     = getDiskSpace()
     templateData['piLastImageFile'] = piLastImageFile
+    try:
+        with open(PI_TRANSFER_FILE, 'r') as f:
+            lines = f.read().splitlines()
+            templateData['lastTrnResult'] = lines[-1]
+    except Exception as e:
+        app.logger.debug('Exception reading last line of piTransfer.log file: ' + str(e))
     return render_template('main.html', **templateData)
 
 
