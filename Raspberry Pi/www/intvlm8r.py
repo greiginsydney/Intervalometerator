@@ -317,7 +317,7 @@ def main():
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
-            piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1]))
+            piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1])).replace(microsecond=0)
             piLastImageFile = str(FileList[-1]).replace((PI_PHOTO_DIR  + "/"), "")
     except:
         flash('Error talking to the Pi')
