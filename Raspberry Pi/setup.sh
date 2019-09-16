@@ -38,9 +38,9 @@ install_apps ()
 	pip install flask flask-bootstrap flask-login gunicorn configparser
 	
 	#This is ALL for Paramiko (SSH uploads):
-	apt-get install libffi-dev libssl-dev python-dev
-	apt install krb5-config krb5-user
-	sudo apt-get install python-pip libkrb5-dev
+	apt-get install libffi-dev libssl-dev python-dev -y
+	apt install krb5-config krb5-user -y
+	apt-get install python-pip libkrb5-dev -y
 	pip install bcrypt pynacl cryptography gssapi paramiko
 	
 	pip install dropbox
