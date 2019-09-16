@@ -33,7 +33,7 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' EXIT
 
 install_apps ()
 {
-	apt-get install subversion # Used later in this script to clone the RPi dir's of the Github repo
+	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	apt-get install python-pip python-flask -y
 	pip install flask flask-bootstrap flask-login gunicorn configparser
 	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
