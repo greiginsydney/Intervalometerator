@@ -120,6 +120,11 @@ install_website ()
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/cameraTransfer.service
 	systemctl enable cameraTransfer.service
+	
+	#Pi Transfer
+	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
+	chmod 644 /etc/systemd/system/piTransfer.service
+	systemctl enable piTransfer.service
 
 	#Camera Transfer - Cron Job
 
