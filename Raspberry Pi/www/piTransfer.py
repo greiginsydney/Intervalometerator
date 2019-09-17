@@ -51,8 +51,15 @@ DoGSSAPIKeyExchange = True
 Port = 22
 
 
-def main():
+def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    copyNow = False
+    try:
+        if sys.argv[1] == 'copyNow':
+            copyNow = True
+    except:
+        pass
+    
     if not os.path.exists(INIFILE_NAME):
         pass
     config = ConfigParser.SafeConfigParser(
@@ -93,7 +100,10 @@ def main():
     now = datetime.datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
-        log('OK to transfer. Method = %s' % tfrMethod)
+        log('OK to transfer @ %s:00. Method = %s' % (transferHour, tfrMethod))
+    elif copyNow == True:
+        # We're OK to transfer now
+        log("OK to transfer on 'copyNow'. Method = %s" % tfrMethod)
     else:
         log('Not OK to transfer. Method = %s' % tfrMethod)
         return
@@ -333,4 +343,4 @@ def log(message):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
