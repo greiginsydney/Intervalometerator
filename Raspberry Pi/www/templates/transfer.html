@@ -86,6 +86,16 @@
 				{% endif %}	
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Remote folder:</div>
+				{% if ftpRemoteFolder == '' %}
+					<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="/images/" oninput="newText(this.id)"></div>
+				{% else %}
+					<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="{{ ftpRemoteFolder }}" oninput="newText(this.id)"></div>
+				{% endif %}	
+			</td>
+		</tr>
 	</table>
 
 	<table id="sftp">
@@ -209,15 +219,16 @@ SelectionBits["tfrMethod"]        =     1;
 SelectionBits["ftpServer"]        =     2;
 SelectionBits["ftpUser"]          =     4;
 SelectionBits["ftpPassword"]      =     8;
-SelectionBits["sftpServer"]       =    16;
-SelectionBits["sftpUser"]         =    32;
-SelectionBits["sftpPassword"]     =    64;
-SelectionBits["sftpRemoteFolder"] =   128;
-SelectionBits["dbx_token"]        =   256;
-SelectionBits["transferDay"]      =   512;
-SelectionBits["transferHour"]     =  1024;
-SelectionBits["copyDay"]          =  2048;
-SelectionBits["copyHour"]         =  4096;
+SelectionBits["ftpRemoteFolder"]  =    16;
+SelectionBits["sftpServer"]       =    32;
+SelectionBits["sftpUser"]         =    64;
+SelectionBits["sftpPassword"]     =   128;
+SelectionBits["sftpRemoteFolder"] =   256;
+SelectionBits["dbx_token"]        =   512;
+SelectionBits["transferDay"]      =  1024;
+SelectionBits["transferHour"]     =  2048;
+SelectionBits["copyDay"]          =  4096;
+SelectionBits["copyHour"]         =  8192;
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
