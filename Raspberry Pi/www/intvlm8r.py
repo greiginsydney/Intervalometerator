@@ -639,6 +639,7 @@ def transfer():
         'ftpServer'         : '',
         'ftpUser'           : '',
         'ftpPassword'       : '',
+        'ftpRemoteFolder'   : '',
         'sftpServer'        : '',
         'sftpUser'          : '',
         'sftpPassword'      : '',
@@ -657,6 +658,7 @@ def transfer():
         'ftpServer'        : '',
         'ftpUser'          : '',
         'ftpPassword'      : '',
+        'ftpRemoteFolder'  : '',
         'sftpServer'       : '',
         'sftpUser'         : '',
         'sftpPassword'     : '',
@@ -675,6 +677,7 @@ def transfer():
         templateData['ftpServer']        = config.get('Transfer', 'ftpServer')
         templateData['ftpUser']          = config.get('Transfer', 'ftpUser')
         templateData['ftpPassword']      = config.get('Transfer', 'ftpPassword')
+        templateData['ftpRemoteFolder']  = config.get('Transfer', 'ftpRemoteFolder')
         templateData['sftpServer']       = config.get('Transfer', 'sftpServer')
         templateData['sftpUser']         = config.get('Transfer', 'sftpUser')
         templateData['sftpPassword']     = config.get('Transfer', 'sftpPassword')
@@ -722,6 +725,7 @@ def transferPOST():
                 config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
                 config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
                 config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
+                config.set('Transfer', 'ftpRemoteFolder', str(request.form.get('ftpRemoteFolder') or ''))
             if (request.form.get('tfrMethod') == 'SFTP'):
                 config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
                 config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
