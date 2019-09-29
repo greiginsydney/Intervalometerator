@@ -59,41 +59,25 @@
 		<tr>
 			<td>
 				<div class="alignleft">FTP server URL:</div>
-				{% if ftpServer == '' %}
-					<div class="alignright"><input type="text" name="ftpServer" id="ftpServer" value="ftp.somewhere.com" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="ftpServer" id="ftpServer" value="{{ ftpServer }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="ftpServer" id="ftpServer" value="{{ ftpServer }}" placeholder="myFtpServer.com" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Username:</div>
-				{% if ftpUser == '' %}
-					<div class="alignright"><input type="text" name="ftpUser" id="ftpUser" value="ftp_user" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="ftpUser" id="ftpUser" value="{{ ftpUser }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="ftpUser" id="ftpUser" value="{{ ftpUser }}" placeholder="ftpUsername" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Password:</div>
-				{% if ftpPassword == '' %}
-					<div class="alignright"><input type="password" name="ftpPassword" id="ftpPassword" value="" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="password" name="ftpPassword" id="ftpPassword" value="{{ ftpPassword }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="password" name="ftpPassword" id="ftpPassword" value="{{ ftpPassword }}" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Remote folder:</div>
-				{% if ftpRemoteFolder == '' %}
-					<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="/images/" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="{{ ftpRemoteFolder }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="{{ ftpRemoteFolder }}" placeholder="images" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 	</table>
@@ -102,41 +86,25 @@
 		<tr>
 			<td>
 				<div class="alignleft">SFTP server URL:</div>
-				{% if sftpServer == '' %}
-					<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="sftp.somewhere.com" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="{{ sftpServer }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="{{ sftpServer }}" placeholder="mySftpServer.com" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Username:</div>
-				{% if sftpUser == '' %}
-					<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="sftp_user" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="{{ sftpUser }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="{{ sftpUser }}" placeholder="sftpUsername" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Password:</div>
-				{% if sftpPassword == '' %}
-					<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="{{ sftpPassword }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="{{ sftpPassword }}" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Remote folder:</div>
-				{% if sftpRemoteFolder == '' %}
-					<div class="alignright"><input type="text" name="sftpRemoteFolder" id="sftpRemoteFolder" value="/images/" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="sftpRemoteFolder" id="sftpRemoteFolder" value="{{ sftpRemoteFolder }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="sftpRemoteFolder" id="sftpRemoteFolder" value="{{ sftpRemoteFolder }}" placeholder="images" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 	</table>
@@ -145,11 +113,7 @@
 		<tr>
 			<td>
 				<div class="alignleft">Token:</div>
-				{% if dbx_token == '' %}
-					<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="abcd1234-wxyz789-etc" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="{{ dbx_token }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="{{ dbx_token }}" placeholder="abcd1234-2345rtyu-etc" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 	</table>
