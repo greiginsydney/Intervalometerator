@@ -39,15 +39,15 @@ import time
 # ////////////////////////////////
 
 PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
-UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, "uploadedOK.txt")
+UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, 'uploadedOK.txt')
 INIFILE_PATH = os.path.expanduser('/home/pi')
 INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
 LOGFILE_DIR = os.path.expanduser('/home/pi/www/static')
 LOGFILE_NAME = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 
 # Paramiko client configuration
-UseGSSAPI = True  # enable GSS-API / SSPI authentication
-DoGSSAPIKeyExchange = True
+UseGSSAPI = False  # DISable GSS-API / SSPI authentication
+DoGSSAPIKeyExchange = False
 Port = 22
 
 
@@ -68,6 +68,7 @@ def main(argv):
         'ftpServer'         : '',
         'ftpUser'           : '',
         'ftpPassword'       : '',
+        'ftpRemoteFolder'   : '',
         'sftpServer'        : '',
         'sftpUser'          : '',
         'sftpPassword'      : '',
@@ -82,6 +83,7 @@ def main(argv):
         ftpServer         = config.get('Transfer', 'ftpServer')
         ftpUser           = config.get('Transfer', 'ftpUser')
         ftpPassword       = config.get('Transfer', 'ftpPassword')
+        ftpRemoteFolder   = config.get('Transfer', 'ftpRemoteFolder')
         sftpServer        = config.get('Transfer', 'sftpServer')
         sftpUser          = config.get('Transfer', 'sftpUser')
         sftpPassword      = config.get('Transfer', 'sftpPassword')
@@ -96,7 +98,10 @@ def main(argv):
 
     while '//' in sftpRemoteFolder:
         sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
+    while '//' in ftpRemoteFolder:
+        ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
 
+    log('')
     now = datetime.datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
@@ -107,8 +112,10 @@ def main(argv):
     else:
         log('Not OK to transfer. Method = %s' % tfrMethod)
         return
+
+    log('STATUS: Commencing upload using %s' % tfrMethod)
     if (tfrMethod == 'FTP'):
-        commenceFtp(ftpServer, ftpUser, ftpPassword)
+        commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder)
     elif (tfrMethod == 'SFTP'):
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
@@ -132,7 +139,6 @@ def list_New_Images(imagesPath, previouslyUploadedFile):
                 # Don't try to upload the/any .txt files
                 continue
             currentlist.append(os.path.join(root, name))
-    
     for line in fileinput.input(previouslyUploadedFile):
         lastlist.append(line.rstrip("\n"))
     newFiles = list(set(currentlist) - set(lastlist))
@@ -148,7 +154,7 @@ def makeShortPath(remoteRootFolder, filepath):
     return destFilePath
 
 
-def commenceFtp(ftpServer, ftpUser, ftpPassword):
+def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     ftp = FTP()
     ftp.set_debuglevel(2)
     try:
@@ -160,6 +166,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword):
             log('ftp connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
             log('ftp login exception. Unknown error: ' + str(e))
+        log('STATUS: FTP connection failed')
         return
     try:
         ftp.login(ftpUser,ftpPassword)
@@ -168,55 +175,60 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword):
             log('ftp login exception: Login or password incorrect')
         else:
             log('ftp login exception. Unknown error: ' + str(e))
+        log('STATUS: FTP login failed')
         return
     ftp.set_pasv(False) #Filezilla Server defaults to passive, and 2x passive = nothing happens!
 
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
-    if len(newFiles) == 0:
-        log("No files need to be uploaded")
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No new files to upload')
     else:
+        numFilesOK = 0
+        previousFilePath = ''
         for needupload in newFiles:
             log("Uploading " + needupload)
             # Format the destination path to strip the /home/pi/photos off:
-            shortPath = makeShortPath('', needupload)
-            ftp_upload(ftp, needupload, shortPath)
-            with open(UPLOADED_PHOTOS_LIST, "a") as myfile:
-              myfile.write(needupload + "\n")
+            shortPath = makeShortPath(ftpRemoteFolder, needupload)
+            try:
+                remoteFolderTree = os.path.split(shortPath)
+                if previousFilePath != remoteFolderTree[0]:
+                    # Create the tree & CD to it:
+                    foldersList = remoteFolderTree[0].split("/")
+                    remotePath = "/"
+                    if len(foldersList) != 0:
+                        for oneFolder in foldersList:
+                            remotePath += oneFolder + "/"
+                            try:
+                                ftp.cwd(remotePath)
+                            except:
+                                ftp.mkd(oneFolder)
+                                ftp.cwd(remotePath)
+                fp = open(needupload, 'rb')
+                ftp.storbinary('STOR %s' % remoteFolderTree[1], fp, 1024)
+                previousFilePath = remoteFolderTree[0]
+                numFilesOK += 1
+                with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
+                    historyFile.write(needupload + "\n")
+            except Exception as e:
+                log('Error uploading ' + str(e))
+        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     ftp.quit()
-
-
-def ftp_upload(ftp, localfile, remotefile):
-    path,filename = os.path.split(remotefile)
-    try:
-        ftp.cwd(path)
-    except:
-        ftp.mkd(path)
-    fp = open(localfile, 'rb')
-    try:
-        ftp.storbinary('STOR %s' % filename, fp, 1024)
-    except Exception as e:
-        fp.close()
-        log('ftp_upload exception:' + str(e))
-        path,filename = os.path.split(remotefile)
-        log("creating directory: " + path)
-        ftp.mkd(path)
-        ftp_upload(ftp, localfile, remotefile)
-        fp.close()
-        return
-    fp.close()
-    log ('Successfully uploaded ' + localfile + ' to ' + remotefile)
 
 
 def commenceDbx(token):
     try:
         dbx = dropbox.Dropbox(token)
     except Exception as e:
+        log('STATUS: Exception signing in to Dropbox')
         log('Exception signing in to Dropbox: ' + str(e))
         return
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
-    if len(newFiles) == 0:
-        log("No files need to be uploaded")
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No new files to upload')
     else:
+        numFilesOK = 0
         for needupload in newFiles:
             log("Uploading " + needupload)
             # Format the destination path to strip the /home/pi/photos off:
@@ -226,8 +238,10 @@ def commenceDbx(token):
             if result == None:
                 log('Error uploading ' + needupload)
             else:
-                with open(UPLOADED_PHOTOS_LIST, "a") as myfile:
-                    myfile.write(needupload + "\n")
+                numFilesOK += 1
+                with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
+                    historyFile.write(needupload + "\n")
+        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
 
 
 def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
@@ -249,6 +263,7 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
             mute=True)
     except dropbox.exceptions.ApiError as err:
+        log('STATUS: Dropbox API error')
         log('Dropbox API error' + err)
         return None
     #log('Dropbox uploaded as ' + res.name.encode('utf8'))
@@ -284,27 +299,33 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
             sftpUser,
             sftpPassword,
             gss_host=socket.getfqdn(sftpServer),
-            gss_auth=False, #gss_auth=UseGSSAPI,
-            gss_kex=False, #gss_kex=DoGSSAPIKeyExchange,
+            gss_auth = UseGSSAPI,
+            gss_kex= DoGSSAPIKeyExchange,
         )
         sftp = paramiko.SFTPClient.from_transport(t)
     except paramiko.AuthenticationException as e:
+        log('STATUS: SFTP Authentication failed')
         log('Authentication failed: ' + str(e))
         return
     except paramiko.SSHException as e:
+        log('STATUS: SFTP Unable to establish SSH connection')
         log('Unable to establish SSH connection: ' + str(e))
         return
     except paramiko.BadHostKeyException as e:
+        log("STATUS: SFTP Unable to verify server's host key")
         log("Unable to verify server's host key: " + str(e))
         return
     except Exception as e:
+        log('STATUS: SFTP exception signing in')
         log('Exception signing in to SFTP server: ' + str(e))
         return
 
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
-    if len(newFiles) == 0:
-        log("No files need to be uploaded")
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No files to upload')
     else:
+        numFilesOK = 0
         previousFilePath = ''
         for needupload in newFiles:
             log("Uploading " + needupload)
@@ -326,10 +347,12 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
                                 sftp.chdir(remotePath)
                 sftp.put(needupload, remoteFolderTree[1])
                 previousFilePath = remoteFolderTree[0]
-                with open(UPLOADED_PHOTOS_LIST, "a") as myfile:
-                    myfile.write(needupload + "\n")
+                numFilesOK += 1
+                with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
+                    historyFile.write(needupload + "\n")
             except Exception as e:
                 log('Error uploading ' + str(e))
+        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     sftp.close()
     t.close()
 
