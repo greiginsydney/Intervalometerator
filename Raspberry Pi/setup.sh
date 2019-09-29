@@ -170,6 +170,8 @@ install_website ()
 	case $Response in
 		(y|Y|"")
 			sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
+			sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
+			
 			;;
 		(*)
 			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service
