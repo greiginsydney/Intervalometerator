@@ -161,9 +161,9 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         ftp.connect(ftpServer, 21)
     except Exception as e:
         if 'No route to host' in e:
-            log('ftp connect exception: no route to host. Bad IP address or hostname')
+            log('FTP connect exception: no route to host. Bad IP address or hostname')
         elif 'Connection timed out' in e:
-            log('ftp connect exception: connection timed out. Destination valid but not listening on port 21')
+            log('FTP connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
             log('ftp login exception. Unknown error: ' + str(e))
         log('STATUS: FTP connection failed')
@@ -172,9 +172,9 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         ftp.login(ftpUser,ftpPassword)
     except Exception as e:
         if 'Login or password incorrect' in e:
-            log('ftp login exception: Login or password incorrect')
+            log('FTP login exception: Login or password incorrect')
         else:
-            log('ftp login exception. Unknown error: ' + str(e))
+            log('FTP login exception. Unknown error: ' + str(e))
         log('STATUS: FTP login failed')
         return
     ftp.set_pasv(False) #Filezilla Server defaults to passive, and 2x passive = nothing happens!
@@ -220,8 +220,8 @@ def commenceDbx(token):
     try:
         dbx = dropbox.Dropbox(token)
     except Exception as e:
-        log('STATUS: Exception signing in to Dropbox')
         log('Exception signing in to Dropbox: ' + str(e))
+        log('STATUS: Exception signing in to Dropbox')
         return
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
     numNewFiles = len(newFiles)
@@ -263,8 +263,8 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
             mute=True)
     except dropbox.exceptions.ApiError as err:
-        log('STATUS: Dropbox API error')
         log('Dropbox API error' + err)
+        log('STATUS: Dropbox API error')
         return None
     #log('Dropbox uploaded as ' + res.name.encode('utf8'))
     #log('Dropbox result = ' + str(res))
@@ -304,20 +304,23 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         )
         sftp = paramiko.SFTPClient.from_transport(t)
     except paramiko.AuthenticationException as e:
-        log('STATUS: SFTP Authentication failed')
         log('Authentication failed: ' + str(e))
+        log('STATUS: SFTP Authentication failed')
         return
     except paramiko.SSHException as e:
-        log('STATUS: SFTP Unable to establish SSH connection')
         log('Unable to establish SSH connection: ' + str(e))
+        if ('Connection timed out' in str(e)):
+            log('STATUS: SFTP timed out connecting to ' + sftpServer)
+        else:
+            log('STATUS: SFTP Unable to establish SSH connection')
         return
     except paramiko.BadHostKeyException as e:
-        log("STATUS: SFTP Unable to verify server's host key")
         log("Unable to verify server's host key: " + str(e))
+        log("STATUS: SFTP Unable to verify server's host key")
         return
     except Exception as e:
-        log('STATUS: SFTP exception signing in')
         log('Exception signing in to SFTP server: ' + str(e))
+        log('STATUS: SFTP exception signing in')        
         return
 
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
