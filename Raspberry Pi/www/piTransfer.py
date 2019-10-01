@@ -46,9 +46,9 @@ LOGFILE_DIR = os.path.expanduser('/home/pi/www/static')
 LOGFILE_NAME = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 
 # Paramiko client configuration
-UseGSSAPI = False  # DISable GSS-API / SSPI authentication
+UseGSSAPI = False # DISable GSS-API / SSPI authentication
 DoGSSAPIKeyExchange = False
-Port = 22
+sftpPort = 22
 
 
 def main(argv):
@@ -165,7 +165,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         elif 'Connection timed out' in e:
             log('FTP connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
-            log('ftp login exception. Unknown error: ' + str(e))
+            log('FTP login exception. Unknown error: ' + str(e))
         log('STATUS: FTP connection failed')
         return
     try:
@@ -213,7 +213,10 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
             except Exception as e:
                 log('Error uploading ' + str(e))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
-    ftp.quit()
+    try:
+        ftp.quit()
+    except:
+        pass
 
 
 def commenceDbx(token):
@@ -272,37 +275,23 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
 
 
 def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
-    # get host key, if we know one
-    hostkeytype = None
-    hostkey = None
-    try:
-        host_keys = paramiko.util.load_host_keys(
-            os.path.expanduser("~/.ssh/known_hosts")
-        )
-        log('*** we made it to here without throwing an error')
-    except IOError:
-        log('*** Unable to open host keys file')
-        host_keys = {}
-
-    if sftpServer in host_keys:
-        hostkeytype = host_keys[sftpServer].keys()[0]
-        hostkey = host_keys[sftpServer][hostkeytype]
-        log("Using host key of type %s" % hostkeytype)
-    else:
-        log("No host keys found")
-
     # now, connect and use paramiko Transport to negotiate SSH2 across the connection
     try:
-        t = paramiko.Transport((sftpServer, Port))
-        t.connect(
-            hostkey,
-            sftpUser,
-            sftpPassword,
-            gss_host=socket.getfqdn(sftpServer),
-            gss_auth = UseGSSAPI,
-            gss_kex= DoGSSAPIKeyExchange,
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        # get host key, if we know one
+        try:
+            ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
+            log('Paramiko loaded hosts keys file OK')
+        except IOError:
+            log('Paramiko unable to open host keys file')
+        ssh.connect(
+            hostname=sftpServer,
+            port=sftpPort,
+            username=sftpUser,
+            password=sftpPassword,
         )
-        sftp = paramiko.SFTPClient.from_transport(t)
+        sftp = ssh.open_sftp()
     except paramiko.AuthenticationException as e:
         log('Authentication failed: ' + str(e))
         log('STATUS: SFTP Authentication failed')
@@ -320,7 +309,7 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         return
     except Exception as e:
         log('Exception signing in to SFTP server: ' + str(e))
-        log('STATUS: SFTP exception signing in')        
+        log('STATUS: SFTP exception signing in')
         return
 
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
@@ -356,9 +345,15 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
             except Exception as e:
                 log('Error uploading ' + str(e))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
-    sftp.close()
-    t.close()
-
+    try:
+        sftp.close()
+    except:
+        pass
+    #t.close()
+    try:
+        ssh.close()
+    except:
+        pass
 
 def log(message):
     try:
