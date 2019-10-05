@@ -38,16 +38,15 @@ import time
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
+PI_PHOTO_DIR         = os.path.expanduser('/home/pi/photos')
 UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, 'uploadedOK.txt')
-INIFILE_PATH = os.path.expanduser('/home/pi')
-INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
-LOGFILE_DIR = os.path.expanduser('/home/pi/www/static')
-LOGFILE_NAME = os.path.join(LOGFILE_DIR, 'piTransfer.log')
+INIFILE_PATH         = os.path.expanduser('/home/pi')
+INIFILE_NAME         = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
+LOGFILE_DIR          = os.path.expanduser('/home/pi/www/static')
+LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
+KNOWN_HOSTS_FILE     = os.path.expanduser('~/.ssh/known_hosts')
 
 # Paramiko client configuration
-UseGSSAPI = False # DISable GSS-API / SSPI authentication
-DoGSSAPIKeyExchange = False
 sftpPort = 22
 
 
@@ -278,13 +277,17 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
     # now, connect and use paramiko Transport to negotiate SSH2 across the connection
     try:
         ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #Set the default
         # get host key, if we know one
         try:
-            ssh.load_host_keys(os.path.expanduser('~/.ssh/known_hosts'))
-            log('Paramiko loaded hosts keys file OK')
-        except IOError:
-            log('Paramiko unable to open host keys file')
+            if sftpServer in open(KNOWN_HOSTS_FILE).read():
+                #If the host exists, we'll ONLY accept the current saved key. If it DOESN'T exist, we'll gladly add it to the collection:
+                ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
+                log('Paramiko found ' + str(sftpServer) + ' in host keys file & set RejectPolicy')
+            ssh.load_host_keys(KNOWN_HOSTS_FILE)
+            log('Paramiko loaded host keys file OK')
+        except Exception as e:
+            log('Paramiko unable to open host keys file: ' + str(e))
         ssh.connect(
             hostname=sftpServer,
             port=sftpPort,
@@ -349,7 +352,6 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         sftp.close()
     except:
         pass
-    #t.close()
     try:
         ssh.close()
     except:
