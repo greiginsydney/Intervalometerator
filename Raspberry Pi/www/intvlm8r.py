@@ -345,10 +345,12 @@ def main():
     templateData['piLastImageFile'] = piLastImageFile
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
-            lines = f.read().splitlines()
-            templateData['lastTrnResult'] = lines[-1]
+            for line in reversed(f.read().splitlines()):
+                if 'STATUS: ' in line:
+                    templateData['lastTrnResult'] = line.replace('STATUS: ','')
+                    break
     except Exception as e:
-        app.logger.debug('Exception reading last line of piTransfer.log file: ' + str(e))
+        app.logger.debug('Exception reading STATUS in piTransfer.log file: ' + str(e))
     return render_template('main.html', **templateData)
 
 
