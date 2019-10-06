@@ -95,10 +95,9 @@ def main(argv):
         tfrMethod = "Off"
         log('INI file error:' + str(e))
 
-    while '//' in sftpRemoteFolder:
-        sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
-    while '//' in ftpRemoteFolder:
-        ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
+    if (tfrMethod == 'Off'):
+        log('STATUS: Upload aborted. tfrMethod=Off')
+        return
 
     log('')
     now = datetime.datetime.now()
@@ -111,6 +110,11 @@ def main(argv):
     else:
         log('Not OK to transfer. Method = %s' % tfrMethod)
         return
+
+    while '//' in sftpRemoteFolder:
+        sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
+    while '//' in ftpRemoteFolder:
+        ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
 
     log('STATUS: Commencing upload using %s' % tfrMethod)
     if (tfrMethod == 'FTP'):
