@@ -75,10 +75,11 @@ install_website ()
 	ln -sfnv ${HOME}/photos  ${HOME}/www/static
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
-	chown -R pi:www-data /home/pi
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
+
+	chown -R pi:www-data /home/pi
 
 	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
 	systemctl start intvlm8r
