@@ -72,7 +72,7 @@ pi@192.168.44.1's password:
 sudo apt-get update && sudo apt-get upgrade -y
 ```
 
-> If this ends with an error "Some index files failed to download. They have been ignored, or old ones used instead." just press up-arrow and return to retry the command. You want the Pi healthy and updated before continuing.
+> If this ends with an error "Some index files failed to download. They have been ignored, or old ones used instead." just press up-arrow and return to retry the command. You want to be sure the Pi is healthy and updated before continuing.
 
 28. `sudo reboot now`
 
@@ -86,21 +86,26 @@ sudo apt-get install subversion -y
 ```txt
 svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%20Pi/ ~ --force
 ```
+
+> Advanced tip: if you're testing code and want to install a new branch direct from the repo, replace "/trunk/" in the link above with `/branches/<TheBranchName>/`
+
 31. All the hard work is done by a script in the repo, but it needs to be made executable first:
 ```txt
 sudo chmod +x setup.sh
 ```
-32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi's home directory.)
+32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi user's home directory.)
 ```txt
 sudo -E -H ./setup.sh start
 ```
-This step could easily take half an hour or longer to complete, depending on how slow your Internet connection is. 
+> As at October 2019 this step now takes **over an hour** to complete, depending on how slow your Internet connection is.
 
-> If any step fails, the script will abort and on-screen info should reveal the component that failed. You can simply re-run the script at any time and it will simply skip over those steps where no changes are required.
+33. Around 10 minutes after you fire the script, you'll be prompted on-screen for a "Default Kerberos version 5 realm". Just hit Enter. (I haven't figured out how to hard-code that yet, sorry.)
+
+> If any step fails, the script will abort and on-screen info should reveal the component that failed. You can simply re-run the script at any time (up-arrow / return) and it will simply skip over those steps where no changes are required. There are a lot of moving parts in the Raspbian/Linux world, and sometimes a required server might be down or overloaded. Time-outs aren't uncommon, hence why simply wait and retry is a valid remediation action.
 
 > If libgphoto throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you will need to edit back into the script before your repeat attempt at this step.
 
-33. When prompted on-screen for the default Kerberos realm, just hit Enter.
+
 
 34. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
