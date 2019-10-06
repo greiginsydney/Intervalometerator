@@ -94,6 +94,7 @@ def main(argv):
     except Exception as e:
         tfrMethod = "Off"
         log('INI file error:' + str(e))
+        return
 
     if (tfrMethod == 'Off'):
         log('STATUS: Upload aborted. tfrMethod=Off')
@@ -111,15 +112,18 @@ def main(argv):
         log('Not OK to transfer. Method = %s' % tfrMethod)
         return
 
-    while '//' in sftpRemoteFolder:
-        sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
-    while '//' in ftpRemoteFolder:
-        ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
-
     log('STATUS: Commencing upload using %s' % tfrMethod)
     if (tfrMethod == 'FTP'):
+        while '\\' in ftpRemoteFolder:
+            ftpRemoteFolder = ftpRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+        while '//' in ftpRemoteFolder:
+            ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
         commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder)
     elif (tfrMethod == 'SFTP'):
+        while '\\' in sftpRemoteFolder:
+            sftpRemoteFolder = sftpRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+        while '//' in sftpRemoteFolder:
+            sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
         commenceDbx(dbx_token)
