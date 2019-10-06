@@ -727,12 +727,14 @@ def transferPOST():
                 config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
                 config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
                 config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
-                config.set('Transfer', 'ftpRemoteFolder', str(request.form.get('ftpRemoteFolder') or ''))
+                ftpRemoteFolder = reformatSlashes(str(request.form.get('ftpRemoteFolder')))
+                config.set('Transfer', 'ftpRemoteFolder', ftpRemoteFolder or '')
             if (request.form.get('tfrMethod') == 'SFTP'):
                 config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
                 config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
                 config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
-                config.set('Transfer', 'sftpRemoteFolder', str(request.form.get('sftpRemoteFolder') or ''))
+                sftpRemoteFolder = reformatSlashes(str(request.form.get('sftpRemoteFolder')))
+                config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'Dropbox'):
                 config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
             if (request.form.get('tfrMethod') != 'Off'):
@@ -752,6 +754,19 @@ def transferPOST():
                 flash('Error writing to the Ini file')
 
     return redirect(url_for('transfer'))
+
+
+def reformatSlashes(folder):
+    """
+    Reformat the user's remote folder value:
+    1) Convert any backslashes to slashes
+    2) Convert any double slashes to singles
+    """
+    while '\\' in folder:
+        folder = folder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+    while '//' in folder:
+        folder = folder.replace('//', '/')
+    return folder
 
 
 @app.route("/thermal")
