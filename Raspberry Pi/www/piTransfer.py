@@ -92,9 +92,8 @@ def main(argv):
         transferHour      = config.get('Transfer', 'transferHour')
 
     except Exception as e:
-        tfrMethod = "Off"
+        tfrMethod = 'Off'
         log('INI file error:' + str(e))
-        return
 
     if (tfrMethod == 'Off'):
         log('STATUS: Upload aborted. tfrMethod=Off')
