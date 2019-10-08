@@ -92,7 +92,7 @@ def main(argv):
         transferHour      = config.get('Transfer', 'transferHour')
 
     except Exception as e:
-        tfrMethod = 'Off'
+        tfrMethod = 'Off' # If we hit an exception, force tfrMethod=Off, because we can't be sure what triggered the error
         log('INI file error:' + str(e))
 
     if (tfrMethod == 'Off'):
