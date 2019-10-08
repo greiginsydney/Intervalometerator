@@ -138,18 +138,9 @@ install_website ()
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "Cron job. If the Pi is set to always run, a scheduled 'cron job' will copy images off the camera."
-		read -p "Shall we create one of those? [Y/n]: " Response
-		case $Response in
-			(y|Y|"")
-				echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
-				crontab -u $SUDO_USER cronTemp #install new cron file
-				sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
-				;;
-			(*)
-				#Skip
-				;;
-		esac
+		echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 	fi
 	rm cronTemp
 
