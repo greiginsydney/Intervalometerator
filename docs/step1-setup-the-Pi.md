@@ -138,18 +138,7 @@ Change the website's login name: admin
 Change the website's password  : password
 ```
 
-37. If your setup will be powered by a mains supply you may choose to leave the Pi running permanently. If that's the case, the inbuilt camera transfer script will never run, as it only executes when the Pi boots. To resolve this, we create a 'cron' job that runs every hour (or at a frequency you prefer) to trigger a run of the script. 
-
-```txt
-Cron job. If the Pi is set to always run, a scheduled 'cron job' will copy images off the camera.
-Shall we create one of those? [Y/n]:
-```
-
-Respond 'n' to the prompt if you're building for an off-grid or low-power setup.
-
-> If you want to change the schedule, just edit it after with `crontab -e`, and access the documentation if you need it with `man crontab`.
-
-38. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
+37. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
 
 ```txt
 NTP Step. Does the Pi have network connectivity? [Y/n]:
@@ -157,16 +146,16 @@ NTP Step. Does the Pi have network connectivity? [Y/n]:
 
 If you respond 'n' to the prompt, the script will move the repo's "setTime.service" file to /etc/systemd/system/. This will in turn cause the provided "setTime.py" script to be run when-ever the Pi boots, reading the real time from the Arduino and then using this to set the Pi's own internal clock.
 
-39. If all goes well, you'll be presented with a prompt to reboot:
+38. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
 Exited install_website OK.
 Reboot now? [Y/n]:
 ```
 Pressing return or anything but n/N will cause the Pi to reboot.
 
-40. You're in business!  After the Pi reboots you should be able to browse to its IP address, where you'll be presented the message "You need to sign in before you can access that page!" and the login form.
+39. You're in business!  After the Pi reboots you should be able to browse to its IP address, where you'll be presented the message "You need to sign in before you can access that page!" and the login form.
 
-41. Login with the credentials you set in Step 35. You can change those or add new login/password pairs by editing the /www/intvlm8r.py script.
+40. Login with the credentials you set in Step 35. You can change those or add new login/password pairs by editing the /www/intvlm8r.py script.
 
 ## Next steps are:
 - Add an SSL certificate:
