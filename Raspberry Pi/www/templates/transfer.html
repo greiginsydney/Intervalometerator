@@ -30,18 +30,16 @@
 				</div>
 			</td>
 		</tr>
-		{% if wakePiTime != '25' %}
-		<tr>
-			<td class="noborder">(A copy takes place each day at {{wakePiTime}}:00 when the Pi starts.)</td>
+		<tr id="showHideCopyHrMsg">
+			<td class="noborder" id="copyHourMsg"></td>
 		</tr>
-		{% endif %}
 	</table>
 	
 	<table>
 		<tr>
 			<th>Transfer Settings - from the Pi</th>
 		</tr>
-		<tr>
+		<tr id="showHideTrnMethod">
 			<td>
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
@@ -52,6 +50,9 @@
 					</select>
 				</div>
 			</td>
+		</tr>
+		<tr id="showHideTrnWarning">
+			<td class="noborder">Copy needs to be enabled first.</td>
 		</tr>
 	</table>
 
@@ -131,7 +132,7 @@
 				</div>
 			</td>
 		</tr>
-		<tr>
+		<tr id="showHideTrnHour">
 			<td>
 				<div class="alignleft">Transfer hour:</div>
 				<div class="alignright">
@@ -142,6 +143,9 @@
 					</select>
 				</div>
 			</td>
+		</tr>
+		<tr id="showHideTrnHrMsg">
+			<td class="noborder" id="transferHourMsg"></td>
 		</tr>
 		<tr>
 			<td >
@@ -197,17 +201,46 @@ SelectionBits["copyHour"]         =  8192;
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
 var showHideCopyHour = document.getElementById("showHideCopyHour");
+var showHideTrnHour = document.getElementById("showHideTrnHour");
+var showHideCopyHrMsg = document.getElementById("showHideCopyHrMsg");
+var showHideTrnHrMsg = document.getElementById("showHideTrnHrMsg");
+
+var showHideTrnWarning = document.getElementById("showHideTrnWarning");
+var showHideTrnMethod = document.getElementById("showHideTrnMethod");
 var ftp = document.getElementById("ftp");
 var sftp = document.getElementById("sftp");
 var dbx = document.getElementById("dbx");
 var transfer = document.getElementById("transfer");
 
 // This drives the default display on load:
-ftp.style.display = (method.value != "FTP") ? "none":"";
-sftp.style.display = (method.value != "SFTP") ? "none":"";
-dbx.style.display = (method.value != "Dropbox") ? "none":"";
-transfer.style.display = (method.value == "Off") ? "none":"";
-showHideCopyHour.style.display = (copyDay.value == "Off") ? "none":"";
+ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
+sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
+dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+
+//Initialise the two text fields:
+if (copyDay.value == "Daily")
+{
+	document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
+}
+else
+{
+	document.getElementById("copyHourMsg").innerHTML = "A copy takes place each " + copyDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+}
+if (transferDay.value == "Daily")
+{
+	document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each day at {{wakePiTime}}:00 when the Pi starts."
+}
+else
+{
+	document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each " + transferDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+}
 
 // Run when the form first loads:
 lightButtons(); 
@@ -226,16 +259,41 @@ function newSelected(id)
 {
 	var option = document.getElementById(id);
 	// Reveal/hide fields as appropriate:
-	if (id == "tfrMethod")
+	if (id == "tfrMethod" || id == "copyDay")
 	{
-		ftp.style.display = (method.value != "FTP") ? "none":"";
-		sftp.style.display = (method.value != "SFTP") ? "none":"";
-		dbx.style.display = (method.value != "Dropbox") ? "none":"";
-		transfer.style.display = (method.value == "Off") ? "none":"";
+		ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
+		sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
+		dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+		transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
 	{
-		showHideCopyHour.style.display = (copyDay.value == "Off") ? "none":"";
+		showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+		showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+		if (copyDay.value == "Daily")
+		{
+			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
+		}
+		else
+		{
+			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each " + copyDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+		}
+	}
+	
+	if (id == "transferDay")
+	{
+		if (transferDay.value == "Daily")
+		{
+			document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each day at {{wakePiTime}}:00 when the Pi starts."
+		}
+		else
+		{
+			document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each " + transferDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+		}
 	}
 
 	if (!option.options[option.selectedIndex].defaultSelected)
