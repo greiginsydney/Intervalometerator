@@ -1066,14 +1066,14 @@ def CreateDestPath(folder, NewDestDir):
         ImageSubDir = re.search(("DCIM/\S*"), folder)
         if ImageSubDir != None:
             subdir = os.path.join(NewDestDir, ImageSubDir.group(0))
-            app.logger.debug('Subdir =  ' + subdir)
+            # app.logger.debug('Subdir =  ' + subdir)
             try:
                 if not os.path.isdir(subdir):
                     os.makedirs(subdir)
             except:
                 app.logger.debug("Didn't want to make " + subdir)
             dest = os.path.join(NewDestDir, subdir)
-            app.logger.debug('Pi dest = ' + dest)
+            # app.logger.debug('Pi dest = ' + dest)
         else:
             dest = NewDestDir
     except Exception as e:
