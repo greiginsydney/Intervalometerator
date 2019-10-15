@@ -76,7 +76,7 @@ Another thread (or user) is currently accessing the camera. This may just be a b
 ### No storage info available
 This message displays if the camera reports a missing or faulty memory card. 
 
-[Top](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#troubleshooting)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
 <hr/>
 
 ## Camera Errors
@@ -95,7 +95,7 @@ Had the camera reported it had 'nn' images and a datestamp for the last one we w
 
 Manual intervention at this stage was required, and an in-person check of the camera reported it saying "No card in camera". A test for this issue was added to intvlm8r.py, and it now reports "No storage info available" to the web-page.
 
-[Top](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#troubleshooting)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
 <hr/>
 
 ## USB Errors
@@ -165,5 +165,7 @@ Still crook?
 - If the keyboard/mouse test fail, it's starting to look like you have a damaged Pi or cabling. Replace the OTG cable (if you're using one to convert to USB-A) if you haven't already. 
 - If you've reached this step it's not looking good. Try a power-down reboot of the Pi (rather than just a software reboot). To _elegantly_ do this, remove the jumper that's on the top two pins of J2. Once the Pi has shutdown, remove power from the board, reinstate the top J2 jumper and reapply power.
 - If USB is still down, replace the Pi and/or entire PCB.
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
 <hr/>
 
