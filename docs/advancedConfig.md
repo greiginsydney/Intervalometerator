@@ -19,5 +19,3 @@ J2 - a 4-way jumper - links (or breaks) the control interfacing between the Ardu
 ## Manual Pi Shutdown
 
 If you're working on the bench there are two ways to initiate an elegant shutdown of the Pi. The first is to ssh to it and initiate the command `sudo shutdown now`. The second is to remove the jumper that's on the top two pins of J2. This is an active-low signal to the Pi, and it has an internal pull-up resistor. If you have a logic probe or voltmeter, you will see the bottom pin of J2 (IO 17 on the Pi) will drop from logic 1 (3.3V) to 0v when the Pi has entered sleep. Don't reinstate this jumper until you've removed power from the board, or moved J1 to the top two pins.
-
-
