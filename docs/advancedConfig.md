@@ -1,3 +1,4 @@
+# Advanced Config
 
 The PCB was designed to permit a range of operating modes, primarily intended to make code development and bench testing a little easier.
 
