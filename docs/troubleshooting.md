@@ -2,10 +2,10 @@
 
 Jump to the relevant section:
 
-- [Browser Errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#browser-errors)
-- [Application Errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#application-errors)
-- [Camera Errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#camera-errors)
-- [USB Errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#usb-errors)
+- [Browser Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#browser-errors)
+- [Application Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#application-errors)
+- [Camera Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#camera-errors)
+- [USB Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#usb-errors)
 
 <hr/>
 
@@ -29,7 +29,7 @@ If you're seeing this as a result of a build step, or you're working on the code
 
 The Pi's probably still booting. Wait a little while and refresh the page in your browser.
 
-[Top](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#troubleshooting)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
 <hr/>
 
 ## Application Errors 
