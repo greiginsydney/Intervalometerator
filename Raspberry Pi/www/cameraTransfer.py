@@ -70,10 +70,10 @@ def main(argv):
         # We're OK to copy TODAY
         if (copyNow == True):
             # We're OK to copy NOW
-            log('OK to copy on copyNow. Method = %s' % tfrMethod)
+            log('OK to copy on copyNow.')
         elif (now.strftime("%H") == copyHour):
             # We're OK to copy NOW
-            log('OK to copy @ %s:00. Method = %s' % (copyHour, tfrMethod))
+            log('OK to copy @ %s:00.' % copyHour)
         else:
             log('Not OK to copy @ %s:00.' % now.strftime("%H"))
             return
