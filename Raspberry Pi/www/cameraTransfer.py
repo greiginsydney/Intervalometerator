@@ -44,7 +44,8 @@ def main():
             log('URL error. Reason = ' + str(e.reason))
         elif hasattr(e, 'code'):
             log('URL error. Code = ' + str(e.code))    except Exception as e:
-        log('Unhandled error: ' + str(e))
+     except Exception as e:
+            log('Unhandled web error: ' + str(e))
 
 
 def log(message):
