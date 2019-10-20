@@ -63,15 +63,22 @@ def main(argv):
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         log('INI file error:' + str(e))
 
+    log('')
     now = datetime.datetime.now()
-    if (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
-        # We're OK to copy now
-        log('OK to copy @ %s:00.' % (copyHour))
-    elif copyNow == True:
-        # We're OK to copy now
-        log("OK to copy on 'copyNow'.")
+    log('Now values are: NowDay = %s, NowHour = %s, CopyDay = %s , CopyHour= %s' % (now.strftime("%A"), now.strftime("%H"), str(copyDay), str(copyHour)))
+    if ((now.strftime("%A") == copyDay) | (copyDay == "Daily")):
+        # We're OK to copy TODAY
+        if (copyNow == True):
+            # We're OK to copy NOW
+            log('OK to copy on copyNow. Method = %s' % tfrMethod)
+        elif (now.strftime("%H") == copyHour):
+            # We're OK to copy NOW
+            log('OK to copy @ %s:00. Method = %s' % (copyHour, tfrMethod))
+        else:
+            log('Not OK to copy @ %s:00.' % now.strftime("%H"))
+            return
     else:
-        log('Not OK to copy.')
+        log('Not OK to copy today (%s).' % now.strftime("%A"))
         return
         
     try:
