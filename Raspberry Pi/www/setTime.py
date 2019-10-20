@@ -30,30 +30,40 @@ import subprocess
 LOGFILE_PATH = os.path.expanduser('/home/pi')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
 
+htmltext = ''
+newTime = 'Unknown'
+
 
 def main():
-    htmltext = ''
-    newTime = 'Unknown'
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
-    try:
-        response = urlopen('http://localhost/getTime')
-        log('Response code = ' + str(response.getcode()))
-        htmltext = response.read()
-        log('HTML text = ' + str(htmltext))
-        tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
-        if tempTime != None:
-            newTime = tempTime.group(1)
-            log('New time is ' + newTime)
-        else:
-            log('Failed to detect the time')
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    log('')
+    retryCount = 0
+    while True:
+        try:
+            response = urlopen('http://localhost/getTime')
+            log('Response code = ' + str(response.getcode()))
+            htmltext = response.read()
+            tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
+            if tempTime != None:
+                newTime = tempTime.group(1)
+                log('New time is ' + newTime)
+                if 'Unknown' not in newTime:
+                    break
+            else:
+                log('Failed to detect the time')
+                log('This is what I received:' + str(htmltext))
 
-    except URLError as e:
-        if hasattr(e, 'reason'):
-            log(str(e.reason))
-        elif hasattr(e, 'code'):
-            log(str(e.code))
-    except Exception as e:
-        log('Unhandled web error: ' + str(e))
+        except URLError as e:
+            if hasattr(e, 'reason'):
+                log('URL error. Reason = ' + str(e.reason))
+            elif hasattr(e, 'code'):
+                log('URL error. Code = ' + str(e.code))
+        except Exception as e:
+            log('Unhandled web error: ' + str(e))
+        retryCount += 1
+        if retryCount == 3:
+            break
+        log('RETRYING')
 
     try:
         #convert it to a form the date command will accept: Incoming is "2018 Nov 29 21:58:00"
@@ -61,10 +71,12 @@ def main():
             timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y %b %d %H:%M:%S')]
             result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
             (stdoutdata, stderrdata) = result.communicate()
-            if stdoutdata != '':
+            if stdoutdata:
                 log('Result = ' + str(stdoutdata))
-            if stderrdata != '':
+            if stderrdata:
                 log('Error = ' + str(stderrdata))
+        else:
+            log('Failed to set time. newTime = ' + newTime)
     except Exception as e:
         log('Unhandled time error: ' + str(e))
 
