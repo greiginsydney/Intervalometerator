@@ -41,10 +41,9 @@ def main():
         log(str(htmltext))
     except URLError as e:
         if hasattr(e, 'reason'):
-            log(str(e.reason))
+            log('URL error. Reason = ' + str(e.reason))
         elif hasattr(e, 'code'):
-            log(str(e.code))
-    except Exception as e:
+            log('URL error. Code = ' + str(e.code))    except Exception as e:
         log('Unhandled error: ' + str(e))
 
 
