@@ -27,7 +27,7 @@ Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
 ExecStartPre=/bin/sleep 30
-ExecStart=/usr/bin/python /home/pi/www/cameraTransfer.py
+ExecStart=/usr/bin/python /home/pi/www/cameraTransfer.py copyNow
 
 [Install]
 WantedBy=multi-user.target
