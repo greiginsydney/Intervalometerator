@@ -24,7 +24,7 @@ User=root
 Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
-ExecStartPre=/bin/sleep 15
+ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/python /home/pi/www/setTime.py
 
 [Install]
