@@ -51,8 +51,8 @@ Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminate
 #### Shutter Release cable to suit
 
 - [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/remote-control-trigger/cable-release/jjc-shutter-release-cable-a-canon-rs-80n3/) - 6D
-- [Amazon](https://amzn.to/2EM402k) - 6D
-- [Amazon](https://amzn.to/2JSfTIf) - 60D and many others
+- [Amazon](https://amzn.to/2W4ewcT) - 6D
+- [Amazon](https://amzn.to/2MCu18L) - 60D and many others
     
     $AUD10</br>
     $USD9
@@ -60,7 +60,7 @@ Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminate
 #### Manfrotto Rapid Connect Adapter with 357PLV Camera Plate
 
 - [John Barry Group (AU)](https://secure.johnbarry.com.au/manfrotto-357-sliding-plate-mav-357)
-- [Amazon](https://amzn.to/2HR5g69) - slightly different product, only 2" travel
+- [Amazon](https://amzn.to/2JdWdwr) - slightly different product, only 2" travel
 - [B&H (USA)](https://www.bhphotovideo.com/c/product/554151-REG/Manfrotto_357_357_Pro_Quick_Release.html)
 
     $AUD83</br>
@@ -69,7 +69,7 @@ Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminate
 #### 77-82mm filter step-up ring
 
 - [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/filters-step-rings/step-ring/fotolux-step-up-ring-77-82mm/)
-- [Amazon](https://amzn.to/2QE38BC)
+- [Amazon](https://amzn.to/33OybQD)
 
     $AUD10</br>
     $USD5
@@ -77,7 +77,7 @@ Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminate
 #### 82mm UV or ND filter
 
 - [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/search.php?search_query=Hoya+82mm+filter)
-- [Amazon](https://amzn.to/2EPvLXE) - UV
+- [Amazon](https://amzn.to/2N5BQTp) - UV
 - [B&H (USA)](https://www.bhphotovideo.com/c/product/11995-REG/B_W_66045076_82mm_UV_Haze_010.html) - UV
     
     $AUD50 - 100</br>
@@ -102,7 +102,7 @@ This one's optional, and depends on your choice of housing and camera. We wanted
 We went with the 3.3V 8MHz model for its minimal current consumption and pin-compatibility with the Pi's 3.3V IO pins. You *will* get better performance out of the 5V version, but also inherit an obligation to add a level converter for the pins (not described here). 
 
 - [SparkFun](https://www.sparkfun.com/products/11114)
-- [Amazon](https://amzn.to/2JAzSue)
+- [Amazon](https://amzn.to/31EvcbU)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1993-Arduino-Pro-Mini-328-3-3V-8MHz)
 
     $AUD16</br>
@@ -113,7 +113,7 @@ We went with the 3.3V 8MHz model for its minimal current consumption and pin-com
 Don't be tempted to go with a generic 5V programming cable - stick with a 3.3V version to match the Arduino, otherwise your in-situ programming will result in the Arduino presenting 5V into the 3.3V pins of the Pi.
 
 - [SparkFun](https://www.sparkfun.com/products/9873)
-- [Amazon](https://amzn.to/2YsdbfV)
+- [Amazon](https://amzn.to/31AYmsn)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1615-SparkFun-FTDI-Basic-Breakout-3-3V)
 
     $AUD25</br>
@@ -124,7 +124,7 @@ Don't be tempted to go with a generic 5V programming cable - stick with a 3.3V v
 I went for the Pi Zero as it met my needs for a low-current, low-cost unit in a small footprint - and less than half the cost of the larger models. There's nothing stopping you upgrading to a Model 2 or 3, but be aware that some of the config options will be slightly different.
 
 - [Core Electronics (AU)](https://core-electronics.com.au/raspberry-pi-zero-w-wireless.html)
-- [Amazon](https://amzn.to/2HcmVVA)
+- [Amazon](https://amzn.to/2MCdHow)
 
     $AUD15</br>
     $USD22
@@ -133,7 +133,7 @@ I went for the Pi Zero as it met my needs for a low-current, low-cost unit in a 
 
 You will recognise this as a micro-USB plug to a USB-A socket, but it's officially known as an On-The-Go (OTG) cable. Your Pi supplier probably offers these as an option with the Pi, so you can connect "standard" USB peripherals to the Pi. It's only required in the finished unit if you can't source a single USB cable to run from the camera to the Pi.
 
-- [Amazon](https://amzn.to/2Hf45gI)
+- [Amazon](https://amzn.to/2JdZmfE)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/5287-USB-OTG-Cable-Female-A-to-Micro-B-5in)
 - [Core Electronics (AU)](https://core-electronics.com.au/micro-usb-otg-host-cable-for-raspberry-pi-zero.html)
 
@@ -144,7 +144,7 @@ You will recognise this as a micro-USB plug to a USB-A socket, but it's official
 
 As with the OTG cable, your Pi supplier will surely offer these with the Pi, as you'll need it to connect your desktop monitor for the initial config steps.
 
-- [Amazon](https://amzn.to/2JH5oH1)
+- [Amazon](https://amzn.to/2MzJ1UQ)
 - [Robot Gear (AU) - cable](https://www.robotgear.com.au/Product.aspx/Details/5285-Mini-HDMI-Cable-3ft)
 - [Core Electronics (AU) - adapter](https://core-electronics.com.au/mini-hdmi-to-standard-hdmi-jack-adapter-for-raspberry-pi-zero.html)
 
@@ -157,7 +157,7 @@ As with the OTG cable, your Pi supplier will surely offer these with the Pi, as 
 Choosing a larger size allows you to maximise the off-camera storage in the Pi. Be careful though, as once you go over 32G you're beyond the capabilities of the FAT file system and you're at greater risk of finding the Pi won't read the card. I used ["RPi SD cards"](https://elinux.org/RPi_SD_cards) as a helpful reference to find the card we went with here.
 
 - [Officeworks (AU)](https://wwhttps://www.officeworks.com.au/shop/officeworks/p/sandisk-128gb-ultra-micro-sdxc-memory-card-sdsq128gb)
-- [Amazon](https://amzn.to/2VtwU1D)
+- [Amazon](https://amzn.to/35TxoQ9)
 
     $AUD50</br>
     $USD20
@@ -168,7 +168,7 @@ DeadOn RTC Breakout - DS3234
 
 - [SparkFun](https://www.sparkfun.com/products/10160)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1693-SparkFun-DeadOn-RTC-Breakout-DS3234)
-- [Amazon](https://amzn.to/2YnBGup)
+- (not available on Amazon)
 
     $AUD24</br>
     $USD11
@@ -178,7 +178,7 @@ DeadOn RTC Breakout - DS3234
 The DeadOn RTC requires a 3V lithium backup battery. The common CR1225 or the slightly thinner CR1220 are compatible here. Your DeadOn supplier will probably have these in stock, otherwise they're the sort of item you might get from the local electronics hobby store or key-cutting kiosk.
 
 - [Jaycar Electronics (AU)](https://www.jaycar.com.au/cr1220-3v-lithium-battery/p/SB2527)
-- [Amazon](https://amzn.to/2JzfRUC)
+- [Amazon](https://amzn.to/32FdVk4)
 
     $AUD3</br>
     $USD4
@@ -188,7 +188,7 @@ The DeadOn RTC requires a 3V lithium backup battery. The common CR1225 or the sl
 Pololu 3.3V, 500mA Step-Down Voltage Regulator D24V5F3
 
 - [Pololu](https://www.pololu.com/product/2842)
-- [Amazon](https://amzn.to/2E2tHeB)
+- [Amazon](https://amzn.to/2qsuDVF)
 - [Core Electronics (AU)](https://core-electronics.com.au/pololu-3-3v-500ma-step-down-voltage-regulator-d24v5f3.html)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1017-3-3V-500mA-Pololu-Step-Down-Voltage-Regulator-D24V5F3)
 
@@ -201,7 +201,7 @@ Pololu 3.3V, 500mA Step-Down Voltage Regulator D24V5F3
 Pololu 5V, 500mA Step-Down Voltage Regulator D24V5F5
 
 - [Pololu](https://www.pololu.com/product/2843)
-- [Amazon](https://amzn.to/2Jy7SY1)
+- [Amazon](https://amzn.to/35VGJHf)
 - [Core Electronics (AU)](https://core-electronics.com.au/pololu-5v-500ma-step-down-voltage-regulator-d24v5f5.html)
 - [Robot Gear (AU)](https://www.robotgear.com.au/Product.aspx/Details/1018-5V-500mA-Pololu-Step-Down-Voltage-Regulator-D24V5F5)
 
@@ -225,7 +225,7 @@ Pololu 7.5V, 2.4A Step-Down Voltage Regulator D24V22F7
 
 We used bog-standard Motorola 4N25 6-pin DIP opto-isolators. These (or an equivalent) should be easy enough to find anywhere.
 
-- [Amazon](https://amzn.to/2E31nJk) - pack of 10, $USD6
+- [Amazon](https://amzn.to/2NffJdp) - pack of 10, $USD6
 - [Element 14](https://au.element14.com/vishay/4n25/optocoupler-transistor-5300vrms/dp/1612453?st=4n25)
 
     $AUD1 (each - you need two)</br>
@@ -235,7 +235,7 @@ We used bog-standard Motorola 4N25 6-pin DIP opto-isolators. These (or an equiva
 So as to save opening the case when its in situ, we added a standard door reed switch you might find used in a burglar alarm. Wave a magnet on the outside of the box, and in the configuration presented here it will wake the Raspberry Pi for the previously-set "WakeTime" duration. (This presumes a low-power setup with the Pi normally turned off).
 
 - [Jaycar (AU)](https://www.jaycar.com.au/concealed-timber-door-frame-reed-switch/p/LA5075)
-- [Amazon](https://amzn.to/2WKPe62) - pack of 2, $USD4
+- [Amazon](https://amzn.to/2P8VT5X) - pack of 2, $USD4
 
     $AUD5</br>
     $USD2
@@ -257,7 +257,7 @@ This is to connect the intervalm8r to the camera's shutter cable. The PCB has be
 As the project is presented, this LED lights when the Arduino is awake, but only if the adjacent jumper is connected (taking Arduino input A0 to ground). I used it as a generic headless debugging aid. You should be able to find this just about anywhere: your Arduino/Pi supplier, local electronics hobby store, etc.
 
 - [Element 14 (AU)](https://au.element14.com/multicomp/mcl034gd/led-3mm-70-green/dp/1581114) - MOQ 10, $AUD2.83
-- [Amazon](https://amzn.to/2MxRBW9) - pack of 100, $USD6.36
+- [Amazon](https://amzn.to/2P6Xrxd) - pack of 100, $USD6.36
 
     $AUD0.28</br>
     $USD0.06
@@ -276,7 +276,7 @@ The custom PCB for the project is available on eBay.
 An alternative to the PCB will be to build the board on Veroboard, aka stripboard. (There's an image of the Veroboard prototype on the [Wiki / history](https://github.com/greiginsydney/Intervalometerator/wiki/History) page.)   
 
 - [Jaycar (AU)](https://www.jaycar.com.au/pc-boards-vero-type-strip-95mm-x-75mm/p/HP9540)
-- [Amazon](https://amzn.to/2WB3Yoc)
+- [Amazon](https://amzn.to/2ByUVbc)
 
     $AUD4.50</br>
     $USD11.00
@@ -290,7 +290,7 @@ Green LED: 1 x 150R 1/4W
 Optos: 2 x 150R 1/4W
 
 - [Element 14 (AU)](https://au.element14.com/multicomp/mf25-150r/res-150r-1-250mw-axial-metal-film/dp/9341315) - MOQ 50, AUD$2.70
-- [Amazon](https://amzn.to/2XvrT5r) - pack of 100, $US5.69
+- [Amazon](https://amzn.to/33W0TPl) - pack of 100, $US5.69
     
     $AUD0.03 (ea)</br>
     $USD0.06 (ea)
@@ -300,7 +300,7 @@ Arduino pin A8: 1 x 4.7k 1/4W
 Arduino pin A2: 1 x 4.7k 1/4W
 
 - [Element 14](https://au.element14.com/multicomp/mf25-4k7/res-4k7-1-250mw-axial-metal-film/dp/9341951) - MOQ 10, AUD$0.54
-- [Amazon](https://amzn.to/2XyFWHE) - pack of 100, $US5.69
+- [Amazon](https://amzn.to/2MCKAkO) - pack of 100, $US5.69
 
     $AUD0.03 (ea)</br>
     $USD0.06 (ea)
@@ -310,17 +310,17 @@ Arduino pin A2: 1 x 4.7k 1/4W
 Every supply needs some smoothing. Optional but recommended.
 
 - [Element 14](https://au.element14.com/multicomp/mcrh35v476m6-3x11/cap-47-f-35v-20/dp/9451935?rpsku=rel3:667894&isexcsku=false)
-- [Amazon](https://amzn.to/2Mzjtt0) - pack of 5, $USD6.11
+- [Amazon](https://amzn.to/32Gf2A8) - pack of 10, $USD5.00
     
     $AUD0.30</br>
-    $USD1.00
+    $USD0.50
     
 #### 100nF MKT polyester capacitor
 
 Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 
 - [Element 14](https://au.element14.com/epcos/b32529c0104k000/cap-0-1-f-63v-10-pet-potted/dp/9750878)
-- [Amazon](https://amzn.to/2WRrzkK) - pack of 20, $USD4.99
+- [Amazon](https://amzn.to/2W52eB2) - pack of 20, $USD4.99
     
     $AUD0.30</br>
     $USD0.25
@@ -330,7 +330,7 @@ Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
 I really love the DeadOn RTC, however SparkFun appear to have omitted the chip manufacturer's recommended power supply capacitor. I went with a 100pF ceramic.
 
 - [Element 14](https://au.element14.com/vishay/d101k20y5ph63l6r/ceramic-capacitor-100pf-100v-y5p/dp/1606155)
-- [Amazon](https://amzn.to/2MzJxUW) - pack of 10, $USD8
+- [Amazon](https://amzn.to/35VToKb) - pack of 10, $USD8
     
     $AUD0.30</br>
     $USD0.80
@@ -361,7 +361,7 @@ These mate with the above. You want two.
 ##### Header pins
 
 - [Element 14 (AU)](https://au.element14.com/mcm/ph1-40-ua/break-away-2-54mm-40-pin-strip/dp/2802331) - strip of 40
-- [Amazon](https://amzn.to/2Wr6Xex) - 10 strips, $USD5.69
+- [Amazon](https://amzn.to/2J8ZRHW) - 10 strips, $USD5.69
 
     $AUD0.40</br>
     $USD0.56
@@ -370,7 +370,7 @@ These mate with the above. You want two.
 
 You need either 4 or 6, depending on how you assemble the board.
 - [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) - Pack of 25, $AUD
-- [Amazon](https://amzn.to/2I2mTjq) - pack of 120, $USD7.88
+- [Amazon](https://amzn.to/2p1J3vy) - pack of 120, $USD7.88
     
     $AUD0.30</br>
     $USD0.40
@@ -410,7 +410,7 @@ Let's call it $USD10
 Be careful selecting a battery. The 12V 2.2Ah SLA battery we went with only *just* fits inside the Pelican case.
 
 - [Jaycar Electronics (AU)](https://www.jaycar.com.au/12v-2-2ah-sla-battery/p/SB2482)
-- [Amazon](https://amzn.to/2IA6VMv)
+- [Amazon](https://amzn.to/2MAMdiN)
     
     $AUD24</br>
     $USD15
@@ -436,8 +436,8 @@ Both these are easily sourced on the usual websites.
 Choose a panel and matching charger to suit your installed environment. If you're lucky enough to have mains power, perhaps omit the panel but retain the battery and charger to sustain the system through any unexpected mains failures.
 
 - [eBay](https://www.ebay.com.au/itm/112750149497) - 20W
-- [Amazon](https://amzn.to/2Mq516y) - 10W
-- [Amazon](https://amzn.to/2HQndln) - 20W
+- [Amazon](https://amzn.to/2pDsrKO) - 10W
+- [Amazon](https://amzn.to/31C9hCe) - 25W
 
     $AUD49</br>
     $USD21 - 34
@@ -457,7 +457,7 @@ Let's call it $USD10
 
 #### Pelican 1300 case
 
-- [Amazon](https://amzn.to/2HS6a2p)
+- [Amazon](https://amzn.to/2Bu9kWa)
 
     $AUD95</br>
     $USD60
@@ -475,7 +475,7 @@ You only need two holes in the box - one to let the light in, and another for th
 You should be able to source these from your nearest electrical wholesaler, hobbyist electronics shop, or maybe a marine supplies shop (if you're near water).
 
 - [Cabac (AU)](https://www.cabac.com.au/product-specs/13450510/GN12S)
-- [Amazon](https://amzn.to/2Wylqd5) - pack of 6, $USD6
+- [Amazon](https://amzn.to/2N2nQK1) - pack of 6, $USD6
 
     $AUD2 (est)</br>
     $USD1
