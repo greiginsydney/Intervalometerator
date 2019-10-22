@@ -246,11 +246,12 @@ So as to save opening the case when its in situ, we added a standard door reed s
 This is to connect the intervalm8r to the camera's shutter cable. The PCB has been designed to accommodate all the thru-hole PCB-mounted sockets we could buy online. You could just as easily choose in-line instead, or a directly-connected cable. Change this to a suitable connector if your camera shutter release cable uses a different type. (See ["adding the components"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-pcb-assembly.md#adding-the-components) in the PCB assembly.md for more details and options.)
 
 - [Element 14 (AU)](https://au.element14.com/lumberg/1501-05/socket-2-5mm-jack/dp/1216978)
-- [Amazon](https://amzn.to/2Wo0y3R) - pack of 10, $USD3.11
-- [Amazon](https://amzn.to/2WnkOmq) - pack of 5, $USD2.77
+- [Amazon](https://amzn.to/33VxW6u) - pack of 20, $USD3.36
+- [Amazon](https://amzn.to/2J948Lu) - pack of 12, $USD3.86
+
 
     $AUD2.00</br>
-    $USD1.00
+    $USD0.40
 
 #### 3mm Green LED (optional)
 
