@@ -36,6 +36,14 @@ install_apps ()
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	apt-get install python-pip python-flask -y
 	pip install flask flask-bootstrap flask-login gunicorn configparser
+	
+	#This is ALL for Paramiko (SSH uploads):
+	apt-get install libffi-dev libssl-dev python-dev -y
+	apt install krb5-config krb5-user -y
+	apt-get install libkrb5-dev -y
+	pip install bcrypt pynacl cryptography gssapi paramiko
+	
+	pip install dropbox
 	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
@@ -67,6 +75,10 @@ install_website ()
 	ln -sfnv ${HOME}/photos  ${HOME}/www/static
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
+
+	# piTransfer.py will add to this file the name of every image it successfully transfers
+	touch photos/uploadedOK.txt
+
 	chown -R pi:www-data /home/pi
 
 	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
@@ -109,6 +121,11 @@ install_website ()
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/cameraTransfer.service
 	systemctl enable cameraTransfer.service
+	
+	#Pi Transfer
+	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
+	chmod 644 /etc/systemd/system/piTransfer.service
+	systemctl enable piTransfer.service
 
 	#Camera Transfer - Cron Job
 
@@ -121,18 +138,22 @@ install_website ()
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "Cron job. If the Pi is set to always run, a scheduled 'cron job' will copy images off the camera."
-		read -p "Shall we create one of those? [Y/n]: " Response
-		case $Response in
-			(y|Y|"")
-				echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
-				crontab -u $SUDO_USER cronTemp #install new cron file
-				sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
-				;;
-			(*)
-				#Skip
-				;;
-		esac
+		echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+	fi
+	rm cronTemp
+
+	#piTransfer
+	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
+
+	if grep -q piTransfer.py "cronTemp";
+	then
+		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
+	else
+		echo "0 * * * * /usr/bin/python ${HOME}/www/piTransfer.py" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 	fi
 	rm cronTemp
 
@@ -141,6 +162,8 @@ install_website ()
 	case $Response in
 		(y|Y|"")
 			sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
+			sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
+			
 			;;
 		(*)
 			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service

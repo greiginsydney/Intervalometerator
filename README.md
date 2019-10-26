@@ -28,6 +28,10 @@ gPhoto (running on the Pi) is only used for the camera management, with the Ardu
 
 From the web interface you select the days of the week to shoot, within what span of hours, and how many shots per hour. A typical building construction might shoot Monday through Friday, from 6am to 6pm, and take 4 shots an hour.
 
+### Auto-upload of images
+
+At least once each day, the Raspberry Pi copies the images from the camera, and if enabled by the user then uploads all the images to a remote store. The store destination can be an FTP or SFTP server, or to Dropbox. (Obviously, your intvlm8r requires a suitable private network or internet connection for this.)
+
 ### Low-Cost
 Using commonly-available components, an intvlm8r controller with charger, battery, solar panel, waterproof <a href="https://www.pelican.com/us/en/" target="_blank">Pelican case</a> & mounts should see you with plenty of change from $AUD600 ($US440), a fraction of the cost of commercially-available equivalents. Add your DSLR and a lens and you're in business! See the [Shopping list](SHOPPINGLIST.md) for the specifics.
 
@@ -39,7 +43,7 @@ In an isolated setup, come within range and connect to the Pi Zero W's inbuilt W
 ### Low-power
 The invtlm8r is designed for low-power operation. At rest the entire project consumes less than 1mA, enabling it to be powered by a common <a href="https://simple.wikipedia.org/wiki/Sealed_lead_acid_battery" target="_blank">sealed lead acid ("SLA")</a> battery and solar panel. Current consumption rises as the camera is woken to take a photo, and peaks when the Raspberry Pi is powered-on for management and file transfers.
 
-## Easy assembly
+### Easy assembly
 Using pre-built micro-controller, clock and power supply boards reduces the complexity of assembly and the risk of errors. It also means you don't need a perfect set of eyes, nor the precision SMD soldering skills of a microsurgeon. The only discrete components on the veroboard shown here are resistors, a LED and the opto-isolators that electrically isolate the Arduino from the camera's shutter input - and none of that's surface-mount.
 
 ### Battery-backed clock

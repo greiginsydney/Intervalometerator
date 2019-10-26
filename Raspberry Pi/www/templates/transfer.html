@@ -30,27 +30,55 @@
 				</div>
 			</td>
 		</tr>
-		{% if wakePiTime != '25' %}
-		<tr>
-			<td class="noborder">(A copy takes place each day at {{wakePiTime}}:00 when the Pi starts.)</td>
+		<tr id="showHideCopyHrMsg">
+			<td class="noborder" id="copyHourMsg"></td>
 		</tr>
-		{% endif %}
 	</table>
 	
 	<table>
 		<tr>
 			<th>Transfer Settings - from the Pi</th>
 		</tr>
-		<tr>
+		<tr id="showHideTrnMethod">
 			<td>
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
-					{% for method in ['Off', 'SFTP','Fileshare'] %}
-						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% else %} DISABLED{% endif %}>{{ method }}</option>"
+					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox'] %}
+						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %}>{{ method }}</option>"
 					{% endfor %}
 					</select>
 				</div>
+			</td>
+		</tr>
+		<tr id="showHideTrnWarning">
+			<td class="noborder">Copy needs to be enabled first.</td>
+		</tr>
+	</table>
+
+	<table id="ftp">
+		<tr>
+			<td>
+				<div class="alignleft">FTP server URL:</div>
+				<div class="alignright"><input type="text" name="ftpServer" id="ftpServer" value="{{ ftpServer }}" placeholder="myFtpServer.com" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Username:</div>
+				<div class="alignright"><input type="text" name="ftpUser" id="ftpUser" value="{{ ftpUser }}" placeholder="ftpUsername" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Password:</div>
+				<div class="alignright"><input type="password" name="ftpPassword" id="ftpPassword" value="{{ ftpPassword }}" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Remote folder:</div>
+				<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="{{ ftpRemoteFolder }}" placeholder="e.g. /images/" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 	</table>
@@ -59,116 +87,78 @@
 		<tr>
 			<td>
 				<div class="alignleft">SFTP server URL:</div>
-				{% if sftpServer == '' %}
-					<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="ftp.somewhere.com" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="{{ sftpServer }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="{{ sftpServer }}" placeholder="mySftpServer.com" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Username:</div>
-				{% if sftpUser == '' %}
-					<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="ftp_user" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="{{ sftpUser }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="{{ sftpUser }}" placeholder="sftpUsername" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Password:</div>
-				{% if sftpPassword == '' %}
-					<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="{{ sftpPassword }}" oninput="newText(this.id)"></div>
-				{% endif %}	
+				<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="{{ sftpPassword }}" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
+				<div class="alignleft">Remote folder:</div>
+				<div class="alignright"><input type="text" name="sftpRemoteFolder" id="sftpRemoteFolder" value="{{ sftpRemoteFolder }}" placeholder="e.g. /images/" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+	</table>
+
+	<table id="dbx">
+		<tr>
+			<td>
+				<div class="alignleft">Token:</div>
+				<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="{{ dbx_token }}" placeholder="abcd1234-2345rtyu-etc" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+	</table>
+
+	<table id="transfer">
+		<tr>
+			<td>
 				<div class="alignleft">Transfer day:</div>
 				<div class="alignright">
-					<select name="sftpDay" id="sftpDay" onchange="newSelected(this.id)">
+					<select name="transferDay" id="transferDay" onchange="newSelected(this.id)">
 					{% for day in ['Daily','Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						<option value="{{ day }}"{% if day == sftpDay %} SELECTED{% endif %}>{{ day }}</option>
+						<option value="{{ day }}"{% if day == transferDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
 					</select>
 				</div>
 			</td>
 		</tr>
-		<tr>
+		<tr id="showHideTrnHour">
 			<td>
 				<div class="alignleft">Transfer hour:</div>
 				<div class="alignright">
-					<select name="sftpHour" id="sftpHour" onchange="newSelected(this.id)">
+					<select name="transferHour" id="transferHour" onchange="newSelected(this.id)">
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							<option value="{{ hour }}"{% if hour == sftpHour %} SELECTED{% endif %}>{{ hour }}</option>
+							<option value="{{ hour }}"{% if hour == transferHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
 					</select>
+				</div>
+			</td>
+		</tr>
+		<tr id="showHideTrnHrMsg">
+			<td class="noborder" id="transferHourMsg"></td>
+		</tr>
+		<tr>
+			<td >
+				<div class="alignleft">
+					<button type="button" name="view" id="view" onClick="openInNewTab('{{ piTransferLogLink }}');">View log</button>
+				</div>
+				<div class="alignright">
+					<button type="submit" name="tfrClear" id="tfrClear" onclick="tfrClear()">Clear log</button>
 				</div>
 			</td>
 		</tr>
 	</table>
 
-	<table id="file">
-		<tr>
-			<td>
-				<div class="alignleft">File share path:</div>
-				{% if fileServer == '' %}
-					<div class="alignright"><input type="text" name="fileServer" id="fileServer" value="\\server\folder\" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="fileServer" id="fileServer" value="{{ fileServer }}" oninput="newText(this.id)"></div>
-				{% endif %}	
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Username:</div>
-				{% if fileUser == '' %}
-					<div class="alignright"><input type="text" name="fileUser" id="fileUser" value="folder_user" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="text" name="fileUser" id="fileUser" value="{{ fileUser }}" oninput="newText(this.id)"></div>
-				{% endif %}	
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Password:</div>
-				{% if filePassword == '' %}
-					<div class="alignright"><input type="password" name="filePassword" id="filePassword" value="" oninput="newText(this.id)"></div>
-				{% else %}
-					<div class="alignright"><input type="password" name="filePassword" id="filePassword" value="{{ filePassword }}" oninput="newText(this.id)"></div>
-				{% endif %}	
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Transfer day:</div>
-				<div class="alignright">
-					<select name="fileDay" id="fileDay" onchange="newSelected(this.id)">
-					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-						<option value="{{ day }}"{% if day == fileDay %} SELECTED{% else %} DISABLED{% endif %}>{{ day }}</option>
-					{% endfor %}
-					</select>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div class="alignleft">Transfer hour:</div>
-				<div class="alignright">
-					<select name="fileHour" id="fileHour" onchange="newSelected(this.id)">
-						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							<option value="{{ hour }}"{% if hour == fileHour %} SELECTED{% endif %}>{{ hour }}</option>
-						{% endfor %}
-					</select>
-				</div>
-			</td>
-		</tr>
-	</table>
-	
 	<table class="noborder">
 		<tr>
 			<td class="noborder">
@@ -176,44 +166,81 @@
 					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
 				</div>
 				<div class="alignright">
-					<button type="submit" name="TfrApply" id="apply">Apply</button>
+					<button type="submit" name="tfrApply" id="apply">Apply</button>
 				</div>
 			</td>
 		</tr>
 	</table>
 </form>
 
-<!-- Hidden form for the Copy Now button, as you can't nest forms -->
+<!-- Hidden form for the various "do something now" buttons, as you can't nest forms -->
 <form style="display: none">
-	<button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button>
+	<button type="submit" name="copyNow"  id="copyNow"  value="1">Copy Now</button>
+	<button type="submit" name="clear" id="clear" value="1">Clear log</button>
 </form>
+
 
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
-SelectionBits["tfrMethod"]    =  1;
-SelectionBits["sftpServer"]   =  2;
-SelectionBits["sftpUser"]     =  4;
-SelectionBits["sftpPassword"] =  8;
-SelectionBits["sftpDay"]      =  16;
-SelectionBits["sftpHour"]     =  32;
-SelectionBits["fileServer"]   =  64;
-SelectionBits["fileUser"]     =  128;
-SelectionBits["filePassword"] =  256;
-SelectionBits["fileDay"]      =  512;
-SelectionBits["fileHour"]     =  1024;
-SelectionBits["copyDay"]      =  2048;
-SelectionBits["copyHour"]     =  4096;
+SelectionBits["tfrMethod"]        =     1;
+SelectionBits["ftpServer"]        =     2;
+SelectionBits["ftpUser"]          =     4;
+SelectionBits["ftpPassword"]      =     8;
+SelectionBits["ftpRemoteFolder"]  =    16;
+SelectionBits["sftpServer"]       =    32;
+SelectionBits["sftpUser"]         =    64;
+SelectionBits["sftpPassword"]     =   128;
+SelectionBits["sftpRemoteFolder"] =   256;
+SelectionBits["dbx_token"]        =   512;
+SelectionBits["transferDay"]      =  1024;
+SelectionBits["transferHour"]     =  2048;
+SelectionBits["copyDay"]          =  4096;
+SelectionBits["copyHour"]         =  8192;
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
 var showHideCopyHour = document.getElementById("showHideCopyHour");
+var showHideTrnHour = document.getElementById("showHideTrnHour");
+var showHideCopyHrMsg = document.getElementById("showHideCopyHrMsg");
+var showHideTrnHrMsg = document.getElementById("showHideTrnHrMsg");
+
+var showHideTrnWarning = document.getElementById("showHideTrnWarning");
+var showHideTrnMethod = document.getElementById("showHideTrnMethod");
+var ftp = document.getElementById("ftp");
 var sftp = document.getElementById("sftp");
-var file = document.getElementById("file");
+var dbx = document.getElementById("dbx");
+var transfer = document.getElementById("transfer");
+
 // This drives the default display on load:
-sftp.style.display = (method.value != "sftp") ? "none":"";
-file.style.display = (method.value != "fileshare") ? "none":"";
-showHideCopyHour.style.display = (copyDay.value == "Off") ? "none":"";
+ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
+sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
+dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+
+//Initialise the two text fields:
+if (copyDay.value == "Daily")
+{
+	document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
+}
+else
+{
+	document.getElementById("copyHourMsg").innerHTML = "A copy takes place each " + copyDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+}
+if (transferDay.value == "Daily")
+{
+	document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each day at {{wakePiTime}}:00 when the Pi starts."
+}
+else
+{
+	document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each " + transferDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+}
 
 // Run when the form first loads:
 lightButtons(); 
@@ -222,19 +249,51 @@ function copyNow()
 {
 	document.getElementById("copyNow").click();
 }
+function tfrClear()
+{
+	document.getElementById("tfrClear").click();
+}
+
 
 function newSelected(id)
 {
 	var option = document.getElementById(id);
 	// Reveal/hide fields as appropriate:
-	if (id == "tfrMethod")
+	if (id == "tfrMethod" || id == "copyDay")
 	{
-		sftp.style.display = (method.value != "sftp") ? "none":"";
-		file.style.display = (method.value != "fileshare") ? "none":"";
+		ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
+		sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
+		dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+		transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
 	{
-		showHideCopyHour.style.display = (copyDay.value == "Off") ? "none":"";
+		showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+		showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+		if (copyDay.value == "Daily")
+		{
+			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
+		}
+		else
+		{
+			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each " + copyDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+		}
+	}
+	
+	if (id == "transferDay")
+	{
+		if (transferDay.value == "Daily")
+		{
+			document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each day at {{wakePiTime}}:00 when the Pi starts."
+		}
+		else
+		{
+			document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each " + transferDay.value + " at {{wakePiTime}}:00 when the Pi starts."
+		}
 	}
 
 	if (!option.options[option.selectedIndex].defaultSelected)
@@ -274,6 +333,12 @@ function lightButtons()
 		document.getElementById("apply").disabled  = false;
 	}
 }
-	
+
+//https://stackoverflow.com/questions/4907843/open-a-url-in-a-new-tab-and-not-a-new-window-using-javascript
+function openInNewTab(url) {
+  var win = window.open(url, '_blank');
+  win.focus();
+}
+
 </script>
 {% endblock %}

@@ -47,7 +47,7 @@ Reboot now? [Y/n]:
 ## Next steps:
 - Configure the Arduino
 - Complete the physical assembly:
-   - [PCB assembly](/docs/step4-pcb-assembly.md)  
+   - [PCB assembly](/docs/step5-pcb-assembly.md)  
 - Start taking photos!
 
 ## Un-make AP

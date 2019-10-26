@@ -64,6 +64,9 @@ PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
 PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
 PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
+PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
+PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
+PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer page will link to when you click "View Log"
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 
@@ -250,6 +253,8 @@ def main():
         'piImageCount'      : 'Unknown',
         'piLastImage'       : 'Unknown',
         'piSpaceFree'       : 'Unknown',
+        'lastTrnResult'     : 'Unknown',
+        'lastTrnLogFile'    : PI_TRANSFER_LINK,
         'piLastImageFile'   : 'Unknown'
     }
 
@@ -326,6 +331,14 @@ def main():
     templateData['piLastImage']     = piLastImage
     templateData['piSpaceFree']     = getDiskSpace()
     templateData['piLastImageFile'] = piLastImageFile
+    try:
+        with open(PI_TRANSFER_FILE, 'r') as f:
+            for line in reversed(f.read().splitlines()):
+                if 'STATUS: ' in line:
+                    templateData['lastTrnResult'] = line.replace('STATUS: ','')
+                    break
+    except Exception as e:
+        app.logger.debug('Exception reading STATUS in piTransfer.log file: ' + str(e))
     return render_template('main.html', **templateData)
 
 
@@ -641,54 +654,58 @@ def transfer():
 
     # Initialise the dictionary:
     templateData = {
-        'tfrMethod'     : 'Off',    # Hides all options if the file isn't found or is bad
-        'sftpServer'    : '',
-        'sftpUser'      : '',
-        'sftpPassword'  : '',
-        'sftpDay'       : '',
-        'sftpHour'      : '',
-        'fileServer'    : '',
-        'fileUser'      : '',
-        'filePassword'  : '',
-        'fileDay'       : '',
-        'fileHour'      : '',
-        'copyDay'       : '',
-        'copyHour'      : '',
-        'wakePiTime'    : '25'
+        'tfrMethod'         : 'Off',    # Hides all options if the file isn't found or is bad
+        'ftpServer'         : '',
+        'ftpUser'           : '',
+        'ftpPassword'       : '',
+        'ftpRemoteFolder'   : '',
+        'sftpServer'        : '',
+        'sftpUser'          : '',
+        'sftpPassword'      : '',
+        'sftpRemoteFolder'  : '',
+        'dbx_token'         : '',
+        'transferDay'       : '',
+        'transferHour'      : '',
+        'copyDay'           : '',
+        'copyHour'          : '',
+        'wakePiTime'        : '25',
+        'piTransferLogLink' : PI_TRANSFER_LINK
     }
     config = ConfigParser.SafeConfigParser(
         {
-        'tfrmethod'     : 'Off',
-        'sftpServer'    : '',
-        'sftpUser'      : '',
-        'sftpPassword'  : '',
-        'sftpDay'       : '',
-        'sftpHour'      : '',
-        'fileServer'    : '',
-        'fileUser'      : '',
-        'filePassword'  : '',
-        'fileDay'       : '',
-        'fileHour'      : '',
-        'copyDay'       : 'Off',
-        'copyHour'      : '',
-        'wakePiTime'    : '25'
+        'tfrmethod'        : 'Off',
+        'ftpServer'        : '',
+        'ftpUser'          : '',
+        'ftpPassword'      : '',
+        'ftpRemoteFolder'  : '',
+        'sftpServer'       : '',
+        'sftpUser'         : '',
+        'sftpPassword'     : '',
+        'sftpRemoteFolder' : '',
+        'dbx_token'        : '',
+        'transferDay'      : '',
+        'transferHour'     : '',
+        'copyDay'          : 'Off',
+        'copyHour'         : '',
+        'wakePiTime'       : '25'
         })
     try:
         config.read(iniFile)
         #app.logger.debug('Found the file in GET')
-        templateData['tfrMethod']     = config.get('Transfer', 'tfrmethod')
-        templateData['sftpServer']    = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']      = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']  = config.get('Transfer', 'sftpPassword')
-        templateData['sftpDay']       = config.get('Transfer', 'sftpDay')
-        templateData['sftpHour']      = config.get('Transfer', 'sftpHour')
-        templateData['fileServer']    = config.get('Transfer', 'fileServer')
-        templateData['fileUser']      = config.get('Transfer', 'fileUser')
-        templateData['filePassword']  = config.get('Transfer', 'filePassword')
-        templateData['fileDay']       = config.get('Transfer', 'fileDay')
-        templateData['fileHour']      = config.get('Transfer', 'fileHour')
-        templateData['copyDay']       = config.get('Copy', 'copyDay')
-        templateData['copyHour']      = config.get('Copy', 'copyHour')
+        templateData['tfrMethod']        = config.get('Transfer', 'tfrmethod')
+        templateData['ftpServer']        = config.get('Transfer', 'ftpServer')
+        templateData['ftpUser']          = config.get('Transfer', 'ftpUser')
+        templateData['ftpPassword']      = config.get('Transfer', 'ftpPassword')
+        templateData['ftpRemoteFolder']  = config.get('Transfer', 'ftpRemoteFolder')
+        templateData['sftpServer']       = config.get('Transfer', 'sftpServer')
+        templateData['sftpUser']         = config.get('Transfer', 'sftpUser')
+        templateData['sftpPassword']     = config.get('Transfer', 'sftpPassword')
+        templateData['sftpRemoteFolder'] = config.get('Transfer', 'sftpRemoteFolder')
+        templateData['dbx_token']        = config.get('Transfer', 'dbx_token')
+        templateData['transferDay']      = config.get('Transfer', 'transferDay')
+        templateData['transferHour']     = config.get('Transfer', 'transferHour')
+        templateData['copyDay']          = config.get('Copy', 'copyDay')
+        templateData['copyHour']         = config.get('Copy', 'copyHour')
     except Exception as e:
         app.logger.debug('INI file error:' + str(e))
         flash('Error reading from the Ini file')
@@ -704,41 +721,58 @@ def transfer():
 @login_required
 def transferPOST():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
-    config = ConfigParser.ConfigParser()
-    try:
-        config.read(iniFile)
-        if not config.has_section('Transfer'):
-            config.add_section('Transfer')
-        config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
-        if (request.form.get('tfrMethod') == 'sftp'):
-            config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
-            config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
-            config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
-            config.set('Transfer', 'sftpDay', str(request.form.get('sftpDay') or ''))
-            config.set('Transfer', 'sftpHour', str(request.form.get('sftpHour') or ''))
-        elif (request.form.get('tfrMethod') == 'fileshare'):
-            config.set('Transfer', 'fileServer', str(request.form.get('fileServer') or ''))
-            config.set('Transfer', 'fileUser', str(request.form.get('fileUser') or ''))
-            config.set('Transfer', 'filePassword', str(request.form.get('filePassword') or ''))
-            config.set('Transfer', 'fileDay', str(request.form.get('fileDay') or ''))
-            config.set('Transfer', 'fileHour', str(request.form.get('fileHour') or ''))
-        if not config.has_section('Copy'):
-            config.add_section('Copy')
-        config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
-        config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
-        with open(iniFile, "wb") as config_file:
-            config.write(config_file)
-    except Exception as e:
-        app.logger.debug('INI file error writing:' + str(e))
-        if 'Permission denied' in str(e):
-            flash('Permission denied writing to the ini file')
-        else:
-            flash('Error writing to the Ini file')
+
+    if 'tfrClear' in request.form:
+        try:
+            piTransferLogfile = open(PI_TRANSFER_FILE, 'w')
+            nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+            piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
+            piTransferLogfile.close()
+        except Exception as e:
+            app.logger.debug('Exception clearing piTransfer.log:' + str(e))
+
+    if 'tfrApply' in request.form:
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = ConfigParser.ConfigParser()
+        try:
+            config.read(iniFile)
+            if not config.has_section('Transfer'):
+                config.add_section('Transfer')
+            config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
+            if (request.form.get('tfrMethod') == 'FTP'):
+                config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
+                config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
+                config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
+                ftpRemoteFolder = reformatSlashes(str(request.form.get('ftpRemoteFolder')))
+                config.set('Transfer', 'ftpRemoteFolder', ftpRemoteFolder or '')
+            if (request.form.get('tfrMethod') == 'SFTP'):
+                config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
+                config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
+                config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
+                sftpRemoteFolder = reformatSlashes(str(request.form.get('sftpRemoteFolder')))
+                config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
+            elif (request.form.get('tfrMethod') == 'Dropbox'):
+                config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
+            if (request.form.get('tfrMethod') != 'Off'):
+                config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
+                config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
+            if not config.has_section('Copy'):
+                config.add_section('Copy')
+            config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
+            config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
+            with open(iniFile, "wb") as config_file:
+                config.write(config_file)
+        except Exception as e:
+            app.logger.debug('INI file error writing:' + str(e))
+            if 'Permission denied' in str(e):
+                flash('Permission denied writing to the ini file')
+            else:
+                flash('Error writing to the Ini file')
+
     return redirect(url_for('transfer'))
 
-
+  
 @app.route("/copyNow")
 def name():
     """
@@ -1003,6 +1037,8 @@ def list_Pi_Images(path):
             ext = os.path.splitext(name)[1].lower()
             if ext in ('.db',):
                 continue
+            if ext in ('.txt',):
+                continue
             result.append(os.path.join(root, name))
     return result
 
@@ -1044,14 +1080,14 @@ def CreateDestPath(folder, NewDestDir):
         ImageSubDir = re.search(("DCIM/\S*"), folder)
         if ImageSubDir != None:
             subdir = os.path.join(NewDestDir, ImageSubDir.group(0))
-            app.logger.debug('Subdir =  ' + subdir)
+            # app.logger.debug('Subdir =  ' + subdir)
             try:
                 if not os.path.isdir(subdir):
                     os.makedirs(subdir)
             except:
                 app.logger.debug("Didn't want to make " + subdir)
             dest = os.path.join(NewDestDir, subdir)
-            app.logger.debug('Pi dest = ' + dest)
+            # app.logger.debug('Pi dest = ' + dest)
         else:
             dest = NewDestDir
     except Exception as e:
@@ -1115,7 +1151,7 @@ def createConfigFile(iniFile):
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
         config.set('Global', 'thumbscount', 20)
         config.add_section('Transfer')
-        config.set('Transfer', 'tfrMethod', 'manual')
+        config.set('Transfer', 'tfrMethod', 'Off')
         config.add_section('Copy')
         with open(iniFile, "wb") as config_file:
             config.write(config_file)
@@ -1138,6 +1174,19 @@ def copyNow():
         flash(e.string)
         app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
     return
+
+
+def reformatSlashes(folder):
+    """
+    Reformat the user's remote folder value:
+    1) Convert any backslashes to slashes
+    2) Convert any double slashes to singles
+    """
+    while '\\' in folder:
+        folder = folder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+    while '//' in folder:
+        folder = folder.replace('//', '/')
+    return folder
 
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
