@@ -82,7 +82,7 @@ def main(argv):
         return
         
     try:
-        response = urlopen('http://localhost/transfer?copyNow=1')
+        response = urlopen('http://localhost/copyNow')
         log('Response code = ' + str(response.getcode()))
         htmltext = response.read()
         if 'Unable to connect to the camera' in htmltext:
@@ -91,11 +91,11 @@ def main(argv):
         log(str(htmltext))
     except URLError as e:
         if hasattr(e, 'reason'):
-            log(str(e.reason))
+            log('URL error. Reason = ' + str(e.reason))
         elif hasattr(e, 'code'):
-            log(str(e.code))
-    except Exception as e:
-        log('Unhandled error: ' + str(e))
+            log('URL error. Code = ' + str(e.code))    except Exception as e:
+     except Exception as e:
+            log('Unhandled web error: ' + str(e))
 
 
 def log(message):
