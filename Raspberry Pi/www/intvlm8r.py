@@ -313,6 +313,9 @@ def main():
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
     except gp.GPhoto2Error as e:
         flash(e.string)
+        app.logger.debug('GPhoto camera error in main:' + str(e))
+    except Exception as e:
+        app.logger.debug('Unknown camera error in main:' + str(e))
 
     # Pi comms:
     piLastImage = ''
@@ -516,7 +519,9 @@ def camera():
     except gp.GPhoto2Error as e:
         flash(e.string)
         app.logger.debug('Camera GET error: ' + e.string)
-
+    except Exception as e:
+        app.logger.debug('Unknown camera GET error:' + str(e))
+        
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
 
@@ -564,6 +569,8 @@ def cameraPOST():
     except gp.GPhoto2Error as e:
         app.logger.debug('Camera POST error: ' + e.string)
         flash(e.string)
+    except Exception as e:
+        app.logger.debug('Unknown camera POST error:' + str(e))
 
     return redirect(url_for('camera'))
 
@@ -592,6 +599,9 @@ def intervalometer():
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
         flash(e.string)
+        app.logger.debug('GPhoto camera error in intervalometer:' + str(e))
+    except Exception as e:
+        app.logger.debug('Unknown camera error in intervalometer:' + str(e))
 
     ArdInterval = str(readString("3"))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
@@ -1173,6 +1183,8 @@ def copyNow():
     except gp.GPhoto2Error as e:
         flash(e.string)
         app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
+    except Exception as e:
+        app.logger.debug('Unknown error in copyNow: ' + str(e))
     return
 
 
