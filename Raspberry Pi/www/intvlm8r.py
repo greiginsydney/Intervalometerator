@@ -477,6 +477,7 @@ def camera():
             #   Canon EOS350d - 'datetime'
             #   PTP - 'd034'
             for name, fmt in (('datetime', '%Y-%m-%d %H:%M:%S'),
+                              ('datetimeutc', None),
                               ('d034',     None)):
                 OK, datetime_config = gp.gp_widget_get_child_by_name(config, name)
                 if OK >= gp.GP_OK:
