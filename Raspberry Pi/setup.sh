@@ -260,17 +260,18 @@ make_ap ()
 	apt-get install dnsmasq hostapd -y
 	systemctl stop dnsmasq
 	systemctl stop hostapd
-	sed -i -E "s|^#?(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
+	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
+	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
 	if  grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
 	then
 		wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
-		#Un-comment the lines if they're present but inactive:
-		sed -i -E "s/^#(interface wlan0.*)/\1/" /etc/dhcpcd.conf
-		# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
-		sed -i -E '$!N;s/(wlan0\n)#(\s*static\s*ip_address)/\1\2/;P;D' /etc/dhcpcd.conf # Replaces only if "static ip_address" is on the line AFTER "wlan0"
-		sed -i -E "$wlanLine,$ s/^(\s*static routers.*)/#\1/" /etc/dhcpcd.conf  # Comment-out "routers"
-		sed -i -E "$wlanLine,$ s/^(\s*static domain_name_servers.*)/#\1/" /etc/dhcpcd.conf  # Comment-out "domain_name_servers"
-		sed -i -E "s/^#(\s*nohook wpa_supplicant.*)/\1/" /etc/dhcpcd.conf  #Un-comment "nohook wpa_supplicant"
+		sed -i -E "s/^\s*#*\s*(interface wlan0.*)/\1/" /etc/dhcpcd.conf #Un-comment if present but inactive
+		# The following lines all search the file for lines AFTER the appearance of "interface wlan0"
+		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static\s*ip_address=)(.*)/\  \1\2/" /etc/dhcpcd.conf 
+		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static routers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "routers"
+		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static domain_name_servers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "domain_name_servers"
+		#Look anywhere in the file for this one. Its position is not critical (although it's probably at the end anyway).
+		sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)$/\  \1/" /etc/dhcpcd.conf  #Un-comment "nohook wpa_supplicant"
 		#Read the current value:
 		oldPiIpV4=$(sed -n -E 's|^\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
 		#echo $oldPiIpV4
@@ -280,8 +281,14 @@ make_ap ()
 
 interface wlan0
    static ip_address=10.10.10.1/24
+   ## static routers=192.168.0.1
+   ## static domain_name_servers=192.168.0.1
    nohook wpa_supplicant
 END
+	fi
+	if ! grep -Fq "nohook wpa_supplicant" "/etc/dhcpcd.conf";
+	then
+		sed -i -e "\$anohook wpa_supplicant" "/etc/dhcpcd.conf";
 	fi
 	if [ -z "$oldPiIpV4" ]; then oldPiIpV4='10.10.10.1'; fi
 
@@ -356,18 +363,38 @@ unmake_ap ()
 	systemctl disable hostapd
 	systemctl stop dnsmasq #Stops it NOW
 	systemctl stop hostapd
-	sed -i -E "s|^\s*(DAEMON_CONF=\")(.*)\"|#\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
+	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
 
+	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
+	if ! grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
+	then
+		cat <<END >> /etc/dhcpcd.conf
+interface wlan0
+  static ip_address=192.168.0.10/24
+  static routers=192.168.0.1
+  static domain_name_servers=192.168.0.1
+END
+	fi
+	# Just in case either of these lines are STILL missing, paste in some defaults:
+	if ! grep -Fq "static routers=" "/etc/dhcpcd.conf";
+	then
+		sed -i -e "\$astatic routers=192.168.0.1" "/etc/dhcpcd.conf";
+	fi
+	if ! grep -Fq "static domain_name_servers=" "/etc/dhcpcd.conf";
+	then
+		sed -i -e "\$astatic domain_name_servers=192.168.0.1" "/etc/dhcpcd.conf";
+	fi
+	
 	wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
 	echo ""
 	read -p "Do you want to assign the Pi a static IP address? [Y/n]: " staticResponse
 	case $staticResponse in
 		(y|Y|"")
-			oldPiIpV4=$(sed -n -E 's|^#?\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
-			oldDhcpSubnetCIDR=$(sed -n -E 's|^#?\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\3|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
-			oldRouter=$(sed -n -E 's|^#?\s*static routers=(([0-9]{1,3}\.){3}[0-9]{1,3}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
-			oldDnsServers=$(sed -n -E 's|^#?\s*static domain_name_servers=(.*)$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
-			oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR)
+			oldPiIpV4=$(sed -n -E 's|^\s*#*\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
+			oldDhcpSubnetCIDR=$(sed -n -E 's|^\s*#*\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\3|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
+			oldRouter=$(sed -n -E 's|^\s*#*\s*static routers=(([0-9]{1,3}\.){3}[0-9]{1,3}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
+			oldDnsServers=$(sed -n -E 's|^\s*#*\s*static domain_name_servers=(.*)$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
+			if [ "$oldDhcpSubnetCIDR" ]; then oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
 			read -e -i "$oldPiIpV4" -p         "Choose an IP address for the Pi         : " piIpV4
 			read -e -i "$oldDhcpSubnetMask" -p "Set the appropriate subnet mask         : " dhcpSubnetMask
 			read -e -i "$oldRouter" -p         "Set the Router IP                       : " router
@@ -375,22 +402,22 @@ unmake_ap ()
 			
 			cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 			#Paste in the new settings
-			sed -i -E "s/^#(interface wlan0.*)/\1/" /etc/dhcpcd.conf
-			sed -i -E "$wlanLine,$ s|^#?(\s*static ip_address=)(.*)|\1$piIpV4/$cidr_mask|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
-			sed -i -E "$wlanLine,$ s|^#?(\s*static routers=)(.*)|\1$router|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
-			sed -i -E "$wlanLine,$ s|^#?(\s*static domain_name_servers=)(.*)|\1$DnsServers|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
-			sed -i -E "s/^(\s*nohook wpa_supplicant.*)/#\1/" /etc/dhcpcd.conf  # Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
+			sed -i -E "s/^#+(interface wlan0.*)/\1/" /etc/dhcpcd.conf
+			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static ip_address=)(.*)$|\  \1$piIpV4/$cidr_mask|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
+			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static routers=)(.*)$|\  \1$router|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
+			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static domain_name_servers=)(.*)$|\  \1$DnsServers|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
+			sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
 			;;
 		(*)
 			if grep -qi "interface wlan0" /etc/dhcpcd.conf;
 			then
 				# Comment out the wlan0 lines:
-				sed -i -E "s/^(interface wlan0\s*)/#\1/" /etc/dhcpcd.conf
+				sed -i -E "s/^(interface wlan0\s*)/##\1/" /etc/dhcpcd.conf
 				# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
-				sed -i -E '$!N;s/(wlan0\n)(\s*static\s*ip_address)/\1#\2/;P;D' /etc/dhcpcd.conf # Replaces only if "static ip_address" is on the line AFTER "wlan0"
-				sed -i -E "$wlanLine,$ s/^(\s*static routers.*)/#\1/" /etc/dhcpcd.conf  # Comment-out "routers"
-				sed -i -E "$wlanLine,$ s/^(\s*static domain_name_servers.*)/#\1/" /etc/dhcpcd.conf  # Comment-out "domain_name_servers"
-				sed -i -E "s/^(\s*nohook wpa_supplicant.*)/#\1/" /etc/dhcpcd.conf  # Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
+				sed -i -E "$wlanLine,$ s/^\s*(static\s*ip_address=)(.*)/##  \1\2/" /etc/dhcpcd.conf 
+				sed -i -E "$wlanLine,$ s/^\s*(static routers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "routers"
+				sed -i -E "$wlanLine,$ s/^\s*(static domain_name_servers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "domain_name_servers"
+				sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
 			else
 				echo -e "Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf"
 			fi
@@ -412,6 +439,7 @@ test_install ()
 
 prompt_for_reboot()
 {
+	echo ""
 	read -p "Reboot now? [Y/n]: " rebootResponse
 	case $rebootResponse in
 		(y|Y|"")
