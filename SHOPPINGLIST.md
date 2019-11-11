@@ -370,10 +370,10 @@ These mate with the above. You want two.
 ##### Jumpers
 
 You need either 4 or 6, depending on how you assemble the board.
-- [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) - Pack of 25, $AUD
+- [Element 14](https://au.element14.com/multicomp/spc19807/mini-jumper-2-position-2-54mm/dp/1192775) - Pack of 25, $AUD2.12
 - [Amazon](https://amzn.to/2p1J3vy) - pack of 120, $USD7.88
     
-    $AUD0.30</br>
+    $AUD0.51</br>
     $USD0.40
 
 ##### 2.0mm Bolts (to mount the Raspberry Pi)
