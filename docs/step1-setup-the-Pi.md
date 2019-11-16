@@ -23,14 +23,15 @@ In so doing however, your average Windows PC will no longer be able to read the 
 
 11. Select `(7) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
 12. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 14.
-13. Select `(2) Network Options` and `WiFi`. At this stage we'll be a wifi *client*. When prompted:
+13. Select `(2) Network Options` and `Hostname` and give the Pi a recognisable hostname.
+14. Select `(2) Network Options` and `WiFi`. At this stage we'll be a wifi *client*. When prompted:
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
-14. Navigate to `Finish` and DECLINE the prompt to reboot.
-15. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
+15. Navigate to `Finish` and DECLINE the prompt to reboot.
+16. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
 
-16. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 18.
-17. Run `sudo nano /etc/dhcpcd.conf`. Add the lines shown, customising the addresses to suit your network:
+17. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 18.
+18. Run `sudo nano /etc/dhcpcd.conf`. Add the lines shown, customising the addresses to suit your network:
 
 ```txt
 interface wlan0
@@ -39,7 +40,6 @@ static routers=192.168.44.254
 static domain_name_servers=192.168.44.254
 ```
 > If you have more than one DNS server, add them on the same line with each separated by a space
-18. Set a hostname with `sudo hostname <YourNewHostname>`
 19. Reboot the Pi to pickup its new IP address and lock in all the changes made above, including the change to the hostname: `sudo reboot now`
 
 20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you added in Step 17.
