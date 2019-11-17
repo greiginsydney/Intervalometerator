@@ -353,6 +353,7 @@ END
 
 	systemctl unmask hostapd
 	systemctl enable hostapd
+	systemctl enable dnsmasq
 	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
 }
 
@@ -361,8 +362,6 @@ unmake_ap ()
 {
 	systemctl disable dnsmasq #Stops it launching on bootup
 	systemctl disable hostapd
-	systemctl stop dnsmasq #Stops it NOW
-	systemctl stop hostapd
 	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
 
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
