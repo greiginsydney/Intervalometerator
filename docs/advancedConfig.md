@@ -29,8 +29,26 @@ Whilst designed for low-power operation using the Pi Zero W, the intvlm8r has be
 
 All modern Pis share the same IO pinouts, so substituting a Pi 2, 3 or later for the Zero is just a matter of making a wiring hardness to connect the Pi back to the board. A pair of 14-pin IDC header connectors would do the job nicely.
 
-The only other change is to swap out the 5V regulator for a higher current model. The [Pololu D24V10F5](https://www.pololu.com/product/2831) supplies up to 1A @ 5V, which [the internet suggests](https://www.pidramble.com/wiki/benchmarks/power-consumption) might _not_ quite be enough for the latest Pi models, so maybe consider [the 2.5A D24V22F5](https://www.pololu.com/product/2858) instead. At 0.7" x 0.7" it's a little larger than [the original 500mA version scoped](https://www.pololu.com/product/2843) (0.4" x 0.5"), but still pin-compatible. Its extra height may foul J3 and/or its width the Wake opto-isolator, but some longer stand-off wires should add the necessary clearance.
+This image shows a 16-pin [Pololu 973](https://www.pololu.com/product/973) IDC ribbon connecting to a Pi 3B+:
 
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/69041899-66626600-0a44-11ea-8b9a-315526221fb0.jpg" width="50%">
+</p>
+
+Using an IDC ribbon like this required me to sacrifice two IO pins on the Pi, but if you're planning on this being a permanent setup hopefully it won't be an issue for you:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/69042535-74fd4d00-0a45-11ea-8da7-4329ae21b513.jpg" width="50%">
+</p>
+
+The only other change is to swap out the 5V regulator for a higher current model. The [Pololu D24V10F5](https://www.pololu.com/product/2831) supplies up to 1A @ 5V, which [the internet suggests](https://www.pidramble.com/wiki/benchmarks/power-consumption) might _not_ quite be enough for the latest Pi models, so maybe consider [the 2.5A D24V22F5](https://www.pololu.com/product/2858) instead. At 0.7" x 0.7" it's a little larger than [the original 500mA version scoped](https://www.pololu.com/product/2843) (0.4" x 0.5"), but still pin-compatible.
+
+Its extra height will foul J3 and its width the Wake opto-isolator, but some longer stand-off wires should add the necessary clearance for the opto. Consider replacing J3 with a link, or maybe install it on the under-side of the board. (The plated-through holes of the offered PCB mean you can solder either side.) I went for a small piece of insulation (stripped from some cable) to use as a spacer to raise the power supply up a little, and then added some hot glue just to make sure there was both separation and no risk of movement:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/69042126-ca852a00-0a44-11ea-81d3-cfe360dd6e4c.jpg" width="50%">
+</p>
+<br>
 > If you're separately powering an off-board Pi and it's set to always run, the 5V regulator & J1 can be omitted. In this config, set J2 to **No Pi mode** (described above) to prevent the Arduino from shutting it down.
 
 
