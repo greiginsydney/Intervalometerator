@@ -126,6 +126,6 @@ Now the board's essentially complete and the supply rails tested, it's time to a
 
 34. Again re-check the 3.3V and 7.5V supply rails are as expected, and that the 5V line reads 0V. Re-check your wiring and soldering if any of those aren't as expected.
 
-35. Remove the power and continue with [Bench Testing](/docs/step5-bench-testing.md) when you're ready.
+35. Remove the power and continue with [Bench Testing](/docs/step6-bench-testing.md) when you're ready.
 
 
