@@ -66,7 +66,6 @@ This page assumes:
         * you don't have the SDA and SCL leads the wrong way 'round.
         * the wire links from the Pi to the PCB are going through the correct holes.
         * you put the wires in the right pair of holes on the Arduino. (There is another pair of holes nearby; you might have mixed them up.)
-        * the config in Step 100 in [Setup the Pi](/docs/step1-setup-the-Pi.md#continue-with-the-piarduino-interfacing) is as shown there. This step slows the Pi's I2C bus to match the leisurely (current-saving) pace of the 8MHz Arduino.
         * If you're still stumped, check the Arduino programming (although if you've made it to here, LED on, etc, it seems like it's programmed OK).
         
 11. Click the hamburger icon and select System (or edit the URL to just add "/system" to the end). The System page should display.
