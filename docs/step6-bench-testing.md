@@ -20,7 +20,7 @@ This page assumes:
 1. Apply power. A number of things will happen in quick succession:
 
     * The green "Awake" LED on the top edge of the board should flash either four or eight times:
-        * Four times is a 'healthy' power-on of the Arduino, confirming the time was successfully read from the RTC. Normal operation will resume. If you powered the board at the end of [PCB Assembly](docs\pcb-assembly.md) and the Arduino was programmed, it is expected for the LED to flash four times now.
+        * Four times is a 'healthy' power-on of the Arduino, confirming the time was successfully read from the RTC. Normal operation will resume. If you powered the board at the end of [PCB Assembly](/docs/step5-pcb-assembly.md) and the Arduino was programmed, it is expected for the LED to flash four times now.
         * Eight times is an 'unhealthy' power-on of the Arduino. It indicates there was a failure reading from the RTC, most likely to be the result of a flat battery, or the very first time the board is powered. An emergency program kicks in at this stage, as the Arduino has no idea if it's day or night. It will shoot a photo every 15 minutes until the clock is set/reset.
     * The green LED will go out for two seconds, then flash three times, before remaining lit, but at a lesser intensity. (On power-up the Arduino wakes the Pi, and the "dim" LED is in fact it toggling with every pass through the main program loop.)
 
@@ -66,7 +66,7 @@ This page assumes:
         * you don't have the SDA and SCL leads the wrong way 'round.
         * the wire links from the Pi to the PCB are going through the correct holes.
         * you put the wires in the right pair of holes on the Arduino. (There is another pair of holes nearby; you might have mixed them up.)
-        * the config in Step 100 in [Setup the Pi](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-the-Pi.md#continue-with-the-piarduino-interfacing) is as shown there. This step slows the Pi's I2C bus to match the leisurely (current-saving) pace of the 8MHz Arduino.
+        * the config in Step 100 in [Setup the Pi](/docs/step1-setup-the-Pi.md#continue-with-the-piarduino-interfacing) is as shown there. This step slows the Pi's I2C bus to match the leisurely (current-saving) pace of the 8MHz Arduino.
         * If you're still stumped, check the Arduino programming (although if you've made it to here, LED on, etc, it seems like it's programmed OK).
         
 11. Click the hamburger icon and select System (or edit the URL to just add "/system" to the end). The System page should display.
