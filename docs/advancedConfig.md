@@ -49,6 +49,7 @@ Its extra height will foul J3 and its width the Wake opto-isolator, but some lon
 <img src="https://user-images.githubusercontent.com/11004787/69042126-ca852a00-0a44-11ea-81d3-cfe360dd6e4c.jpg" width="50%">
 </p>
 <br>
+
 > If you're separately powering an off-board Pi and it's set to always run, the 5V regulator & J1 can be omitted. In this config, set J2 to **No Pi mode** (described above) to prevent the Arduino from shutting it down.
 
 
