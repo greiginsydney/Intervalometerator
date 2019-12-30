@@ -35,7 +35,8 @@ install_apps ()
 {
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	apt-get install python-pip python-flask -y
-	pip install flask flask-bootstrap flask-login gunicorn configparser
+	pip install flask flask-bootstrap flask-login configparser
+	pip install gunicorn==19.10.0
 	
 	#This is ALL for Paramiko (SSH uploads):
 	apt-get install libffi-dev libssl-dev python-dev -y
