@@ -39,7 +39,7 @@ The Arduino requires some attention before we get too involved with the build. W
 
 6. The green LED near the reset button (still present in the bottom left corner of the image above) is connected to IO pin 10, which is also used by the SPI interface to the RTC, so to conserve power it has to go. Locking pliers or tweezers will help you get a grip on it while you desolder each leg, but of course if you mangle it in the process that's OK, as it's going in the bin regardless. Just make sure you get it all and don't leave any leftovers still on the board, risking making electrical contact with anything nearby.
 
-7. That's it for now. Set the Arduino to one side and continue with the PCB.
+7. That's it for now. You can either set the Arduino to one side and continue with the PCB, or [program the Arduino](/docs/step6-program-the-arduino.md).
 
 
 ## Adding the Components
@@ -126,6 +126,6 @@ Now the board's essentially complete and the supply rails tested, it's time to a
 
 34. Again re-check the 3.3V and 7.5V supply rails are as expected, and that the 5V line reads 0V. Re-check your wiring and soldering if any of those aren't as expected.
 
-35. Remove the power and continue with [Bench Testing](/docs/step6-bench-testing.md) when you're ready.
+35. Remove the power and continue with [Bench Testing](/docs/step7-bench-testing.md) when you're ready.
 
 
