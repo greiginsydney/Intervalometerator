@@ -7,16 +7,20 @@ Jump to [setup the Pi](/docs/step1-setup-the-Pi.md).
 ## Security
 Before doing this, make sure that you have setup your firewall so that ports 80 and 443 - and ONLY ports 80 and 443 - are exposed to the Internet. You will need to have created a public DNS entry to point to the public IP address the Pi uses. These instructions assume that you have a static IP address.
 
-Be 100% sure that you have set a secure password to connect to the Pi, changed from its well-known default "raspberry".
+Be 100% sure that you have set a secure password to connect to the Pi, changed from its well-known default "raspberry", and the intvlm8r's admin login has been changed to something other than admin/password.
 
 ## Set the hostname and FQDN
 
-1. The Pi's hostname is the first part of its Fully Qualified Domain Name (FQDN). Change it if you need to with `sudo hostname yourhostname`.
+1. The Pi's hostname is the first part of its Fully Qualified Domain Name (FQDN). Change it if you need to with `sudo hostname myintvlm8r`.
+
+> The "FQDN" is always the full web address, something like `myintvlm8r.mydomain.com.au`, and so its hostname in this example is just `myintvlm8r`
+
 2. Add the required entries into the hosts file with `sudo nano /etc/hosts`. Add the public IP address, FQDN and hostname so the file looks like this:
 ```text
-127.0.0.1	yourhostname
-123.123.123.123	yourhostname.yourdomainname.com	yourhostname
+127.0.1.1	myintvlm8r
+123.123.123.123	myintvlm8r.mydomain.com.au myintvlm8r
 ```
+
 3. Reboot the Pi: `sudo reboot now` and log back in after it reboots.
 
 4. Navigate to the nginx folder, and we'll create a new sub-holder to house the certs:
@@ -36,12 +40,14 @@ countryName                = AU
 stateOrProvinceName        = New South Wales
 localityName               = Sydney
 organizationName           = greiginsydney
-commonName                 = yourhostname.yourdomainname.com
+commonName                 = myintvlm8r.mydomain.com.au
 [ req_ext ]
 subjectAltName = @alt_names
 [alt_names]
-DNS.1   = yourhostname.yourdomainname.com
+DNS.1   = myintvlm8r.mydomain.com.au
 ```
+
+> If you want to add any more aliases, like say "www.myintvlm8r.mydomain.com.au", add it at the end of the file as "DNS.2", etc.
 
 6. OpenSSL is used to generate a certificate signing request (CSR) that you will submit to your Certificate Authority (CA).
 7. Issue this command to generate the request using the values from the config file:
@@ -49,7 +55,15 @@ DNS.1   = yourhostname.yourdomainname.com
 sudo openssl req -new -newkey rsa:2048 -nodes -out server.csr -keyout server.key -config csrwithsan.cnf
 ```
 
-8. You should receive this output. Enter your country when prompted and press return:
+8. You should receive this output:
+
+```text
+Generating a RSA private key
+............................+++++
+.........................+++++
+writing new private key to 'server.key'
+-----
+```
 
 9. All going well, this process will have dropped a server.key & server.csr file into the /etc/nginx/ssl/ directory. (If you used the Digicert Wizard, the filenames will reflect the hostname, but it's the file extensions that are the critical piece here).
 
@@ -64,7 +78,7 @@ verify OK
 Certificate Request:
     Data:
         Version: 1 (0x0)
-        Subject: C = AU, ST = New South Wales, L = Sydney, O = greiginsydney, CN = yourhostname.yourdomainname.com
+        Subject: C = AU, ST = New South Wales, L = Sydney, O = greiginsydney, CN = myintvlm8r.mydomain.com.au
         Subject Public Key Info:
             Public Key Algorithm: rsaEncryption
                 Public-Key: (2048 bit)
@@ -78,7 +92,7 @@ Certificate Request:
         Attributes:
         Requested Extensions:
             X509v3 Subject Alternative Name:
-                DNS:yourhostname.yourdomainname.com
+                DNS:myintvlm8r.mydomain.com.au
     Signature Algorithm: sha256WithRSAEncryption
          31:6d:d6:89:c3:4d:1d:1b:3d:93:00:15:df:38:92:7d:2e:f8:
          43:a7:ab:9b:54:98:dd:13:08:24:75:43:ca:e5:89:15:f9:04:
@@ -89,20 +103,20 @@ Certificate Request:
 
 12. Copy the CSR file to your local PC and submit it to your CA to generate the certificate. If you're using a Windows-based CA, choose the "Base64 encoded" download option.
 
-13. Copy the received file(s) to /etc/nginx/ssl/
+13. Copy the received file(s) to `/etc/nginx/ssl/`.
 
 14. If you received a .pem file from your CA, skip to step 16.
 
 15. If you received the certificate as a .crt file and another .crt for the intermediate certificates, you need to concatenate them together into one file:
 ```text
-cat your_domain_name.crt intermedCerts.crt >> bundle.crt
+cat my_domain_name.crt intermedCerts.crt >> bundle.crt
 ```
 
 16. Edit the Nginx virtual host file: `sudo nano /etc/nginx/sites-available/intvlm8r` so it looks like this. If you've followed the steps from before, you should only need to add three 'ssl' lines:
 ```text
 server {
     listen 80 default_server;
-    server_name intvlm8r intvlm8r.yourdomainname.com; #Add in any aliases, separated by a space
+    server_name myintvlm8r myintvlm8r.mydomain.com.au; #Add in any aliases, separated by a space
 
     listen 443 ssl;
     ssl_certificate /etc/nginx/ssl/bundle.crt; # (Or the .pem or .cer file)
