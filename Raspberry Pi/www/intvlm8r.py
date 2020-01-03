@@ -73,7 +73,7 @@ REBOOT_SAFE_WORD = 'sayonara'
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
 users = {'admin': {'password': 'password'}}
-
+#users.update({'superuser': {'password': 'godmode'}}) #Un-comment, copy and update this line as required to add more user logins
 
 app.logger.handlers = gunicorn_logger.handlers
 app.logger.setLevel(gunicorn_logger.level)
