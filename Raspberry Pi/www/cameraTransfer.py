@@ -96,8 +96,8 @@ def main(argv):
             log('URL error. Code = ' + str(e.code))
         else:
             log('Unknown URL error: ' + str(e))
-     except Exception as e:
-            log('Unhandled web error: ' + str(e))
+    except Exception as e:
+        log('Unhandled web error: ' + str(e))
 
 
 def log(message):
