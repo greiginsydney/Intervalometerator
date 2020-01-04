@@ -87,13 +87,15 @@ def main(argv):
         htmltext = response.read()
         if 'Unable to connect to the camera' in htmltext:
             log('Unable to connect to the camera')
-        log('=========================')    
+        log('=========================')
         log(str(htmltext))
     except URLError as e:
         if hasattr(e, 'reason'):
             log('URL error. Reason = ' + str(e.reason))
         elif hasattr(e, 'code'):
-            log('URL error. Code = ' + str(e.code))    except Exception as e:
+            log('URL error. Code = ' + str(e.code))
+        else:
+            log('Unknown URL error: ' + str(e))
      except Exception as e:
             log('Unhandled web error: ' + str(e))
 
