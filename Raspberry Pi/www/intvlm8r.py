@@ -18,13 +18,11 @@
 
 
 
-from __future__ import print_function
-from __future__ import division #Added for the benefit of getDiskSpace
 from datetime import timedelta, datetime
 from PIL import Image   #For the camera page / preview button
-from urlparse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 import calendar
-import ConfigParser # for the ini file (used by the Transfer page)
+import configparser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
 import logging
 import io   #Camera preview
@@ -155,7 +153,7 @@ def customisation():
     loc = cache.get('locationName')
     if loc is None:
         #The cache is empty? Read the location from the Ini file
-        config = ConfigParser.SafeConfigParser({'locationName' : 'Intervalometerator'})
+        config = configparser.SafeConfigParser({'locationName' : 'Intervalometerator'})
         config.read(iniFile)
         try:
             loc = config.get('Global', 'locationName') #This will fail the VERY first time the script runs
@@ -391,7 +389,7 @@ def thumbnails():
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(iniFile)
     try:
         ThumbsToShow = int(config.get('Global', 'thumbsCount'))
@@ -688,7 +686,7 @@ def transfer():
         'wakePiTime'        : '25',
         'piTransferLogLink' : PI_TRANSFER_LINK
     }
-    config = ConfigParser.SafeConfigParser(
+    config = configparser.SafeConfigParser(
         {
         'tfrmethod'        : 'Off',
         'ftpServer'        : '',
@@ -751,7 +749,7 @@ def transferPOST():
     if 'tfrApply' in request.form:
         if not os.path.exists(iniFile):
             createConfigFile(iniFile)
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         try:
             config.read(iniFile)
             if not config.has_section('Transfer'):
@@ -875,7 +873,7 @@ def system():
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(iniFile)
     try:
         templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
@@ -934,7 +932,7 @@ def systemPOST():
                 app.logger.debug('New loc set as ' + newName)
                 if not os.path.exists(iniFile):
                     createConfigFile(iniFile)
-                config = ConfigParser.ConfigParser()
+                config = configparser.ConfigParser()
                 config.read(iniFile)
                 if not config.has_section('Global'):
                     config.add_section('Global')
@@ -952,7 +950,7 @@ def systemPOST():
                 app.logger.debug('New thumbs count set as ' + newCount)
                 if not os.path.exists(iniFile):
                     createConfigFile(iniFile)
-                config = ConfigParser.ConfigParser()
+                config = configparser.ConfigParser()
                 config.read(iniFile)
                 if not config.has_section('Global'):
                     config.add_section('Global')
@@ -1163,7 +1161,7 @@ def getDiskSpace():
 def createConfigFile(iniFile):
     """ Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/ """
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
         config.set('Global', 'thumbscount', 20)
