@@ -29,7 +29,7 @@ import io   #Camera preview
 import os
 import psutil
 import re    #RegEx. Used in Copy Files
-import smbus # For I2C
+from smbus2 import SMBus # For I2C
 import struct
 import subprocess
 import sys
