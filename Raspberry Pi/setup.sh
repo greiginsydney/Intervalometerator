@@ -34,23 +34,23 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' EXIT
 install_apps ()
 {
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
-	apt-get install python-pip python-flask -y
-	pip install flask flask-bootstrap flask-login configparser
-	pip install gunicorn==19.10.0
+	apt-get install python3-pip python-flask -y
+	pip3 install flask flask-bootstrap flask-login configparser
+	pip3 install gunicorn
 	
 	#This is ALL for Paramiko (SSH uploads):
 	apt-get install libffi-dev libssl-dev python-dev -y
 	apt install krb5-config krb5-user -y
 	apt-get install libkrb5-dev -y
-	pip install bcrypt pynacl cryptography gssapi paramiko
+	pip3 install bcrypt pynacl cryptography gssapi paramiko
 	
-	pip install dropbox
+	pip3 install dropbox
 	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
-	pip install -v gphoto2
+	pip3 install -v gphoto2
 	apt-get install libjpeg-dev -y
-	pip install -v pillow --no-cache-dir
+	pip3 install -v pillow --no-cache-dir
 	apt-get install python-smbus i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
 	apt-get purge bluez -y
