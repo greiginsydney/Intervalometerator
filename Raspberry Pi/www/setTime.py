@@ -20,7 +20,8 @@
 # It runs BEFORE the cameraTransfer.py script.
 
 
-from urllib2 import urlopen, URLError
+from urllib.request import urlopen
+from urllib.error import URLError
 from datetime import datetime
 import logging
 import os
