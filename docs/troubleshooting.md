@@ -6,6 +6,8 @@ Jump to the relevant section:
 - [Application Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#application-errors)
 - [Camera Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#camera-errors)
 - [USB Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#usb-errors)
+- [Transfer Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#transfer-errors)
+
 
 <hr/>
 
@@ -169,3 +171,57 @@ Still crook?
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
 <hr/>
 
+## Transfer Errors 
+
+"Transfer errors" are those that result in images not being transferred from the camera to the Pi, or from the Pi to your "off-Pi" destination (i.e. FTP, SFTP, Dropbox).
+
+### Check the cron jobs
+
+Whilst an ad-hoc transfer from camera to Pi can be initiated by the "Copy Now" button on the Transfers page, all other transfers take place as a result of a "cron job" - a scheduled task.
+
+`crontab -e` will confirm the tasks have been set. The first time you issue this command it will prompt for your preferred editor. If you're unsure, choose nano, option 1:
+
+```text
+crontab -e
+
+Select an editor.  To change later, run 'select-editor'.
+  1. /bin/nano        <---- easiest
+  2. /usr/bin/vim.tiny
+  3. /bin/ed
+
+Choose 1-3 [1]:
+```
+
+... and then the "cron tab", the cron table file opens:
+
+```text
+0 * * * * /usr/bin/python /home/pi/www/cameraTransfer.py
+0 * * * * /usr/bin/python /home/pi/www/piTransfer.py
+```
+
+The start of the line is the frequency at which the event fires, followed by the action to be taken. In this example, `0 * * * *` results in the job (task) being fired once when minute = 0, thus the top of every hour. The asterisks signify "don't care" for the choice of hour, day of month, month and day of week respectively.
+
+
+### Check the syslog
+
+The success or otherwise of the tasks can be confirmed by reviewing the syslog file at /var/log/syslog:
+
+```text
+sudo nano /var/log/syslog
+```
+
+If there are any errors in the two Transfer scripts, these will be captured in the syslog. The time and date are down the left hand side, with the most recent events at the bottom of the file.
+
+### Check gunicorn.error
+
+The intvlm8r's main log file "gunicorn.error" will also log issues that may arise with the process of transferring from the camera to the Pi. The time and date are down the left hand side, with the most recent events at the bottom of the file.
+
+```text
+sudo nano ~/www/gunicorn.error
+```
+&nbsp;<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
+
+<hr/>
+<br>
