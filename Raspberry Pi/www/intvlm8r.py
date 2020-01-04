@@ -776,7 +776,7 @@ def transferPOST():
                 config.add_section('Copy')
             config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
             config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
-            with open(iniFile, "wb") as config_file:
+            with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
             app.logger.debug('INI file error writing:' + str(e))
@@ -937,7 +937,7 @@ def systemPOST():
                 if not config.has_section('Global'):
                     config.add_section('Global')
                 config.set('Global', 'locationName', newName)
-                with open(iniFile, "wb") as config_file:
+                with open(iniFile, 'w') as config_file:
                     config.write(config_file)
         except:
             app.logger.debug('Location set error')
@@ -955,7 +955,7 @@ def systemPOST():
                 if not config.has_section('Global'):
                     config.add_section('Global')
                 config.set('Global', 'thumbsCount', newCount)
-                with open(iniFile, "wb") as config_file:
+                with open(iniFile, 'w') as config_file:
                     config.write(config_file)
         except:
             app.logger.debug('New Thumbs set error')
@@ -1168,7 +1168,7 @@ def createConfigFile(iniFile):
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
         config.add_section('Copy')
-        with open(iniFile, "wb") as config_file:
+        with open(iniFile, 'w') as config_file:
             config.write(config_file)
     except:
         app.logger.debug('createConfigFile Threw creating ', iniFile)
