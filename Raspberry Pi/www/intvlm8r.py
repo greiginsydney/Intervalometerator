@@ -76,7 +76,7 @@ users = {'admin': {'password': 'password'}}
 app.logger.handlers = gunicorn_logger.handlers
 app.logger.setLevel(gunicorn_logger.level)
 
-bus = smbus.SMBus(1) #Initalise the I2C bus
+bus = SMBus(1) #Initalise the I2C bus
 # This is the address we setup in the Arduino Program
 address = 0x04
 
