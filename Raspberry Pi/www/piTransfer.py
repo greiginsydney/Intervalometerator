@@ -22,7 +22,7 @@
 
 import datetime
 from ftplib import FTP
-import ConfigParser # for the ini file
+import configparser # for the ini file
 import dropbox
 import fileinput
 import logging
@@ -61,7 +61,7 @@ def main(argv):
     
     if not os.path.exists(INIFILE_NAME):
         pass
-    config = ConfigParser.SafeConfigParser(
+    config = configparser.SafeConfigParser(
         {
         'tfrmethod'         : 'Off',
         'ftpServer'         : '',
@@ -368,7 +368,7 @@ def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        print 'error:' + str(e)
+        print('error:' + str(e))
         #pass
 
 
