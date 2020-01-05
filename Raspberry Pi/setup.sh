@@ -140,7 +140,7 @@ install_website ()
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
+		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 	fi
@@ -153,7 +153,7 @@ install_website ()
 	then
 		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python ${HOME}/www/piTransfer.py" >> cronTemp #echo new cron into cron file
+		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 	fi
