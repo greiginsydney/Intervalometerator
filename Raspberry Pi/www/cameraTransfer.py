@@ -18,7 +18,8 @@
 # This script is executed every time the Pi boots, causing it to trigger a sync with the camera.
 # A pre-req task is that the Arduino has woken the camera, which we assume has taken place by the time the script runs.
 
-from urllib2 import urlopen, URLError
+from urllib.request import urlopen
+from urllib.error import URLError
 import ConfigParser # for the ini file
 import datetime
 import logging
@@ -49,7 +50,7 @@ def main(argv):
 
     if not os.path.exists(INIFILE_NAME):
         pass
-    config = ConfigParser.SafeConfigParser(
+    config = ConfigParser.ConfigParser(
         {
         'copyDay'         : 'Off',
         'copyHour'        : '',
