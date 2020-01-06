@@ -141,7 +141,7 @@ def getPiTemp():
     temp = "Unknown"
     try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as tempfile:
-            temp = '%.0f' % round(int(tempfile.read()) / 1000, 0)
+            temp = '{0:.0f}'.format(round(int(tempfile.read()) / 1000, 0))
     except Exception as e:
         app.logger.debug('Pi temp error:' + str(e))
     app.logger.debug('Pi temp = ' + temp)
@@ -153,7 +153,7 @@ def customisation():
     loc = cache.get('locationName')
     if loc is None:
         #The cache is empty? Read the location from the Ini file
-        config = configparser.SafeConfigParser({'locationName' : 'Intervalometerator'})
+        config = configparser.ConfigParser({'locationName' : 'Intervalometerator'})
         config.read(iniFile)
         try:
             loc = config.get('Global', 'locationName') #This will fail the VERY first time the script runs
@@ -663,10 +663,8 @@ def transfer():
         app.logger.debug('Detected /transfer/copyNow')
         copyNow()
         return redirect(url_for('main')) #If we transfer OK, return to main
-
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-
     # Initialise the dictionary:
     templateData = {
         'tfrMethod'         : 'Off',    # Hides all options if the file isn't found or is bad
@@ -686,7 +684,7 @@ def transfer():
         'wakePiTime'        : '25',
         'piTransferLogLink' : PI_TRANSFER_LINK
     }
-    config = configparser.SafeConfigParser(
+    config = configparser.ConfigParser(
         {
         'tfrmethod'        : 'Off',
         'ftpServer'        : '',
@@ -1083,7 +1081,7 @@ def copy_files(camera):
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
-        app.logger.debug('Copying %s --> %s' % (path, dest))
+        app.logger.debug('Copying {0} --> {1}'.format(path, dest))
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
         gp.check_result(gp.gp_file_save(camera_file, dest))
