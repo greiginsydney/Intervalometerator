@@ -1164,15 +1164,14 @@ def createConfigFile(iniFile):
         config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
-        config.set('Global', 'thumbscount', 20)
+        config.set('Global', 'thumbscount', '20')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
         config.add_section('Copy')
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
     except:
-        app.logger.debug('createConfigFile Threw creating ', iniFile)
-
+        app.logger.debug('createConfigFile Threw creating ' + iniFile)
     return
 
 
