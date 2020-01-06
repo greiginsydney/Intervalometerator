@@ -217,6 +217,7 @@ def login():
             if not is_safe_url(next):
                 return abort(400)
             return redirect(next or url_for('main'))
+    app.logger.debug('User \'' + username + '\' failed to login')
     flash('Bad creds. Try again')
     return redirect(url_for('login'))
 
