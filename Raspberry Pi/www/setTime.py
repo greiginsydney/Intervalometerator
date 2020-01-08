@@ -68,7 +68,7 @@ def main():
     try:
         #convert it to a form the date command will accept: Incoming is "2018 Nov 29 21:58:00"
         if "Unknown" not in newTime:
-            timeCommand = ['sudo', '/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y %b %d %H:%M:%S')]
+            timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y %b %d %H:%M:%S')]
             result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
