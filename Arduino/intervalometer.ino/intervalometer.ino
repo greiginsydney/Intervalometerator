@@ -850,7 +850,8 @@ void loop()
   
   if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*
   {
-    if (LastRunningState == HIGH)
+    // Only remove power if we've prevously taken PI_SHUTDOWN (Pin 9) LOW *and* now PI_RUNNING has gone LOW:
+    if ((LastRunningState == HIGH) && (bitRead(PORTB, 1) == LOW)) 
     {
       //This is a falling edge - the Pi has just gone to sleep.
       //Serial.println(" - PI_RUNNING went LOW");
@@ -861,8 +862,8 @@ void loop()
       {
         rtc.setAlarm2(0, WakePiHour);   // Reset the alarm to wake the Pi tomorrow
       }
-      LastRunningState = LOW;
     }
+    LastRunningState = LOW;
   }
   else
   {
