@@ -61,7 +61,7 @@ def main(argv):
     
     if not os.path.exists(INIFILE_NAME):
         pass
-    config = configparser.SafeConfigParser(
+    config = configparser.ConfigParser(
         {
         'tfrmethod'         : 'Off',
         'ftpServer'         : '',
