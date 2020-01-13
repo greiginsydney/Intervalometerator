@@ -20,7 +20,7 @@
 
 from urllib.request import urlopen
 from urllib.error import URLError
-import ConfigParser # for the ini file
+import configparser # for the ini file
 import datetime
 import logging
 import os
@@ -50,7 +50,7 @@ def main(argv):
 
     if not os.path.exists(INIFILE_NAME):
         pass
-    config = ConfigParser.ConfigParser(
+    config = configparser.ConfigParser(
         {
         'copyDay'         : 'Off',
         'copyHour'        : '',
