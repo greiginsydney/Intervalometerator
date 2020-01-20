@@ -1070,15 +1070,14 @@ def get_camera_file_info(camera, path):
 
 def copy_files(camera):
     """ Straight from Jim's examples again """
+    if not os.path.isdir(PI_PHOTO_DIR):
+        os.makedirs(PI_PHOTO_DIR)
     computer_files = list_Pi_Images(PI_PHOTO_DIR)
     camera_files = list_camera_files(camera)
     if not camera_files:
         app.logger.debug('No files found')
         return 1
     app.logger.debug('Copying files...')
-
-    if not os.path.isdir(PI_PHOTO_DIR):
-        os.makedirs(PI_PHOTO_DIR)
 
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
