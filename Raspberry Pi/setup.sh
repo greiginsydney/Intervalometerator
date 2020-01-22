@@ -21,7 +21,7 @@ set -e # The -e switch will cause the script to exit should any command return a
 # https://intoli.com/blog/exit-on-errors-in-bash-scripts/
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 # echo an error message before exiting
-trap 'echo "\"${last_command}\"" command failed with exit code $?.' EXIT
+trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 
 #Shell note for n00bs like me: in Shell scripting, 0 is success and true. Anything else is shades of false/fail.
 
