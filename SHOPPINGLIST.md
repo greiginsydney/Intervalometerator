@@ -69,7 +69,7 @@ Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminate
 #### 77-82mm filter step-up ring
 
 - [PhotoShopStudio (AU)](https://www.photo-shop-studio.com.au/filters-step-rings/step-ring/fotolux-step-up-ring-77-82mm/)
-- [Amazon](https://amzn.to/33OybQD)
+- [Amazon](https://www.amazon.com/Fotodiox-Adapter-Anodized-Aluminum-77mm-82mm/dp/B001G45FSQ/)
 
     $AUD10</br>
     $USD5
