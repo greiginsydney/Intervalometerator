@@ -20,7 +20,8 @@
 # It runs BEFORE the cameraTransfer.py script.
 
 
-from urllib2 import urlopen, URLError
+from urllib.request import urlopen
+from urllib.error import URLError
 from datetime import datetime
 import logging
 import os
@@ -35,14 +36,15 @@ newTime = 'Unknown'
 
 
 def main():
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     log('')
     retryCount = 0
     while True:
         try:
             response = urlopen('http://localhost/getTime')
             log('Response code = ' + str(response.getcode()))
-            htmltext = response.read()
+            htmltext = response.read().decode('utf-8')
+            log('This is what I received:' + str(htmltext))
             tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
             if tempTime != None:
                 newTime = tempTime.group(1)
@@ -51,8 +53,6 @@ def main():
                     break
             else:
                 log('Failed to detect the time')
-                log('This is what I received:' + str(htmltext))
-
         except URLError as e:
             if hasattr(e, 'reason'):
                 log('URL error. Reason = ' + str(e.reason))
@@ -69,7 +69,7 @@ def main():
         #convert it to a form the date command will accept: Incoming is "2018 Nov 29 21:58:00"
         if "Unknown" not in newTime:
             timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y %b %d %H:%M:%S')]
-            result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+            result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
                 log('Result = ' + str(stdoutdata))

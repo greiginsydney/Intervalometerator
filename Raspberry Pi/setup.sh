@@ -34,24 +34,25 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 install_apps ()
 {
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
-	apt-get install python-pip python-flask -y
-	pip install flask flask-bootstrap flask-login configparser
-	pip install gunicorn==19.10.0
-	
+	apt-get install python3-pip python-flask -y
+	pip3 install flask flask-bootstrap flask-login configparser
+	pip3 install gunicorn
+
 	#This is ALL for Paramiko (SSH uploads):
 	apt-get install libffi-dev libssl-dev python-dev -y
 	apt install krb5-config krb5-user -y
 	apt-get install libkrb5-dev -y
-	pip install bcrypt pynacl cryptography gssapi paramiko
-	
-	pip install dropbox
-	apt-get install nginx nginx-common supervisor python-dev python-psutil -y
+	pip3 install bcrypt pynacl cryptography gssapi paramiko
+
+	pip3 install dropbox psutil
+	apt-get install nginx nginx-common supervisor python-dev -y
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
-	pip install -v gphoto2
-	apt-get install libjpeg-dev -y
-	pip install -v pillow --no-cache-dir
-	apt-get install python-smbus i2c-tools -y
+	pip3 install -v gphoto2
+	apt-get install libjpeg-dev libopenjp2-7 -y
+	pip3 install -v pillow --no-cache-dir
+	pip3 install smbus2
+	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
 	apt-get purge bluez -y
 	apt-get autoremove -y
@@ -139,7 +140,7 @@ install_website ()
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python ${HOME}/www/cameraTransfer.py" >> cronTemp #echo new cron into cron file
+		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 	fi
@@ -152,7 +153,7 @@ install_website ()
 	then
 		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python ${HOME}/www/piTransfer.py" >> cronTemp #echo new cron into cron file
+		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 	fi

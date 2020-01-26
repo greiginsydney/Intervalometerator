@@ -18,20 +18,18 @@
 
 
 
-from __future__ import print_function
-from __future__ import division #Added for the benefit of getDiskSpace
 from datetime import timedelta, datetime
 from PIL import Image   #For the camera page / preview button
-from urlparse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 import calendar
-import ConfigParser # for the ini file (used by the Transfer page)
+import configparser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
 import logging
 import io   #Camera preview
 import os
 import psutil
 import re    #RegEx. Used in Copy Files
-import smbus # For I2C
+from smbus2 import SMBus # For I2C
 import struct
 import subprocess
 import sys
@@ -78,7 +76,7 @@ users = {'admin': {'password': 'password'}}
 app.logger.handlers = gunicorn_logger.handlers
 app.logger.setLevel(gunicorn_logger.level)
 
-bus = smbus.SMBus(1) #Initalise the I2C bus
+bus = SMBus(1) #Initalise the I2C bus
 # This is the address we setup in the Arduino Program
 address = 0x04
 
@@ -143,7 +141,7 @@ def getPiTemp():
     temp = "Unknown"
     try:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as tempfile:
-            temp = '%.0f' % round(int(tempfile.read()) / 1000, 0)
+            temp = '{0:.0f}'.format(round(int(tempfile.read()) / 1000, 0))
     except Exception as e:
         app.logger.debug('Pi temp error:' + str(e))
     app.logger.debug('Pi temp = ' + temp)
@@ -155,7 +153,7 @@ def customisation():
     loc = cache.get('locationName')
     if loc is None:
         #The cache is empty? Read the location from the Ini file
-        config = ConfigParser.SafeConfigParser({'locationName' : 'Intervalometerator'})
+        config = configparser.ConfigParser({'locationName' : 'Intervalometerator'})
         config.read(iniFile)
         try:
             loc = config.get('Global', 'locationName') #This will fail the VERY first time the script runs
@@ -392,7 +390,7 @@ def thumbnails():
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(iniFile)
     try:
         ThumbsToShow = int(config.get('Global', 'thumbsCount'))
@@ -666,10 +664,8 @@ def transfer():
         app.logger.debug('Detected /transfer/copyNow')
         copyNow()
         return redirect(url_for('main')) #If we transfer OK, return to main
-
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-
     # Initialise the dictionary:
     templateData = {
         'tfrMethod'         : 'Off',    # Hides all options if the file isn't found or is bad
@@ -689,7 +685,7 @@ def transfer():
         'wakePiTime'        : '25',
         'piTransferLogLink' : PI_TRANSFER_LINK
     }
-    config = ConfigParser.SafeConfigParser(
+    config = configparser.ConfigParser(
         {
         'tfrmethod'        : 'Off',
         'ftpServer'        : '',
@@ -752,7 +748,7 @@ def transferPOST():
     if 'tfrApply' in request.form:
         if not os.path.exists(iniFile):
             createConfigFile(iniFile)
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         try:
             config.read(iniFile)
             if not config.has_section('Transfer'):
@@ -779,7 +775,7 @@ def transferPOST():
                 config.add_section('Copy')
             config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
             config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
-            with open(iniFile, "wb") as config_file:
+            with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
             app.logger.debug('INI file error writing:' + str(e))
@@ -876,7 +872,7 @@ def system():
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(iniFile)
     try:
         templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
@@ -935,12 +931,12 @@ def systemPOST():
                 app.logger.debug('New loc set as ' + newName)
                 if not os.path.exists(iniFile):
                     createConfigFile(iniFile)
-                config = ConfigParser.ConfigParser()
+                config = configparser.ConfigParser()
                 config.read(iniFile)
                 if not config.has_section('Global'):
                     config.add_section('Global')
                 config.set('Global', 'locationName', newName)
-                with open(iniFile, "wb") as config_file:
+                with open(iniFile, 'w') as config_file:
                     config.write(config_file)
         except:
             app.logger.debug('Location set error')
@@ -953,12 +949,12 @@ def systemPOST():
                 app.logger.debug('New thumbs count set as ' + newCount)
                 if not os.path.exists(iniFile):
                     createConfigFile(iniFile)
-                config = ConfigParser.ConfigParser()
+                config = configparser.ConfigParser()
                 config.read(iniFile)
                 if not config.has_section('Global'):
                     config.add_section('Global')
                 config.set('Global', 'thumbsCount', newCount)
-                with open(iniFile, "wb") as config_file:
+                with open(iniFile, 'w') as config_file:
                     config.write(config_file)
         except:
             app.logger.debug('New Thumbs set error')
@@ -1085,7 +1081,7 @@ def copy_files(camera):
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
-        app.logger.debug('Copying %s --> %s' % (path, dest))
+        app.logger.debug('Copying {0} --> {1}'.format(path, dest))
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
         gp.check_result(gp.gp_file_save(camera_file, dest))
@@ -1163,18 +1159,17 @@ def getDiskSpace():
 def createConfigFile(iniFile):
     """ Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/ """
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
-        config.set('Global', 'thumbscount', 20)
+        config.set('Global', 'thumbscount', '20')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
         config.add_section('Copy')
-        with open(iniFile, "wb") as config_file:
+        with open(iniFile, 'w') as config_file:
             config.write(config_file)
     except:
-        app.logger.debug('createConfigFile Threw creating ', iniFile)
-
+        app.logger.debug('createConfigFile Threw creating ' + iniFile)
     return
 
 

@@ -22,7 +22,7 @@
 
 import datetime
 from ftplib import FTP
-import ConfigParser # for the ini file
+import configparser # for the ini file
 import dropbox
 import fileinput
 import logging
@@ -51,7 +51,7 @@ sftpPort = 22
 
 
 def main(argv):
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
     try:
         if sys.argv[1] == 'copyNow':
@@ -61,7 +61,7 @@ def main(argv):
     
     if not os.path.exists(INIFILE_NAME):
         pass
-    config = ConfigParser.SafeConfigParser(
+    config = configparser.ConfigParser(
         {
         'tfrmethod'         : 'Off',
         'ftpServer'         : '',
@@ -368,7 +368,7 @@ def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        print 'error:' + str(e)
+        print('error:' + str(e))
         #pass
 
 
