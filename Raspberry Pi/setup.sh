@@ -458,10 +458,11 @@ END
 test_install ()
 {
 	echo "TEST!"
-	[ -f /etc/nginx/sites-available/intvlm8r ] && echo "PASS: /etc/nginx/sites-available/intvlm8r" || echo "FAIL: /etc/nginx/sites-available/intvlm8r not found" 
-	[ -f /etc/systemd/system/intvlm8r.service ] && echo "PASS: /etc/systemd/system/intvlm8r.service exists" || echo "FAIL: /etc/systemd/system/intvlm8r.service not found" 
-	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found" 
-	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found" 
+	[ -f /etc/nginx/sites-available/intvlm8r ] && echo "PASS: /etc/nginx/sites-available/intvlm8r" || echo "FAIL: /etc/nginx/sites-available/intvlm8r not found"
+	[ -f /etc/systemd/system/intvlm8r.service ] && echo "PASS: /etc/systemd/system/intvlm8r.service exists" || echo "FAIL: /etc/systemd/system/intvlm8r.service not found"
+	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
+	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
+	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
 }
 
 
