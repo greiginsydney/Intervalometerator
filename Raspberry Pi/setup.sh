@@ -91,26 +91,27 @@ install_website ()
 	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
 
 	#Step 76 goes here - edit sites-enabled/default
-	if grep -qi "8080 default_server" /etc/nginx/sites-enabled/default;
-	then
-		echo -e "Skipped: Default server is already on port 8080"
-	else
-		sed -i 's/80 default_server/8080 default_server/g' /etc/nginx/sites-enabled/default # Move default from port 80 to 8080
-	fi
+	rm -f /etc/nginx/sites-enabled/default
+	#if grep -qi "8080 default_server" /etc/nginx/sites-enabled/default;
+	#then
+	#	echo -e "Skipped: Default server is already on port 8080"
+	#else
+	#	sed -i 's/80 default_server/8080 default_server/g' /etc/nginx/sites-enabled/default # Move default from port 80 to 8080
+	#fi
 
-	if grep -qi "root ~/www/templates;" /etc/nginx/sites-enabled/default;
-	then
-		echo -e "Skipped: 'root ~/www/templates;' exists in /etc/nginx/sites-enabled/default"
-	else
-		sed -i 's+root /var/www/html;+root ~/www/templates;+g' /etc/nginx/sites-enabled/default # Point to correct www path
-	fi
+	#if grep -qi "root ~/www/templates;" /etc/nginx/sites-enabled/default;
+	#then
+	#	echo -e "Skipped: 'root ~/www/templates;' exists in /etc/nginx/sites-enabled/default"
+	#else
+	#	sed -i 's+root /var/www/html;+root ~/www/templates;+g' /etc/nginx/sites-enabled/default # Point to correct www path
+	#fi
 
-	if grep -qi "intvlm8r.sock" /etc/nginx/sites-enabled/default;
-	then
-		echo -e "Skipped: location data has already been customised in /etc/nginx/sites-enabled/default"
-	else
-		sed -i $"/^[[:space:]]\+try_files/a include proxy_params;\nproxy_pass http://unix:${HOME}/www/intvlm8r.sock;" /etc/nginx/sites-enabled/default
-	fi
+	#if grep -qi "intvlm8r.sock" /etc/nginx/sites-enabled/default;
+	#then
+	#	echo -e "Skipped: location data has already been customised in /etc/nginx/sites-enabled/default"
+	#else
+	#	sed -i $"/^[[:space:]]\+try_files/a include proxy_params;\nproxy_pass http://unix:${HOME}/www/intvlm8r.sock;" /etc/nginx/sites-enabled/default
+	#fi
 
 	#Generate a secret key here & paste in to intvlm8r.py:
 	UUID=$(cat /proc/sys/kernel/random/uuid)
