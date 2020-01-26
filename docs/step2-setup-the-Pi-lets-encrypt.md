@@ -11,7 +11,7 @@ Be 100% sure that you have set a secure password to connect to the Pi, changed f
 
 ## Set the hostname and FQDN
 
-1. The Pi's hostname is the first part of its Fully Qualified Domain Name (FQDN). Change it if you need to with `sudo hostname myintvlm8r`.
+1. The Pi's hostname is the first part of its Fully Qualified Domain Name (FQDN), and we need this set correctly in order to generate the certificate. The current value is displayed with the SSH prompt, e.g. `pi@intvlm8r:`. If you need to change it, run `sudo raspi-config`, then `(2) Network Options` and `Hostname`.
 
 > The "FQDN" is always the full web address, something like `myintvlm8r.mydomain.com.au`, and so its hostname in this example is just `myintvlm8r`
 
