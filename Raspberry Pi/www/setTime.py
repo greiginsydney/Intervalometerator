@@ -41,7 +41,7 @@ def main():
     retryCount = 0
     while True:
         try:
-            response = urlopen('http://localhost/getTime')
+            response = urlopen('http://localhost:8080/getTime')
             log('Response code = ' + str(response.getcode()))
             htmltext = response.read().decode('utf-8')
             log('This is what I received:' + str(htmltext))
