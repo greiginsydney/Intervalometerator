@@ -79,7 +79,7 @@ Select the appropriate number [1-2] then [enter] (press 'c' to cancel): 1
 Congratulations! You have successfully enabled https://myintvlm8r.mydomain.com.au
 
 You should test your configuration at:
-https://www.ssllabs.com/sslhostname/analyze.html?d=hostname.domainname.com
+https://www.ssllabs.com/sslhostname/analyze.html?d=myintvlm8r.mydomain.com.au
 -------------------------------------------------------------------------------
 ```
 
