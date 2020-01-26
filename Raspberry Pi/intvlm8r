@@ -24,3 +24,12 @@ server {
         proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
     }
 }
+
+# This is used by setTime and cameraTransfer:
+server {
+    listen 8080 default_server;
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
+}
