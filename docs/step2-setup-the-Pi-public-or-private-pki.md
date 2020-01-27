@@ -46,7 +46,7 @@ subjectAltName = @alt_names
 DNS.1   = myintvlm8r.mydomain.com.au
 ```
 
-> If you want to add any more aliases, like say \"www.myintvlm8r.mydomain.com.au\", add it at the end of the file as "DNS.2", etc.
+> If you want to add any more aliases, like say `www.myintvlm8r.mydomain.com.au`, add it at the end of the file as "DNS.2", etc.
 
 6. OpenSSL is used to generate a certificate signing request (CSR) that you will submit to your Certificate Authority (CA).
 7. Issue this command to generate the request using the values from the config file:
