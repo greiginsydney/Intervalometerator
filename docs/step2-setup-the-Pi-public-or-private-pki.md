@@ -25,9 +25,9 @@ Be 100% sure that you have set a secure password to connect to the Pi, changed f
 4. Navigate to the nginx folder, and create a new sub-holder to house the certs. This command creates a new folder called SSL and automatically navigates into it:
 `cd /etc/nginx && sudo mkdir ssl && cd ssl`
 
-4. Create a temporary config file with the details required on the certificate: `sudo nano csrwithsan.cnf`
+5. Create a temporary config file with the details required on the certificate: `sudo nano csrwithsan.cnf`
 
-5. Paste the following into the file, replacing with your own values as appropriate of course:
+6. Paste the following into the file, replacing with your own values as appropriate of course:
 ```text
 [ req ]
 prompt             = no
@@ -48,8 +48,7 @@ DNS.1   = myintvlm8r.mydomain.com.au
 
 > If you want to add any more aliases, like say `www.myintvlm8r.mydomain.com.au`, add it at the end of the file as "DNS.2", etc.
 
-6. OpenSSL is used to generate a certificate signing request (CSR) that you will submit to your Certificate Authority (CA).
-7. Issue this command to generate the request using the values from the config file:
+7. OpenSSL is used to generate a certificate signing request (CSR) that you will submit to your Certificate Authority (CA). Issue this command to generate the request using the values from the config file:
 ```text
 sudo openssl req -new -newkey rsa:2048 -nodes -out server.csr -keyout server.key -config csrwithsan.cnf
 ```
@@ -71,7 +70,7 @@ writing new private key to 'server.key'
 openssl req -noout -text -verify -in server.csr
 ```
 
-11 The test should dump something like this to the screen. DOUBLE-check for typos in the Subject and SANs!
+11. The test should dump something like this to the screen. DOUBLE-check for typos in the Subject and SANs!
 ```text
 verify OK
 Certificate Request:
