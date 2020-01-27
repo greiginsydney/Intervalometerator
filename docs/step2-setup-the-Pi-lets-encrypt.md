@@ -11,7 +11,7 @@ Be 100% sure that you have set a secure password to connect to the Pi, changed f
 
 ## Set the hostname and FQDN
 
-1. The Pi's hostname is the first part of its Fully Qualified Domain Name (FQDN). Change it if you need to with `sudo hostname myintvlm8r`.
+1. The Pi's hostname is the first part of its Fully Qualified Domain Name (FQDN), and we need this set correctly in order to generate the certificate. By default the SSH prompt is "\<username\>@\<hostname\>:" so it's easy to see, e.g. `pi@intvlm8r:`. If you need to change it, run `sudo raspi-config`, then `(2) Network Options` and `Hostname`.
 
 > The "FQDN" is always the full web address, something like `myintvlm8r.mydomain.com.au`, and so its hostname in this example is just `myintvlm8r`
 
@@ -24,9 +24,11 @@ Be 100% sure that you have set a secure password to connect to the Pi, changed f
 
 4. Edit the Nginx virtual host file: `sudo nano /etc/nginx/sites-available/intvlm8r` to make sure the "server_name" field is the FQDN.
 
+> Be very careful here as this step is case-sensitive. The FQDN entry here and the one used in Step 6 need to match, otherwise you'll get an "Unable to install the certificate" error at the end of Step 9.
+
 5. Install certbot: `sudo apt install certbot python-certbot-nginx -y`
 
-6. This command requests and then receives an SSL certificate from Let's Encrypt. Don't forget to replace the example name below with your own:
+6. This command requests and then receives an SSL certificate from Let's Encrypt. Don't forget to replace the example FQDN below with your own:
 ```text
 sudo certbot --authenticator standalone --installer nginx -d myintvlm8r.mydomain.com.au --pre-hook "service nginx stop" --post-hook "service nginx start"
 ```
@@ -47,6 +49,17 @@ https://acme-v01.api.letsencrypt.org/directory
 (A)gree/(C)ancel:
 ```
 
+9. Respond to the invitation to receive news from the EFF:
+```text
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Would you be willing to share your email address with the Electronic Frontier
+Foundation, a founding partner of the Let's Encrypt project and the non-profit
+organization that develops Certbot? We'd like to send you email about our work
+encrypting the web, EFF news, campaigns, and ways to support digital freedom.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o:
+```
+
 10. When asked if you want to redirect HTTP traffic, the choice is yours. It's generally expected nowadays that a website will redirect unsecured requests (those over http) to its secured https version, however if you want your intvlm8r to be a little 'hidden' (applying the principle of 'security through obscurity') you should decline the offer and choose 'no redirect':
 
 ```text
@@ -65,8 +78,8 @@ Select the appropriate number [1-2] then [enter] (press 'c' to cancel): 1
 -------------------------------------------------------------------------------
 Congratulations! You have successfully enabled https://myintvlm8r.mydomain.com.au
 
-You should hostname your configuration at:
-https://www.ssllabs.com/sslhostname/analyze.html?d=hostname.domainname.com
+You should test your configuration at:
+https://www.ssllabs.com/sslhostname/analyze.html?d=myintvlm8r.mydomain.com.au
 -------------------------------------------------------------------------------
 ```
 

@@ -83,13 +83,10 @@ def main(argv):
         return
         
     try:
-        response = urlopen('http://localhost/copyNow')
+        response = urlopen('http://localhost:8080/copyNow')
         log('Response code = ' + str(response.getcode()))
-        htmltext = response.read()
-        if 'Unable to connect to the camera' in htmltext:
-            log('Unable to connect to the camera')
-        log('=========================')
-        log(str(htmltext))
+        htmltext = response.read().decode('utf-8')
+        log('This is what I received:' + str(htmltext))
     except URLError as e:
         if hasattr(e, 'reason'):
             log('URL error. Reason = ' + str(e.reason))

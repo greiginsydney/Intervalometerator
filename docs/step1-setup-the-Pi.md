@@ -134,7 +134,7 @@ mkdir: created directory 'thumbs'
 'intvlm8r' -> '/etc/nginx/sites-available/intvlm8r'
 ```
 
-36. You will be asked to provide a username and password for the web interface. Accept the defaults if you like, but preferably come up with your own. 
+36. You will be asked to provide a username and password for the web interface. Accept the defaults if you like, but preferably come up with your own. (You should DEFINITELY change these if the intvlm8r is connected to the Internet or a network where anyone else might find it.)
 
 ```txt
 Change the website's login name: admin
