@@ -27,3 +27,22 @@ users = {'admin': {'password': 'password'}}
 users.update({'superuser': {'password': 'godmode'}})
 users.update({'someoneElse': {'password': 'rand0mCharact3rs'}})
 ```
+
+## Can I move the intvlm8r off port 80 or 443?
+
+Yes! It's as simple as changing the "listen" line in `/etc/nginx/sites-enabled/intlm8r` to the new port number. Oh, and don't forget to open the firewall and/or add a NAT translation rule for it.
+
+In this example the intvlm8r now listens on port 8000:
+
+```text
+server {
+    listen 8000 default_server;
+    server_name intvlm8r intvlm8r.yourdomainname.com;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
+}
+```
+
