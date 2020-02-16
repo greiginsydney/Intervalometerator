@@ -25,7 +25,7 @@ SSH or SCP to the Pi and check out the error log at `/home/pi/www/gunicorn.error
 
 In a working (established) system, this indicates the Pi is too busy to present a web-page. You're most likely to encounter this for the first minute or two after the Pi starts, as it's copying images from the camera. It's also commonplace to receive this if you clicked "Transfer Now" from the Transfer Settings page and there were a lot of images to copy across. Wait a little while and refresh the page in your browser.
 
-If you're seeing this as a result of a build step, or you're working on the code, it's usually a bug. SSH or SCP to the Pi and check out the error log at `/home/pi/www/gunicorn.error`.
+If you're seeing this as a result of a build step, or you're working on the code, it's usually a bug. SSH or SCP to the Pi and check out the error log at `/home/pi/www/gunicorn.error`. Scroll to the bottom and it will usually identify the offending line number and issue that's stopping it presenting the page.
 
 ### 504 - Gateway Time-out
 
