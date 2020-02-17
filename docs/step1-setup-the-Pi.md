@@ -25,8 +25,8 @@ If you're starting from scratch, start here at Step 1.
 In so doing however, your average Windows PC will no longer be able to read the card. Check out "<a href="https://ext2-volume-manager.en.lo4d.com/" target="_blank">Ext2 Volume Manager</a>" as a way to get around this. If you're at all uncertain, skip step 11, but be aware that the number of images you can store on the Pi will be limited.
 
 11. Select `(7) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
-12. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 14.
-13. Select `(2) Network Options` and `Hostname` and give the Pi a recognisable hostname.
+12. Select `(2) Network Options` and `Hostname` and give the Pi a recognisable hostname.
+13. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 15.
 14. Select `(2) Network Options` and `WiFi`. At this stage we'll be a wifi *client*. When prompted:
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
