@@ -465,9 +465,15 @@ Let's call it $USD10
 
 #### CCTV Camera Mount
 
-
+- [Jaycar (AU)](https://www.jaycar.com.au/cctv-camera-external-mounting-bracket/p/QC3337)
  $AUD15</br>
 $USD
+
+I actually decided that this mount wasn't solid enough for my purpose. Being fairly lightweight, it has the potential to wobble a bit, which we want to avoid. I ended up using a heavy duty L-bracket from the local hardware store instead. A better alternative might be . . .
+
+#### Ram Mounts
+
+If your budget allows for it, check out some of the mounting options in the Ram Mounts range. Their ["C Size" mounts](https://www.rammount.com/search?query=c+size) will take up to a 5kg (~10lb) load.
 
 #### Cable entry gland
 
@@ -480,12 +486,6 @@ You should be able to source these from your nearest electrical wholesaler, hobb
 
     $AUD2 (est)</br>
     $USD1
-
-#### Ram Mounts
-
-If your budget allows for it, check out some of the mounting options in the Ram Mounts range. Their ["C Size" mounts](https://www.rammount.com/search?query=c+size) will take up to a 5kg (~10lb) load.
-
-
 
 ## SUBTOTAL: $AUD112 / $USD76
 
