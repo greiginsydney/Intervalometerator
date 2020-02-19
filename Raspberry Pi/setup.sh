@@ -40,6 +40,7 @@ install_apps ()
 	pip3 install gunicorn
 
 	#This is ALL for Paramiko (SSH uploads):
+	export DEBIAN_FRONTEND=noninteractive
 	apt-get install libffi-dev libssl-dev python-dev -y
 	apt install krb5-config krb5-user -y
 	apt-get install libkrb5-dev -y
