@@ -102,27 +102,23 @@ sudo -E -H ./setup.sh start
 ```
 > As at October 2019 this step now takes **over an hour** to complete, depending on how slow your Internet connection is.
 
-33. Around 10 minutes after you fire the script, you'll be prompted on-screen for a "Default Kerberos version 5 realm". Just hit Enter. (I haven't figured out how to hard-code that yet, sorry.)
-
 > If any step fails, the script will abort and on-screen info should reveal the component that failed. You can simply re-run the script at any time (up-arrow / return) and it will simply skip over those steps where no changes are required. There are a lot of moving parts in the Raspbian/Linux world, and sometimes a required server might be down or overloaded. Time-outs aren't uncommon, hence why simply wait and retry is a valid remediation action.
 
 > If libgphoto throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you will need to edit back into the script before your repeat attempt at this step.
 
-
-
-34. If all goes well, you'll be presented with a prompt to reboot:
+33. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
 Exited install_apps OK.
 Reboot now? [Y/n]:
 ```
 Pressing return or anything but n/N will cause the Pi to reboot.
 
-35. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
+34. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
 sudo -E ./setup.sh web
 ```
 
-The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
+35. The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
@@ -158,7 +154,7 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 39. You're in business!  After the Pi reboots you should be able to browse to its IP address, where you'll be presented the message "You need to sign in before you can access that page!" and the login form.
 
-40. Login with the credentials you set in Step 35. You can change those or add new login/password pairs by editing the /www/intvlm8r.py script.
+40. Login with the credentials you set in Step 36. You can change those or add new login/password pairs by editing the /www/intvlm8r.py script.
 
 ## Next steps are:
 - Add an SSL certificate:
