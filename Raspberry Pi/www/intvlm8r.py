@@ -1165,7 +1165,9 @@ def createConfigFile(iniFile):
         config.set('Global', 'thumbscount', '20')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
+        config.set('Transfer', 'deleteAfterTransfer', 'Off')
         config.add_section('Copy')
+        config.set('Copy', 'deleteAfterCopy', 'Off')
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
     except:
