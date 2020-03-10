@@ -1074,7 +1074,17 @@ def copy_files(camera):
         app.logger.debug('No files found')
         return 1
     app.logger.debug('Copying files...')
-
+    
+    if not os.path.exists(iniFile):
+        createConfigFile(iniFile)
+    config = configparser.ConfigParser()
+    config.read(iniFile)
+    try:
+        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy'))
+    except Exception as e:
+        app.logger.debug('INI file error reading:' + str(e))
+        deleteAfterCopy = false
+    
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
@@ -1084,7 +1094,10 @@ def copy_files(camera):
         app.logger.debug('Copying {0} --> {1}'.format(path, dest))
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
-        gp.check_result(gp.gp_file_save(camera_file, dest))
+        copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
+        if ((copyOK >= gp.GP_OK) and (deleteAfterCopy = true)):
+            gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
+            app.logger.debug('Deleted {0} \ {1}'.format(sourceFolderTree, imageFileName))
     return 0
 
 
