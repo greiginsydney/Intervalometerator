@@ -47,7 +47,7 @@ install_apps ()
 	pip3 install bcrypt pynacl cryptography gssapi paramiko
 
 	#Google Drive:
-	pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+	pip3 install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
 	#Dropbox:
 	pip3 install dropbox psutil
