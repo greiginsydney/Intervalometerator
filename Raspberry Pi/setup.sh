@@ -46,7 +46,12 @@ install_apps ()
 	apt-get install libkrb5-dev -y
 	pip3 install bcrypt pynacl cryptography gssapi paramiko
 
+	#Google Drive:
+	pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+	#Dropbox:
 	pip3 install dropbox psutil
+	
 	apt-get install nginx nginx-common supervisor python-dev -y
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
