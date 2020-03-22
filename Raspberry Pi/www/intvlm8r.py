@@ -25,6 +25,7 @@ import calendar
 import configparser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
 import logging
+import importlib.util # Testing installed packages
 import io   #Camera preview
 import os
 import psutil
@@ -84,6 +85,14 @@ iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 
 arduinoDoW=["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
+hiddenTransferOptions = ''
+# TY SO: https://stackoverflow.com/a/41815890
+for package_name in ('paramiko', 'dropbox', 'Google Drive'):
+    spec = importlib.util.find_spec(package_name)
+    if spec is None:
+        app.logger.debug(package_name + ' is not installed')
+        hiddenTransferOptions = hiddenTransferOptions + "," + package_name
+        
 
 def writeString(value):
     ascii = [ord(c) for c in value]
@@ -683,7 +692,8 @@ def transfer():
         'copyDay'           : '',
         'copyHour'          : '',
         'wakePiTime'        : '25',
-        'piTransferLogLink' : PI_TRANSFER_LINK
+        'piTransferLogLink' : PI_TRANSFER_LINK,
+        'hiddenTransferOptions'   : hiddenTransferOptions
     }
     config = configparser.ConfigParser(
         {
