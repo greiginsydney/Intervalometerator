@@ -1075,15 +1075,24 @@ def copy_files(camera):
         return 1
     app.logger.debug('Copying files...')
     
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
-    config = configparser.ConfigParser()
-    config.read(iniFile)
     try:
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        config.read(iniFile)
         deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
     except Exception as e:
-        app.logger.debug('INI file error in copy_files: ' + str(e))
-        deleteAfterCopy = false
+        #Looks like the flag doesn't exist. Let's add it
+        try:
+            if not config.has_section('Copy'):
+                config.add_section('Copy')
+            config.set('Copy', 'deleteAfterCopy', 'Off')
+            with open(iniFile, 'w') as config_file:
+                config.write(config_file)
+            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
+        except Exception as e:
+            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
+        deleteAfterCopy = False
     
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
