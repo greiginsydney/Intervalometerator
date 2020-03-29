@@ -23,16 +23,24 @@
 import datetime
 from ftplib import FTP
 import configparser # for the ini file
-#import dropbox - moved to commenceDbx()
 import fileinput
 import logging
 import os
-#import paramiko - moved to commenceSftp()
 import re    #RegEx
 import socket
 import sys
 import time
 
+#Only attempt to import these if they've been installed:
+#(My attempts at lazy-loading and alternative test/load strategies failed.)
+try:
+    import dropbox
+except:
+    pass
+try:
+    import paramiko
+except:
+    pass
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -227,12 +235,6 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
 
 def commenceDbx(token):
     try:
-        import dropbox
-    except ImportError as e:
-        log('Exception importing Dropbox: ' + str(e))
-        log('STATUS: Dropbox not installed')
-        return
-    try:
         dbx = dropbox.Dropbox(token)
     except Exception as e:
         log('Exception signing in to Dropbox: ' + str(e))
@@ -288,12 +290,6 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
 
 def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
     # now, connect and use paramiko Transport to negotiate SSH2 across the connection
-    try:
-        import paramiko
-    except ImportError as e:
-        log('Exception importing paramiko: ' + str(e))
-        log('STATUS: paramiko (SFTP) not installed')
-        return
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #Set the default
