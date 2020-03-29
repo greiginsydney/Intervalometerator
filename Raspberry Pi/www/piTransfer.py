@@ -383,6 +383,25 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
 
 def commenceGoogle():
 
+    
+    
+def uploadedOK(filename, filecount):
+    log('Uploaded {0}'.format(filename))
+    with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
+        historyFile.write(filename + "\n")
+    if deleteAfterTransfer:
+        try:
+            os.remove(filename)
+            log('Deleted  {0}'.format(filename))
+            Thumbversion = filename.replace( PI_PHOTO_DIR, PI_THUMBS_DIR)
+            Thumbversion = Thumbversion.replace( '.JPG', '-thumb.JPG')
+            log('Looking to delete {0}'.format(Thumbversion))
+            if os.path.exists(Thumbversion):
+                os.remove(Thumbversion)
+        except Exception as e:
+            log('Error deleting file : ' + str(e))
+    return (filecount + 1)
+
 
 def log(message):
     try:
