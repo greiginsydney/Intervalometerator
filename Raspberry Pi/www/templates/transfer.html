@@ -119,6 +119,15 @@
 		</tr>
 	</table>
 
+	<table id="google">
+		<tr>
+			<td>
+				<div class="alignleft">Remote folder:</div>
+				<div class="alignright"><input type="text" name="googleRemoteFolder" id="googleRemoteFolder" value="{{ googleRemoteFolder }}" placeholder="e.g. images" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+	</table>
+
 	<table id="transfer">
 		<tr>
 			<td>
@@ -183,20 +192,21 @@
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
-SelectionBits["tfrMethod"]        =     1;
-SelectionBits["ftpServer"]        =     2;
-SelectionBits["ftpUser"]          =     4;
-SelectionBits["ftpPassword"]      =     8;
-SelectionBits["ftpRemoteFolder"]  =    16;
-SelectionBits["sftpServer"]       =    32;
-SelectionBits["sftpUser"]         =    64;
-SelectionBits["sftpPassword"]     =   128;
-SelectionBits["sftpRemoteFolder"] =   256;
-SelectionBits["dbx_token"]        =   512;
-SelectionBits["transferDay"]      =  1024;
-SelectionBits["transferHour"]     =  2048;
-SelectionBits["copyDay"]          =  4096;
-SelectionBits["copyHour"]         =  8192;
+SelectionBits["tfrMethod"]          =     1;
+SelectionBits["ftpServer"]          =     2;
+SelectionBits["ftpUser"]            =     4;
+SelectionBits["ftpPassword"]        =     8;
+SelectionBits["ftpRemoteFolder"]    =    16;
+SelectionBits["sftpServer"]         =    32;
+SelectionBits["sftpUser"]           =    64;
+SelectionBits["sftpPassword"]       =   128;
+SelectionBits["sftpRemoteFolder"]   =   256;
+SelectionBits["dbx_token"]          =   512;
+SelectionBits["sftpRemoteFolder"]   =  1024;
+SelectionBits["transferDay"]        =  2048;
+SelectionBits["transferHour"]       =  4096;
+SelectionBits["copyDay"]            =  8192;
+SelectionBits["googleRemoteFolder"] = 16384;
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
@@ -216,6 +226,7 @@ var transfer = document.getElementById("transfer");
 ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
 sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
 dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+google.style.display = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
@@ -261,19 +272,20 @@ function newSelected(id)
 	// Reveal/hide fields as appropriate:
 	if (id == "tfrMethod" || id == "copyDay")
 	{
-		ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
-		sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
-		dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
-		transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+		ftp.style.display      = (method.value != "FTP"          || copyDay.value == "Off") ? "none":"";
+		sftp.style.display     = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
+		dbx.style.display      = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
+		google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		transfer.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
 	{
-		showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-		showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-		showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+		showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 		if (copyDay.value == "Daily")
 		{
 			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
