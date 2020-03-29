@@ -41,6 +41,13 @@ try:
     import paramiko
 except:
     pass
+try:
+    from apiclient import discovery
+    from oauth2client import client
+    from oauth2client.file import Storage
+    from googleapiclient.http import MediaFileUpload
+except:
+    pass
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -134,6 +141,8 @@ def main(argv):
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
         commenceDbx(dbx_token)
+    elif (tfrMethod == 'Google'):
+        commenceGoogle()
 
 
 def list_New_Images(imagesPath, previouslyUploadedFile):
@@ -371,6 +380,9 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         ssh.close()
     except:
         pass
+
+def commenceGoogle():
+
 
 def log(message):
     try:
