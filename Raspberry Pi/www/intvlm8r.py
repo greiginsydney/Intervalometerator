@@ -677,50 +677,49 @@ def transfer():
         createConfigFile(iniFile)
     # Initialise the dictionary:
     templateData = {
-        'tfrMethod'         : 'Off',    # Hides all options if the file isn't found or is bad
-        'ftpServer'         : '',
-        'ftpUser'           : '',
-        'ftpPassword'       : '',
-        'ftpRemoteFolder'   : '',
-        'sftpServer'        : '',
-        'sftpUser'          : '',
-        'sftpPassword'      : '',
-        'sftpRemoteFolder'  : '',
-        'googleRemoteFolder': '',
-        'dbx_token'         : '',
-        'transferDay'       : '',
-        'transferHour'      : '',
-        'copyDay'           : '',
-        'copyHour'          : '',
-        'wakePiTime'        : '25',
-        'piTransferLogLink' : PI_TRANSFER_LINK,
-        'hiddenTransferOptions'   : hiddenTransferOptions
+        'tfrMethod'          : 'Off',    # Hides all options if the file isn't found or is bad
+        'ftpServer'          : '',
+        'ftpUser'            : '',
+        'ftpPassword'        : '',
+        'ftpRemoteFolder'    : '',
+        'sftpServer'         : '',
+        'sftpUser'           : '',
+        'sftpPassword'       : '',
+        'sftpRemoteFolder'   : '',
+        'googleRemoteFolder' : '',
+        'dbx_token'          : '',
+        'transferDay'        : '',
+        'transferHour'       : '',
+        'copyDay'            : '',
+        'copyHour'           : '',
+        'wakePiTime'         : '25',
+        'piTransferLogLink'  : PI_TRANSFER_LINK
     }
     config = configparser.ConfigParser(
         {
-        'tfrmethod'         : 'Off',
-        'ftpServer'         : '',
-        'ftpUser'           : '',
-        'ftpPassword'       : '',
-        'ftpRemoteFolder'   : '',
-        'sftpServer'        : '',
-        'sftpUser'          : '',
-        'sftpPassword'      : '',
-        'sftpRemoteFolder'  : '',
-        'googleRemoteFolder': '',
-        'dbx_token'         : '',
-        'transferDay'       : '',
-        'transferHour'      : '',
-        'copyDay'           : 'Off',
-        'copyHour'          : '',
-        'wakePiTime'        : '25'
+        'tfrmethod'          : 'Off',
+        'ftpServer'          : '',
+        'ftpUser'            : '',
+        'ftpPassword'        : '',
+        'ftpRemoteFolder'    : '',
+        'sftpServer'         : '',
+        'sftpUser'           : '',
+        'sftpPassword'       : '',
+        'sftpRemoteFolder'   : '',
+        'googleRemoteFolder' : '',
+        'dbx_token'          : '',
+        'transferDay'        : '',
+        'transferHour'       : '',
+        'copyDay'            : 'Off',
+        'copyHour'           : '',
+        'wakePiTime'         : '25'
         })
     try:
         config.read(iniFile)
         #app.logger.debug('Found the file in GET')
         templateData['tfrMethod']          = config.get('Transfer', 'tfrmethod')
         templateData['ftpServer']          = config.get('Transfer', 'ftpServer')
-        templateData['ftpUser']             = config.get('Transfer', 'ftpUser')
+        templateData['ftpUser']            = config.get('Transfer', 'ftpUser')
         templateData['ftpPassword']        = config.get('Transfer', 'ftpPassword')
         templateData['ftpRemoteFolder']    = config.get('Transfer', 'ftpRemoteFolder')
         templateData['sftpServer']         = config.get('Transfer', 'sftpServer')
@@ -734,7 +733,7 @@ def transfer():
         templateData['copyDay']            = config.get('Copy', 'copyDay')
         templateData['copyHour']           = config.get('Copy', 'copyHour')
     except Exception as e:
-        app.logger.debug('INI file error:' + str(e))
+        app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
 
     rawWakePi = str(readString("5"))
