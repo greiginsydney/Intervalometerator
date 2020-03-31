@@ -24,9 +24,9 @@ from urllib.parse import urlparse, urljoin
 import calendar
 import configparser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
-import logging
 import importlib.util # Testing installed packages
 import io   #Camera preview
+import logging
 import os
 import psutil
 import re    #RegEx. Used in Copy Files
@@ -85,14 +85,20 @@ iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 
 arduinoDoW=["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
+#Suppress the display of any uninstalled transfer options:
 hiddenTransferOptions = ''
+hiddenTransferDict = {
+  "paramiko": "SFTP",
+  "dropbox": "Dropbox",
+  "google": "Google Drive"
+}
 # TY SO: https://stackoverflow.com/a/41815890
-for package_name in ('paramiko', 'dropbox', 'Google Drive'):
+for package_name in ('paramiko', 'dropbox', 'google'):
     spec = importlib.util.find_spec(package_name)
     if spec is None:
         app.logger.debug(package_name + ' is not installed')
-        hiddenTransferOptions = hiddenTransferOptions + "," + package_name
-        
+        hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
+app.logger.debug('hiddenTransferOptions = ' + hiddenTransferOptions)
 
 def writeString(value):
     ascii = [ord(c) for c in value]
@@ -677,23 +683,24 @@ def transfer():
         createConfigFile(iniFile)
     # Initialise the dictionary:
     templateData = {
-        'tfrMethod'          : 'Off',    # Hides all options if the file isn't found or is bad
-        'ftpServer'          : '',
-        'ftpUser'            : '',
-        'ftpPassword'        : '',
-        'ftpRemoteFolder'    : '',
-        'sftpServer'         : '',
-        'sftpUser'           : '',
-        'sftpPassword'       : '',
-        'sftpRemoteFolder'   : '',
-        'googleRemoteFolder' : '',
-        'dbx_token'          : '',
-        'transferDay'        : '',
-        'transferHour'       : '',
-        'copyDay'            : '',
-        'copyHour'           : '',
-        'wakePiTime'         : '25',
-        'piTransferLogLink'  : PI_TRANSFER_LINK
+        'tfrMethod'             : 'Off',    # Hides all options if the file isn't found or is bad
+        'ftpServer'             : '',
+        'ftpUser'               : '',
+        'ftpPassword'           : '',
+        'ftpRemoteFolder'       : '',
+        'sftpServer'            : '',
+        'sftpUser'              : '',
+        'sftpPassword'          : '',
+        'sftpRemoteFolder'      : '',
+        'googleRemoteFolder'    : '',
+        'dbx_token'             : '',
+        'transferDay'           : '',
+        'transferHour'          : '',
+        'copyDay'               : '',
+        'copyHour'              : '',
+        'wakePiTime'            : '25',
+        'piTransferLogLink'     : PI_TRANSFER_LINK,
+        'hiddenTransferOptions' : hiddenTransferOptions
     }
     config = configparser.ConfigParser(
         {
