@@ -141,8 +141,12 @@ def main(argv):
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
         commenceDbx(dbx_token)
-    elif (tfrMethod == 'Google'):
-        commenceGoogle()
+    elif (tfrMethod == 'Google Drive'):
+        while '\\' in googleRemoteFolder:
+            googleRemoteFolder = googleRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+        while '//' in googleRemoteFolder:
+            googleRemoteFolder = googleRemoteFolder.replace('//', '/')
+        commenceGoogle(googleRemoteFolder)
 
 
 def list_New_Images(imagesPath, previouslyUploadedFile):
