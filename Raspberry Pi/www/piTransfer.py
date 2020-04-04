@@ -408,8 +408,23 @@ def getGoogleFolder(DRIVE, remoteFolder, parent=None):
         return remoteFolderId
     else:
         return None    
+
     
-    
+def createGoogleFolder(DRIVE, newFolder, parentId=None):
+    log('About to create folder \'%s\'.' % str(newFolder))
+    try:
+        body = {
+          'title': newFolder,
+          'mimeType': "application/vnd.google-apps.folder"
+        }
+        if parentId:
+            body['parents'] = [{'id': parentId}]
+        newFolderId = DRIVE.files().insert(body = body).execute()
+        return newFolderId['id']
+    except Exception as e:
+        log('Error in createGoogleFolder : ' + str(e))    
+
+
 def uploadedOK(filename, filecount):
     log('Uploaded {0}'.format(filename))
     with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
