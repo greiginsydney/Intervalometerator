@@ -73,8 +73,11 @@ def main(argv):
         if sys.argv[1] == 'copyNow':
             copyNow = True
         if sys.argv[1] == 'reauthGoogle':
-            reauthGoogle()
-            return 0
+            returncode = reauthGoogle()
+            if returncode == 0:
+                copyNow = True
+            else:
+                return 0
     except:
         pass
     
