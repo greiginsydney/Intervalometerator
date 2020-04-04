@@ -508,21 +508,33 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
 
 def reauthGoogle():
     log('Commencing Google re-auth')
-    storage = Storage('Google_credentials.txt')
-    credentials = storage.get()
-    flow = client.flow_from_clientsecrets('client_secrets.json',
-        scope='https://www.googleapis.com/auth/drive',
-        redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-    auth_uri = flow.step1_get_authorize_url()
+    try:
+        storage = Storage('Google_credentials.txt')
+        credentials = storage.get()
+        flow = client.flow_from_clientsecrets('client_secrets.json',
+            scope='https://www.googleapis.com/auth/drive',
+            redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+        auth_uri = flow.step1_get_authorize_url()
 
-    print ('')
-    print ('Go to this link in your browser:')
-    print (auth_uri)
+        print ('')
+        print ('Go to this link in your browser:')
+        print (auth_uri)
 
-    auth_code = input('Enter the auth code: ')
-    credentials = flow.step2_exchange(auth_code)
-    storage.put(credentials)
-    log('Completed Google re-auth')
+        auth_code = input('Enter the auth code: ')
+        credentials = flow.step2_exchange(auth_code)
+        storage.put(credentials)
+        log('Completed Google re-auth')
+        print ('')
+        print ('Completed Google re-auth OK.')
+        response = input("Shall we try uploading some images? [Y/n]: ")
+        response = response.lower()
+        if response == 'y' or response == '':
+            return 0
+    except Exception as e:
+        print ('')
+        print('Error in Google re-auth. (See /home/pi/www/static/piTransfer.log for details)')
+        log('Error in Google re-auth : ' + str(e))
+    return 1
 
 
 def uploadedOK(filename, filecount):
