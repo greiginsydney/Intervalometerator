@@ -72,6 +72,9 @@ def main(argv):
     try:
         if sys.argv[1] == 'copyNow':
             copyNow = True
+        if sys.argv[1] == 'reauthGoogle':
+            reauthGoogle()
+            return 0
     except:
         pass
     
@@ -386,11 +389,12 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
     except:
         pass
 
+
 def commenceGoogle(remoteFolder):
     """Create a Drive service."""
     auth_required = True
     #Have we got some credentials already?
-    storage = Storage('uploader_credentials.txt')
+    storage = Storage('Google_credentials.txt')
     credentials = storage.get()
     try:
         if credentials:
@@ -398,6 +402,7 @@ def commenceGoogle(remoteFolder):
             if credentials.access_token_expired:
                 if credentials.refresh_token is not None:
                     credentials.refresh(httplib2.Http())
+                    log ('Google token refreshed OK')
                     auth_required = False
             else:
                 auth_required = False
@@ -406,18 +411,8 @@ def commenceGoogle(remoteFolder):
         log('Cached Auth failed')
 
     if auth_required:
-        log ('Auth required')
-        flow = client.flow_from_clientsecrets('client_secrets.json',
-            scope='https://www.googleapis.com/auth/drive',
-            redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-        auth_uri = flow.step1_get_authorize_url()
-
-        print ('Go to this link in your browser:')
-        print (auth_uri)
-
-        auth_code = input('Enter the auth code: ')
-        credentials = flow.step2_exchange(auth_code)
-        storage.put(credentials)
+        log('STATUS: Aborted. Google requires re-authentication')
+        return 0
     else:
         log('Auth NOT required')
     #Get the drive service
@@ -473,7 +468,7 @@ def commenceGoogle(remoteFolder):
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     return 0
 
-    
+
 def getGoogleFolder(DRIVE, remoteFolder, parent=None):
     log('Testing if folder \'%s\' exists.' % str(remoteFolder))
     """Find and return the id of the remote folder """
@@ -493,9 +488,9 @@ def getGoogleFolder(DRIVE, remoteFolder, parent=None):
         log('Found the folder \'%s\'. Its Id is \'%s\'' % (str(remoteFolderTitle), str(remoteFolderId)))
         return remoteFolderId
     else:
-        return None    
+        return None
 
-    
+
 def createGoogleFolder(DRIVE, newFolder, parentId=None):
     log('About to create folder \'%s\'.' % str(newFolder))
     try:
@@ -508,7 +503,26 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
         newFolderId = DRIVE.files().insert(body = body).execute()
         return newFolderId['id']
     except Exception as e:
-        log('Error in createGoogleFolder : ' + str(e))    
+        log('Error in createGoogleFolder : ' + str(e))
+
+
+def reauthGoogle():
+    log('Commencing Google re-auth')
+    storage = Storage('Google_credentials.txt')
+    credentials = storage.get()
+    flow = client.flow_from_clientsecrets('client_secrets.json',
+        scope='https://www.googleapis.com/auth/drive',
+        redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+    auth_uri = flow.step1_get_authorize_url()
+
+    print ('')
+    print ('Go to this link in your browser:')
+    print (auth_uri)
+
+    auth_code = input('Enter the auth code: ')
+    credentials = flow.step2_exchange(auth_code)
+    storage.put(credentials)
+    log('Completed Google re-auth')
 
 
 def uploadedOK(filename, filecount):
