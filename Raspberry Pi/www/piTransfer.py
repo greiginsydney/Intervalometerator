@@ -385,7 +385,92 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
     except:
         pass
 
-def commenceGoogle():
+def commenceGoogle(remoteFolder):
+    """Create a Drive service."""
+    auth_required = True
+    #Have we got some credentials already?
+    storage = Storage('uploader_credentials.txt')
+    credentials = storage.get()
+    try:
+        if credentials:
+            # Check for expiry
+            if credentials.access_token_expired:
+                if credentials.refresh_token is not None:
+                    credentials.refresh(httplib2.Http())
+                    auth_required = False
+            else:
+                auth_required = False
+    except:
+        # Something went wrong - try manual auth
+        log('Cached Auth failed')
+
+    if auth_required:
+        log ('Auth required')
+        flow = client.flow_from_clientsecrets('client_secrets.json',
+            scope='https://www.googleapis.com/auth/drive',
+            redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+        auth_uri = flow.step1_get_authorize_url()
+
+        print ('Go to this link in your browser:')
+        print (auth_uri)
+
+        auth_code = input('Enter the auth code: ')
+        credentials = flow.step2_exchange(auth_code)
+        storage.put(credentials)
+    else:
+        log('Auth NOT required')
+    #Get the drive service
+    try:
+        http_auth = credentials.authorize(httplib2.Http())
+        DRIVE = discovery.build('drive', 'v2', http_auth, cache_discovery=False)
+    except Exception as e:
+        log('Error creating Google DRIVE object: ' + str(e))
+        log('STATUS: Error creating Google DRIVE object')
+        return 0
+    newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No files to upload')
+    else:
+        numFilesOK = 0
+        previousFilePath = ''
+        for needupload in newFiles:
+            log("Uploading " + needupload)
+            # Format the destination path to strip the /home/pi/photos off:
+            shortPath = makeShortPath(remoteFolder, needupload)
+            log("shortPath: " + shortPath)
+            remoteFolderTree = os.path.split(shortPath)
+            if previousFilePath != remoteFolderTree[0]:
+                ImageParentId = None
+                # Confirm the tree exists, or build it out:
+                foldersList = remoteFolderTree[0].split("/")
+                if len(foldersList) != 0:
+                    for oneFolder in foldersList:
+                        childFolderId = getGoogleFolder(DRIVE, oneFolder, ImageParentId)
+                        if childFolderId is None:
+                            #Nope, that folder doesn't exist. Create it:
+                            newFolderId = createGoogleFolder(DRIVE, oneFolder, ImageParentId)
+                            if newFolderId is None:
+                                log('Aborted uploading to Google. Error creating newFolder')
+                                log('STATUS: Google upload aborted. %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+                                return 0
+                            else:
+                                ImageParentId = newFolderId
+                        else:
+                            ImageParentId = childFolderId
+            #By here we have the destination path id
+            #Now upload the file
+            file_name = remoteFolderTree[1]
+            try:
+                media = MediaFileUpload(needupload, mimetype='image/jpeg')
+                result = DRIVE.files().insert(media_body=media, body={'title':file_name, 'parents':[{u'id': ImageParentId}]}).execute()
+                if result is not None:
+                    numFilesOK = uploadedOK(needupload, numFilesOK)
+            except Exception as e:
+                log('Error uploading ''%s'' to Google: %s' % (needupload,str(e)))
+            previousFilePath = remoteFolderTree[0]
+        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+    return 0
 
     
 def getGoogleFolder(DRIVE, remoteFolder, parent=None):
