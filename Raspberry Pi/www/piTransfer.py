@@ -388,6 +388,27 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
 def commenceGoogle():
 
     
+def getGoogleFolder(DRIVE, remoteFolder, parent=None):
+    log('Testing if folder \'%s\' exists.' % str(remoteFolder))
+    """Find and return the id of the remote folder """
+    q = []
+    q.append("title='%s'" % remoteFolder)
+    if parent is not None:
+        q.append("'%s' in parents" % parent.replace("'", "\\'"))
+    q.append("mimeType contains 'application/vnd.google-apps.folder'")
+    q.append("trashed=false")
+    params = {}
+    params['q'] = ' and '.join(q)
+    files = DRIVE.files().list(**params).execute()
+    log('FILES returned this: ' + str(files))
+    if len(files['items']) == 1:
+        remoteFolderId = files['items'][0]['id']
+        remoteFolderTitle = files['items'][0]['title']
+        log('Found the folder \'%s\'. Its Id is \'%s\'' % (str(remoteFolderTitle), str(remoteFolderId)))
+        return remoteFolderId
+    else:
+        return None    
+    
     
 def uploadedOK(filename, filecount):
     log('Uploaded {0}'.format(filename))
