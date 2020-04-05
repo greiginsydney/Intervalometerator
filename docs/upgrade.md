@@ -36,4 +36,6 @@ The setup script also edits a number of config files on the Pi, but it's been co
 
 One file that WILL always be copied across is `/etc/nginx/sites-available/intvlm8r`, however any existing file will be renamed `/etc/nginx/sites-available/intvlm8r.old` first. If you've customised this by adding an SSL certificate or any other tweaks to the web config, please review and reinstate the relevant bits after the script completes.
 
-If the invtlm8r fails after the upgrade completes, review any errors that might have been output to the screen, or the error file at `/home/pi/www/gunicorn.error'.
+If the invtlm8r fails after the upgrade completes, review any errors that might have been output to the screen, or the error file at `/home/pi/www/gunicorn.error`.
+
+<br />
