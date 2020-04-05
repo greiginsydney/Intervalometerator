@@ -8,6 +8,7 @@ The intvlm8r provides four methods to automatically upload images off the Raspbe
 
 <br/>
 <hr />
+
 ## FTP & SFTP
 
 There's no special config required to upload to an (S)FTP site. All you need to do is create an account on the server and paste those credentials into the /transfer page.
@@ -15,6 +16,7 @@ There's no special config required to upload to an (S)FTP site. All you need to 
 > Be aware that the upload credentials are saved as plain text - unencrypted - in the invtlm8r's .ini file.
 
 <hr />
+
 ## Dropbox
 
 Prior to using Dropbox you need to perform some authentication steps to allow the intvlm8r to upload photos into your Dropbox account.
@@ -69,6 +71,7 @@ NB: This process was last confirmed accurate on September 12th, 2019.
 </p>
 
 <hr />
+
 ## Google Drive
 
 1. Before you can use Google Drive, you need to have installed the Google API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Google Drive is greyed out and can't be selected, the options weren't installed. To install them, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
