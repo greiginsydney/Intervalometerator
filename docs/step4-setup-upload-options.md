@@ -186,35 +186,96 @@ Click 'Go to credentials' to move to the next step.
 <img src="https://user-images.githubusercontent.com/11004787/78467235-d6e8f580-774d-11ea-8fb5-93a084c5d962.png" width="60%">
 </p>
 
-20. The file will be called something like "client_secret_<gibberish>.apps.googleusercontent.com.json". Rename it to XXX.
- 
-<p align="center">
-<img src="" width="60%">
-</p>
+20. The file will be called something like "client_secret_<gibberish>.apps.googleusercontent.com.json". Rename it to client_secrets.json.
 
+21. Copy the file to the Raspberry Pi. It needs to go in the '/home/pi/www' folder.
 
+22. SSH to the Raspberry Pi & login.
 
-
-. SSH to the Raspberry Pi & login.
-
-. Navigate to the www folder:
+23. Navigate to the www folder:
 ```text
-cd 
+cd /home/pi/www
 ```
 
-. Run the piTransfer script with the 'reauthGoogle' switch:
+24. Run the piTransfer script with the 'reauthGoogle' switch:
 ```text
 python3 piTransfer.py reauthGoogle
 ```
 
-. It will prompt you to copy a long link to your browser:
+25. It will prompt you to copy a long link to your browser:
 ```text
 Go to this link in your browser:
 https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpasdfghjklpoiuytrewqajet9g8hgkj.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
 ```
 
-8. When you open that link in a browser, 
+26. Copy the link to your PC and browse to it. You'll be prompted to sign-in if you're not already.
 
+26. Click to choose an account:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467635-f97d0d80-7751-11ea-80f3-951231212400.png" width="50%">
+</p>
+
+27. On the "This app isn't verified" page, click Advanced:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467662-32b57d80-7752-11ea-9109-a78a80a8a5ef.png" width="60%">
+</p>
+
+> Your browser might provide a different way of getting to an untrusted URL. This sample screen is from Chromium/Chrome.
+
+28. Click "Go to intvlm8r (unsafe)":
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467667-452fb700-7752-11ea-8e77-6b9b0acbb8a9.png" width="60%">
+</p>
+
+29. Click "Allow" to grant the intvlm8r access to your Google Drive:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467682-74debf00-7752-11ea-8f76-260824dcc0c8.png" width="50%">
+</p>
+
+30. Yes, you're sure. Cick "Allow" again:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467691-86c06200-7752-11ea-840f-693fb7b24689.png" width="50%">
+</p>
+
+31. Now click the highlighted icon to copy the code to your clipboard:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467733-e7e83580-7752-11ea-848b-e8d232124ab7.png" width="50%">
+</p>
+
+32. Switch back to the Raspberry Pi. It should be prompting you to enter that code, so paste it in and press return:
+
+```text
+Go to this link in your browser:
+https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpasdfghjklpoiuytrewqajet9g8hgkj.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
+Enter the auth code: 4/yQasdfghjklpoiuytrewazxcvbnmlpoikjuyhgtrfdewsaqGEw4uWIc
+```
+
+33. If this succeeds, you'll be prompted to take it for a test-run (assuming Google Drive was already selected on the /transfer page of course!)
+
+```text
+Completed Google re-auth OK.
+Shall we try uploading some images? [Y/n]:
+```
+34. If you press Return or Y, the piTransfer script will attempt an upload. Pressing any other option will abort at this stage.
+
+35. If you _haven't_ already selected Google on the /transfer page, do that now, select the folder into which the images will go, and then return to the Pi.
+
+36. To initate a test transfer - which you can do at any time - run this command:
+
+```text
+cd /home/pi/www
+python3 piTransfer.py copyNow
+```
+
+37. Hopefully it's all working OK. If the images don't materialise in your Google Drive, check out the transfer error log at ```/home/pi/www/static/piTransfer.log```.
+
+<hr />
 
 References:
 - [Google Drive API - Python Quickstart](https://developers.google.com/drive/api/v3/quickstart/python)
