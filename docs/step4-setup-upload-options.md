@@ -76,10 +76,10 @@ NB: This process was last confirmed accurate on September 12th, 2019.
 
 1. Before you can use Google Drive, you need to have installed the Google API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Google Drive is greyed out and can't be selected, the options weren't installed. To install them, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
 
-2. Google Drive won't let an app like the intvlm8r upload files without you first granting consent. Navigate to console.developers.google.com/start/api?id=drive and login to your Google account to commence this process:
+2. Google Drive won't let an app like the intvlm8r upload files without you first granting consent. Navigate to [console.developers.google.com/start/api?id=drive](console.developers.google.com/start/api?id=drive) and login to your Google account to commence this process:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78420245-14d81200-7699-11ea-85fa-f0c404b95d18.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/78420245-14d81200-7699-11ea-85fa-f0c404b95d18.png" width="50%">
 </p>
 
 3. If you don't have any projects yet, you'll see this screen to accept the Google APIs Terms of Service:
@@ -96,7 +96,6 @@ Once you accept the terms and click "Agree and continue" a new project named "My
 <img src="https://user-images.githubusercontent.com/11004787/78419911-210ea000-7696-11ea-8f40-d19145977587.png" width="60%">
 </p>
 
-
 Leave the dropdown showing "Create a project" and click Continue.
 
 5. You'll know the Drive API has been enabled with this confirmation:
@@ -105,14 +104,94 @@ Leave the dropdown showing "Create a project" and click Continue.
 <img src="https://user-images.githubusercontent.com/11004787/78419879-c7a67100-7695-11ea-94a1-70039b5012d3.png" width="60%">
  </p>
 
+Click 'Go to credentials' to move to the next step.
 
-
-6. Click 'Go to credentials' to move to the next step.
-
+7. Select the highlighted options and then click "What credentials do I need?"
 
 <p align="center">
-<img src="" width="80%">
- </p>
+<img src="https://user-images.githubusercontent.com/11004787/78466992-6214bc00-774b-11ea-9e02-5c26ba3aa565.png" width="60%">
+</p>
+
+8. Click "Set Up Consent Screen":
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467008-ac963880-774b-11ea-8513-db358725beee.png" width="50%">
+</p>
+
+9. Select "External" and click Create:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467029-d8192300-774b-11ea-83d6-0b8ce9eb6c23.png" width="60%">
+</p>
+
+10. The OAuth consent screen will show. Give your application a name:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467049-1ca4be80-774c-11ea-8f7d-b66249936d98.png" width="60%">
+</p>
+
+
+11. Scroll until you get to "Scopes for Google APIs" and click "Add scope":
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467066-41009b00-774c-11ea-9e2a-26c0d7e324f9.png" width="60%">
+</p>
+
+12. Check the box next to Google Drive API as shown, then click Add.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467083-61c8f080-774c-11ea-8693-b660f2502e9b.png" width="60%">
+</p>
+
+
+13. You'll be returned to the OAuth consent screen. **Disregard** the warning to say your app needs to be verfified by Google - we won't be publishing it, so that doesn't apply.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467106-9b016080-774c-11ea-96c9-f3d9afb0ab7c.png" width="60%">
+</p>
+
+14. Ignore the "Needs verification" warning:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467125-d1d77680-774c-11ea-9413-629549a4ff3f.png" width="60%">
+</p>
+
+15. Click "Credentials" in the menu on the left, and then "+ Create Credentials":
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467149-f6335300-774c-11ea-9954-3a18343dc74a.png" width="60%">
+</p>
+
+16. From the pop-up, click to select "OAuth client ID":
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467187-414d6600-774d-11ea-8b0f-ebcb2d8fb488.png" width="50%">
+</p>
+
+17. Select the "Other" radio button, give your ID a name, and then click Create:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467196-5924ea00-774d-11ea-90b7-dd74dce2983a.png" width="60%">
+</p>
+
+18. All going well, your new OAuth client and secret have been created. Click OK to acknowledge it:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467209-95f0e100-774d-11ea-95bf-8ea339499216.png" width="50%">
+</p>
+
+19. Now on the Credentials page, click the arrow icon shown to download the OAuth client ID as a .json file:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/78467235-d6e8f580-774d-11ea-8fb5-93a084c5d962.png" width="60%">
+</p>
+
+20. The file will be called something like "client_secret_<gibberish>.apps.googleusercontent.com.json". Rename it to XXX.
+ 
+<p align="center">
+<img src="" width="60%">
+</p>
+
 
 
 
