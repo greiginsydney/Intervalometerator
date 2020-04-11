@@ -94,24 +94,28 @@ def main(argv):
         'sftpUser'          : '',
         'sftpPassword'      : '',
         'sftpRemoteFolder'  : '',
+        'googleRemoteFolder': '',
         'dbx_token'         : '',
         'transferDay'       : '',
         'transferHour'      : '',
+        'deleteAfterTransfer': False
         })
     config.read(INIFILE_NAME)
     try:
-        tfrMethod         = config.get('Transfer', 'tfrmethod')
-        ftpServer         = config.get('Transfer', 'ftpServer')
-        ftpUser           = config.get('Transfer', 'ftpUser')
-        ftpPassword       = config.get('Transfer', 'ftpPassword')
-        ftpRemoteFolder   = config.get('Transfer', 'ftpRemoteFolder')
-        sftpServer        = config.get('Transfer', 'sftpServer')
-        sftpUser          = config.get('Transfer', 'sftpUser')
-        sftpPassword      = config.get('Transfer', 'sftpPassword')
-        sftpRemoteFolder  = config.get('Transfer', 'sftpRemoteFolder')
-        dbx_token         = config.get('Transfer', 'dbx_token')
-        transferDay       = config.get('Transfer', 'transferDay')
-        transferHour      = config.get('Transfer', 'transferHour')
+        tfrMethod           = config.get('Transfer', 'tfrmethod')
+        ftpServer           = config.get('Transfer', 'ftpServer')
+        ftpUser             = config.get('Transfer', 'ftpUser')
+        ftpPassword         = config.get('Transfer', 'ftpPassword')
+        ftpRemoteFolder     = config.get('Transfer', 'ftpRemoteFolder')
+        sftpServer          = config.get('Transfer', 'sftpServer')
+        sftpUser            = config.get('Transfer', 'sftpUser')
+        sftpPassword        = config.get('Transfer', 'sftpPassword')
+        sftpRemoteFolder    = config.get('Transfer', 'sftpRemoteFolder')
+        googleRemoteFolder  = config.get('Transfer', 'googleRemoteFolder')
+        dbx_token           = config.get('Transfer', 'dbx_token')
+        transferDay         = config.get('Transfer', 'transferDay')
+        transferHour        = config.get('Transfer', 'transferHour')
+        deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
 
     except Exception as e:
         tfrMethod = 'Off' # If we hit an exception, force tfrMethod=Off, because we can't be sure what triggered the error
