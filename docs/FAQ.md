@@ -46,3 +46,31 @@ server {
 }
 ```
 
+## My Camera and/or Pi are running low on storage. How can I delete old images?
+
+Hidden config options in the INI file will let you delete images off the camera after they've been safely transferred to the Pi, and after they've been safely uploaded to your nominated "off-box" destination.
+
+This option isn't visible in the browser, so to change it you need to SSH to the Pi. Browse to /home/pi/www/ and edit the file intvlm8r.ini. Set the two highlighted options On or Off as required. If the option's not already there, just add the line in by hand:
+
+<pre>
+[Global]
+file created = 05 Jan 2020
+thumbscount = 20
+
+[Transfer]
+tfrmethod = Dropbox
+dbx_token = thequickbrownfoxjumpsoverthelazydogorsomething
+transferday = Daily
+transferhour = 00
+sftpserver = 20.20.20.20
+sftpuser = intvlm8r
+sftppassword = mysecretsftppassword
+sftpremotefolder = upload/GreyBox/
+<b>deleteaftertransfer = On</b>
+
+[Copy]
+copyday = Daily
+copyhour = 00
+<b>deleteaftercopy = On</b>
+</pre>
+

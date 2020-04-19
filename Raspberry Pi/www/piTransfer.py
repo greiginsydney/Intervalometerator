@@ -56,9 +56,10 @@ except:
 # ////////////////////////////////
 
 PI_PHOTO_DIR         = os.path.expanduser('/home/pi/photos')
+PI_THUMBS_DIR        = os.path.expanduser('/home/pi/thumbs')
 UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, 'uploadedOK.txt')
-INIFILE_PATH         = os.path.expanduser('/home/pi')
-INIFILE_NAME         = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
+INIFILE_DIR          = os.path.expanduser('/home/pi/www')
+INIFILE_NAME         = os.path.join(INIFILE_DIR, 'intvlm8r.ini')
 LOGFILE_DIR          = os.path.expanduser('/home/pi/www/static')
 LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 KNOWN_HOSTS_FILE     = os.path.expanduser('~/.ssh/known_hosts')
@@ -81,9 +82,12 @@ def main(argv):
                 return 0
     except:
         pass
-    
+
+    global deleteAfterTransfer  #Made global instead of passing this down from here to all the nested functions.
+
     if not os.path.exists(INIFILE_NAME):
-        pass
+        log("STATUS: Upload aborted. I've lost the INI file")
+        return
     config = configparser.ConfigParser(
         {
         'tfrmethod'         : 'Off',
@@ -119,8 +123,8 @@ def main(argv):
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
 
     except Exception as e:
-        tfrMethod = 'Off' # If we hit an exception, force tfrMethod=Off, because we can't be sure what triggered the error
-        log('INI file error:' + str(e))
+        tfrMethod = 'Off' # If we hit an unknown exception, force tfrMethod=Off, because we can't be sure what triggered the error
+        log('INI file error: ' + str(e))
 
     if (tfrMethod == 'Off'):
         log('STATUS: Upload aborted. tfrMethod=Off')
@@ -246,9 +250,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
                 fp = open(needupload, 'rb')
                 ftp.storbinary('STOR %s' % remoteFolderTree[1], fp, 1024)
                 previousFilePath = remoteFolderTree[0]
-                numFilesOK += 1
-                with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
-                    historyFile.write(needupload + "\n")
+                numFilesOK = uploadedOK(needupload, numFilesOK)
             except Exception as e:
                 log('Error uploading ' + str(e))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
@@ -280,9 +282,7 @@ def commenceDbx(token):
             if result == None:
                 log('Error uploading ' + needupload)
             else:
-                numFilesOK += 1
-                with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
-                    historyFile.write(needupload + "\n")
+                numFilesOK = uploadedOK(needupload, numFilesOK)
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
 
 
@@ -382,11 +382,9 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
                                 sftp.chdir(remotePath)
                 sftp.put(needupload, remoteFolderTree[1])
                 previousFilePath = remoteFolderTree[0]
-                numFilesOK += 1
-                with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
-                    historyFile.write(needupload + "\n")
+                numFilesOK = uploadedOK(needupload, numFilesOK)
             except Exception as e:
-                log('Error uploading ' + str(e))
+                log('Error uploading via SFTP: ' + str(e))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     try:
         sftp.close()
@@ -567,7 +565,7 @@ def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        print('error:' + str(e))
+        print('error: ' + str(e))
         #pass
 
 

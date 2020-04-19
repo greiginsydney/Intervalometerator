@@ -106,7 +106,7 @@ def writeString(value):
         try:
             bus.write_i2c_block_data(address, 0, ascii)
         except Exception as e:
-            app.logger.debug('writeString error:' + str(e))
+            app.logger.debug('writeString error: ' + str(e))
             time.sleep(1) # Wait a second before each retry
     time.sleep(0.5) # Give the Arduino time to act on the data sent
     return -1
@@ -134,7 +134,7 @@ def readString(value):
             app.logger.debug('Status received was: >' + status + "<")
             break
         except Exception as e:
-            app.logger.debug('readString error:' + str(e))
+            app.logger.debug('readString error: ' + str(e))
             time.sleep(1) # Wait a second before each retry
     if status == "":
         status = "Unknown"
@@ -158,7 +158,7 @@ def getPiTemp():
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as tempfile:
             temp = '{0:.0f}'.format(round(int(tempfile.read()) / 1000, 0))
     except Exception as e:
-        app.logger.debug('Pi temp error:' + str(e))
+        app.logger.debug('Pi temp error: ' + str(e))
     app.logger.debug('Pi temp = ' + temp)
     return temp
 
@@ -327,9 +327,9 @@ def main():
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
     except gp.GPhoto2Error as e:
         flash(e.string)
-        app.logger.debug('GPhoto camera error in main:' + str(e))
+        app.logger.debug('GPhoto camera error in main: ' + str(e))
     except Exception as e:
-        app.logger.debug('Unknown camera error in main:' + str(e))
+        app.logger.debug('Unknown camera error in main: ' + str(e))
 
     # Pi comms:
     piLastImage = ''
@@ -410,7 +410,7 @@ def thumbnails():
     try:
         ThumbsToShow = int(config.get('Global', 'thumbsCount'))
     except Exception as e:
-        app.logger.debug('INI file error reading:' + str(e))
+        app.logger.debug('INI file error reading: ' + str(e))
         ThumbsToShow = 20
 
     try:
@@ -541,7 +541,7 @@ def camera():
         flash(e.string)
         app.logger.debug('Camera GET error: ' + e.string)
     except Exception as e:
-        app.logger.debug('Unknown camera GET error:' + str(e))
+        app.logger.debug('Unknown camera GET error: ' + str(e))
         
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
@@ -591,7 +591,7 @@ def cameraPOST():
         app.logger.debug('Camera POST error: ' + e.string)
         flash(e.string)
     except Exception as e:
-        app.logger.debug('Unknown camera POST error:' + str(e))
+        app.logger.debug('Unknown camera POST error: ' + str(e))
 
     return redirect(url_for('camera'))
 
@@ -620,9 +620,9 @@ def intervalometer():
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
         flash(e.string)
-        app.logger.debug('GPhoto camera error in intervalometer:' + str(e))
+        app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
     except Exception as e:
-        app.logger.debug('Unknown camera error in intervalometer:' + str(e))
+        app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
     ArdInterval = str(readString("3"))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
@@ -762,7 +762,7 @@ def transferPOST():
             piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
             piTransferLogfile.close()
         except Exception as e:
-            app.logger.debug('Exception clearing piTransfer.log:' + str(e))
+            app.logger.debug('Exception clearing piTransfer.log: ' + str(e))
 
     if 'tfrApply' in request.form:
         if not os.path.exists(iniFile):
@@ -800,7 +800,7 @@ def transferPOST():
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
-            app.logger.debug('INI file error writing:' + str(e))
+            app.logger.debug('INI file error writing: ' + str(e))
             if 'Permission denied' in str(e):
                 flash('Permission denied writing to the ini file')
             else:
@@ -899,7 +899,7 @@ def system():
     try:
         templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
     except Exception as e:
-        app.logger.debug('INI file error reading:' + str(e))
+        app.logger.debug('INI file error reading: ' + str(e))
         templateData['piThumbCount'] = '20'
 
     try:
@@ -1096,7 +1096,26 @@ def copy_files(camera):
         app.logger.debug('No files found')
         return 1
     app.logger.debug('Copying files...')
-
+    
+    try:
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
+    except Exception as e:
+        #Looks like the flag doesn't exist. Let's add it
+        try:
+            if not config.has_section('Copy'):
+                config.add_section('Copy')
+            config.set('Copy', 'deleteAfterCopy', 'Off')
+            with open(iniFile, 'w') as config_file:
+                config.write(config_file)
+            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
+        except Exception as e:
+            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
+        deleteAfterCopy = False
+    
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
@@ -1104,9 +1123,15 @@ def copy_files(camera):
         if dest in computer_files:
             continue
         app.logger.debug('Copying {0} --> {1}'.format(path, dest))
-        camera_file = gp.check_result(gp.gp_camera_file_get(
-            camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
-        gp.check_result(gp.gp_file_save(camera_file, dest))
+        try:
+            camera_file = gp.check_result(gp.gp_camera_file_get(
+                camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
+            copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
+            if ((copyOK >= gp.GP_OK) and (deleteAfterCopy == True)):
+                gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
+                app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+        except Exception as e:
+            app.logger.debug('Exception in copy_files: ' + str(e))
     return 0
 
 
@@ -1187,7 +1212,9 @@ def createConfigFile(iniFile):
         config.set('Global', 'thumbscount', '20')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
+        config.set('Transfer', 'deleteAfterTransfer', 'Off')
         config.add_section('Copy')
+        config.set('Copy', 'deleteAfterCopy', 'Off')
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
     except:
