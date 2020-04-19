@@ -18,21 +18,38 @@
 
 # This script is based on the FTP example from http://makble.com/upload-new-files-to-ftp-server-with-python
 # SFTP code from the paramiko project: https://github.com/paramiko/paramiko
+# Google Drive bits with thanks to @Jerbly: http://jeremyblythe.blogspot.com/2015/06/motion-google-drive-uploader-for-oauth.html
 
 
 import datetime
 from ftplib import FTP
 import configparser # for the ini file
-import dropbox
 import fileinput
 import logging
 import os
-import paramiko
 import re    #RegEx
 import socket
 import sys
 import time
 
+#Only attempt to import these if they've been installed:
+#(My attempts at lazy-loading and alternative test/load strategies failed.)
+try:
+    import dropbox
+except:
+    pass
+try:
+    import paramiko
+except:
+    pass
+try:
+    import httplib2
+    from apiclient import discovery
+    from oauth2client import client
+    from oauth2client.file import Storage
+    from googleapiclient.http import MediaFileUpload
+except:
+    pass
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -57,6 +74,12 @@ def main(argv):
     try:
         if sys.argv[1] == 'copyNow':
             copyNow = True
+        if sys.argv[1] == 'reauthGoogle':
+            returncode = reauthGoogle()
+            if returncode == 0:
+                copyNow = True
+            else:
+                return 0
     except:
         pass
 
@@ -76,6 +99,7 @@ def main(argv):
         'sftpUser'          : '',
         'sftpPassword'      : '',
         'sftpRemoteFolder'  : '',
+        'googleRemoteFolder': '',
         'dbx_token'         : '',
         'transferDay'       : '',
         'transferHour'      : '',
@@ -83,18 +107,19 @@ def main(argv):
         })
     config.read(INIFILE_NAME)
     try:
-        tfrMethod         = config.get('Transfer', 'tfrmethod')
-        ftpServer         = config.get('Transfer', 'ftpServer')
-        ftpUser           = config.get('Transfer', 'ftpUser')
-        ftpPassword       = config.get('Transfer', 'ftpPassword')
-        ftpRemoteFolder   = config.get('Transfer', 'ftpRemoteFolder')
-        sftpServer        = config.get('Transfer', 'sftpServer')
-        sftpUser          = config.get('Transfer', 'sftpUser')
-        sftpPassword      = config.get('Transfer', 'sftpPassword')
-        sftpRemoteFolder  = config.get('Transfer', 'sftpRemoteFolder')
-        dbx_token         = config.get('Transfer', 'dbx_token')
-        transferDay       = config.get('Transfer', 'transferDay')
-        transferHour      = config.get('Transfer', 'transferHour')
+        tfrMethod           = config.get('Transfer', 'tfrmethod')
+        ftpServer           = config.get('Transfer', 'ftpServer')
+        ftpUser             = config.get('Transfer', 'ftpUser')
+        ftpPassword         = config.get('Transfer', 'ftpPassword')
+        ftpRemoteFolder     = config.get('Transfer', 'ftpRemoteFolder')
+        sftpServer          = config.get('Transfer', 'sftpServer')
+        sftpUser            = config.get('Transfer', 'sftpUser')
+        sftpPassword        = config.get('Transfer', 'sftpPassword')
+        sftpRemoteFolder    = config.get('Transfer', 'sftpRemoteFolder')
+        googleRemoteFolder  = config.get('Transfer', 'googleRemoteFolder')
+        dbx_token           = config.get('Transfer', 'dbx_token')
+        transferDay         = config.get('Transfer', 'transferDay')
+        transferHour        = config.get('Transfer', 'transferHour')
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
 
     except Exception as e:
@@ -132,6 +157,12 @@ def main(argv):
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
         commenceDbx(dbx_token)
+    elif (tfrMethod == 'Google Drive'):
+        while '\\' in googleRemoteFolder:
+            googleRemoteFolder = googleRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+        while '//' in googleRemoteFolder:
+            googleRemoteFolder = googleRemoteFolder.replace('//', '/')
+        commenceGoogle(googleRemoteFolder)
 
 
 def list_New_Images(imagesPath, previouslyUploadedFile):
@@ -365,6 +396,153 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         pass
 
 
+def commenceGoogle(remoteFolder):
+    """Create a Drive service."""
+    auth_required = True
+    #Have we got some credentials already?
+    storage = Storage('Google_credentials.txt')
+    credentials = storage.get()
+    try:
+        if credentials:
+            # Check for expiry
+            if credentials.access_token_expired:
+                if credentials.refresh_token is not None:
+                    credentials.refresh(httplib2.Http())
+                    log ('Google token refreshed OK')
+                    auth_required = False
+            else:
+                auth_required = False
+    except:
+        # Something went wrong - try manual auth
+        log('Cached Auth failed')
+
+    if auth_required:
+        log('STATUS: Aborted. Google requires re-authentication')
+        return 0
+    else:
+        log('Auth NOT required')
+    #Get the drive service
+    try:
+        http_auth = credentials.authorize(httplib2.Http())
+        DRIVE = discovery.build('drive', 'v2', http_auth, cache_discovery=False)
+    except Exception as e:
+        log('Error creating Google DRIVE object: ' + str(e))
+        log('STATUS: Error creating Google DRIVE object')
+        return 0
+    newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No files to upload')
+    else:
+        numFilesOK = 0
+        previousFilePath = ''
+        for needupload in newFiles:
+            log("Uploading " + needupload)
+            # Format the destination path to strip the /home/pi/photos off:
+            shortPath = makeShortPath(remoteFolder, needupload)
+            log("shortPath: " + shortPath)
+            remoteFolderTree = os.path.split(shortPath)
+            if previousFilePath != remoteFolderTree[0]:
+                ImageParentId = None
+                # Confirm the tree exists, or build it out:
+                foldersList = remoteFolderTree[0].split("/")
+                if len(foldersList) != 0:
+                    for oneFolder in foldersList:
+                        childFolderId = getGoogleFolder(DRIVE, oneFolder, ImageParentId)
+                        if childFolderId is None:
+                            #Nope, that folder doesn't exist. Create it:
+                            newFolderId = createGoogleFolder(DRIVE, oneFolder, ImageParentId)
+                            if newFolderId is None:
+                                log('Aborted uploading to Google. Error creating newFolder')
+                                log('STATUS: Google upload aborted. %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+                                return 0
+                            else:
+                                ImageParentId = newFolderId
+                        else:
+                            ImageParentId = childFolderId
+            #By here we have the destination path id
+            #Now upload the file
+            file_name = remoteFolderTree[1]
+            try:
+                media = MediaFileUpload(needupload, mimetype='image/jpeg')
+                result = DRIVE.files().insert(media_body=media, body={'title':file_name, 'parents':[{u'id': ImageParentId}]}).execute()
+                if result is not None:
+                    numFilesOK = uploadedOK(needupload, numFilesOK)
+            except Exception as e:
+                log('Error uploading ''%s'' to Google: %s' % (needupload,str(e)))
+            previousFilePath = remoteFolderTree[0]
+        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+    return 0
+
+
+def getGoogleFolder(DRIVE, remoteFolder, parent=None):
+    log('Testing if folder \'%s\' exists.' % str(remoteFolder))
+    """Find and return the id of the remote folder """
+    q = []
+    q.append("title='%s'" % remoteFolder)
+    if parent is not None:
+        q.append("'%s' in parents" % parent.replace("'", "\\'"))
+    q.append("mimeType contains 'application/vnd.google-apps.folder'")
+    q.append("trashed=false")
+    params = {}
+    params['q'] = ' and '.join(q)
+    files = DRIVE.files().list(**params).execute()
+    log('FILES returned this: ' + str(files))
+    if len(files['items']) == 1:
+        remoteFolderId = files['items'][0]['id']
+        remoteFolderTitle = files['items'][0]['title']
+        log('Found the folder \'%s\'. Its Id is \'%s\'' % (str(remoteFolderTitle), str(remoteFolderId)))
+        return remoteFolderId
+    else:
+        return None
+
+
+def createGoogleFolder(DRIVE, newFolder, parentId=None):
+    log('About to create folder \'%s\'.' % str(newFolder))
+    try:
+        body = {
+          'title': newFolder,
+          'mimeType': "application/vnd.google-apps.folder"
+        }
+        if parentId:
+            body['parents'] = [{'id': parentId}]
+        newFolderId = DRIVE.files().insert(body = body).execute()
+        return newFolderId['id']
+    except Exception as e:
+        log('Error in createGoogleFolder : ' + str(e))
+
+
+def reauthGoogle():
+    log('Commencing Google re-auth')
+    try:
+        storage = Storage('Google_credentials.txt')
+        credentials = storage.get()
+        flow = client.flow_from_clientsecrets('client_secrets.json',
+            scope='https://www.googleapis.com/auth/drive',
+            redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+        auth_uri = flow.step1_get_authorize_url()
+
+        print ('')
+        print ('Go to this link in your browser:')
+        print (auth_uri)
+
+        auth_code = input('Enter the auth code: ')
+        credentials = flow.step2_exchange(auth_code)
+        storage.put(credentials)
+        log('Completed Google re-auth')
+        print ('')
+        print ('Completed Google re-auth OK.')
+        response = input("Shall we try uploading some images? [Y/n]: ")
+        response = response.lower()
+        if response == 'y' or response == '':
+            return 0
+    except Exception as e:
+        print ('')
+        print('Error in Google re-auth. (See /home/pi/www/static/piTransfer.log for details)')
+        log('Error in Google re-auth : ' + str(e))
+    return 1
+
+
 def uploadedOK(filename, filecount):
     log('Uploaded {0}'.format(filename))
     with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
@@ -375,6 +553,7 @@ def uploadedOK(filename, filecount):
             log('Deleted  {0}'.format(filename))
             Thumbversion = filename.replace( PI_PHOTO_DIR, PI_THUMBS_DIR)
             Thumbversion = Thumbversion.replace( '.JPG', '-thumb.JPG')
+            log('Looking to delete {0}'.format(Thumbversion))
             if os.path.exists(Thumbversion):
                 os.remove(Thumbversion)
         except Exception as e:

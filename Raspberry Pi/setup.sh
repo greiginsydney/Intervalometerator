@@ -33,20 +33,65 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 
 install_apps ()
 {
+
+	#Ask the admin if they want to NOT install some of the transfer/upload options:
+	echo ""
+	echo "====== Select Upload/Transfer options ======="
+	echo "An 'X' indicates the option will be installed"
+	installSftp=1
+	installDropbox=1
+	installGoogle=1
+	while true; do
+		echo ""
+		
+		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
+		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
+		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
+		echo ""
+		echo "Press 1, 2 or 3 to toggle the selection."
+		read -p "Press return on its own to continue with the install " response
+		case "$response" in
+			(1)
+				installSftp=$((1-installSftp))
+				;;
+			(2)
+				installDropbox=$((1-installDropbox))
+				;;
+			(3)
+				installGoogle=$((1-installGoogle))
+				;;
+			("")
+				break
+				;;
+		esac
+	done
+
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	apt-get install python3-pip python-flask -y
 	pip3 install Werkzeug==0.16.0 #Added temporarily to bypass a bug. Refer Issue #41 
 	pip3 install flask flask-bootstrap flask-login configparser
-	pip3 install gunicorn
+	pip3 install gunicorn psutil
 
-	#This is ALL for Paramiko (SSH uploads):
-	export DEBIAN_FRONTEND=noninteractive
-	apt-get install libffi-dev libssl-dev python-dev -y
-	apt install krb5-config krb5-user -y
-	apt-get install libkrb5-dev -y
-	pip3 install bcrypt pynacl cryptography gssapi paramiko
+	if [ $installSftp -eq 1 ];
+	then
+		#This is ALL for Paramiko (SSH uploads):
+		export DEBIAN_FRONTEND=noninteractive
+		apt-get install libffi-dev libssl-dev python-dev -y
+		apt install krb5-config krb5-user -y
+		apt-get install libkrb5-dev -y
+		pip3 install bcrypt pynacl cryptography gssapi paramiko
+	fi
 
-	pip3 install dropbox psutil
+	if [ $installDropbox -eq 1 ];
+	then
+		pip3 install dropbox
+	fi
+	
+	if [ $installGoogle -eq 1 ];
+	then
+		pip3 install -U pip google-api-python-client oauth2client
+	fi
+	
 	apt-get install nginx nginx-common supervisor python-dev -y
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.

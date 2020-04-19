@@ -100,25 +100,42 @@ sudo chmod +x setup.sh
 ```txt
 sudo -E -H ./setup.sh start
 ```
-> As at October 2019 this step now takes **over an hour** to complete, depending on how slow your Internet connection is.
+
+33. First up you'll be presented with a menu to choose which of the upload/transfer options to install:
+
+```txt
+====== Select Upload/Transfer options =======
+An 'X' indicates the option will be installed
+
+1. [X] SFTP
+2. [X] Dropbox
+3. [X] Google Drive
+
+Press 1, 2 or 3 to toggle the selection.
+Press return on its own to continue with the install
+```
+
+Accept the defaults just by pressing return on its own, or choose 1, 2 or 3 (then return) to de-select the options that aren't relevant to you. (You can always install them later if the need arises).
+
+> If you choose ALL the options (the default), this step now takes **over an hour** to complete, depending on how slow your Internet connection is. (As at March 2020.) SFTP is the real time-killer here.
 
 > If any step fails, the script will abort and on-screen info should reveal the component that failed. You can simply re-run the script at any time (up-arrow / return) and it will simply skip over those steps where no changes are required. There are a lot of moving parts in the Raspbian/Linux world, and sometimes a required server might be down or overloaded. Time-outs aren't uncommon, hence why simply wait and retry is a valid remediation action.
 
 > If libgphoto throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you will need to edit back into the script before your repeat attempt at this step.
 
-33. If all goes well, you'll be presented with a prompt to reboot:
+34. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
 Exited install_apps OK.
 Reboot now? [Y/n]:
 ```
 Pressing return or anything but n/N will cause the Pi to reboot.
 
-34. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
+35. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
 sudo -E ./setup.sh web
 ```
 
-35. The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
+36. The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
@@ -130,14 +147,14 @@ mkdir: created directory 'thumbs'
 'intvlm8r' -> '/etc/nginx/sites-available/intvlm8r'
 ```
 
-36. You will be asked to provide a username and password for the web interface. Accept the defaults if you like, but preferably come up with your own. (You should DEFINITELY change these if the intvlm8r is connected to the Internet or a network where anyone else might find it.)
+37. You will be asked to provide a username and password for the web interface. Accept the defaults if you like, but preferably come up with your own. (You should DEFINITELY change these if the intvlm8r is connected to the Internet or a network where anyone else might find it.)
 
 ```txt
 Change the website's login name: admin
 Change the website's password  : password
 ```
 
-37. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
+38. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
 
 ```txt
 NTP Step. Does the Pi have network connectivity? [Y/n]:
@@ -145,16 +162,16 @@ NTP Step. Does the Pi have network connectivity? [Y/n]:
 
 If you respond 'n' to the prompt, the script will move the repo's "setTime.service" file to /etc/systemd/system/. This will in turn cause the provided "setTime.py" script to be run when-ever the Pi boots, reading the real time from the Arduino and then using this to set the Pi's own internal clock.
 
-38. If all goes well, you'll be presented with a prompt to reboot:
+39. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
 Exited install_website OK.
 Reboot now? [Y/n]:
 ```
 Pressing return or anything but n/N will cause the Pi to reboot.
 
-39. You're in business!  After the Pi reboots you should be able to browse to its IP address, where you'll be presented the message "You need to sign in before you can access that page!" and the login form.
+40. You're in business!  After the Pi reboots you should be able to browse to its IP address, where you'll be presented the message "You need to sign in before you can access that page!" and the login form.
 
-40. Login with the credentials you set in Step 36. You can change those or add new login/password pairs by editing the /www/intvlm8r.py script.
+41. Login with the credentials you set in Step 37. You can change those or add new login/password pairs by editing the /www/intvlm8r.py script.
 
 ## Next steps are:
 - Add an SSL certificate:

@@ -24,8 +24,9 @@ from urllib.parse import urlparse, urljoin
 import calendar
 import configparser # for the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
-import logging
+import importlib.util # Testing installed packages
 import io   #Camera preview
+import logging
 import os
 import psutil
 import re    #RegEx. Used in Copy Files
@@ -84,6 +85,20 @@ iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 
 arduinoDoW=["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
+#Suppress the display of any uninstalled transfer options:
+hiddenTransferOptions = ''
+hiddenTransferDict = {
+  "paramiko": "SFTP",
+  "dropbox": "Dropbox",
+  "google": "Google Drive"
+}
+# TY SO: https://stackoverflow.com/a/41815890
+for package_name in ('paramiko', 'dropbox', 'google'):
+    spec = importlib.util.find_spec(package_name)
+    if spec is None:
+        app.logger.debug(package_name + ' is not installed')
+        hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
+app.logger.debug('hiddenTransferOptions = ' + hiddenTransferOptions)
 
 def writeString(value):
     ascii = [ord(c) for c in value]
@@ -668,58 +683,62 @@ def transfer():
         createConfigFile(iniFile)
     # Initialise the dictionary:
     templateData = {
-        'tfrMethod'         : 'Off',    # Hides all options if the file isn't found or is bad
-        'ftpServer'         : '',
-        'ftpUser'           : '',
-        'ftpPassword'       : '',
-        'ftpRemoteFolder'   : '',
-        'sftpServer'        : '',
-        'sftpUser'          : '',
-        'sftpPassword'      : '',
-        'sftpRemoteFolder'  : '',
-        'dbx_token'         : '',
-        'transferDay'       : '',
-        'transferHour'      : '',
-        'copyDay'           : '',
-        'copyHour'          : '',
-        'wakePiTime'        : '25',
-        'piTransferLogLink' : PI_TRANSFER_LINK
+        'tfrMethod'             : 'Off',    # Hides all options if the file isn't found or is bad
+        'ftpServer'             : '',
+        'ftpUser'               : '',
+        'ftpPassword'           : '',
+        'ftpRemoteFolder'       : '',
+        'sftpServer'            : '',
+        'sftpUser'              : '',
+        'sftpPassword'          : '',
+        'sftpRemoteFolder'      : '',
+        'googleRemoteFolder'    : '',
+        'dbx_token'             : '',
+        'transferDay'           : '',
+        'transferHour'          : '',
+        'copyDay'               : '',
+        'copyHour'              : '',
+        'wakePiTime'            : '25',
+        'piTransferLogLink'     : PI_TRANSFER_LINK,
+        'hiddenTransferOptions' : hiddenTransferOptions
     }
     config = configparser.ConfigParser(
         {
-        'tfrmethod'        : 'Off',
-        'ftpServer'        : '',
-        'ftpUser'          : '',
-        'ftpPassword'      : '',
-        'ftpRemoteFolder'  : '',
-        'sftpServer'       : '',
-        'sftpUser'         : '',
-        'sftpPassword'     : '',
-        'sftpRemoteFolder' : '',
-        'dbx_token'        : '',
-        'transferDay'      : '',
-        'transferHour'     : '',
-        'copyDay'          : 'Off',
-        'copyHour'         : '',
-        'wakePiTime'       : '25'
+        'tfrmethod'          : 'Off',
+        'ftpServer'          : '',
+        'ftpUser'            : '',
+        'ftpPassword'        : '',
+        'ftpRemoteFolder'    : '',
+        'sftpServer'         : '',
+        'sftpUser'           : '',
+        'sftpPassword'       : '',
+        'sftpRemoteFolder'   : '',
+        'googleRemoteFolder' : '',
+        'dbx_token'          : '',
+        'transferDay'        : '',
+        'transferHour'       : '',
+        'copyDay'            : 'Off',
+        'copyHour'           : '',
+        'wakePiTime'         : '25'
         })
     try:
         config.read(iniFile)
         #app.logger.debug('Found the file in GET')
-        templateData['tfrMethod']        = config.get('Transfer', 'tfrmethod')
-        templateData['ftpServer']        = config.get('Transfer', 'ftpServer')
-        templateData['ftpUser']          = config.get('Transfer', 'ftpUser')
-        templateData['ftpPassword']      = config.get('Transfer', 'ftpPassword')
-        templateData['ftpRemoteFolder']  = config.get('Transfer', 'ftpRemoteFolder')
-        templateData['sftpServer']       = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']         = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']     = config.get('Transfer', 'sftpPassword')
-        templateData['sftpRemoteFolder'] = config.get('Transfer', 'sftpRemoteFolder')
-        templateData['dbx_token']        = config.get('Transfer', 'dbx_token')
-        templateData['transferDay']      = config.get('Transfer', 'transferDay')
-        templateData['transferHour']     = config.get('Transfer', 'transferHour')
-        templateData['copyDay']          = config.get('Copy', 'copyDay')
-        templateData['copyHour']         = config.get('Copy', 'copyHour')
+        templateData['tfrMethod']          = config.get('Transfer', 'tfrmethod')
+        templateData['ftpServer']          = config.get('Transfer', 'ftpServer')
+        templateData['ftpUser']            = config.get('Transfer', 'ftpUser')
+        templateData['ftpPassword']        = config.get('Transfer', 'ftpPassword')
+        templateData['ftpRemoteFolder']    = config.get('Transfer', 'ftpRemoteFolder')
+        templateData['sftpServer']         = config.get('Transfer', 'sftpServer')
+        templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
+        templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
+        templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
+        templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
+        templateData['dbx_token']          = config.get('Transfer', 'dbx_token')
+        templateData['transferDay']        = config.get('Transfer', 'transferDay')
+        templateData['transferHour']       = config.get('Transfer', 'transferHour')
+        templateData['copyDay']            = config.get('Copy', 'copyDay')
+        templateData['copyHour']           = config.get('Copy', 'copyHour')
     except Exception as e:
         app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
@@ -760,7 +779,7 @@ def transferPOST():
                 config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
                 ftpRemoteFolder = reformatSlashes(str(request.form.get('ftpRemoteFolder')))
                 config.set('Transfer', 'ftpRemoteFolder', ftpRemoteFolder or '')
-            if (request.form.get('tfrMethod') == 'SFTP'):
+            elif (request.form.get('tfrMethod') == 'SFTP'):
                 config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
                 config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
                 config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
@@ -768,6 +787,9 @@ def transferPOST():
                 config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'Dropbox'):
                 config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
+            elif (request.form.get('tfrMethod') == 'Google Drive'):
+                googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
+                config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
             if (request.form.get('tfrMethod') != 'Off'):
                 config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
                 config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
