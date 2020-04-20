@@ -45,7 +45,7 @@
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
 					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive'] %}
-						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %} {% if method in hiddenTransferOptions %} DISABLED{% endif %} >{{ method }}</option>"
+						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %} {% if method != 'FTP' and method in hiddenTransferOptions %} DISABLED{% endif %} >{{ method }}</option>"
 					{% endfor %}
 					</select>
 				</div>
