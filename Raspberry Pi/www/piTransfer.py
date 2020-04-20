@@ -63,6 +63,7 @@ INIFILE_NAME         = os.path.join(INIFILE_DIR, 'intvlm8r.ini')
 LOGFILE_DIR          = os.path.expanduser('/home/pi/www/static')
 LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 KNOWN_HOSTS_FILE     = os.path.expanduser('~/.ssh/known_hosts')
+GOOGLE_CREDENTIALS   = os.path.join('/home/pi/www', 'Google_credentials.txt')
 
 # Paramiko client configuration
 sftpPort = 22
@@ -515,7 +516,7 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
 def reauthGoogle():
     log('Commencing Google re-auth')
     try:
-        storage = Storage('Google_credentials.txt')
+        storage = Storage(GOOGLE_CREDENTIALS)
         credentials = storage.get()
         flow = client.flow_from_clientsecrets('client_secrets.json',
             scope='https://www.googleapis.com/auth/drive',
