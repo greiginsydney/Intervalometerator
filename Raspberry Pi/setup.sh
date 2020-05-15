@@ -68,7 +68,7 @@ install_apps ()
 
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	apt-get install python3-pip python-flask -y
-	pip3 install Werkzeug==0.16.0 #Added temporarily to bypass a bug. Refer Issue #41 
+	pip3 install Werkzeug cachelib
 	pip3 install flask flask-bootstrap flask-login configparser
 	pip3 install gunicorn psutil
 
