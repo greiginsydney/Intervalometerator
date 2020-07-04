@@ -30,7 +30,7 @@ From the web interface you select the days of the week to shoot, within what spa
 
 ### Auto-upload of images
 
-At least once each day, the Raspberry Pi copies the images from the camera, and if enabled by the user then uploads all the images to a remote store. The store destination can be an FTP or SFTP server, or to Dropbox. (Obviously, your intvlm8r requires a suitable private network or internet connection for this.)
+At least once each day, the Raspberry Pi copies the images from the camera, and if enabled by the user then uploads all the images to a remote store. The store destination can be an FTP or SFTP server, Dropbox or Google Drive. (Obviously, your intvlm8r requires a suitable private network or internet connection for this.)
 
 ### Low-Cost
 Using commonly-available components, an intvlm8r controller with charger, battery, solar panel, waterproof <a href="https://www.pelican.com/us/en/" target="_blank">Pelican case</a> & mounts should see you with plenty of change from $AUD600 ($US440), a fraction of the cost of commercially-available equivalents. Add your DSLR and a lens and you're in business! See the [Shopping list](SHOPPINGLIST.md) for the specifics.
