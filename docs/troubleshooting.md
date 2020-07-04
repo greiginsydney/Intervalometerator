@@ -57,7 +57,7 @@ If you receive this error after having attempted to wake the camera, the first t
     - It's worth checking it's not an issue with the intvlm8r's code. For this you can ssh to the Pi and run some of the python gphoto scripts that are installed by default. Try this:
     ```python
     cd /usr/local/share/python-gphoto2/examples
-    sudo python camera-summary.py 
+    sudo python3 camera-summary.py 
     ```
      If this responds with information about your camera, there's an issue in the intvlm8r, so focus your debugging on `/home/pi/www/intvlm8r.p`. If it fails, there's a deeper underlying USB issue. See [USB errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#usb-errors) below.
 
@@ -195,8 +195,8 @@ Choose 1-3 [1]:
 ... and then the "cron tab", the cron table file opens:
 
 ```text
-0 * * * * /usr/bin/python /home/pi/www/cameraTransfer.py
-0 * * * * /usr/bin/python /home/pi/www/piTransfer.py
+0 * * * * /usr/bin/python3 /home/pi/www/cameraTransfer.py
+0 * * * * /usr/bin/python3 /home/pi/www/piTransfer.py
 ```
 
 The start of the line is the frequency at which the event fires, followed by the action to be taken. In this example, `0 * * * *` results in the job (task) being fired once when minute = 0, thus the top of every hour. The asterisks signify "don't care" for the choice of hour, day of month, month and day of week respectively.
