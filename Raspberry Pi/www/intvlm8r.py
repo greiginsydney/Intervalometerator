@@ -38,7 +38,7 @@ import time
 
 import gphoto2 as gp
 
-from werkzeug.contrib.cache import SimpleCache
+from cachelib import SimpleCache
 cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
