@@ -313,7 +313,7 @@ def main():
         files = list_camera_files(camera)
         if not files:
             fileCount = 0
-            lastImage = ''
+            lastImage = 'n/a'
         else:
             fileCount = len(files)
             info = get_camera_file_info(camera, files[-1]) #Get the last file
