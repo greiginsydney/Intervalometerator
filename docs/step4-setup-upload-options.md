@@ -74,9 +74,9 @@ NB: This process was last confirmed accurate on September 12th, 2019.
 
 ## Google Drive
 
-1. Before you can use Google Drive, you need to have installed the Google API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Google Drive is greyed out and can't be selected, the options weren't installed. To install them, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
+1. Before you can use Google Drive, you need to have installed the Google API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Google Drive is greyed out and can't be selected, that option has not been installed. To install it, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
 
-2. Google Drive won't let an app like the intvlm8r upload files without you first granting consent. Navigate to [console.developers.google.com/start/api?id=drive](console.developers.google.com/start/api?id=drive) and login to your Google account to commence this process:
+2. Google Drive won't let an app like the intvlm8r upload files without you first granting consent. Navigate to [https://console.developers.google.com/start/api?id=drive](https://console.developers.google.com/start/api?id=drive) and login to your Google account to commence this process:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/78420245-14d81200-7699-11ea-85fa-f0c404b95d18.png" width="50%">
