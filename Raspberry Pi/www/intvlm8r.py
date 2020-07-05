@@ -1021,7 +1021,7 @@ def readRange ( camera, context, group, attribute ):
     camera, so it's inappropriate (and inefficient) to attempt a reconnection here.
     """
     options = []
-    currentValue = ''
+    currentValue = 'Unknown'
     try:
         config_tree = camera.get_config(context)
         total_child = config_tree.count_children()
