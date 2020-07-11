@@ -8,7 +8,11 @@ The Intervalometerator (aka "intvlm8r") is a flexible, low-cost time-lapse camer
 
 It came into being after we were unable to find a suitable time-lapse controller for a planned time-lapse shoot for which we wanted the image quality of a DSLR. The first unit deployed is recording the construction of our friends' house in rural New Zealand, off-grid and with no network connectivity.
 
-At its heart are two micro-controller boards, each serving a specific purpose. An <a href="https://www.sparkfun.com/products/11114https://www.sparkfun.com/products/11114" target="_blank">Arduino Pro Mini</a> is the master, with a battery-backed external real-time clock signalling it to wake the camera and fire the shutter. A <a href="https://www.raspberrypi.org/products/raspberry-pi-zero-w/" target="_blank">Raspberry Pi Zero W</a> provides a web-based "front-end" where all configuration and management takes place. An I2C communication bus between the micros handles the higher-level intercommunication, with 3 digital IO lines between them providing 'wake' and 'shutdown' signalling. The digital IO reduces the risk of drive corruption as the power-hungry Pi's power is applied and removed under the Arduino's control.
+At its heart are two micro-controller boards, each serving a specific purpose. An <a href="https://www.sparkfun.com/products/11114https://www.sparkfun.com/products/11114" target="_blank">Arduino Pro Mini</a> is the master, with a battery-backed external real-time clock signalling it to wake the camera and fire the shutter. A <a href="https://www.raspberrypi.org/products/raspberry-pi-zero-w/" target="_blank">Raspberry Pi Zero W</a> provides a web-based "front-end" where all configuration and management takes place. An I2C communication bus between the micros handles the higher-level intercommunication, with 3 digital I/O lines between them providing 'wake' and 'shutdown' signalling. The digital I/O reduces the risk of drive corruption as the power-hungry Pi's power is applied and removed under the Arduino's control.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/87218404-b99f7500-c395-11ea-84d5-ca5a7936d0b9.jpg" width="80%">
+ </p>
 
 The Arduino's code ('sketch') is largely bespoke, whilst the Pi is totally reliant on and derived from both <a href="http://gphoto.org/" target="_blank">the gPhoto2 project</a>, and <a href="https://github.com/jim-easterbrook/python-gphoto2" target="_blank">python-gphoto2</a>, Jim Easterbrook's Python interface to same. 
 
