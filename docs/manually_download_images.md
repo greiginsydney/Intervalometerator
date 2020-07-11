@@ -1,5 +1,9 @@
 # Manually download images from the Intervalometerator
 
+The intvlm8r will automatically transfer images from the camera to its local storage, and then upload them to your designated location. See [step4-setup-upload-options.md](step4-setup-upload-options.md) for the required setup steps.
+
+Should you have a requirement to access the intvlm8r's photos NOW, here's how to manually download them.
+
 ## What software to use?
 
 <a href="https://filezilla-project.org/">_FileZilla_</a> is an open source FTP Client, distributed free of charge under the terms of the GNU General Public License.  
