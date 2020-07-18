@@ -1,10 +1,10 @@
 # Setup upload options
 
 The intvlm8r provides four methods to automatically upload images off the Raspberry Pi:
-- FTP
-- SFTP
-- Dropbox
-- Google Drive
+- [FTP](#ftp--sftp)
+- [SFTP](#ftp--sftp)
+- [Dropbox](#dropbox)
+- [Google Drive](#google-drive)
 
 <br/>
 <hr />
