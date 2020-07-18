@@ -441,7 +441,7 @@ def commenceGoogle(remoteFolder):
             log("Uploading " + needupload)
             # Format the destination path to strip the /home/pi/photos off:
             shortPath = makeShortPath(remoteFolder, needupload)
-            log("shortPath: " + shortPath)
+            log("ShortPath: " + shortPath)
             remoteFolderTree = os.path.split(shortPath)
             if previousFilePath != remoteFolderTree[0]:
                 ImageParentId = None
@@ -469,8 +469,10 @@ def commenceGoogle(remoteFolder):
                 result = DRIVE.files().insert(media_body=media, body={'title':file_name, 'parents':[{u'id': ImageParentId}]}).execute()
                 if result is not None:
                     numFilesOK = uploadedOK(needupload, numFilesOK)
+                else
+                    log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
-                log('Error uploading ''%s'' to Google: %s' % (needupload,str(e)))
+                log('Exception uploading ''%s'' to Google: %s' % (needupload,str(e)))
             previousFilePath = remoteFolderTree[0]
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     return 0
