@@ -99,10 +99,6 @@ install_apps ()
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	pip3 install -v pillow --no-cache-dir
 	
-	#EXIV2:
-	apt-get install build-essential python-all-dev libexiv2-dev libboost-python-dev -y
-	pip3 install py3exiv2
-	
 	pip3 install smbus2
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
