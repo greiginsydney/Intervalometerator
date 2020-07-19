@@ -426,6 +426,7 @@ def thumbnails():
                 dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
                 dest = os.path.join(dest, imageFileName)
                 dest = dest.replace('.JPG', '-thumb.JPG')
+                dest = dest.replace('.CR2', '-thumb.JPG')
                 app.logger.debug('Thumb dest = ' + dest)
                 # This adds the shortened path to the list to pass to the web-page
                 ThumbFiles.append(str(dest).replace((PI_THUMBS_DIR  + "/"), ""))
