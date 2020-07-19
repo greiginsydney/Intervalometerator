@@ -29,7 +29,6 @@ import io   #Camera preview
 import logging
 import os
 import psutil
-import pyexiv2 #Thumb conversions
 import re    #RegEx. Used in Copy Files
 from smbus2 import SMBus # For I2C
 import struct
