@@ -428,8 +428,8 @@ def thumbnails():
                 dest = dest.replace('.JPG', '-thumb.JPG')
                 dest = dest.replace('.CR2', '-thumb.JPG')
                 app.logger.debug('Thumb dest = ' + dest)
-                # This adds the shortened path to the list to pass to the web-page
-                ThumbFiles.append(str(dest).replace((PI_THUMBS_DIR  + "/"), ""))
+                TimeStamp = 'Unknown'
+                Info = 'Unknown'
                 if dest in ThumbList:
                     app.logger.debug('Thumbnail exists')
                     continue
@@ -439,6 +439,8 @@ def thumbnails():
                     thumb.save(dest, "JPEG")
                 except Exception as e:
                     app.logger.debug('Thumbs Pillow error: ' + str(e))
+                # Build the list to pass to the web-page
+                ThumbFiles.append({'Name': (str(dest).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': Franchise, 'Info': Year })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
             
