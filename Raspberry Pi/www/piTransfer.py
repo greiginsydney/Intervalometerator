@@ -560,12 +560,30 @@ def uploadedOK(filename, filecount):
             log('Looking to delete {0}'.format(Thumbversion))
             if os.path.exists(Thumbversion):
                 os.remove(Thumbversion)
+            deleteThumbsInfo(filename)
         except Exception as e:
             log('Error deleting file : ' + str(e))
     else:
         with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
             historyFile.write(filename + "\n")
     return (filecount + 1)
+
+
+# TY SO: https://stackoverflow.com/questions/4710067/using-python-for-deleting-a-specific-line-in-a-file
+def deleteThumbsInfo(filepath):
+    """ Delete this file's metadata from PI_THUMBS_INFO_FILE """
+    try:
+        filename = filepath.rsplit('/',1)[1]
+        with open(PI_THUMBS_INFO_FILE, "r") as f:
+            lines = f.readlines()
+        with open(PI_THUMBS_INFO_FILE, "w") as f:
+            for line in lines:
+                if filename not in line.strip("\n"):
+                    f.write(line)
+    except Exception as e:
+        log('Exception deleting {0} from  {1}'.format(filename, PI_THUMBS_INFO_FILE))
+        log('Exception: ' + str(e))
+    return
 
 
 def log(message):
