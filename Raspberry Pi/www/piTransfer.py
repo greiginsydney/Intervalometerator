@@ -556,6 +556,7 @@ def uploadedOK(filename, filecount):
             log('Deleted  {0}'.format(filename))
             Thumbversion = filename.replace( PI_PHOTO_DIR, PI_THUMBS_DIR)
             Thumbversion = Thumbversion.replace( '.JPG', '-thumb.JPG')
+            Thumbversion = Thumbversion.replace( '.CR2', '-thumb.JPG')
             log('Looking to delete {0}'.format(Thumbversion))
             if os.path.exists(Thumbversion):
                 os.remove(Thumbversion)
