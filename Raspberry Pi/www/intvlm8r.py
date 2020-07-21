@@ -61,6 +61,7 @@ login_manager.login_view = ''
 
 PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
 PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
+PI_THUMBS_INFO_FILE = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
 PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
@@ -419,8 +420,16 @@ def thumbnails():
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
-
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
+            #Read all the thumb metadata ready to create the page:
+            ThumbsInfo = {}
+            with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+                for line in f:
+                    if ' = ' in line:
+                        (key, val) = line.rstrip('\n').split(' = ')
+                        ThumbsInfo[key] = val
+                        app.logger.debug(str(val))
+            #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 sourceFolderTree, imageFileName = os.path.split(FileList[loop])
                 dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
@@ -428,19 +437,24 @@ def thumbnails():
                 dest = dest.replace('.JPG', '-thumb.JPG')
                 dest = dest.replace('.CR2', '-thumb.JPG')
                 app.logger.debug('Thumb dest = ' + dest)
-                TimeStamp = 'Unknown'
-                Info = 'Unknown'
+                # This adds the shortened path to the list to pass to the web-page
+                thumbTimeStamp = 'Unknown'
+                thumbInfo = 'Unknown'
+                metadata = ThumbsInfo.get(imageFileName)
+                app.logger.debug(str(metadata))
+                if metadata != None:
+                    thumbTimeStamp = metadata.split("|")[0]
+                    thumbInfo = metadata.split("|")[1]
                 if dest in ThumbList:
                     app.logger.debug('Thumbnail exists')
-                    continue
-                try:
-                    thumb = Image.open(str(FileList[loop]))
-                    thumb.thumbnail((128, 128), Image.ANTIALIAS)
-                    thumb.save(dest, "JPEG")
-                except Exception as e:
-                    app.logger.debug('Thumbs Pillow error: ' + str(e))
-                # Build the list to pass to the web-page
-                ThumbFiles.append({'Name': (str(dest).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': Franchise, 'Info': Year })
+                else:
+                    try:
+                        thumb = Image.open(str(FileList[loop]))
+                        thumb.thumbnail((128, 128), Image.ANTIALIAS)
+                        thumb.save(dest, "JPEG")
+                    except Exception as e:
+                        app.logger.debug('Thumbs Pillow error: ' + str(e))
+                ThumbFiles.append({'Name': (str(dest).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
             
