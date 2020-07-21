@@ -408,15 +408,20 @@ def commenceGoogle(remoteFolder):
         if credentials:
             # Check for expiry
             if credentials.access_token_expired:
+                log ('Google token has expired')
                 if credentials.refresh_token is not None:
                     credentials.refresh(httplib2.Http())
                     log ('Google token refreshed OK')
                     auth_required = False
+                else:
+                    log ('Google refresh_token is None')
             else:
                 auth_required = False
+        else:
+            log ('Google could not find or could not access credentials')
     except:
         # Something went wrong - try manual auth
-        log('Cached Auth failed')
+        log('Google Cached Auth failed')
 
     if auth_required:
         log('STATUS: Aborted. Google requires re-authentication')
@@ -470,7 +475,7 @@ def commenceGoogle(remoteFolder):
                 result = DRIVE.files().insert(media_body=media, body={'title':file_name, 'parents':[{u'id': ImageParentId}]}).execute()
                 if result is not None:
                     numFilesOK = uploadedOK(needupload, numFilesOK)
-                else
+                else:
                     log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
                 log('Exception uploading ''%s'' to Google: %s' % (needupload,str(e)))
