@@ -547,9 +547,9 @@ def reauthGoogle():
 
 
 def uploadedOK(filename, filecount):
+    """ The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
+    Delete local file & metadata if required """
     log('Uploaded {0}'.format(filename))
-    with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
-        historyFile.write(filename + "\n")
     if deleteAfterTransfer:
         try:
             os.remove(filename)
@@ -561,6 +561,9 @@ def uploadedOK(filename, filecount):
                 os.remove(Thumbversion)
         except Exception as e:
             log('Error deleting file : ' + str(e))
+    else:
+        with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
+            historyFile.write(filename + "\n")
     return (filecount + 1)
 
 
