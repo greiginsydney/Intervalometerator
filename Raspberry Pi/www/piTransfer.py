@@ -57,6 +57,7 @@ except:
 
 PI_PHOTO_DIR         = os.path.expanduser('/home/pi/photos')
 PI_THUMBS_DIR        = os.path.expanduser('/home/pi/thumbs')
+PI_THUMBS_INFO_FILE  = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
 UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, 'uploadedOK.txt')
 INIFILE_DIR          = os.path.expanduser('/home/pi/www')
 INIFILE_NAME         = os.path.join(INIFILE_DIR, 'intvlm8r.ini')
