@@ -19,7 +19,8 @@
 
 
 from datetime import timedelta, datetime
-from PIL import Image   #For the camera page / preview button
+from PIL import Image, ExifTags   #For the camera page preview button + thumbs
+from PIL.ExifTags import TAGS
 from urllib.parse import urlparse, urljoin
 import calendar
 import configparser # for the ini file (used by the Transfer page)
@@ -432,12 +433,12 @@ def thumbnails():
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 sourceFolderTree, imageFileName = os.path.split(FileList[loop])
-                dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
-                dest = os.path.join(dest, imageFileName)
-                dest = dest.replace('.JPG', '-thumb.JPG')
-                dest = dest.replace('.CR2', '-thumb.JPG')
-                app.logger.debug('Thumb dest = ' + dest)
-                # This adds the shortened path to the list to pass to the web-page
+                dest = makeThumb(FileList[loop]) #Make sure every image we want to show here (1) has a thumb, and (2) metadata
+                app.logger.debug('Thumb of {0} is {1}'.format(FileList[loop], dest))
+                if (dest == None):
+                    #Something went wrong
+                    continue
+                #Read the metadata:
                 thumbTimeStamp = 'Unknown'
                 thumbInfo = 'Unknown'
                 metadata = ThumbsInfo.get(imageFileName)
@@ -445,19 +446,10 @@ def thumbnails():
                 if metadata != None:
                     thumbTimeStamp = metadata.split("|")[0]
                     thumbInfo = metadata.split("|")[1]
-                if dest in ThumbList:
-                    app.logger.debug('Thumbnail exists')
-                else:
-                    try:
-                        thumb = Image.open(str(FileList[loop]))
-                        thumb.thumbnail((128, 128), Image.ANTIALIAS)
-                        thumb.save(dest, "JPEG")
-                    except Exception as e:
-                        app.logger.debug('Thumbs Pillow error: ' + str(e))
+                #Build the list for the page:
                 ThumbFiles.append({'Name': (str(dest).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
-            
     except Exception as e:
         app.logger.debug('Thumbs error: ' + str(e))
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
@@ -1144,9 +1136,11 @@ def copy_files(camera):
             camera_file = gp.check_result(gp.gp_camera_file_get(
                 camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
             copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
-            if ((copyOK >= gp.GP_OK) and (deleteAfterCopy == True)):
-                gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
-                app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+            if (copyOK >= gp.GP_OK):
+                discard = makeThumb(dest)
+                if (deleteAfterCopy == True):
+                    gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
+                    app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
         except Exception as e:
             app.logger.debug('Exception in copy_files: ' + str(e))
     return 0
@@ -1171,6 +1165,50 @@ def CreateDestPath(folder, NewDestDir):
         app.logger.debug('Error in DCIM decoder: ' + str(e))
         dest = NewDestDir
     return dest
+
+
+def makeThumb(imageFile):
+    try:
+        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        sourceFolderTree, imageFileName = os.path.split(imageFile)
+        dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
+        dest = os.path.join(dest, imageFileName)
+        dest = dest.replace('.JPG', '-thumb.JPG')
+        dest = dest.replace('.CR2', '-thumb.JPG')
+        app.logger.debug('Thumb dest = ' + dest)
+        if dest in ThumbList:
+            app.logger.debug('Thumbnail already exists. Bye.')
+        else:
+            #Lots of nested TRYs here to narrow down any failures.
+            try:
+                thumb = Image.open(imageFile)
+                thumb.thumbnail((128, 128), Image.ANTIALIAS)
+                thumb.save(dest, "JPEG")
+                try:
+                    exif_data = thumb._getexif()
+                    exif = {
+                        TAGS[k]: v
+                        for k, v in thumb._getexif().items()
+                        if k in TAGS
+                    }
+                    try:
+                        if (exif['ExposureTime']).count != 1: 
+                            exposureTime = '{0}/{1}'.format((exif['ExposureTime'])[0], (exif['ExposureTime'])[1])
+                        else:
+                            exposureTime = '{0}'.format((exif['ExposureTime'])[0])
+                        fNumber = (exif['FNumber'])[0]/(exif['FNumber'])[1]
+                        with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
+                            thumbsInfoFile.write('{0} = {1}|{2}s, F{3}, ISO{4}\r\n'.format(imageFileName, exif['DateTimeOriginal'], exposureTime, str(fNumber), exif['ISOSpeedRatings']))
+                    except Exception as e:
+                        app.logger.debug('makeThumb() error writing to thumbsInfoFile: ' + str(e))
+                except Exception as e:
+                    app.logger.debug('makeThumb() EXIF error: ' + str(e))
+            except Exception as e:
+                app.logger.debug('makeThumb() Pillow error: ' + str(e))
+        return dest
+    except Exception as e:
+        app.logger.debug('Unknown Exception in makeThumb(): ' + str(e))
+        return None
 
 
 def getPreviewImage(camera, context, config):
