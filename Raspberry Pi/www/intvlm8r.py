@@ -442,7 +442,7 @@ def thumbnails():
                 thumbTimeStamp = 'Unknown'
                 thumbInfo = 'Unknown'
                 metadata = ThumbsInfo.get(imageFileName)
-                app.logger.debug(str(metadata))
+                #app.logger.debug(str(metadata))
                 if metadata != None:
                     thumbTimeStamp = metadata.split("|")[0]
                     thumbInfo = metadata.split("|")[1]
@@ -1177,7 +1177,7 @@ def makeThumb(imageFile):
         dest = dest.replace('.CR2', '-thumb.JPG')
         app.logger.debug('Thumb dest = ' + dest)
         if dest in ThumbList:
-            app.logger.debug('Thumbnail already exists. Bye.')
+            app.logger.debug('Thumbnail already exists.')
         else:
             #Lots of nested TRYs here to narrow down any failures.
             try:
@@ -1192,13 +1192,35 @@ def makeThumb(imageFile):
                         if k in TAGS
                     }
                     try:
-                        if (exif['ExposureTime']).count != 1: 
-                            exposureTime = '{0}/{1}'.format((exif['ExposureTime'])[0], (exif['ExposureTime'])[1])
-                        else:
+                        dateTimeOriginal = (exif['DateTimeOriginal']).split(' ')
+                        dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
+                        timeOriginal = dateTimeOriginal[1]
+                    except Exception as e:
+                        dateOriginal = ''
+                        timeOriginal = ''
+                        app.logger.debug('makeThumb() dateTimeOriginal error: ' + str(e))
+                    try:
+                        #Change the display format if the reported exposure time is > 1s.
+                        if (exif['ExposureTime'])[1] == '1': 
                             exposureTime = '{0}'.format((exif['ExposureTime'])[0])
-                        fNumber = (exif['FNumber'])[0]/(exif['FNumber'])[1]
+                        #else if ((exif['ExposureTime'])[0] < (exif['ExposureTime'])[1]):
+                            # It's a "something" tenths of a second:
+                        #    exposureTime = str((exif['ExposureTime'])[0] / (exif['ExposureTime'])[1]))
+                        else:
+                            exposureTime = '{0}/{1}'.format((exif['ExposureTime'])[0], (exif['ExposureTime'])[1])
+                    except Exception as e:
+                        exposureTime = ''
+                        app.logger.debug('makeThumb() ExposureTime error: ' + str(e))
+                    try:
+                        fNumber = str((exif['FNumber'])[0]/(exif['FNumber'])[1])
+                        #Strip the '.0' if it's a whole F-stop
+                        fNumber = fNumber.replace('.0','')
+                    except Exception as e:
+                        fNumber = ''
+                        app.logger.debug('makeThumb() fNumber error: ' + str(e))
+                    try:
                         with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                            thumbsInfoFile.write('{0} = {1}|{2}s, F{3}, ISO{4}\r\n'.format(imageFileName, exif['DateTimeOriginal'], exposureTime, str(fNumber), exif['ISOSpeedRatings']))
+                            thumbsInfoFile.write('{0} = {1} {2}|{3}s * F{4} * ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, exif['ISOSpeedRatings']))
                     except Exception as e:
                         app.logger.debug('makeThumb() error writing to thumbsInfoFile: ' + str(e))
                 except Exception as e:
