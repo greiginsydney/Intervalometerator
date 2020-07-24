@@ -19,18 +19,19 @@
 
 
 from datetime import timedelta, datetime
-from PIL import Image, ExifTags   #For the camera page preview button + thumbs
+from decimal import Decimal       # Thumbs exposure time calculations
+from PIL import Image, ExifTags   # For the camera page preview button + thumbs
 from PIL.ExifTags import TAGS
 from urllib.parse import urlparse, urljoin
 import calendar
-import configparser # for the ini file (used by the Transfer page)
+import configparser # For the ini file (used by the Transfer page)
 import fnmatch # Used for testing filenames
 import importlib.util # Testing installed packages
-import io   #Camera preview
+import io   # Camera preview
 import logging
 import os
 import psutil
-import re    #RegEx. Used in Copy Files
+import re    # RegEx. Used in Copy Files
 from smbus2 import SMBus # For I2C
 import struct
 import subprocess
@@ -1179,7 +1180,7 @@ def makeThumb(imageFile):
         if dest in ThumbList:
             app.logger.debug('Thumbnail already exists.')
         else:
-            #Lots of nested TRYs here to narrow down any failures.
+            #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
                 thumb = Image.open(imageFile)
                 thumb.thumbnail((128, 128), Image.ANTIALIAS)
@@ -1200,27 +1201,38 @@ def makeThumb(imageFile):
                         timeOriginal = ''
                         app.logger.debug('makeThumb() dateTimeOriginal error: ' + str(e))
                     try:
-                        #Change the display format if the reported exposure time is > 1s.
-                        if (exif['ExposureTime'])[1] == '1': 
-                            exposureTime = '{0}'.format((exif['ExposureTime'])[0])
-                        #else if ((exif['ExposureTime'])[0] < (exif['ExposureTime'])[1]):
-                            # It's a "something" tenths of a second:
-                        #    exposureTime = str((exif['ExposureTime'])[0] / (exif['ExposureTime'])[1]))
-                        else:
+                        #Reformat depending on the value:
+                        # (6, 1)   becomes 6s
+                        # (15, 10) becomes 1.5s
+                        # (3, 10)  becomes 0.3s
+                        # (1, 30)  becomes 1/30s
+                        exposureTime = str((exif['ExposureTime'])[0] / (exif['ExposureTime'])[1])
+                        if (float(exposureTime).is_integer()):
+                            #It's a whole number of seconds. Only need to display the first value
+                            exposureTime = str((exif['ExposureTime'])[0])
+                        elif (Decimal(exposureTime).as_tuple().exponent <= -2):
+                            #Yuk. it has lots of decimal places. Display as "1/nn"
                             exposureTime = '{0}/{1}'.format((exif['ExposureTime'])[0], (exif['ExposureTime'])[1])
+                        else:
+                            pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
                     except Exception as e:
-                        exposureTime = ''
+                        exposureTime = '?'
                         app.logger.debug('makeThumb() ExposureTime error: ' + str(e))
                     try:
                         fNumber = str((exif['FNumber'])[0]/(exif['FNumber'])[1])
                         #Strip the '.0' if it's a whole F-stop
                         fNumber = fNumber.replace('.0','')
                     except Exception as e:
-                        fNumber = ''
+                        fNumber = '?'
                         app.logger.debug('makeThumb() fNumber error: ' + str(e))
                     try:
+                        ISO = exif['ISOSpeedRatings']
+                    except Exception as e:
+                        ISO = '?'
+                        app.logger.debug('makeThumb() ISO error: ' + str(e))
+                    try:
                         with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                            thumbsInfoFile.write('{0} = {1} {2}|{3}s * F{4} * ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, exif['ISOSpeedRatings']))
+                            thumbsInfoFile.write('{0} = {1} {2}|{3}s * F{4} * ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
                     except Exception as e:
                         app.logger.debug('makeThumb() error writing to thumbsInfoFile: ' + str(e))
                 except Exception as e:
