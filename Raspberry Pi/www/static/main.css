@@ -39,6 +39,10 @@ th {
 	color: #ffffff;
 }
 
+a {
+	text-decoration: none;
+}
+
 .red {
 	background-color: #FF0000; 
 }
