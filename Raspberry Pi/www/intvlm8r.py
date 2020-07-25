@@ -1183,7 +1183,7 @@ def makeThumb(imageFile):
             #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
                 thumb = Image.open(imageFile)
-                thumb.thumbnail((128, 128), Image.ANTIALIAS)
+                thumb.thumbnail((160, 160), Image.ANTIALIAS)
                 thumb.save(dest, "JPEG")
                 try:
                     exif_data = thumb._getexif()
