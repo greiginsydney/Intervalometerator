@@ -287,14 +287,14 @@ input[type=radio] {
 .thumb {
   background-color: black;
   color: white;
-  padding: .2em;
+  padding: .5em;
   height: 12em;
   font-size: 0.8em; 
   text-align: center;
 }
 
 .view {
-  max-width: 800px;
+  max-width: 700px;
   margin: 0 auto;
   display: grid;
   grid-gap: .1em;
