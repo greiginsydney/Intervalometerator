@@ -3,7 +3,7 @@
 
 	<div class="thumbs">
 		{% for thumbFilename in ThumbFiles %}
-			<a href="{{ url_for('static',filename=('photos/' + thumbFilename['Name'])) | replace('-thumb', '')}}" target="_blank"><figure><img src="{{ url_for('static',filename=('thumbs/' + thumbFilename['Name']))}}" alt="{{thumbFilename['Name'] | replace('-thumb', '')}}" width="100%"><br>{{ thumbFilename['TimeStamp'] }}<br>{{ thumbFilename['Info'] }}</figure></a>
+			<a href="{{ url_for('static',filename=('photos/' + thumbFilename['Name'])) | replace('-thumb', '')}}" target="_blank"><figure><img src="{{ url_for('static',filename=('thumbs/' + thumbFilename['Name']))}}" alt="{{thumbFilename['Name'] | replace('-thumb', '')}}"><br>{{ thumbFilename['TimeStamp'] }}<br>{{ thumbFilename['Info'] }}</figure></a>
 		{% endfor %}
 	</div>
 
