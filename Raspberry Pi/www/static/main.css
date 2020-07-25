@@ -282,68 +282,34 @@ input[type=radio] {
 
 /* End: Menu */
 /* ----------------------------------------------------------------------------------*/
-/* Start: Thumbnails. Thank you George: https://codepen.io/SitePoint/pen/XXEmXj --*/
+/* Start: Thumbnails. --*/
 
-.thumbs {
-	font-size: 0;
+.thumb {
+  background-color: black;
+  color: white;
+  padding: .2em;
+  height: 12em;
+  font-size: 0.8em; 
+  text-align: center;
 }
 
-.thumbs a {
-	font-size: 16px;
-	overflow: hidden;
-	display: inline-block;
-	margin-bottom: 8px;
-	width: calc(50% - 4px);
-	margin-right: 8px;
+.view {
+  max-width: 800px;
+  margin: 0 auto;
+  display: grid;
+  grid-gap: .1em;
 }
 
-.thumbs a:nth-of-type(2n) {
-	margin-right: 0;
+@media (min-width: 300px) {
+  .view { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media screen and (min-width: 400px) {
-	.thumbs  a {
-		  width: calc(25% - 6px);
-	}
-
-	.thumbs a:nth-of-type(2n) {
-		margin-right: 8px;
-	}
-
-	.thumbs a:nth-of-type(4n) {
-		margin-right: 0;
-	}
+@media (min-width: 600px) {
+  .view { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media screen and (min-width: 800px) {
-	.thumbs  a {
-		  width: calc(12% - 6px);
-	}
-
-	.thumbs a:nth-of-type(2n) {
-		margin-right: 8px;
-	}
-
-	.thumbs a:nth-of-type(8n) {
-		margin-right: 0;
-	}
-}
-
-.thumbs a:hover img {
-	transform: scale(1.15);
-}
-
-figure {
-	margin: 0;
-}
-
-.thumbs img {
-	border: none;
-	max-width: 100%;
-	height: auto;
-	display: block;
-	background: #ccc;
-	transition: transform .2s ease-in-out;
+@media (min-width: 900px) {
+  .view { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* END  Thumbs  */
