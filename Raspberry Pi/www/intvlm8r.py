@@ -19,20 +19,20 @@
 
 
 from datetime import timedelta, datetime
-from decimal import Decimal       # Thumbs exposure time calculations
-from PIL import Image, ExifTags   # For the camera page preview button + thumbs
-from PIL.ExifTags import TAGS
+from decimal import Decimal     # Thumbs exposure time calculations
+from PIL import Image           # For the camera page preview button
 from urllib.parse import urlparse, urljoin
 import calendar
-import configparser # For the ini file (used by the Transfer page)
-import fnmatch # Used for testing filenames
-import importlib.util # Testing installed packages
-import io   # Camera preview
+import configparser             # For the ini file (used by the Transfer page)
+import exifreader               # For thumbnails
+import fnmatch                  # Used for testing filenames
+import importlib.util           # Testing installed packages
+import io                       # Camera preview
 import logging
 import os
 import psutil
-import re    # RegEx. Used in Copy Files
-from smbus2 import SMBus # For I2C
+import re                       # RegEx. Used in Copy Files
+from smbus2 import SMBus        # For I2C
 import struct
 import subprocess
 import sys
@@ -425,12 +425,12 @@ def thumbnails():
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
             #Read all the thumb metadata ready to create the page:
             ThumbsInfo = {}
-            with open(PI_THUMBS_INFO_FILE, 'rt') as f:
-                for line in f:
-                    if ' = ' in line:
-                        (key, val) = line.rstrip('\n').split(' = ')
-                        ThumbsInfo[key] = val
-                        app.logger.debug(str(val))
+            if os.path.exists(PI_THUMBS_INFO_FILE):
+                with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+                    for line in f:
+                        if ' = ' in line:
+                            (key, val) = line.rstrip('\n').split(' = ')
+                            ThumbsInfo[key] = val
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 sourceFolderTree, imageFileName = os.path.split(FileList[loop])
@@ -1182,18 +1182,15 @@ def makeThumb(imageFile):
         else:
             #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
-                thumb = Image.open(imageFile)
-                thumb.thumbnail((160, 160), Image.ANTIALIAS)
-                thumb.save(dest, "JPEG")
+                with Image.open(imageFile) as thumb:
+                    thumb.thumbnail((160, 160), Image.ANTIALIAS)
+                    thumb.save(dest, "JPEG")
                 try:
-                    exif_data = thumb._getexif()
-                    exif = {
-                        TAGS[k]: v
-                        for k, v in thumb._getexif().items()
-                        if k in TAGS
-                    }
+                    # Open image file for reading (binary mode)
+                    with open(imageFile, 'rb') as photo:
+                        tags = exifreader.process_file(photo) # Return Exif tags
                     try:
-                        dateTimeOriginal = (exif['DateTimeOriginal']).split(' ')
+                        dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
                         dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
                         timeOriginal = dateTimeOriginal[1]
                     except Exception as e:
@@ -1202,31 +1199,31 @@ def makeThumb(imageFile):
                         app.logger.debug('makeThumb() dateTimeOriginal error: ' + str(e))
                     try:
                         #Reformat depending on the value:
-                        # (6, 1)   becomes 6s
-                        # (15, 10) becomes 1.5s
-                        # (3, 10)  becomes 0.3s
-                        # (1, 30)  becomes 1/30s
-                        exposureTime = str((exif['ExposureTime'])[0] / (exif['ExposureTime'])[1])
-                        if (float(exposureTime).is_integer()):
-                            #It's a whole number of seconds. Only need to display the first value
-                            exposureTime = str((exif['ExposureTime'])[0])
+                        # 6/1   becomes 6s
+                        # 15/10 becomes 1.5s
+                        # 3/10  becomes 0.3s
+                        # 1/30  becomes 1/30s
+                        exposureTime = convert_to_float(str(tags['EXIF ExposureTime']))
+                        if (exposureTime).is_integer():
+                            #It's a whole number of seconds. Strip the '.0'
+                            exposureTime = str(exposureTime).replace('.0','')
                         elif (Decimal(exposureTime).as_tuple().exponent <= -2):
-                            #Yuk. it has lots of decimal places. Display as "1/nn"
-                            exposureTime = '{0}/{1}'.format((exif['ExposureTime'])[0], (exif['ExposureTime'])[1])
+                            #Yuk. it has lots of decimal places. Display as originally reported
+                            exposureTime = str(tags['EXIF ExposureTime'])
                         else:
                             pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
                     except Exception as e:
                         exposureTime = '?'
                         app.logger.debug('makeThumb() ExposureTime error: ' + str(e))
                     try:
-                        fNumber = str((exif['FNumber'])[0]/(exif['FNumber'])[1])
+                        fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
                         #Strip the '.0' if it's a whole F-stop
                         fNumber = fNumber.replace('.0','')
                     except Exception as e:
                         fNumber = '?'
                         app.logger.debug('makeThumb() fNumber error: ' + str(e))
                     try:
-                        ISO = exif['ISOSpeedRatings']
+                        ISO = tags['EXIF ISOSpeedRatings']
                     except Exception as e:
                         ISO = '?'
                         app.logger.debug('makeThumb() ISO error: ' + str(e))
@@ -1243,6 +1240,22 @@ def makeThumb(imageFile):
     except Exception as e:
         app.logger.debug('Unknown Exception in makeThumb(): ' + str(e))
         return None
+
+
+#TY SO: https://stackoverflow.com/a/30629776
+def convert_to_float(frac_str):
+    """ The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display """
+    try:
+        return float(frac_str)
+    except ValueError:
+        num, denom = frac_str.split('/')
+        try:
+            leading, num = num.split(' ')
+            whole = float(leading)
+        except ValueError:
+            whole = 0
+        frac = float(num) / float(denom)
+        return whole - frac if whole < 0 else whole + frac
 
 
 def getPreviewImage(camera, context, config):
