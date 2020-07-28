@@ -98,6 +98,7 @@ install_apps ()
 	pip3 install -v gphoto2
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	pip3 install -v pillow --no-cache-dir
+	pip3 install ExifReader
 	
 	pip3 install smbus2
 	apt-get install i2c-tools -y
