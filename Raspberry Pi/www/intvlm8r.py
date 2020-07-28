@@ -1175,7 +1175,8 @@ def makeThumb(imageFile):
         dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
         dest = os.path.join(dest, imageFileName)
         dest = dest.replace('.JPG', '-thumb.JPG')
-        dest = dest.replace('.CR2', '-thumb.JPG')
+        dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
+        dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
         app.logger.debug('Thumb dest = ' + dest)
         if dest in ThumbList:
             app.logger.debug('Thumbnail already exists.')
