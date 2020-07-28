@@ -401,7 +401,7 @@ def commenceGoogle(remoteFolder):
     """Create a Drive service."""
     auth_required = True
     #Have we got some credentials already?
-    storage = Storage('Google_credentials.txt')
+    storage = Storage(GOOGLE_CREDENTIALS)
     credentials = storage.get()
     try:
         if credentials:
