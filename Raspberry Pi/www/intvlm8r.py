@@ -890,7 +890,7 @@ def thermalPOST():
 def system():
 
     templateData = {
-        'piThumbCount'   : '80',
+        'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
         'arduinoTime'    : 'Unknown',
         'piUptime'       : 'Unknown',
@@ -910,7 +910,7 @@ def system():
         templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
     except Exception as e:
         app.logger.debug('INI file error reading: ' + str(e))
-        templateData['piThumbCount'] = '20'
+        templateData['piThumbCount'] = '24'
 
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
