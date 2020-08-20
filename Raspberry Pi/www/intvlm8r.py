@@ -17,7 +17,6 @@
 # Easterbrook jim@jim-easterbrook.me.uk
 
 
-
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
 from PIL import Image           # For the camera page preview button
@@ -47,10 +46,18 @@ from werkzeug.security import check_password_hash
 
 from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
+from celery import Celery
 app = Flask(__name__)
+#app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_BROKER_URL'] = 'pyamqp://guest@localhost//'
+#app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+#app.config.from_object("config")
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -687,7 +694,7 @@ def transfer():
     args = request.args.to_dict()
     if args.get('copyNow'):
         app.logger.debug('Detected /transfer/copyNow')
-        copyNow()
+        task = copyNow.delay()
         return redirect(url_for('main')) #If we transfer OK, return to main
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
@@ -828,7 +835,7 @@ def name():
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
         abort(403)
-    copyNow()
+    task = copyNow.delay()
     res = make_response("")
     return res, 200
 
@@ -1325,9 +1332,11 @@ def createConfigFile(iniFile):
     return
 
 
+@celery.task
 def copyNow():
     writeString("WC") # Sends the WAKE command to the Arduino (just in case)
     time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+    app.logger.debug('copyNow(): entered ')
     try:
         camera = gp.Camera()
         context = gp.gp_context_new()
@@ -1335,10 +1344,10 @@ def copyNow():
         copy_files(camera)
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
+        #flash(e.string)
+        app.logger.debug("copyNow() wasn't able to connect to the camera: " + e.string)
     except Exception as e:
-        app.logger.debug('Unknown error in copyNow: ' + str(e))
+        app.logger.debug('Unknown error in copyNow(): ' + str(e))
     return
 
 
