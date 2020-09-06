@@ -169,6 +169,12 @@ install_website ()
 	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/piTransfer.service
 	systemctl enable piTransfer.service
+	
+	#Celery
+	[ -f celery ] && mv celery /etc/default/
+	[ -f celery.service ] && mv celery.service /etc/systemd/system/
+	chmod 644 /etc/systemd/system/celery.service
+	systemctl enable celery.service
 
 	#Camera Transfer - Cron Job
 
