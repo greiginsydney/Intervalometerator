@@ -72,6 +72,9 @@ install_apps ()
 	pip3 install flask flask-bootstrap flask-login configparser
 	pip3 install gunicorn psutil
 
+	apt-get install rabbitmq-server -y
+	pip3 install celery
+
 	if [ $installSftp -eq 1 ];
 	then
 		#This is ALL for Paramiko (SSH uploads):
