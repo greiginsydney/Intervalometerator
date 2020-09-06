@@ -131,7 +131,7 @@ install_website ()
 
 	mkdir /var/log/celery
 	mkdir /var/run/celery
-	id -u somename &>/dev/null || useradd celery -d /home/celery -b /bin/bash
+	id -u celery &>/dev/null || useradd celery -d /home/celery -b /bin/bash
 	adduser celery i2c
 	adduser celery www-data
 
