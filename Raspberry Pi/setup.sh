@@ -71,7 +71,6 @@ install_apps ()
 	pip3 install Werkzeug cachelib
 	pip3 install flask flask-bootstrap flask-login configparser
 	pip3 install gunicorn psutil
-
 	apt-get install rabbitmq-server -y
 	pip3 install celery
 
@@ -129,6 +128,12 @@ install_website ()
 	ln -sfnv ${HOME}/photos  ${HOME}/www/static
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
+
+	mkdir /var/log/celery
+	mkdir /var/run/celery
+	id -u somename &>/dev/null || useradd celery -d /home/celery -b /bin/bash
+	adduser celery i2c
+	adduser celery www-data
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
