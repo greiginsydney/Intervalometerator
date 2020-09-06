@@ -17,6 +17,7 @@
 # Easterbrook jim@jim-easterbrook.me.uk
 
 
+
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
 from PIL import Image           # For the camera page preview button
@@ -48,10 +49,7 @@ from flask import Flask, flash, render_template, request, redirect, url_for, mak
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 from celery import Celery
 app = Flask(__name__)
-#app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_BROKER_URL'] = 'pyamqp://guest@localhost//'
-#app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-#app.config.from_object("config")
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
