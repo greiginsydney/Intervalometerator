@@ -134,6 +134,7 @@ install_website ()
 	id -u celery &>/dev/null || useradd celery -d /home/celery -b /bin/bash
 	adduser celery i2c
 	adduser celery www-data
+	[ -f celery.conf ] && mv -fv celery.conf /etc/tmpfiles.d/celery.conf
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
