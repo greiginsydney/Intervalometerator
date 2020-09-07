@@ -129,8 +129,8 @@ install_website ()
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
-	mkdir /var/log/celery
-	mkdir /var/run/celery
+	mkdir -pv /var/log/celery
+	mkdir -pv /var/run/celery
 	id -u celery &>/dev/null || useradd celery -d /home/celery -b /bin/bash
 	adduser celery i2c
 	adduser celery www-data
