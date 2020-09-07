@@ -134,10 +134,15 @@ install_website ()
 	systemctl start intvlm8r
 	systemctl enable intvlm8r
 
-	#Backup any existing intvlm8r (just in case this is an upgrade):
-	[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
-	#Copy new intvlm8r site across:
-	[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
+	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
+	if [ -f intvlm8r ];
+	then
+		[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
+		#Copy new intvlm8r site across:
+		[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
+	else
+		echo "Skipped: no new 'intvlm8r' file to copy."
+	fi
 	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
 
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
