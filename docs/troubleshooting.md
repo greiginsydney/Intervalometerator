@@ -15,6 +15,19 @@ Jump to the relevant section:
 
 A browser error will show when the Pi is unable to present a web-page. 
 
+### "Refused to Connect"
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/92381622-8fc4bd80-f14e-11ea-8974-568a533716e6.png" width="50%">
+</p>
+
+Assuming you have network connectivity to the intvlm8r, the first suspect here is 'nginx'.
+
+Debug with `sudo systemctl status nginx`, and review the log at `/var/log/nginx/error.log`.
+ 
+ (`/home/pi/www/gunicorn.error` probably won't tell you anything, as your request for a web-page isn't making it that far.)
+
+
 ### 500 - Internal Server Error
 
 There's something wrong, most likely in intvlm8r.py.
