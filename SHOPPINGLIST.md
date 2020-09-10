@@ -326,7 +326,7 @@ Every supply needs a 100nF poly smoothing capacitor. Optional but recommended.
     $AUD0.30</br>
     $USD0.25
     
-#### 100nF ceramic capacitor
+#### 100pF ceramic capacitor
 
 I really love the DeadOn RTC, however SparkFun appear to have omitted the chip manufacturer's recommended power supply capacitor. I went with a 100pF ceramic.
 
