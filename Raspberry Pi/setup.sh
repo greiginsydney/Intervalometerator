@@ -71,7 +71,7 @@ install_apps ()
 	pip3 install Werkzeug cachelib
 	pip3 install flask flask-bootstrap flask-login configparser
 	pip3 install gunicorn psutil
-	apt-get install rabbitmq-server -y
+	sudo apt install redis-server -y
 	pip3 install celery
 
 	if [ $installSftp -eq 1 ];
