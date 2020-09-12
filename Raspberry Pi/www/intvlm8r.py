@@ -61,6 +61,12 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = ''
 
+#Deep gphoto logging enabled when debugging:
+callback_obj = gp.check_result(gp.use_python_logging(mapping={
+    gp.GP_LOG_ERROR   : logging.INFO,
+    gp.GP_LOG_DEBUG   : logging.DEBUG,
+    gp.GP_LOG_VERBOSE : logging.DEBUG - 3,
+    gp.GP_LOG_DATA    : logging.DEBUG - 6}))
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -281,6 +287,9 @@ def main():
     }
 
     app.logger.debug('YES - this bit of MAIN fired!')
+
+    if request.cookies.get('celeryTask') != None:
+        app.logger.debug('TEMP: Found a task cookie!')
 
     args = request.args.to_dict()
     if args.get('wakeCamera'):
@@ -691,9 +700,13 @@ def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
     args = request.args.to_dict()
     if args.get('copyNow'):
-        app.logger.debug('Detected /transfer/copyNow')
+        app.logger.debug('Detected /transfer/copyNow - calling task')
         task = copyNow.delay()
-        return redirect(url_for('main')) #If we transfer OK, return to main
+        app.logger.debug('Back from task. Next stop main')
+        res = make_response("")
+        res.set_cookie('celeryTask', str(task))
+        res.headers['location'] = url_for('main')
+        return res, 302
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
@@ -1333,19 +1346,31 @@ def createConfigFile(iniFile):
 @celery.task
 def copyNow():
     writeString("WC") # Sends the WAKE command to the Arduino (just in case)
-    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
     app.logger.debug('copyNow(): entered ')
-    try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        copy_files(camera)
-        gp.check_result(gp.gp_camera_exit(camera))
-    except gp.GPhoto2Error as e:
-        #flash(e.string)
-        app.logger.debug("copyNow() wasn't able to connect to the camera: " + e.string)
-    except Exception as e:
-        app.logger.debug('Unknown error in copyNow(): ' + str(e))
+    camera = gp.Camera()
+    context = gp.gp_context_new()
+    retries = 0
+    while True:
+        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+        retries += 1
+        if retries >= 20:
+            #We've waited too long. Abort.
+            app.logger.debug('copyNow() could not claim the USB device after ' + str(retries) + ' attempts.')
+            break
+        try:
+            app.logger.debug('copyNow() HERE 4')
+            camera.init(context)
+            #The line above will throw an exception if we can't connect to the camera
+            copy_files(camera)
+            gp.check_result(gp.gp_camera_exit(camera))
+            app.logger.debug('copyNow() ended happily')
+            break
+        except gp.GPhoto2Error as e:
+            app.logger.debug("copyNow() wasn't able to connect to the camera: " + e.string)
+            continue
+        except Exception as e:
+            app.logger.debug('Unknown error in copyNow(): ' + str(e))
+            break
     return
 
 
