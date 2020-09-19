@@ -45,11 +45,14 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 from celery import Celery
 app = Flask(__name__)
-app.config['CELERY_BROKER_URL'] = 'pyamqp://guest@localhost//'
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.config['CELERY_TASK_TRACK_STARTED'] = True # Untested Greig. 13/9/20.
+
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
@@ -700,13 +703,10 @@ def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
     args = request.args.to_dict()
     if args.get('copyNow'):
-        app.logger.debug('Detected /transfer/copyNow - calling task')
-        task = copyNow.delay()
-        app.logger.debug('Back from task. Next stop main')
-        res = make_response("")
-        res.set_cookie('celeryTask', str(task))
-        res.headers['location'] = url_for('main')
-        return res, 302
+        app.logger.debug('Detected GET to /transfer/copyNow - calling task')
+        task = copyNow.apply_async()
+        return jsonify({}), 202, {'Location': url_for('copyStatus', task_id=task.id)}
+
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
@@ -1114,54 +1114,43 @@ def get_camera_file_info(camera, path):
         gp.gp_camera_file_get_info(camera, folder, name))
 
 
-def copy_files(camera):
-    """ Straight from Jim's examples again """
+def files_to_copy(camera):
+    newFilesList = []
     if not os.path.isdir(PI_PHOTO_DIR):
         os.makedirs(PI_PHOTO_DIR)
     computer_files = list_Pi_Images(PI_PHOTO_DIR)
     camera_files = list_camera_files(camera)
     if not camera_files:
         app.logger.debug('No files found')
-        return 1
-    app.logger.debug('Copying files...')
-    
-    try:
-        if not os.path.exists(iniFile):
-            createConfigFile(iniFile)
-        config = configparser.ConfigParser()
-        config.read(iniFile)
-        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
-    except Exception as e:
-        #Looks like the flag doesn't exist. Let's add it
-        try:
-            if not config.has_section('Copy'):
-                config.add_section('Copy')
-            config.set('Copy', 'deleteAfterCopy', 'Off')
-            with open(iniFile, 'w') as config_file:
-                config.write(config_file)
-            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
-        except Exception as e:
-            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
-        deleteAfterCopy = False
-    
+        return
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
-        app.logger.debug('Copying {0} --> {1}'.format(path, dest))
-        try:
-            camera_file = gp.check_result(gp.gp_camera_file_get(
-                camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
-            copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
-            if (copyOK >= gp.GP_OK):
-                discard = makeThumb(dest)
-                if (deleteAfterCopy == True):
-                    gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
-                    app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
-        except Exception as e:
-            app.logger.debug('Exception in copy_files: ' + str(e))
+        newFilesList.append(path)
+    return newFilesList
+
+
+def copy_files(camera, imageToCopy, deleteAfterCopy):
+    """ Straight from Jim's examples again """
+    app.logger.debug('Copying files...')
+    sourceFolderTree, imageFileName = os.path.split(imageToCopy)
+    dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
+    dest = os.path.join(dest, imageFileName)
+    app.logger.debug('Copying {0} --> {1}'.format(imageToCopy, dest))
+    try:
+        camera_file = gp.check_result(gp.gp_camera_file_get(
+            camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
+        copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
+        if (copyOK >= gp.GP_OK):
+            #discard = makeThumb(dest)  GREIG: temp removed, pending relocation to new home (not in the copy loop)
+            if (deleteAfterCopy == True):
+                gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
+                app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+    except Exception as e:
+        app.logger.debug('Exception in copy_files: ' + str(e))
     return 0
 
 
@@ -1343,35 +1332,115 @@ def createConfigFile(iniFile):
     return
 
 
-@celery.task
-def copyNow():
+def getIni():
+    """
+    deleteAfterCopy was added late, so I'm giving it some special handling here,
+    adding it into the file 'on the fly' if it's not already there.
+    """
+    try:
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
+    except Exception as e:
+        #Looks like the flag doesn't exist. Let's add it
+        try:
+            if not config.has_section('Copy'):
+                config.add_section('Copy')
+            config.set('Copy', 'deleteAfterCopy', 'Off')
+            with open(iniFile, 'w') as config_file:
+                config.write(config_file)
+            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
+        except Exception as e:
+            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
+            deleteAfterCopy = False
+    return deleteAfterCopy
+
+
+@celery.task(bind=True)
+def copyNow(self):
     writeString("WC") # Sends the WAKE command to the Arduino (just in case)
-    app.logger.debug('copyNow(): entered ')
+    app.logger.debug('copyNow(): entered')
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
+    filesToCopy = []
     while True:
         time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
         retries += 1
-        if retries >= 20:
+        if retries >= 6:
             #We've waited too long. Abort.
             app.logger.debug('copyNow() could not claim the USB device after ' + str(retries) + ' attempts.')
-            break
+            return {'status': 'USB error'}
         try:
             app.logger.debug('copyNow() HERE 4')
             camera.init(context)
             #The line above will throw an exception if we can't connect to the camera
-            copy_files(camera)
-            gp.check_result(gp.gp_camera_exit(camera))
-            app.logger.debug('copyNow() ended happily')
             break
         except gp.GPhoto2Error as e:
             app.logger.debug("copyNow() wasn't able to connect to the camera: " + e.string)
             continue
         except Exception as e:
             app.logger.debug('Unknown error in copyNow(): ' + str(e))
-            break
-    return
+            continue
+    self.update_state(state='PROGRESS', meta={'status': 'Copying images'})
+    filesToCopy = files_to_copy(camera)
+    numberToCopy = len(filesToCopy)
+    app.logger.debug('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+    deleteAfterCopy = getIni()
+    thisImage = 0
+    while len(filesToCopy) > 0:
+        try:
+            thisImage += 1
+            self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
+            thisFile = filesToCopy.pop(0)
+            app.logger.debug('About to copy file: ' + str(thisFile))
+            copy_files(camera, thisFile, deleteAfterCopy)
+        except Exception as e:
+            app.logger.debug('Unknown error in copyNow(self): ' + str(e))
+    try:
+        gp.check_result(gp.gp_camera_exit(camera))
+        app.logger.debug('copyNow() ended happily')
+    except Exception as e:
+        app.logger.debug('copyNow() ended sad: ' + str(e))
+    return {'status': 'Task completed!'}
+
+
+@app.route('/longtask', methods=['POST'])
+def longtask():
+    app.logger.debug('longtask(): entered')
+    task = copyNow.apply_async()
+    app.logger.debug('longtask(): returned')
+    return jsonify({}), 202, {'Location': url_for('copyStatus', task_id=task.id)}
+
+
+# TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
+@app.route('/copyStatus/<task_id>')
+def copyStatus(task_id):
+    app.logger.debug('copyStatus(): entered')
+    task = copyNow.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        # job did not start yet
+        response = {
+            'state': task.state,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'status': str(task.info),  # this is the exception raised
+        }
+    app.logger.debug('copyStatus(): returned')
+    return jsonify(response)
 
 
 def reformatSlashes(folder):
