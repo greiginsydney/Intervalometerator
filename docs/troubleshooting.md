@@ -72,7 +72,7 @@ If you receive this error after having attempted to wake the camera, the first t
     cd /usr/local/share/python-gphoto2/examples
     sudo python3 camera-summary.py 
     ```
-     If this responds with information about your camera, there's an issue in the intvlm8r, so focus your debugging on `/home/pi/www/intvlm8r.py`. If it fails, there's a deeper underlying USB issue. See [USB errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#usb-errors) below.
+     If this responds with information about your camera, there's an issue in the intvlm8r, so focus your debugging on `/home/pi/www/intvlm8r.py`. If it fails, there's a deeper underlying USB issue. See [USB errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#usb-errors) below.
 
 ### "Unknown"
 Inside the python code, each call to a web-page starts with the variables initialised as "Unknown", and they're progressively updated with their intended value as the Pi, Arduino or camera are queried in the process of preparing the page.
@@ -80,9 +80,8 @@ Inside the python code, each call to a web-page starts with the variables initia
 A value that remains "Unknown" when the page is served to the user has failed the above step. The most common instances of Unknown will be the result of a failure in the I2C communication with the Arduino, but these will usually only be a transient failure, and a refresh of the web-page will usually result in all expected values being returned.
 
 If _all_ values from the Arduino report Unknown continuously, check:
-- The aerial I2C lines between the Pi and Arduino are connected, and they're the right way around. (Refer the images on the [PCB assembly](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-pcb-assembly.md) page.)
-- The Arduino isn't asleep. (You might encounter this when bench testing, where you have the Pi powered using the link combo's as described in the [wiki/Advanced Config](https://github.com/greiginsydney/Intervalometerator/wiki/Advanced-Config), and the Arduino thinks the Pi is off, so it's gone to sleep too.) To check for this, link the MC pins. If the LED doesn't light, it means the Pi is asleep. Briefly short the Reed pins to wake it - but beware that it might instantly go back to sleep if you have the J2 jumpers in an off-normal state.
-- Check the config of the Pi to make sure it's not trying to talk too fast to the Arduino. Check step 100 in [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md#continue-with-the-piarduino-interfacing)
+- The aerial I2C lines between the Pi and Arduino are connected, and they're the right way around. (Refer the images on the [PCB assembly](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step5-pcb-assembly.md) page.)
+- The Arduino isn't asleep. (You might encounter this when bench testing, where you have the Pi powered using the link combo's as described in [Advanced Config](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/advancedConfig.md), and the Arduino thinks the Pi is off, so it's gone to sleep too.) To check for this, link the MC pins. If the LED doesn't light, it means the Pi is asleep. Briefly short the Reed pins to wake it - but beware that it might instantly go back to sleep if you have the J2 jumpers in an off-normal state.
 - You haven't accidentally (or otherwise) used the 5V version of the Arduino Pro Mini have you?
 
 ### Could not claim the USB device
@@ -119,7 +118,7 @@ If there are problems with USB communication between the Pi and the camera lots 
 USB errors will usually manifest themselves as the total failure to communicate with the camera, beyond being able to wake it and fire scheduled photos. The browser will report "Unknown Model" and/or "No or unknown camera detected".
 
 ### Test steps
-Before proceeding here, confirm first this isn't a different problem. See the test steps in [Unknown Model / No or unknown camera detected](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#unknown-model--no-or-unknown-camera-detected) earlier on this page.
+Before proceeding here, confirm first this isn't a different problem. See the test steps in [Unknown Model / No or unknown camera detected](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#unknown-model--no-or-unknown-camera-detected) earlier on this page.
 Assuming the web-site's responding we know the Pi's running, which confirms it's powered and that it's "sane" - the OS, file system and application all appear to be sufficiently intact.
 There are two paths to take now: hardware (wiring) and software. The latter is the quicker and easier to test - and less intrusive too:
 #### Software 
