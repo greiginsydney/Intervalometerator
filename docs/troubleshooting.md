@@ -72,7 +72,7 @@ If you receive this error after having attempted to wake the camera, the first t
     cd /usr/local/share/python-gphoto2/examples
     sudo python3 camera-summary.py 
     ```
-     If this responds with information about your camera, there's an issue in the intvlm8r, so focus your debugging on `/home/pi/www/intvlm8r.p`. If it fails, there's a deeper underlying USB issue. See [USB errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#usb-errors) below.
+     If this responds with information about your camera, there's an issue in the intvlm8r, so focus your debugging on `/home/pi/www/intvlm8r.py`. If it fails, there's a deeper underlying USB issue. See [USB errors](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#usb-errors) below.
 
 ### "Unknown"
 Inside the python code, each call to a web-page starts with the variables initialised as "Unknown", and they're progressively updated with their intended value as the Pi, Arduino or camera are queried in the process of preparing the page.
@@ -119,7 +119,7 @@ If there are problems with USB communication between the Pi and the camera lots 
 USB errors will usually manifest themselves as the total failure to communicate with the camera, beyond being able to wake it and fire scheduled photos. The browser will report "Unknown Model" and/or "No or unknown camera detected".
 
 ### Test steps
-Before proceeding here, confirm first this isn't a different problem. See the test steps in [Unknown Model / No or unknown camera detected](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#unknown-model--no-or-unknown-camera-detected).
+Before proceeding here, confirm first this isn't a different problem. See the test steps in [Unknown Model / No or unknown camera detected](https://github.com/greiginsydney/Intervalometerator/wiki/Troubleshooting#unknown-model--no-or-unknown-camera-detected) earlier on this page.
 Assuming the web-site's responding we know the Pi's running, which confirms it's powered and that it's "sane" - the OS, file system and application all appear to be sufficiently intact.
 There are two paths to take now: hardware (wiring) and software. The latter is the quicker and easier to test - and less intrusive too:
 #### Software 
