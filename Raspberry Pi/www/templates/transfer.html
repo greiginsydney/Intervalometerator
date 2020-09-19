@@ -1,6 +1,8 @@
 {% extends "index.html" %}
 {% block content %}
 
+<div id="progress"></div>
+
 <form method="post">
 	<table>
 		<tr>
@@ -172,7 +174,8 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
+					<button type="button" name="copy" id="copy" onclick="start_copyNow()">Copy now</button>
+					<!-- <button type="button" name="copy" id="copy">Copy now</button> -->
 				</div>
 				<div class="alignright">
 					<button type="submit" name="tfrApply" id="apply">Apply</button>
@@ -184,7 +187,7 @@
 
 <!-- Hidden form for the various "do something now" buttons, as you can't nest forms -->
 <form style="display: none">
-	<button type="submit" name="copyNow"  id="copyNow"  value="1">Copy Now</button>
+	<button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button>
 	<button type="submit" name="clear" id="clear" value="1">Clear log</button>
 </form>
 
@@ -258,8 +261,11 @@ lightButtons();
 
 function copyNow()
 {
-	document.getElementById("copyNow").click();
+	// document.getElementById("copyNow").click();
+	alert ('this bit worked');
+	//$('#copy').click(start_copyNow);
 }
+
 function tfrClear()
 {
 	document.getElementById("tfrClear").click();
@@ -351,6 +357,95 @@ function openInNewTab(url) {
   var win = window.open(url, '_blank');
   win.focus();
 }
+
+//$(function() {
+//	$('#copy').click(start_copyNow);
+//});
+
+function start_copyNow() {
+	// add task status elements 
+	//alert ('made it to here');
+	newDiv = '<div></div><div>Starting</div><div>...</div><div>&nbsp;</div><hr>';
+	// TY SO: https://stackoverflow.com/questions/13495010/how-to-add-content-to-html-body-using-js
+	progressDiv = document.getElementById('progress')
+	progressDiv.insertAdjacentHTML('beforeend', newDiv);
+
+	// send ajax POST request to start background job
+	var xmlhttp = new XMLHttpRequest();
+
+	xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+			if (xmlhttp.status >= 200 && xmlhttp.status < 400) {
+				// Do "SUCCESS" bit here.
+				//alert ("Success!");
+				
+				status_url = xmlhttp.getResponseHeader('Location');
+				update_progress(status_url, progressDiv);
+				
+			} else if (xmlhttp.status == 400) {
+				// Do "FAILURE" bit here.
+				alert ("Unable to retrieve data from Google!");
+			} else {
+				// Do "UNKNOWN ERROR" bit here.
+				alert ("You have reached the BSOD page! Check your Developer Console for more information.");
+			}
+		}
+	}
+
+	xmlhttp.open("POST", "/longtask", true);
+	xmlhttp.send();
+}
+
+
+
+// http://youmightnotneedjquery.com/
+function update_progress(status_url, st1atus_div) {
+	// send GET request to status URL
+	var status_div = document.getElementById('progress')
+	var request = new XMLHttpRequest();
+	request.open('GET', status_url, true);
+	request.onload = function() 
+	{
+		if (this.status >= 200 && this.status < 400)
+		{
+			var data = JSON.parse(this.response);
+			// update UI
+			status_div.childNodes[2].innerText = data['status'];
+			if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
+			{
+				if ('result' in data)
+				{
+					// show result
+					status_div.childNodes[3].innerText = ('Result: ' + data['result']);
+				}
+				else
+				{
+					// something unexpected happened
+					status_div.childNodes[3].innerText = ('Result: ' + data['state']);
+				}
+			}
+			else
+			{
+				// rerun in 2 seconds
+				setTimeout(function() {
+					update_progress(status_url, status_div);
+				}, 2000);
+			}
+		}
+		else
+		{
+			// We reached our target server, but it returned an error
+			alert ("our target server returned an error")
+		}
+	};
+	request.onerror = function()
+	{
+		// There was a connection error of some sort
+		alert ("update_progress error")
+	}
+	request.send()
+};
+
 
 </script>
 {% endblock %}
