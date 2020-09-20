@@ -1358,7 +1358,7 @@ def getIni():
     return deleteAfterCopy
 
 
-@celery.task(bind=True)
+@celery.task(task_time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the WAKE command to the Arduino (just in case)
     app.logger.debug('copyNow(): entered')
