@@ -469,7 +469,7 @@ def commenceGoogle(remoteFolder):
                 result = DRIVE.files().insert(media_body=media, body={'title':file_name, 'parents':[{u'id': ImageParentId}]}).execute()
                 if result is not None:
                     numFilesOK = uploadedOK(needupload, numFilesOK)
-                else
+                else:
                     log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
                 log('Exception uploading ''%s'' to Google: %s' % (needupload,str(e)))
