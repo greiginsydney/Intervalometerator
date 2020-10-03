@@ -245,7 +245,7 @@ def logout():
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    flash('You need to sign in before you can access that page!')
+    flash('You need to log in before you can access that page!')
     return redirect(login_url(url_for('login'), request.url))
 
 
