@@ -56,20 +56,73 @@
 	}
 	</script>
 </div>
+<!--MENU ENDS -->
 </header>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
-    <table>
+	<table>
 	<tr class="red">
-    {% for message in messages %}
-      <td style="text-align:center">{{ message }}</td>
-    {% endfor %}
-    </tr>
+	{% for message in messages %}
+		<td style="text-align:center">{{ message }}</td>
+	{% endfor %}
+	</tr>
 	</table>
   {% endif %}
 {% endwith %}
-	{% block content %}
-	{% endblock %}
+
+	<table id="progress">
+		<tr >
+			<td style="text-align:center" >Background tasks idle</td>
+		</tr>
+	</table>
+{% block content %}
+{% endblock %}
+	
+	<script>
+	pollStatus()
+	function pollStatus()
+	{
+		if ("{{g.taskstr}}" != "None")
+		{
+			var row = document.getElementById("progress").rows;
+			var col = row[0].cells;
+			var status_url = "/copyStatus/{{g.taskstr}}"
+			var request = new XMLHttpRequest();
+			request.open('GET', status_url, true);
+			request.onload = function() 
+			{
+				if (this.status >= 200 && this.status < 400)
+				{
+					var data = JSON.parse(this.response);
+					// update UI
+					col[0].innerHTML = data['status'];
+					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
+					{
+						// col[0].innerHTML = ('Result: ' + data['state']);
+						col[0].innerHTML = data['status'];
+					}
+					else
+					{
+						// rerun in 2 seconds
+						setTimeout(function() {
+							pollStatus();
+						}, 2000);
+					}
+				}
+				else
+				{
+					// We reached our target server, but it returned an error
+					col[0].innerHTML = "The Pi returned an error"
+				}
+			};
+			request.onerror = function()
+			{
+				// There was a connection error of some sort
+				col[0].innerHTML = "Unknown connection error"
+			}
+			request.send()
+		}
+	}
+	</script>
 </body>
 </html>
-<!--MENU ENDS -->
