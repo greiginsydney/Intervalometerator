@@ -70,11 +70,14 @@
   {% endif %}
 {% endwith %}
 
+{% if not current_user.is_anonymous %}
 	<table id="progress">
 		<tr >
 			<td style="text-align:center" >Background tasks idle</td>
 		</tr>
 	</table>
+{% endif %}
+
 {% block content %}
 {% endblock %}
 	
@@ -82,9 +85,10 @@
 	pollStatus()
 	function pollStatus()
 	{
-		if ("{{g.taskstr}}" != "None")
+		var progressTable = document.getElementById("progress");
+		if (("{{g.taskstr}}" != "None") && (progressTable != null))
 		{
-			var row = document.getElementById("progress").rows;
+			var row = progressTable.rows;
 			var col = row[0].cells;
 			var status_url = "/copyStatus/{{g.taskstr}}"
 			var request = new XMLHttpRequest();
