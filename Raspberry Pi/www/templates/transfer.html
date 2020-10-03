@@ -174,7 +174,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" onclick="start_copyNow()">Copy now</button>
+					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
 					<!-- <button type="button" name="copy" id="copy">Copy now</button> -->
 				</div>
 				<div class="alignright">
@@ -209,7 +209,8 @@ SelectionBits["sftpRemoteFolder"]   =  1024;
 SelectionBits["transferDay"]        =  2048;
 SelectionBits["transferHour"]       =  4096;
 SelectionBits["copyDay"]            =  8192;
-SelectionBits["googleRemoteFolder"] = 16384;
+SelectionBits["copyHour"]           =  16384;
+SelectionBits["googleRemoteFolder"] =  32768;
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
@@ -258,13 +259,6 @@ else
 
 // Run when the form first loads:
 lightButtons(); 
-
-function copyNow()
-{
-	// document.getElementById("copyNow").click();
-	alert ('this bit worked');
-	//$('#copy').click(start_copyNow);
-}
 
 function tfrClear()
 {
@@ -358,50 +352,35 @@ function openInNewTab(url) {
   win.focus();
 }
 
-//$(function() {
-//	$('#copy').click(start_copyNow);
-//});
 
-function start_copyNow() {
-	// add task status elements 
-	//alert ('made it to here');
-	newDiv = '<div></div><div>Starting</div><div>...</div><div>&nbsp;</div><hr>';
-	// TY SO: https://stackoverflow.com/questions/13495010/how-to-add-content-to-html-body-using-js
-	progressDiv = document.getElementById('progress')
-	progressDiv.insertAdjacentHTML('beforeend', newDiv);
-
+function copyNow() {
 	// send ajax POST request to start background job
 	var xmlhttp = new XMLHttpRequest();
-
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == XMLHttpRequest.DONE) {
 			if (xmlhttp.status >= 200 && xmlhttp.status < 400) {
-				// Do "SUCCESS" bit here.
-				//alert ("Success!");
-				
 				status_url = xmlhttp.getResponseHeader('Location');
-				update_progress(status_url, progressDiv);
-				
+				update_progress(status_url);
 			} else if (xmlhttp.status == 400) {
 				// Do "FAILURE" bit here.
-				alert ("Unable to retrieve data from Google!");
+				alert ("Unable to retrieve data");
 			} else {
 				// Do "UNKNOWN ERROR" bit here.
-				alert ("You have reached the BSOD page! Check your Developer Console for more information.");
+				alert ("Unknown error");
 			}
 		}
 	}
-
 	xmlhttp.open("POST", "/longtask", true);
 	xmlhttp.send();
 }
 
 
-
 // http://youmightnotneedjquery.com/
-function update_progress(status_url, st1atus_div) {
+function update_progress(status_url) {
 	// send GET request to status URL
-	var status_div = document.getElementById('progress')
+	var row = document.getElementById("progress").rows;
+	var col = row[0].cells;
+	
 	var request = new XMLHttpRequest();
 	request.open('GET', status_url, true);
 	request.onload = function() 
@@ -410,38 +389,29 @@ function update_progress(status_url, st1atus_div) {
 		{
 			var data = JSON.parse(this.response);
 			// update UI
-			status_div.childNodes[2].innerText = data['status'];
+			col[0].innerHTML = data['status'];
 			if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 			{
-				if ('result' in data)
-				{
-					// show result
-					status_div.childNodes[3].innerText = ('Result: ' + data['result']);
-				}
-				else
-				{
-					// something unexpected happened
-					status_div.childNodes[3].innerText = ('Result: ' + data['state']);
-				}
+				col[0].innerHTML = ('Result: ' + data['state']);
 			}
 			else
 			{
 				// rerun in 2 seconds
 				setTimeout(function() {
-					update_progress(status_url, status_div);
+					update_progress(status_url);
 				}, 2000);
 			}
 		}
 		else
 		{
 			// We reached our target server, but it returned an error
-			alert ("our target server returned an error")
+			alert ("Pi returned an error")
 		}
 	};
 	request.onerror = function()
 	{
 		// There was a connection error of some sort
-		alert ("update_progress error")
+		alert ("Unknown connection error")
 	}
 	request.send()
 };
