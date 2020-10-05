@@ -294,9 +294,6 @@ def main():
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
-    # if request.cookies.get('celeryTask') != None:
-        # app.logger.debug('TEMP: Found a task cookie!')
-
     args = request.args.to_dict()
     if args.get('wakeCamera'):
         writeString("WC") # Sends the WAKE command to the Arduino
@@ -326,11 +323,11 @@ def main():
         camera = gp.Camera()
         context = gp.gp_context_new()
         camera.init(context)
-
+        
         storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
         if len(storage_info) == 0:
             flash('No storage info available') # The memory card is missing or faulty
-            
+
         abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
         config = camera.get_config(context)
         files = list_camera_files(camera)
@@ -349,7 +346,6 @@ def main():
         templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
     except gp.GPhoto2Error as e:
-        flash(e.string)
         app.logger.debug('GPhoto camera error in main: ' + str(e))
     except Exception as e:
         app.logger.debug('Unknown camera error in main: ' + str(e))
@@ -1411,7 +1407,7 @@ def copyNow(self):
         app.logger.debug('copyNow() ended happily')
     except Exception as e:
         app.logger.debug('copyNow() ended sad: ' + str(e))
-    return {'status': 'Task completed!'}
+    return {'status': 'Copied ' + str(thisImage) + ' images OK'}
 
 
 @app.route('/trnCopyNow', methods=['POST'])
