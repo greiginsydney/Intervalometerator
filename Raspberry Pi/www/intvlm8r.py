@@ -346,7 +346,9 @@ def main():
         templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
     except gp.GPhoto2Error as e:
-        app.logger.debug('GPhoto camera error in main: ' + str(e))
+        if e != gp.GP_ERROR_MODEL_NOT_FOUND:
+            flash(e.string)
+            app.logger.debug('GPhoto camera error in main: ' + str(e))
     except Exception as e:
         app.logger.debug('Unknown camera error in main: ' + str(e))
 
