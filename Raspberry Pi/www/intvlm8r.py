@@ -566,8 +566,9 @@ def camera():
         cameraData['expoptions']    = expoptions
 
     except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug('Camera GET error: ' + e.string)
+        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
+            flash(e.string)
+            app.logger.debug('Camera GET error: ' + e.string)
     except Exception as e:
         app.logger.debug('Unknown camera GET error: ' + str(e))
         
@@ -628,7 +629,8 @@ def cameraPOST():
 @login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
-
+    writeString("WC") # Sends the WAKE command to the Arduino
+    
     templateData = {
         'piDoW' : '',
         'piStartHour' : '',
@@ -647,8 +649,9 @@ def intervalometer():
         templateData['availableShots'] = readValue (config, 'availableshots')
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
+        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
+            flash(e.string)
+            app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
