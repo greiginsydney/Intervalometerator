@@ -28,6 +28,7 @@ import exifreader               # For thumbnails
 import fnmatch                  # Used for testing filenames
 import importlib.util           # Testing installed packages
 import io                       # Camera preview
+import json
 import logging
 import os
 import psutil
@@ -45,9 +46,11 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 from celery import Celery
+from celery.app.control import Inspect
+
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
@@ -57,7 +60,7 @@ app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cooki
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
 
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['CELERY_RESULT_BACKEND'])
 celery.conf.update(app.config)
 
 login_manager = LoginManager()
@@ -291,8 +294,8 @@ def main():
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
-    if request.cookies.get('celeryTask') != None:
-        app.logger.debug('TEMP: Found a task cookie!')
+    # if request.cookies.get('celeryTask') != None:
+        # app.logger.debug('TEMP: Found a task cookie!')
 
     args = request.args.to_dict()
     if args.get('wakeCamera'):
@@ -701,11 +704,13 @@ def intervalometerPOST():
 @login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    args = request.args.to_dict()
-    if args.get('copyNow'):
-        app.logger.debug('Detected GET to /transfer/copyNow - calling task')
-        task = copyNow.apply_async()
-        return jsonify({}), 202, {'Location': url_for('copyStatus', task_id=task.id)}
+    
+    # Commented-out 4Oct2020, NLR(?)
+    # args = request.args.to_dict()
+    # if args.get('copyNow'):
+        # app.logger.debug('Detected GET to /transfer/copyNow - calling task')
+        # task = copyNow.apply_async()
+        # return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
@@ -836,9 +841,9 @@ def transferPOST():
 
     return redirect(url_for('transfer'))
 
-  
+
 @app.route("/copyNow")
-def name():
+def copyNowCronJob():
     """
     This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
     the cron job/script and will only execute if the calling IP is itself/localhost.
@@ -846,7 +851,7 @@ def name():
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
         abort(403)
-    task = copyNow.delay()
+    task = copyNow.apply_async()
     res = make_response("")
     return res, 200
 
@@ -1336,6 +1341,7 @@ def getIni():
     """
     deleteAfterCopy was added late, so I'm giving it some special handling here,
     adding it into the file 'on the fly' if it's not already there.
+    TODO: use getIni for all calls to the ini file for a single value
     """
     try:
         if not os.path.exists(iniFile):
@@ -1384,7 +1390,7 @@ def copyNow(self):
         except Exception as e:
             app.logger.debug('Unknown error in copyNow(): ' + str(e))
             continue
-    self.update_state(state='PROGRESS', meta={'status': 'Copying images'})
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
     filesToCopy = files_to_copy(camera)
     numberToCopy = len(filesToCopy)
     app.logger.debug('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
@@ -1399,6 +1405,7 @@ def copyNow(self):
             copy_files(camera, thisFile, deleteAfterCopy)
         except Exception as e:
             app.logger.debug('Unknown error in copyNow(self): ' + str(e))
+    #self.update_state(state='SUCCESS', meta={'status': 'Copied ' + str(thisImage) + ' of ' + str(numberToCopy) + ' images.'})
     try:
         gp.check_result(gp.gp_camera_exit(camera))
         app.logger.debug('copyNow() ended happily')
@@ -1407,24 +1414,30 @@ def copyNow(self):
     return {'status': 'Task completed!'}
 
 
-@app.route('/longtask', methods=['POST'])
-def longtask():
-    app.logger.debug('longtask(): entered')
+@app.route('/trnCopyNow', methods=['POST'])
+@login_required
+def trnCopyNow():
+    """
+    This page is called in the background by the 'Copy now' button on the Transfer page
+    It kicks off the background task, and returns the taskID so its progress can be followed
+    """
+    app.logger.debug('trnCopyNow(): entered')
     task = copyNow.apply_async()
-    app.logger.debug('longtask(): returned')
-    return jsonify({}), 202, {'Location': url_for('copyStatus', task_id=task.id)}
+    app.logger.debug('trnCopyNow(): returned')
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
-@app.route('/copyStatus/<task_id>')
-def copyStatus(task_id):
-    app.logger.debug('copyStatus(): entered')
+@app.route('/backgroundStatus/<task_id>')
+@login_required
+def backgroundStatus(task_id):
+    app.logger.debug('backgroundStatus(): entered')
     task = copyNow.AsyncResult(task_id)
     if task.state == 'PENDING':
         # job did not start yet
         response = {
             'state': task.state,
-            'status': 'Pending...'
+            'status': 'Background task pending'
         }
     elif task.state != 'FAILURE':
         response = {
@@ -1439,8 +1452,35 @@ def copyStatus(task_id):
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
         }
-    app.logger.debug('copyStatus(): returned')
+    app.logger.debug('backgroundStatus(): returned')
     return jsonify(response)
+
+
+# https://stackoverflow.com/questions/5544629/retrieve-list-of-tasks-in-a-queue-in-celery
+@app.before_request
+def getCeleryTasks():
+    """
+    This executes before EVERY page load, feeding any active task ID into the 
+    ensuing response. Javascript in the footer of every page (in index.html)
+    will then query for status updates if a task ID is present.
+    """
+    try:
+        # Inspect all nodes.
+        i = celery.control.inspect(['celery_worker@BenchPiZero'])
+        # Show tasks that are currently active.
+        activeTasks = i.active()
+        if activeTasks != None:
+            app.logger.debug('activeTasks is not None')
+            for _, tasks in list(activeTasks.items()):
+                if tasks:
+                    g.taskstr = ','.join("%s" % (t['id']) for t in tasks)
+                else:
+                    g.taskstr = None
+            app.logger.debug("task = {0}".format(g.taskstr))
+        else:
+            app.logger.debug('There are no activeTasks')
+    except Exception as e:
+        app.logger.debug('getCeleryTasks exception: ' + str(e))
 
 
 def reformatSlashes(folder):
