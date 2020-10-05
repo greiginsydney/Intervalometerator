@@ -19,7 +19,7 @@ h2 {
 
 table {
 	border-collapse: collapse;
-	margin-left:auto; 
+	margin-left:auto;
 	margin-right:auto;
 	width: 30em;
 }
@@ -44,15 +44,19 @@ a {
 }
 
 .red {
-	background-color: #FF0000; 
+	background-color: #FF0000;
 }
 
 .orange {
-	background-color: #FFA500; 
+	background-color: #FFA500;
 }
 
 .green {
-	background-color: #008000; 
+	background-color: #008000;
+}
+
+.white {
+	background-color: #FFFFFF;
 }
 
 .alignleft {
@@ -276,7 +280,7 @@ input[type=radio] {
 .menu {
 	overflow: hidden;
 	background-color: #ffffff;
-	top: 0; 
+	top: 0;
 	width: 100%;
 }
 
@@ -289,7 +293,7 @@ input[type=radio] {
   color: white;
   padding: .5em;
   height: 12em;
-  font-size: 0.8em; 
+  font-size: 0.8em;
   text-align: center;
 }
 
@@ -326,7 +330,7 @@ input[type=radio] {
 	}
 }
 
-@media (max-width:600px) { 
+@media (max-width:600px) {
 
 	table {
 		width: 100%;
@@ -344,17 +348,17 @@ input[type=radio] {
 		float: right;
 		width: 50%;
 	}
-	
+
 	.alignright button {
 		float: right;
 		width: calc(40% * 100vw);
 	}
-	
+
 	.alignleft button {
 		float: left;
 		width: calc(40% * 100vw);
 	}
-	
+
 	.alignleft .resetbutton {
 		float: right;
 		width: calc(40% * 100vw);
