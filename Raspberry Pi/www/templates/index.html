@@ -98,10 +98,12 @@
 					var data = JSON.parse(this.response);
 					// update UI
 					col[0].innerHTML = data['status'];
+					row[0].className = "white";
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						// col[0].innerHTML = ('Result: ' + data['state']);
 						col[0].innerHTML = data['status'];
+						row[0].className = "white";
 					}
 					else
 					{
@@ -115,12 +117,14 @@
 				{
 					// We reached our target server, but it returned an error
 					col[0].innerHTML = "The Pi returned an error"
+					row[0].className = "orange";
 				}
 			};
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
 				col[0].innerHTML = "Unknown connection error"
+				row[0].className = "orange";
 			}
 			request.send()
 		}
