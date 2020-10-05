@@ -187,7 +187,7 @@
 
 <!-- Hidden form for the various "do something now" buttons, as you can't nest forms -->
 <form style="display: none">
-	<button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button>
+	<!-- <button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button> -->
 	<button type="submit" name="clear" id="clear" value="1">Clear log</button>
 </form>
 
@@ -209,8 +209,8 @@ SelectionBits["sftpRemoteFolder"]   =  1024;
 SelectionBits["transferDay"]        =  2048;
 SelectionBits["transferHour"]       =  4096;
 SelectionBits["copyDay"]            =  8192;
-SelectionBits["copyHour"]           =  16384;
-SelectionBits["googleRemoteFolder"] =  32768;
+SelectionBits["copyHour"]           = 16384;
+SelectionBits["googleRemoteFolder"] = 32768;
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
@@ -352,70 +352,25 @@ function openInNewTab(url) {
   win.focus();
 }
 
-
 function copyNow() {
 	// send ajax POST request to start background job
 	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onreadystatechange = function() {
-		if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-			if (xmlhttp.status >= 200 && xmlhttp.status < 400) {
-				status_url = xmlhttp.getResponseHeader('Location');
-				update_progress(status_url);
-			} else if (xmlhttp.status == 400) {
-				// Do "FAILURE" bit here.
-				alert ("Unable to retrieve data");
-			} else {
-				// Do "UNKNOWN ERROR" bit here.
-				alert ("Unknown error");
-			}
-		}
-	}
-	xmlhttp.open("POST", "/longtask", true);
-	xmlhttp.send();
-}
-
-
-// http://youmightnotneedjquery.com/
-function update_progress(status_url) {
-	// send GET request to status URL
-	var row = document.getElementById("progress").rows;
-	var col = row[0].cells;
-	
-	var request = new XMLHttpRequest();
-	request.open('GET', status_url, true);
-	request.onload = function() 
+	xmlhttp.open('POST', '/trnCopyNow', true);
+	xmlhttp.onload = function()
 	{
 		if (this.status >= 200 && this.status < 400)
 		{
-			var data = JSON.parse(this.response);
-			// update UI
-			col[0].innerHTML = data['status'];
-			if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
-			{
-				col[0].innerHTML = ('Result: ' + data['state']);
-			}
-			else
-			{
-				// rerun in 2 seconds
-				setTimeout(function() {
-					update_progress(status_url);
-				}, 2000);
-			}
+			//We received a positive response. Job underway. Reload this page.
+			location.href = location.href;
 		}
 		else
 		{
 			// We reached our target server, but it returned an error
-			alert ("Pi returned an error")
+			alert('Nope, that failed');
 		}
 	};
-	request.onerror = function()
-	{
-		// There was a connection error of some sort
-		alert ("Unknown connection error")
-	}
-	request.send()
-};
-
+	xmlhttp.send();
+}
 
 </script>
 {% endblock %}
