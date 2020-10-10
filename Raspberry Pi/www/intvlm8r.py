@@ -48,7 +48,7 @@ from werkzeug.security import check_password_hash
 
 from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
-from celery import Celery
+from celery import Celery, chain
 from celery.app.control import Inspect
 
 app = Flask(__name__)
@@ -323,7 +323,7 @@ def main():
         camera = gp.Camera()
         context = gp.gp_context_new()
         camera.init(context)
-        
+
         storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
         if len(storage_info) == 0:
             flash('No storage info available') # The memory card is missing or faulty
@@ -345,8 +345,9 @@ def main():
         templateData['lastImage']                = lastImage
         templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
+    
     except gp.GPhoto2Error as e:
-        if e != gp.GP_ERROR_MODEL_NOT_FOUND:
+        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
             flash(e.string)
             app.logger.debug('GPhoto camera error in main: ' + str(e))
     except Exception as e:
@@ -451,12 +452,7 @@ def thumbnails():
                             ThumbsInfo[key] = val
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
-                sourceFolderTree, imageFileName = os.path.split(FileList[loop])
-                dest = makeThumb(FileList[loop]) #Make sure every image we want to show here (1) has a thumb, and (2) metadata
-                app.logger.debug('Thumb of {0} is {1}'.format(FileList[loop], dest))
-                if (dest == None):
-                    #Something went wrong
-                    continue
+                _, imageFileName = os.path.split(FileList[loop])
                 #Read the metadata:
                 thumbTimeStamp = 'Unknown'
                 thumbInfo = 'Unknown'
@@ -629,7 +625,8 @@ def cameraPOST():
 @login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
-    writeString("WC") # Sends the WAKE command to the Arduino
+    writeString("WC") # Sends the camera WAKE command to the Arduino
+    time.sleep(0.5);    # (Adds another 0.5s on top of the 0.5s already baked into WriteString)
     
     templateData = {
         'piDoW' : '',
@@ -652,6 +649,8 @@ def intervalometer():
         if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
             flash(e.string)
             app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
+        else:
+            app.logger.debug('Nope, camera not awake yet: ' + str(e)) #DEBUG line GREIG. remove before release.
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
@@ -852,8 +851,14 @@ def copyNowCronJob():
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
         abort(403)
-    task = copyNow.apply_async()
-    res = make_response("")
+    
+    tasks = [
+        copyNow.si(),
+        newThumbs.si()
+    ]
+    chain(*tasks).apply_async()
+    
+    res = make_response('OK')
     return res, 200
 
 
@@ -1191,8 +1196,10 @@ def makeThumb(imageFile):
         dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
         dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
         app.logger.debug('Thumb dest = ' + dest)
+        alreadyExists = False
         if dest in ThumbList:
             app.logger.debug('Thumbnail already exists.')
+            alreadyExists = True
         else:
             #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
@@ -1250,7 +1257,7 @@ def makeThumb(imageFile):
                     app.logger.debug('makeThumb() EXIF error: ' + str(e))
             except Exception as e:
                 app.logger.debug('makeThumb() Pillow error: ' + str(e))
-        return dest
+        return dest, alreadyExists
     except Exception as e:
         app.logger.debug('Unknown Exception in makeThumb(): ' + str(e))
         return None
@@ -1366,15 +1373,51 @@ def getIni():
 
 
 @celery.task(task_time_limit=1800, bind=True)
+def newThumbs(self):
+    app.logger.info('newThumbs(): entered')
+    try:
+        FileList  = list_Pi_Images(PI_PHOTO_DIR)
+        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        PI_PHOTO_COUNT = len(FileList)
+        PI_THUMB_COUNT = len(ThumbList)
+        if PI_PHOTO_COUNT - PI_THUMB_COUNT <= 0:
+            thumbsToCreate = 'Unknown'
+            app.logger.info('Thumbs to create = ' + thumbsToCreate)
+        else:
+            thumbsToCreate = str(PI_PHOTO_COUNT - PI_THUMB_COUNT)
+        thumbsCreated = 0
+        app.logger.info('Thumbs to create = ' + thumbsToCreate)
+        if PI_PHOTO_COUNT >= 1:
+            #Read the thumb files themselves:
+            for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
+                dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+                if not alreadyExists:
+                    thumbsCreated += 1
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
+                    app.logger.info('Thumb of {0} is {1}'.format(FileList[loop], dest))
+                else:
+                    app.logger.info('Thumb for ' + dest + ' already exists')
+                if (dest == None):
+                    #Something went wrong
+                    continue
+        else:
+            app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
+    except Exception as e:
+        app.logger.info('newThumbs error: ' + str(e))
+    app.logger.info('newThumbs(): returned')
+    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
+
+
+@celery.task(task_time_limit=1800, bind=True)
 def copyNow(self):
-    writeString("WC") # Sends the WAKE command to the Arduino (just in case)
+    writeString("WC") # Sends the camera WAKE command to the Arduino
     app.logger.debug('copyNow(): entered')
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
     filesToCopy = []
     while True:
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+        time.sleep(1);  # Pause between retries
         retries += 1
         if retries >= 6:
             #We've waited too long. Abort.
@@ -1406,12 +1449,13 @@ def copyNow(self):
             copy_files(camera, thisFile, deleteAfterCopy)
         except Exception as e:
             app.logger.debug('Unknown error in copyNow(self): ' + str(e))
-    #self.update_state(state='SUCCESS', meta={'status': 'Copied ' + str(thisImage) + ' of ' + str(numberToCopy) + ' images.'})
     try:
         gp.check_result(gp.gp_camera_exit(camera))
         app.logger.debug('copyNow() ended happily')
     except Exception as e:
         app.logger.debug('copyNow() ended sad: ' + str(e))
+    self.update_state(state='PROGRESS', meta={'status': 'Copied ' + str(thisImage) + ' images OK'})
+    
     return {'status': 'Copied ' + str(thisImage) + ' images OK'}
 
 
@@ -1423,7 +1467,15 @@ def trnCopyNow():
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
     app.logger.debug('trnCopyNow(): entered')
-    task = copyNow.apply_async()
+    #task = copyNow.apply_async()
+    
+    tasks = [
+        copyNow.si(),
+        newThumbs.si()
+    ]
+    task = chain(*tasks).apply_async()
+    
+    
     app.logger.debug('trnCopyNow(): returned')
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
