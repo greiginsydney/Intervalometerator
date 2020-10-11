@@ -423,6 +423,14 @@ def getArduinoTime():
 @app.route("/thumbnails")
 @login_required
 def thumbnails():
+    """
+    The logic here warrants some explanation: It's *assumed* that for every photo on the Pi there's a matching thumbnail, as the 
+    copy and thumb creation process are linked. You *shouldn't* have one without the other.
+    This code creates the thumbnails list based on the filename of the main image, and then only adds the assumed -thumbs.JPG suffix as it calls the view.
+    Thus, even if a thumb is absent (broken?), the view will still reveal its main image, the image's metadata, and you can still click-through to see it.
+    
+    Had I started with "list_Pi_Images(PI_THUMBS_DIR)", then a missing thumb would result in its main image not being displayed here.
+    """
     ThumbFiles = []
 
     if not os.path.exists(iniFile):
@@ -437,7 +445,6 @@ def thumbnails():
 
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
-        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
@@ -462,7 +469,8 @@ def thumbnails():
                     thumbTimeStamp = metadata.split("|")[0]
                     thumbInfo = metadata.split("|")[1]
                 #Build the list for the page:
-                ThumbFiles.append({'Name': (str(dest).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
+                ThumbFileName = createThumbFilename(FileList[loop]) #Adds the '-thumb.JPG' suffix
+                ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
     except Exception as e:
@@ -1186,15 +1194,26 @@ def CreateDestPath(folder, NewDestDir):
     return dest
 
 
+def createThumbFilename(imageFilename):
+    """
+    Called by 'makeThumb' and also /thumbnails
+    Manipulates the path and filename of every image:
+    - Changes the root path from the PI_PHOTO_DIR to the PI_THUMBS_DIR
+    - Adds the '-thumb.JPG' suffix
+    """
+    sourceFolderTree, imageFileName = os.path.split(imageFilename)
+    dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
+    dest = os.path.join(dest, imageFileName)
+    dest = dest.replace('.JPG', '-thumb.JPG')
+    dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
+    dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
+    return dest
+
+
 def makeThumb(imageFile):
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
-        sourceFolderTree, imageFileName = os.path.split(imageFile)
-        dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
-        dest = os.path.join(dest, imageFileName)
-        dest = dest.replace('.JPG', '-thumb.JPG')
-        dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
-        dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
+        dest = createThumbFilename(imageFile)
         app.logger.debug('Thumb dest = ' + dest)
         alreadyExists = False
         if dest in ThumbList:
