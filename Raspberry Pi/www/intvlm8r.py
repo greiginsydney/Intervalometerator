@@ -1473,9 +1473,11 @@ def copyNow(self):
         app.logger.debug('copyNow() ended happily')
     except Exception as e:
         app.logger.debug('copyNow() ended sad: ' + str(e))
-    self.update_state(state='PROGRESS', meta={'status': 'Copied ' + str(thisImage) + ' images OK'})
-    
-    return {'status': 'Copied ' + str(thisImage) + ' images OK'}
+    if thisImage == 0:
+        statusMessage = "There were no new images to copy"
+    else:
+        statusMessage = 'Copied ' + str(thisImage) + ' images OK'
+    return {'status': statusMessage}
 
 
 @app.route('/trnCopyNow', methods=['POST'])
