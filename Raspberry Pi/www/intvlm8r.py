@@ -1194,14 +1194,14 @@ def CreateDestPath(folder, NewDestDir):
     return dest
 
 
-def createThumbFilename(imageFilename):
+def createThumbFilename(imageFullFilename):
     """
     Called by 'makeThumb' and also /thumbnails
     Manipulates the path and filename of every image:
     - Changes the root path from the PI_PHOTO_DIR to the PI_THUMBS_DIR
     - Adds the '-thumb.JPG' suffix
     """
-    sourceFolderTree, imageFileName = os.path.split(imageFilename)
+    sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
     dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
     dest = os.path.join(dest, imageFileName)
     dest = dest.replace('.JPG', '-thumb.JPG')
@@ -1213,15 +1213,17 @@ def createThumbFilename(imageFilename):
 def makeThumb(imageFile):
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        _, imageFileName = os.path.split(imageFile)
         dest = createThumbFilename(imageFile)
-        app.logger.debug('Thumb dest = ' + dest)
+        app.logger.info('Thumb dest = ' + dest)
         alreadyExists = False
         if dest in ThumbList:
-            app.logger.debug('Thumbnail already exists.')
+            app.logger.info('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
             #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
+                app.logger.info('NOPE, we need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
                     thumb.save(dest, "JPEG")
@@ -1236,7 +1238,7 @@ def makeThumb(imageFile):
                     except Exception as e:
                         dateOriginal = ''
                         timeOriginal = ''
-                        app.logger.debug('makeThumb() dateTimeOriginal error: ' + str(e))
+                        app.logger.info('makeThumb() dateTimeOriginal error: ' + str(e))
                     try:
                         #Reformat depending on the value:
                         # 6/1   becomes 6s
@@ -1254,31 +1256,31 @@ def makeThumb(imageFile):
                             pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
                     except Exception as e:
                         exposureTime = '?'
-                        app.logger.debug('makeThumb() ExposureTime error: ' + str(e))
+                        app.logger.info('makeThumb() ExposureTime error: ' + str(e))
                     try:
                         fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
                         #Strip the '.0' if it's a whole F-stop
                         fNumber = fNumber.replace('.0','')
                     except Exception as e:
                         fNumber = '?'
-                        app.logger.debug('makeThumb() fNumber error: ' + str(e))
+                        app.logger.info('makeThumb() fNumber error: ' + str(e))
                     try:
                         ISO = tags['EXIF ISOSpeedRatings']
                     except Exception as e:
                         ISO = '?'
-                        app.logger.debug('makeThumb() ISO error: ' + str(e))
+                        app.logger.info('makeThumb() ISO error: ' + str(e))
                     try:
                         with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
                             thumbsInfoFile.write('{0} = {1} {2}|{3}s * F{4} * ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
                     except Exception as e:
-                        app.logger.debug('makeThumb() error writing to thumbsInfoFile: ' + str(e))
+                        app.logger.info('makeThumb() error writing to thumbsInfoFile: ' + str(e))
                 except Exception as e:
-                    app.logger.debug('makeThumb() EXIF error: ' + str(e))
+                    app.logger.info('makeThumb() EXIF error: ' + str(e))
             except Exception as e:
-                app.logger.debug('makeThumb() Pillow error: ' + str(e))
+                app.logger.info('makeThumb() Pillow error: ' + str(e))
         return dest, alreadyExists
     except Exception as e:
-        app.logger.debug('Unknown Exception in makeThumb(): ' + str(e))
+        app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
         return None
 
 
@@ -1393,7 +1395,7 @@ def getIni():
 
 @celery.task(task_time_limit=1800, bind=True)
 def newThumbs(self):
-    app.logger.info('newThumbs(): entered')
+    app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -1413,7 +1415,7 @@ def newThumbs(self):
                 if not alreadyExists:
                     thumbsCreated += 1
                     self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
-                    app.logger.info('Thumb of {0} is {1}'.format(FileList[loop], dest))
+                    app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
                 else:
                     app.logger.info('Thumb for ' + dest + ' already exists')
                 if (dest == None):
