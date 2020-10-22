@@ -59,7 +59,7 @@
 <!--MENU ENDS -->
 </header>
 <table id="progress">
-	
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
 	<tr class="red">
@@ -80,6 +80,7 @@
 {% endblock %}
 
 	<script>
+	var retry = false;
 	pollStatus()
 	function pollStatus()
 	{
@@ -101,9 +102,13 @@
 					row[0].className = "white";
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
-						// col[0].innerHTML = ('Result: ' + data['state']);
-						col[0].innerHTML = data['status'];
-						row[0].className = "white";
+						//We're done. Or are we? Is there a new task?
+						if (data['newtask'] != null)
+						{
+							alert("We have a new task: " + (data['newtask']))
+						}
+						// col[0].innerHTML = data['status'];
+						// row[0].className = "white";
 					}
 					else
 					{
