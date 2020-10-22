@@ -1215,15 +1215,15 @@ def makeThumb(imageFile):
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
         dest = createThumbFilename(imageFile)
-        app.logger.info('Thumb dest = ' + dest)
+        app.logger.debug('Thumb dest = ' + dest)
         alreadyExists = False
         if dest in ThumbList:
-            app.logger.info('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
+            app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
             #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
-                app.logger.info('NOPE, we need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
+                app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
                     thumb.save(dest, "JPEG")
@@ -1417,7 +1417,7 @@ def newThumbs(self):
                     self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
                     app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
                 else:
-                    app.logger.info('Thumb for ' + dest + ' already exists')
+                    app.logger.debug('Thumb for ' + dest + ' already exists')
                 if (dest == None):
                     #Something went wrong
                     continue
