@@ -30,7 +30,7 @@ import importlib.util           # Testing installed packages
 import io                       # Camera preview
 import json
 import logging
-import os
+import os                       # Hostname
 import psutil
 import re                       # RegEx. Used in Copy Files
 from smbus2 import SMBus        # For I2C
@@ -88,6 +88,7 @@ PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
 PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer page will link to when you click "View Log"
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
+HOSTNAME = os.uname()[1]
 
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
@@ -930,6 +931,7 @@ def system():
         'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
         'arduinoTime'    : 'Unknown',
+        'piHostname'     : 'Unknown',
         'piUptime'       : 'Unknown',
         'piModel'        : 'Unknown',
         'piLinuxVer'     : 'Unknown',
@@ -979,6 +981,7 @@ def system():
 
     try:
         templateData['piUptime']    = getPiUptime()
+        templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
@@ -1542,7 +1545,7 @@ def getCeleryTasks():
     """
     try:
         # Inspect all nodes.
-        i = celery.control.inspect(['celery_worker@BenchPiZero'])
+        i = celery.control.inspect(['celery_worker@' + HOSTNAME])
         # Show tasks that are currently active.
         activeTasks = i.active()
         if activeTasks != None:
