@@ -1525,6 +1525,11 @@ def backgroundStatus(task_id):
         }
         if 'result' in task.info:
             response['result'] = task.info['result']
+        getCeleryTasks() # Refresh the tasks list.
+        app.logger.debug("NEW task code")
+        if g.taskstr != None:
+            app.logger.debug("NEW task = {0}".format(g.taskstr))
+            response['newtask'] = g.taskstr
     else:
         # something went wrong in the background job
         response = {
