@@ -1493,7 +1493,6 @@ def trnCopyNow():
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
     app.logger.debug('trnCopyNow(): entered')
-    #task = copyNow.apply_async()
     
     tasks = [
         copyNow.si(),
@@ -1501,8 +1500,7 @@ def trnCopyNow():
     ]
     task = chain(*tasks).apply_async()
     
-    
-    app.logger.debug('trnCopyNow(): returned')
+    app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
@@ -1510,28 +1508,35 @@ def trnCopyNow():
 @app.route('/backgroundStatus/<task_id>')
 @login_required
 def backgroundStatus(task_id):
-    app.logger.debug('backgroundStatus(): entered')
     task = copyNow.AsyncResult(task_id)
+    app.logger.debug('backgroundStatus(): entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
     if task.state == 'PENDING':
         # job did not start yet
         response = {
             'state': task.state,
             'status': 'Background task pending'
         }
+    elif task.state == 'SUCCESS':
+        # job has completed - but is another pending?
+        #getCeleryTasks() # Refresh the tasks list.
+        app.logger.debug("backgroundStatus reports SUCCESS")
+        response = {
+                'state': 'SUCCESS',
+                'status': task.info.get('status', ''),
+                'newtask': g.taskstr
+            }
+        if g.taskstr != None:
+            app.logger.debug("backgroundStatus task = {0}".format(g.taskstr))
+            #app.logger.debug("NEW task = {0}".format(g.taskstr))
+            #response['newtask'] = g.taskstr
     elif task.state != 'FAILURE':
         response = {
             'state': task.state,
             'status': task.info.get('status', '')
         }
-        if 'result' in task.info:
-            response['result'] = task.info['result']
-        getCeleryTasks() # Refresh the tasks list.
-        app.logger.debug("NEW task code")
-        if g.taskstr != None:
-            app.logger.debug("NEW task = {0}".format(g.taskstr))
-            response['newtask'] = g.taskstr
     else:
         # something went wrong in the background job
+        app.logger.debug("Something went wrong in the background job: {0}".format(task.info))
         response = {
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
@@ -1554,15 +1559,15 @@ def getCeleryTasks():
         # Show tasks that are currently active.
         activeTasks = i.active()
         if activeTasks != None:
-            app.logger.debug('activeTasks is not None')
             for _, tasks in list(activeTasks.items()):
                 if tasks:
-                    g.taskstr = ','.join("%s" % (t['id']) for t in tasks)
+                    g.taskstr = ','.join("%s" % (t['id']) for t in tasks[:1]) #Just the first task will do
                 else:
+                    app.logger.debug('getCeleryTasks cleared g.taskstr')
                     g.taskstr = None
-            app.logger.debug("task = {0}".format(g.taskstr))
+            app.logger.debug("getCeleryTasks g.taskstr = {0}".format(g.taskstr))
         else:
-            app.logger.debug('There are no activeTasks')
+            app.logger.debug('getCeleryTasks reports there are no activeTasks')
     except Exception as e:
         app.logger.debug('getCeleryTasks exception: ' + str(e))
 
