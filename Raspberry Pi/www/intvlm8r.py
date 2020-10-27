@@ -1416,42 +1416,6 @@ def trnCopyNow():
 
 
 @celery.task(task_time_limit=1800, bind=True)
-def newThumbs(self):
-    app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
-    try:
-        FileList  = list_Pi_Images(PI_PHOTO_DIR)
-        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
-        PI_PHOTO_COUNT = len(FileList)
-        PI_THUMB_COUNT = len(ThumbList)
-        if PI_PHOTO_COUNT - PI_THUMB_COUNT <= 0:
-            thumbsToCreate = 'Unknown'
-            app.logger.info('Thumbs to create = ' + thumbsToCreate)
-        else:
-            thumbsToCreate = str(PI_PHOTO_COUNT - PI_THUMB_COUNT)
-        thumbsCreated = 0
-        app.logger.info('Thumbs to create = ' + thumbsToCreate)
-        if PI_PHOTO_COUNT >= 1:
-            #Read the thumb files themselves:
-            for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
-                dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
-                if not alreadyExists:
-                    thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
-                    app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
-                else:
-                    app.logger.debug('Thumb for ' + dest + ' already exists')
-                if (dest == None):
-                    #Something went wrong
-                    continue
-        else:
-            app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
-    except Exception as e:
-        app.logger.info('newThumbs error: ' + str(e))
-    app.logger.info('newThumbs(): returned')
-    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
-
-
-@celery.task(task_time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the camera WAKE command to the Arduino
     app.logger.debug('copyNow(): entered')
@@ -1502,6 +1466,42 @@ def copyNow(self):
     else:
         statusMessage = 'Copied ' + str(thisImage) + ' images OK'
     return {'status': statusMessage}
+
+
+@celery.task(task_time_limit=1800, bind=True)
+def newThumbs(self):
+    app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
+    try:
+        FileList  = list_Pi_Images(PI_PHOTO_DIR)
+        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        PI_PHOTO_COUNT = len(FileList)
+        PI_THUMB_COUNT = len(ThumbList)
+        if PI_PHOTO_COUNT - PI_THUMB_COUNT <= 0:
+            thumbsToCreate = 'Unknown'
+            app.logger.info('Thumbs to create = ' + thumbsToCreate)
+        else:
+            thumbsToCreate = str(PI_PHOTO_COUNT - PI_THUMB_COUNT)
+        thumbsCreated = 0
+        app.logger.info('Thumbs to create = ' + thumbsToCreate)
+        if PI_PHOTO_COUNT >= 1:
+            #Read the thumb files themselves:
+            for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
+                dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+                if not alreadyExists:
+                    thumbsCreated += 1
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
+                    app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
+                else:
+                    app.logger.debug('Thumb for ' + dest + ' already exists')
+                if (dest == None):
+                    #Something went wrong
+                    continue
+        else:
+            app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
+    except Exception as e:
+        app.logger.info('newThumbs error: ' + str(e))
+    app.logger.info('newThumbs(): returned')
+    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
