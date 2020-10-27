@@ -1396,6 +1396,25 @@ def getIni():
     return deleteAfterCopy
 
 
+@app.route('/trnCopyNow', methods=['POST'])
+@login_required
+def trnCopyNow():
+    """
+    This page is called in the background by the 'Copy now' button on the Transfer page
+    It kicks off the background task, and returns the taskID so its progress can be followed
+    """
+    app.logger.debug('trnCopyNow(): entered')
+    
+    tasks = [
+        copyNow.si(),
+        newThumbs.si()
+    ]
+    task = chain(*tasks).apply_async()
+    
+    app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
+
+
 @celery.task(task_time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
@@ -1483,25 +1502,6 @@ def copyNow(self):
     else:
         statusMessage = 'Copied ' + str(thisImage) + ' images OK'
     return {'status': statusMessage}
-
-
-@app.route('/trnCopyNow', methods=['POST'])
-@login_required
-def trnCopyNow():
-    """
-    This page is called in the background by the 'Copy now' button on the Transfer page
-    It kicks off the background task, and returns the taskID so its progress can be followed
-    """
-    app.logger.debug('trnCopyNow(): entered')
-    
-    tasks = [
-        copyNow.si(),
-        newThumbs.si()
-    ]
-    task = chain(*tasks).apply_async()
-    
-    app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
-    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
