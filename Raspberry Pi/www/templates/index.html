@@ -80,21 +80,15 @@
 {% endblock %}
 
 	<script>
-	var retry = false;
-	pollStatus(null)
-	function pollStatus(newTask)
+	pollStatus()
+	function pollStatus()
 	{
 		var progressTable = document.getElementById("progress");
-		if (newTask == null)
-		{
-			newTask = "{{g.taskstr}}"
-		}
-		//if (("{{g.taskstr}}" != "") && ("{{g.taskstr}}" != "None") && (progressTable != null))
-		if ((newTask != "") && (newTask != "None") && (progressTable != null))
+		if (("{{g.taskstr}}" != "") && ("{{g.taskstr}}" != "None") && (progressTable != null))
 		{
 			var row = progressTable.rows;
 			var col = row[0].cells;
-			var status_url = "/backgroundStatus/" + newTask
+			var status_url = "/backgroundStatus/{{g.taskstr}}"
 			var request = new XMLHttpRequest();
 			request.open('GET', status_url, true);
 			request.onload = function()
@@ -105,26 +99,17 @@
 					// update UI
 					col[0].innerHTML = data['status'];
 					row[0].className = "white";
-
-					// if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
-					//{
-						//We're done. Or are we? Is there a new task?
-					if (data['newtask'] != null)
+					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
-						alert("We have a new task: " + (data['newtask']))
+						//We're done.
+					}
+					else
+					{
 						// rerun in 2 seconds
 						setTimeout(function() {
-							pollStatus(data['newtask']);
+							pollStatus();
 						}, 2000);
 					}
-					//}
-					//else
-					//{ 
-						// rerun in 2 seconds
-						setTimeout(function() {
-							pollStatus(data['newtask']);
-						}, 2000);
-					//}
 				}
 				else
 				{
