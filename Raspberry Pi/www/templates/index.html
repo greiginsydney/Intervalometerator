@@ -58,27 +58,27 @@
 </div>
 <!--MENU ENDS -->
 </header>
-<table id="progress">
-
 {% with messages = get_flashed_messages() %}
-  {% if messages %}
-	<tr class="red">
-		<td style="text-align:center">
-	{% for message in messages %}
-		{{ message }}
-	{% endfor %}
-	{% else %}
-	<tr >
-		<td style="text-align:center">Background tasks idle
-  {% endif %}
+	{% if not current_user.is_anonymous %}
+	<table id="progress">
+	  {% if messages %}
+		<tr class="red">
+			{% for message in messages %}
+				<td style="text-align:center">{{ message }}</td>
+			{% endfor %}
+	  {% else %}
+		<tr>
+			<td style="text-align:center">Background tasks idle</td>
+	  {% endif %}
+		</tr>
+	</table>
+	{% endif %}
 {% endwith %}
-{{ newmessage }}</td>
-	</tr>
-</table>
 
 {% block content %}
 {% endblock %}
 
+{% if not current_user.is_anonymous %}
 	<script>
 	pollStatus()
 	function pollStatus()
@@ -128,5 +128,6 @@
 		}
 	}
 	</script>
+{% endif %}
 </body>
 </html>
