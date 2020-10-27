@@ -1516,19 +1516,6 @@ def backgroundStatus(task_id):
             'state': task.state,
             'status': 'Background task pending'
         }
-    elif task.state == 'SUCCESS':
-        # job has completed - but is another pending?
-        #getCeleryTasks() # Refresh the tasks list.
-        app.logger.debug("backgroundStatus reports SUCCESS")
-        response = {
-                'state': 'SUCCESS',
-                'status': task.info.get('status', ''),
-                'newtask': g.taskstr
-            }
-        if g.taskstr != None:
-            app.logger.debug("backgroundStatus task = {0}".format(g.taskstr))
-            #app.logger.debug("NEW task = {0}".format(g.taskstr))
-            #response['newtask'] = g.taskstr
     elif task.state != 'FAILURE':
         response = {
             'state': task.state,
