@@ -1167,7 +1167,6 @@ def copy_files(camera, imageToCopy, deleteAfterCopy):
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
         copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
         if (copyOK >= gp.GP_OK):
-            #discard = makeThumb(dest)  GREIG: temp removed, pending relocation to new home (not in the copy loop)
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
                 app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
