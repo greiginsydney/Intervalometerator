@@ -53,14 +53,13 @@ from celery.app.control import Inspect
 
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-app.config['CELERY_TASK_TRACK_STARTED'] = True # Untested Greig. 13/9/20.
+app.config['result_backend'] = 'redis://localhost:6379/0'
 
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
 
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['CELERY_RESULT_BACKEND'])
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
 celery.conf.update(app.config)
 
 login_manager = LoginManager()
