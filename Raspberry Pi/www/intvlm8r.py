@@ -1414,7 +1414,7 @@ def trnCopyNow():
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
-@celery.task(task_time_limit=1800, bind=True)
+@celery.task(time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the camera WAKE command to the Arduino
     app.logger.debug('copyNow(): entered')
@@ -1467,7 +1467,7 @@ def copyNow(self):
     return {'status': statusMessage}
 
 
-@celery.task(task_time_limit=1800, bind=True)
+@celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
     try:
