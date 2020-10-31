@@ -1273,7 +1273,7 @@ def makeThumb(imageFile):
                         app.logger.info('makeThumb() ISO error: ' + str(e))
                     try:
                         with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                            thumbsInfoFile.write('{0} = {1} {2}|{3}s * F{4} * ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
+                            thumbsInfoFile.write('{0} = {1} {2}|{3}s &bull; F{4} &bull; ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
                     except Exception as e:
                         app.logger.info('makeThumb() error writing to thumbsInfoFile: ' + str(e))
                 except Exception as e:
