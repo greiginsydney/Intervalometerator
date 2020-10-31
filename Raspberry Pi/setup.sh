@@ -129,11 +129,8 @@ install_website ()
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
-	mkdir -pv /var/log/celery
-	mkdir -pv /var/run/celery
-	#id -u celery &>/dev/null || useradd celery -d /home/celery -b /bin/bash
-	#adduser celery i2c
-	#adduser celery www-data
+	#mkdir -pv /var/log/celery
+	#mkdir -pv /var/run/celery
 	[ -f celery.conf ] && mv -fv celery.conf /etc/tmpfiles.d/celery.conf
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
