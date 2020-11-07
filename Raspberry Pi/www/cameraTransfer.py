@@ -53,7 +53,7 @@ def main(argv):
     config = configparser.ConfigParser(
         {
         'copyDay'         : 'Off',
-        'copyHour'        : '',
+        'copyHour'        : '00',
         })
     config.read(INIFILE_NAME)
     try:
