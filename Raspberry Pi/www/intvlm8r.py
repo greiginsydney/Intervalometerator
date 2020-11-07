@@ -213,7 +213,7 @@ def login():
     if request.method == 'GET':
         app.logger.debug('Its a GET to LOGIN')
         return render_template('login.html')
-    username = (str(request.form['username'])).lower() #Don't care for case in a username
+    username = (str(request.form['username']))
     if username in users:
         #if (check_password_hash(users[username]['password'], request.form['password'])):
         if users[username]['password'] == request.form['password']:
