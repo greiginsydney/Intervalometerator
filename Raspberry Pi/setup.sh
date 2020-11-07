@@ -264,9 +264,10 @@ install_website ()
 	then
 		echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
 	else
-		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000 /'g /boot/config.txt
+		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/'g /boot/config.txt
 	fi
-
+	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
+	
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
 	if  grep -Fq "intervalometerator" "/boot/config.txt";
