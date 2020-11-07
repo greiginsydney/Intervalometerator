@@ -937,7 +937,8 @@ def system():
         'piSpaceFree'    : 'Unknown',
         'wakePiTime'     : '',
         'wakePiDuration' : '',
-        'rebootSafeWord' : REBOOT_SAFE_WORD
+        'rebootSafeWord' : REBOOT_SAFE_WORD,
+        'intvlm8rVersion': 'Unknown'
         }
 
     if not os.path.exists(iniFile):
@@ -984,7 +985,13 @@ def system():
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
-
+    
+    try:
+        with open('version', 'r') as versionFile:
+            templateData['intvlm8rVersion'] = versionFile.read()
+    except:
+        pass
+    
     return render_template('system.html', **templateData)
 
 
