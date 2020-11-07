@@ -469,7 +469,7 @@ def commenceGoogle(remoteFolder):
                 result = DRIVE.files().insert(media_body=media, body={'title':file_name, 'parents':[{u'id': ImageParentId}]}).execute()
                 if result is not None:
                     numFilesOK = uploadedOK(needupload, numFilesOK)
-                else
+                else:
                     log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
                 log('Exception uploading ''%s'' to Google: %s' % (needupload,str(e)))
@@ -526,10 +526,11 @@ def reauthGoogle():
         auth_uri = flow.step1_get_authorize_url()
 
         print ('')
-        print ('Go to this link in your browser:')
+        print ('The next step is to tell Google it can trust the intvlm8r.')
+        print ('Copy this link to somewhere you can open it in a browser:')
         print (auth_uri)
-
-        auth_code = input('Enter the auth code: ')
+        print ('')
+        auth_code = input('Enter the auth code provided by Google: ')
         credentials = flow.step2_exchange(auth_code)
         storage.put(credentials)
         log('Completed Google re-auth')
