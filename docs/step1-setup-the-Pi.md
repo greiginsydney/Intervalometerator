@@ -26,7 +26,7 @@ In so doing however, your average Windows PC will no longer be able to read the 
 11. Select `(7) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
 12. Select `(2) Network Options` and `Hostname` and give the Pi a recognisable hostname.
 13. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 15.
-14. Select `(2) Network Options` and `WiFi`. At this stage we'll be a wifi *client*. When prompted:
+14. Select `(2) Network Options` and `Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
 15. Navigate to `Finish` and DECLINE the prompt to reboot.
