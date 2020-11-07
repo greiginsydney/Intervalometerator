@@ -105,7 +105,46 @@ install_apps ()
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
+	
+	# -------------------------------------------------------------------------------------------------
+	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
+	echo ''
+	echo 'Enabling i2c'
+	if grep -q 'i2c-bcm2708' /etc/modules; then
+		echo ' i2c-bcm2708 module already exists'
+	else
+		echo ' adding i2c-bcm2708 to /etc/modules/'
+		echo 'i2c-bcm2708' >> /etc/modules
+	fi
+	if grep -q 'i2c-dev' /etc/modules; then
+		echo ' i2c-dev module already exists'
+	else
+		echo ' adding i2c-dev to /etc/modules/'
+		echo 'i2c-dev' >> /etc/modules
+	fi
+	if grep -q 'dtparam=i2c1=on' /boot/config.txt; then
+		echo ' i2c1 parameter already set'
+	else
+		echo ' setting dtparam=i2c1=on in /boot/config.txt'
+		echo 'dtparam=i2c1=on' >> /boot/config.txt
+	fi
+	if grep -q 'dtparam=i2c_arm=on' /boot/config.txt; then
+		echo ' i2c_arm parameter already set'
+	else
+		echo ' setting dtparam=i2c_arm=on in /boot/config.txt'
+		echo 'dtparam=i2c_arm=on' >> /boot/config.txt
+	fi
+	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
+		echo ' removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
+		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
+		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
+	else
+		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
+	fi
+	# -------------------------------------------------------------------------------------------------
+	
 	# Prepare for reboot/restart:
+	echo ''
 	echo "Exited install_apps OK."
 }
 
@@ -499,6 +538,9 @@ test_install ()
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
 	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
 	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
+	echo ''
+	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
+	i2cdetect -y 1
 }
 
 
