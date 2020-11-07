@@ -144,6 +144,7 @@ install_apps ()
 	# -------------------------------------------------------------------------------------------------
 	
 	# Prepare for reboot/restart:
+	echo ''
 	echo "Exited install_apps OK."
 }
 
