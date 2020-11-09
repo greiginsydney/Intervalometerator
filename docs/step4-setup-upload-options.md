@@ -204,8 +204,10 @@ python3 piTransfer.py reauthGoogle
 
 25. It will prompt you to copy a long link to your browser:
 ```text
-Go to this link in your browser:
-https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpasdfghjklpoiuytrewqajet9g8hgkj.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
+The next step is to tell Google it can trust the intvlm8r.
+Copy this link to somewhere you can open it in a browser:
+        
+https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpas1234567g8hgkjpoiuytrewqajet9.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
 ```
 
 26. Copy the link to your PC and browse to it. You'll be prompted to sign-in if you're not already.
@@ -251,9 +253,10 @@ https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpasdfghjklpoiu
 32. Switch back to the Raspberry Pi. It should be prompting you to enter that code, so paste it in and press return:
 
 ```text
-Go to this link in your browser:
-https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpasdfghjklpoiuytrewqajet9g8hgkj.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
-Enter the auth code: 4/yQasdfghjklpoiuytrewazxcvbnmlpoikjuyhgtrfdewsaqGEw4uWIc
+The next step is to tell Google it can trust the intvlm8r.
+Copy this link to somewhere you can open it in a browser:
+https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpas1234567g8hgkjpoiuytrewqajet9.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
+Enter the auth code: 4/yQasdfghjklg8hgkjewazxcvbnmg8hgkjyhgtrfdewsaqGEw4uWIc
 ```
 
 33. If this succeeds, you'll be prompted to take it for a test-run (assuming Google Drive was already selected on the /transfer page of course!)
