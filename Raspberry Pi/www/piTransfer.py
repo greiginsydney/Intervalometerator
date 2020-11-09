@@ -517,39 +517,41 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
 
 def reauthGoogle():
     log('Commencing Google re-auth')
-    try:
-        if not os.path.exists('client_secrets.json'):
-            print ('')
-            print('Error: client_secrets.json file missing')
-            log('STATUS: Google upload failed: client_secrets.json file missing')
-            raise
-        storage = Storage(GOOGLE_CREDENTIALS)
-        credentials = storage.get()
-        flow = client.flow_from_clientsecrets('client_secrets.json',
-            scope='https://www.googleapis.com/auth/drive',
-            redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-        auth_uri = flow.step1_get_authorize_url()
+    if os.path.exists('client_secrets.json'):
+        try:
+            storage = Storage(GOOGLE_CREDENTIALS)
+            credentials = storage.get()
+            flow = client.flow_from_clientsecrets('client_secrets.json',
+                scope='https://www.googleapis.com/auth/drive',
+                redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+            auth_uri = flow.step1_get_authorize_url()
 
+            print ('')
+            print ('The next step is to tell Google it can trust the intvlm8r.')
+            print ('Copy this link to somewhere you can open it in a browser:')
+            print (auth_uri)
+            print ('')
+            auth_code = input('Enter the auth code: ')
+            credentials = flow.step2_exchange(auth_code)
+            storage.put(credentials)
+            log('Completed Google re-auth')
+            print ('')
+            print ('Completed Google re-auth OK.')
+            response = input("Shall we try uploading some images? [Y/n]: ")
+            response = response.lower()
+            if response == 'y' or response == '':
+                return 0
+        except Exception as e:
+            print ('')
+            print('Error in Google re-auth. (See /home/pi/www/static/piTransfer.log for details)')
+            print ('')
+            log('STATUS: Error in Google re-auth')
+            log('Error in Google re-auth : ' + str(e))
+    else:
         print ('')
-        print ('The next step is to tell Google it can trust the intvlm8r.')
-        print ('Copy this link to somewhere you can open it in a browser:')
-        print (auth_uri)
+        print('Error: client_secrets.json file is missing')
         print ('')
-        auth_code = input('Enter the auth code provided by Google: ')
-        credentials = flow.step2_exchange(auth_code)
-        storage.put(credentials)
-        log('Completed Google re-auth')
-        print ('')
-        print ('Completed Google re-auth OK.')
-        response = input("Shall we try uploading some images? [Y/n]: ")
-        response = response.lower()
-        if response == 'y' or response == '':
-            return 0
-    except Exception as e:
-        print ('')
-        print('Error in Google re-auth. (See /home/pi/www/static/piTransfer.log for details)')
-        print ('')
-        log('Error in Google re-auth : ' + str(e))
+        log('STATUS: Google upload failed: client_secrets.json file is missing')
     return 1
 
 
