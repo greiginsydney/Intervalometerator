@@ -518,6 +518,11 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
 def reauthGoogle():
     log('Commencing Google re-auth')
     try:
+        if not os.path.exists('client_secrets.json'):
+            print ('')
+            print('Error: client_secrets.json file missing')
+            log('STATUS: Google upload failed: client_secrets.json file missing')
+            raise
         storage = Storage(GOOGLE_CREDENTIALS)
         credentials = storage.get()
         flow = client.flow_from_clientsecrets('client_secrets.json',
@@ -543,6 +548,7 @@ def reauthGoogle():
     except Exception as e:
         print ('')
         print('Error in Google re-auth. (See /home/pi/www/static/piTransfer.log for details)')
+        print ('')
         log('Error in Google re-auth : ' + str(e))
     return 1
 
