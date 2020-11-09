@@ -21,6 +21,8 @@ There's no special config required to upload to an (S)FTP site. All you need to 
 
 Prior to using Dropbox you need to perform some authentication steps to allow the intvlm8r to upload photos into your Dropbox account.
 
+NB: This process was last confirmed accurate on September 12th, 2019.
+
 1. Browse to [https://www.dropbox.com/developers](https://www.dropbox.com/developers)
 2. Click the "App console" button in the top right-hand corner:
 
@@ -64,8 +66,6 @@ Prior to using Dropbox you need to perform some authentication steps to allow th
 
 9. You're done. Now login to the intvlm8r, choose Dropbox for the Transfer Method on the /Transfer page, paste the token into this field and click Apply.
 
-NB: This process was last confirmed accurate on September 12th, 2019.
-
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/64750110-46ea2100-d55b-11e9-89e4-6ffe30ce95cc.jpg" width="40%">
 </p>
@@ -73,6 +73,8 @@ NB: This process was last confirmed accurate on September 12th, 2019.
 <hr />
 
 ## Google Drive
+
+NB: This process was last confirmed accurate on November 9th, 2020.
 
 1. Before you can use Google Drive, you need to have installed the Google API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Google Drive is greyed out and can't be selected, that option has not been installed. To install it, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
 
@@ -124,85 +126,80 @@ Click 'Go to credentials' to move to the next step.
 <img src="https://user-images.githubusercontent.com/11004787/78467029-d8192300-774b-11ea-83d6-0b8ce9eb6c23.png" width="60%">
 </p>
 
-10. The OAuth consent screen will show. Give your application a name:
+10. The "Step 1 OAuth consent screen" will show. Give your application a name, provide two e-mail addresses at the prompts & then click "SAVE AND CONTINUE":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467049-1ca4be80-774c-11ea-8f7d-b66249936d98.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/98530534-276f9500-22d3-11eb-8ce9-b65e12637889.png" width="80%">
 </p>
 
 
-11. Scroll until you get to "Scopes for Google APIs" and click "Add scope":
+11. The "Step 2 Scopes" screen will show. Click "ADD OR REMOVE SCOPES":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467066-41009b00-774c-11ea-9e2a-26c0d7e324f9.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/98530679-5e45ab00-22d3-11eb-9ac4-bb106cc5eb82.png" width="80%">
 </p>
 
-12. Check the box next to Google Drive API as shown, then click Add.
+12. Check the box next to Google Drive API as shown (the ../auth/__drive__ scope), then scroll to the bottom and click "UPDATE":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467083-61c8f080-774c-11ea-8693-b660f2502e9b.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/98530759-75849880-22d3-11eb-9661-384dddcdc71d.png" width="60%">
 </p>
 
 
-13. You'll be returned to the OAuth consent screen. **Disregard** the warning to say your app needs to be verfified by Google - we won't be publishing it, so that doesn't apply.
+13. **Disregard** the popup saying verification is required. Click "CONTINUE":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467106-9b016080-774c-11ea-96c9-f3d9afb0ab7c.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/98530955-bda3bb00-22d3-11eb-99c2-9e186558be81.png" width="60%">
 </p>
 
-14. Ignore the "Needs verification" warning:
 
-<p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467125-d1d77680-774c-11ea-9413-629549a4ff3f.png" width="60%">
-</p>
-
-15. Click "Credentials" in the menu on the left, and then "+ Create Credentials":
+14. Click "Credentials" in the menu on the left, and then "+ Create Credentials":
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/78467149-f6335300-774c-11ea-9954-3a18343dc74a.png" width="60%">
 </p>
 
-16. From the pop-up, click to select "OAuth client ID":
+15. From the pop-up, click to select "OAuth client ID":
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/78467187-414d6600-774d-11ea-8b0f-ebcb2d8fb488.png" width="50%">
 </p>
 
-17. Select the "Other" radio button, give your ID a name, and then click Create:
+16. Choose the Application type of "TVs and Limited Input devices", give your application a name, and then click Create:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467196-5924ea00-774d-11ea-90b7-dd74dce2983a.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/98531103-f6439480-22d3-11eb-83bb-561269a6497d.png" width="80%">
 </p>
 
-18. All going well, your new OAuth client and secret have been created. Click OK to acknowledge it:
+17. All going well, your new OAuth client and secret have been created. Click OK to acknowledge it:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/78467209-95f0e100-774d-11ea-95bf-8ea339499216.png" width="50%">
 </p>
 
-19. Now on the Credentials page, click the arrow icon shown to download the OAuth client ID as a .json file:
+18. Now on the Credentials page, click the arrow icon shown to download the OAuth client ID as a .json file:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/78467235-d6e8f580-774d-11ea-8fb5-93a084c5d962.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/78467235-d6e8f580-774d-11ea-8fb5-93a084c5d962.png" width="80%">
 </p>
 
-20. The file will be called something like "client_secret_<gibberish>.apps.googleusercontent.com.json". Rename it to client_secrets.json.
+19. The file will be called something like "client_secret_<gibberish>.apps.googleusercontent.com.json". Rename it to client_secrets.json.
 
-21. Copy the file to the Raspberry Pi. It needs to go in the '/home/pi/www' folder.
+20. Copy the file to the Raspberry Pi. It needs to go in the '/home/pi/www' folder.
 
-22. SSH to the Raspberry Pi & login.
+21. SSH to the Raspberry Pi & login.
 
-23. Navigate to the www folder:
+22. Navigate to the www folder:
 ```text
 cd /home/pi/www
 ```
 
-24. Run the piTransfer script with the 'reauthGoogle' switch:
+23. Run the piTransfer script with the 'reauthGoogle' switch:
 ```text
 python3 piTransfer.py reauthGoogle
 ```
 
-25. It will prompt you to copy a long link to your browser:
+24. It will prompt you to copy a long link to your browser:
 ```text
 The next step is to tell Google it can trust the intvlm8r.
 Copy this link to somewhere you can open it in a browser:
@@ -210,7 +207,7 @@ Copy this link to somewhere you can open it in a browser:
 https://accounts.google.com/o/oauth2/auth?client_id=712345678903-fpas1234567g8hgkjpoiuytrewqajet9.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&access_type=offline&response_type=code
 ```
 
-26. Copy the link to your PC and browse to it. You'll be prompted to sign-in if you're not already.
+25. Copy the link to your PC and browse to it. You'll be prompted to sign-in if you're not already.
 
 26. Click to choose an account:
 
