@@ -121,7 +121,7 @@
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
-				col[0].innerHTML = "Unknown connection error"
+				col[0].innerHTML = "The Pi did not respond"
 				row[0].className = "orange";
 			}
 			request.send()
