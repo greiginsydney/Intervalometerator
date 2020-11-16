@@ -257,6 +257,7 @@ install_website ()
 		(*)
 			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service
 			chmod 644 /etc/systemd/system/setTime.service
+			echo "Enabling setTime.service"
 			systemctl enable setTime.service
 			systemctl disable systemd-timesyncd
 			systemctl stop systemd-timesyncd
@@ -467,7 +468,9 @@ END
 	sed -i -E "s/^(wpa_passphrase=)(.*)$/\1$wifiPwd/" /etc/hostapd/hostapd.conf
 
 	systemctl unmask hostapd
+	echo "Enabling hostapd"
 	systemctl enable hostapd
+	echo "Enabling dnsmasq"
 	systemctl enable dnsmasq
 	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
 }
