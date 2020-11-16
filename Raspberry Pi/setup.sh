@@ -138,6 +138,9 @@ install_website ()
 
 	chown -R pi:www-data /home/pi
 
+	# Prompt the user to change the default web login from admin/password:
+	chg_web_login
+
 	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
 	systemctl start intvlm8r
 	echo "Enabling intvlm8r"
@@ -156,8 +159,6 @@ install_website ()
 	UUID=$(cat /proc/sys/kernel/random/uuid)
 	sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
 
-	# Prompt the user to change the default web login from admin/password:
-	chg_web_login
 
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
@@ -245,6 +246,7 @@ install_website ()
 	rm cronTemp
 
 	#NTP
+	echo ""
 	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
 	case $Response in
 		(y|Y|"")
@@ -260,6 +262,7 @@ install_website ()
 			systemctl stop systemd-timesyncd
 			;;
 	esac
+	echo ""
 
 
 	# Step 101 - slows the I2C speed
@@ -321,6 +324,7 @@ chg_web_login ()
 
 	if [ ! -z "$oldLoginName" ];
 	then
+			echo ""
 			read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
 			if [ ! -z "$loginName" ];
 			then
@@ -341,6 +345,7 @@ chg_web_login ()
 	else
 			echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
 	fi
+	echo ""
 }
 
 
