@@ -140,6 +140,7 @@ install_website ()
 
 	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
 	systemctl start intvlm8r
+	echo "Enabling intvlm8r"
 	systemctl enable intvlm8r
 
 	#Backup any existing intvlm8r (just in case this is an upgrade):
@@ -161,17 +162,20 @@ install_website ()
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/cameraTransfer.service
+	echo "Enabling cameraTransfer.service"
 	systemctl enable cameraTransfer.service
-	
+
 	#Pi Transfer
 	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/piTransfer.service
+	echo "Enabling piTransfer.service"
 	systemctl enable piTransfer.service
-	
+
 	#Celery
 	[ -f celery ] && mv celery /etc/default/
 	[ -f celery.service ] && mv celery.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/celery.service
+	echo "Enabling celery.service"
 	systemctl enable celery.service
 
 	#Redis
