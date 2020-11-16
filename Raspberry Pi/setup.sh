@@ -197,7 +197,7 @@ install_website ()
 	then 
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
 	else
-		sed -i 's/^#\?daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
@@ -211,7 +211,7 @@ install_website ()
 	then
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "syslog-enabled yes"'
 	else
-		sed -i 's/^#\?syslog-enabled .*/syslog-enabled yes/'g /etc/redis/redis.conf #Match on "syslog-enabled <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^\s*#*\s*syslog-enabled .*/syslog-enabled yes/'g /etc/redis/redis.conf #Match on "syslog-enabled <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	#Camera Transfer - Cron Job
