@@ -174,6 +174,42 @@ install_website ()
 	chmod 644 /etc/systemd/system/celery.service
 	systemctl enable celery.service
 
+	#Redis
+	if grep -q "^ExecStartPost=/bin/sleep 1$" /etc/systemd/system/redis.service;
+	then
+		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "ExecStartPost=/bin/sleep 1"'
+	else
+		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
+		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
+		then 
+			sed -i 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|'g /etc/systemd/system/redis.service
+		else
+			#NO? OK, then just insert the new line:
+			sed -i "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
+		fi
+	fi
+
+	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
+	then 
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
+	else
+		sed -i 's/^#\?daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
+	fi
+
+	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
+	then 
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "supervised systemd"'
+	else
+		sed -i 's/^#\?supervised .*/supervised systemd/'g /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
+	fi
+
+	if  grep -q "^syslog-enabled yes$" /etc/redis/redis.conf;
+	then
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "syslog-enabled yes"'
+	else
+		sed -i 's/^#\?syslog-enabled .*/syslog-enabled yes/'g /etc/redis/redis.conf #Match on "syslog-enabled <anything>" whether commented-out or not, and replace the line.
+	fi
+
 	#Camera Transfer - Cron Job
 
 	#Thank you SO:
