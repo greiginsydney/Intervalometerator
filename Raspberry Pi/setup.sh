@@ -208,13 +208,6 @@ install_website ()
 		sed -i 's/^#\?supervised .*/supervised systemd/'g /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
 
-	if  grep -q "^syslog-enabled yes$" /etc/redis/redis.conf;
-	then
-		echo 'Skipped: "/etc/redis/redis.conf" already contains "syslog-enabled yes"'
-	else
-		sed -i 's/^\s*#*\s*syslog-enabled .*/syslog-enabled yes/'g /etc/redis/redis.conf #Match on "syslog-enabled <anything>" whether commented-out or not, and replace the line.
-	fi
-
 	#Camera Transfer - Cron Job
 
 	#Thank you SO:
