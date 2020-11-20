@@ -207,6 +207,14 @@ install_website ()
 	else
 		sed -i 's/^#\?supervised .*/supervised systemd/'g /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
+	
+	#Redis is just a *little* too chatty by default:
+	if grep -q "^loglevel warning$" /etc/redis/redis.conf;
+	then
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "loglevel warning"'
+	else
+		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/'g /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
+	fi
 
 	#Camera Transfer - Cron Job
 
