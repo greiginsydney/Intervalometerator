@@ -1555,9 +1555,9 @@ def getCeleryTasks():
                 if tasks:
                     g.taskstr = ','.join("%s" % (t['id']) for t in tasks[:1]) #Just the first task will do
                 else:
-                    app.logger.debug('getCeleryTasks cleared g.taskstr')
+                    #app.logger.debug('getCeleryTasks cleared g.taskstr')
                     g.taskstr = None
-            app.logger.debug("getCeleryTasks g.taskstr = {0}".format(g.taskstr))
+            #app.logger.debug("getCeleryTasks g.taskstr = {0}".format(g.taskstr))
         else:
             app.logger.debug('getCeleryTasks reports there are no activeTasks')
     except Exception as e:
