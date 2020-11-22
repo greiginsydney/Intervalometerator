@@ -1409,6 +1409,7 @@ def trnCopyNow():
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
     app.logger.debug('trnCopyNow(): entered')
+    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
     
     tasks = [
         copyNow.si(),
@@ -1423,7 +1424,7 @@ def trnCopyNow():
 @celery.task(time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the camera WAKE command to the Arduino
-    app.logger.debug('copyNow(): entered')
+    app.logger.info('copyNow(): entered') #This logs to /var/log/celery/celery_worker.log
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
@@ -1433,23 +1434,23 @@ def copyNow(self):
         retries += 1
         if retries >= 6:
             #We've waited too long. Abort.
-            app.logger.debug('copyNow() could not claim the USB device after ' + str(retries) + ' attempts.')
+            app.logger.info('copyNow() could not claim the USB device after ' + str(retries) + ' attempts.')
             return {'status': 'USB error'}
         try:
-            app.logger.debug('copyNow() HERE 4')
+            app.logger.info('copyNow() trying to init the camera')
             camera.init(context)
             #The line above will throw an exception if we can't connect to the camera
             break
         except gp.GPhoto2Error as e:
-            app.logger.debug("copyNow() wasn't able to connect to the camera: " + e.string)
+            app.logger.info("copyNow() wasn't able to connect to the camera: " + e.string)
             continue
         except Exception as e:
-            app.logger.debug('Unknown error in copyNow(): ' + str(e))
+            app.logger.info('Unknown error in copyNow(): ' + str(e))
             continue
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
     filesToCopy = files_to_copy(camera)
     numberToCopy = len(filesToCopy)
-    app.logger.debug('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+    app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
     deleteAfterCopy = getIni()
     thisImage = 0
     while len(filesToCopy) > 0:
@@ -1457,15 +1458,15 @@ def copyNow(self):
             thisImage += 1
             self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
             thisFile = filesToCopy.pop(0)
-            app.logger.debug('About to copy file: ' + str(thisFile))
+            app.logger.info('About to copy file: ' + str(thisFile))
             copy_files(camera, thisFile, deleteAfterCopy)
         except Exception as e:
-            app.logger.debug('Unknown error in copyNow(self): ' + str(e))
+            app.logger.info('Unknown error in copyNow(self): ' + str(e))
     try:
         gp.check_result(gp.gp_camera_exit(camera))
-        app.logger.debug('copyNow() ended happily')
+        app.logger.info('copyNow() ended happily')
     except Exception as e:
-        app.logger.debug('copyNow() ended sad: ' + str(e))
+        app.logger.info('copyNow() ended sad: ' + str(e))
     if thisImage == 0:
         statusMessage = "There were no new images to copy"
     else:
