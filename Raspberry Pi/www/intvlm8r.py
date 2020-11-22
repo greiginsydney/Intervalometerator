@@ -1175,9 +1175,9 @@ def copy_files(camera, imageToCopy, deleteAfterCopy):
         if (copyOK >= gp.GP_OK):
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
-                app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+                app.logger.info('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
     except Exception as e:
-        app.logger.debug('Exception in copy_files: ' + str(e))
+        app.logger.info('Exception in copy_files: ' + str(e))
     return 0
 
 
