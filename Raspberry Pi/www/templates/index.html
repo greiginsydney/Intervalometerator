@@ -56,22 +56,78 @@
 	}
 	</script>
 </div>
+<!--MENU ENDS -->
 </header>
-<div class="container">
 {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <table>
-	<tr class="red">
-    {% for message in messages %}
-      <td style="text-align:center">{{ message }}</td>
-    {% endfor %}
-    </tr>
+	{% if not current_user.is_anonymous %}
+	<table id="progress">
+	  {% if messages %}
+		<tr class="red">
+			{% for message in messages %}
+				<td style="text-align:center">{{ message }}</td>
+			{% endfor %}
+	  {% else %}
+		<tr>
+			<td style="text-align:center">Background tasks idle</td>
+	  {% endif %}
+		</tr>
 	</table>
-  {% endif %}
+	{% endif %}
 {% endwith %}
-	{% block content %}
-	{% endblock %}
-</div>	
+
+{% block content %}
+{% endblock %}
+
+{% if not current_user.is_anonymous %}
+	<script>
+	pollStatus()
+	function pollStatus()
+	{
+		var progressTable = document.getElementById("progress");
+		if (("{{g.taskstr}}" != "") && ("{{g.taskstr}}" != "None") && (progressTable != null))
+		{
+			var row = progressTable.rows;
+			var col = row[0].cells;
+			var status_url = "/backgroundStatus/{{g.taskstr}}"
+			var request = new XMLHttpRequest();
+			request.open('GET', status_url, true);
+			request.onload = function()
+			{
+				if (this.status >= 200 && this.status < 400)
+				{
+					var data = JSON.parse(this.response);
+					// update UI
+					col[0].innerHTML = data['status'];
+					row[0].className = "white";
+					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
+					{
+						//We're done.
+					}
+					else
+					{
+						// rerun in 2 seconds
+						setTimeout(function() {
+							pollStatus();
+						}, 2000);
+					}
+				}
+				else
+				{
+					// We reached our target server, but it returned an error
+					col[0].innerHTML = "The Pi returned an error"
+					row[0].className = "orange";
+				}
+			};
+			request.onerror = function()
+			{
+				// There was a connection error of some sort
+				col[0].innerHTML = "The Pi did not respond"
+				row[0].className = "orange";
+			}
+			request.send()
+		}
+	}
+	</script>
+{% endif %}
 </body>
 </html>
-<!--MENU ENDS -->

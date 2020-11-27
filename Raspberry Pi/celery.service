@@ -1,0 +1,22 @@
+[Unit]
+Description=Celery Service
+Requires=intvlm8r.service
+After=network.target intvlm8r.service
+
+[Service]
+Type=forking
+User=pi
+Group=www-data
+EnvironmentFile=/etc/default/celery
+WorkingDirectory=/home/pi/www
+
+ExecStart=/bin/sh -c '${CELERY_BIN} -A ${CELERY_APP} multi start --logfile=${CELERYD_LOG_FILE} \
+ --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_NODES} ${CELERYD_OPTS}'
+
+ExecStop=/bin/sh -c '${CELERY_BIN} multi stopwait ${CELERYD_NODES}'
+
+ExecReload=/bin/sh -c '${CELERY_BIN} -A ${CELERY_APP} multi restart --logfile=${CELERYD_LOG_FILE} \
+  --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_NODES} ${CELERYD_OPTS}'
+
+[Install]
+WantedBy=multi-user.target
