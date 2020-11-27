@@ -109,7 +109,46 @@ install_apps ()
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
+	
+	# -------------------------------------------------------------------------------------------------
+	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
+	echo ''
+	echo 'Enabling i2c'
+	if grep -q 'i2c-bcm2708' /etc/modules; then
+		echo ' i2c-bcm2708 module already exists'
+	else
+		echo ' adding i2c-bcm2708 to /etc/modules/'
+		echo 'i2c-bcm2708' >> /etc/modules
+	fi
+	if grep -q 'i2c-dev' /etc/modules; then
+		echo ' i2c-dev module already exists'
+	else
+		echo ' adding i2c-dev to /etc/modules/'
+		echo 'i2c-dev' >> /etc/modules
+	fi
+	if grep -q 'dtparam=i2c1=on' /boot/config.txt; then
+		echo ' i2c1 parameter already set'
+	else
+		echo ' setting dtparam=i2c1=on in /boot/config.txt'
+		echo 'dtparam=i2c1=on' >> /boot/config.txt
+	fi
+	if grep -q 'dtparam=i2c_arm=on' /boot/config.txt; then
+		echo ' i2c_arm parameter already set'
+	else
+		echo ' setting dtparam=i2c_arm=on in /boot/config.txt'
+		echo 'dtparam=i2c_arm=on' >> /boot/config.txt
+	fi
+	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
+		echo ' removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
+		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
+		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
+	else
+		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
+	fi
+	# -------------------------------------------------------------------------------------------------
+	
 	# Prepare for reboot/restart:
+	echo ''
 	echo "Exited install_apps OK."
 }
 
@@ -146,10 +185,15 @@ install_website ()
 	echo "Enabling intvlm8r"
 	systemctl enable intvlm8r
 
-	#Backup any existing intvlm8r (just in case this is an upgrade):
-	[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
-	#Copy new intvlm8r site across:
-	[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
+	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
+	if [ -f intvlm8r ];
+	then
+		[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
+		#Copy new intvlm8r site across:
+		[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
+	else
+		echo "Skipped: no new 'intvlm8r' file to copy."
+	fi
 	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
 
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
@@ -279,9 +323,10 @@ install_website ()
 	then
 		echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
 	else
-		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000 /'g /boot/config.txt
+		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/'g /boot/config.txt
 	fi
-
+	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
+	
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
 	if  grep -Fq "intervalometerator" "/boot/config.txt";
@@ -557,6 +602,9 @@ test_install ()
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
 	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
 	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
+	echo ''
+	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
+	i2cdetect -y 1
 }
 
 

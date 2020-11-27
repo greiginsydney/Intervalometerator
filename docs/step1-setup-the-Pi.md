@@ -18,8 +18,7 @@ If you're starting from scratch, start here at Step 1.
 8. Return to (4) and set `(I2) the timezone`. Select the appropriate options and you'll be returned to the menu.
 9. Select `(5) - Interfacing Options`
     * `(P2) Enable SSH` and at the prompt "Would you like the SSH server to be enabled?" change the selection to `<Yes>` and hit return, then return again at the `OK`.
-10. Return to `(5) - Interfacing Options`
-    * `(P5)Enable I2C` and at the prompt "Would you like the ARM I2C interface to be enabled?" change the selection to `<Yes>` and hit return, then return again at the `OK`.
+10. This step intentionally left blank. ;-)
     
 > Micro SD cards come in some large sizes these days, and if you want to keep backups of the photos off the camera, you'll probably want a card larger than the standard 32G limit of FAT. If you've started with a standard FAT format, this next step lets you expand the disk to consume the whole card. This is a good thing.  
 In so doing however, your average Windows PC will no longer be able to read the card. Check out "<a href="https://ext2-volume-manager.en.lo4d.com/" target="_blank">Ext2 Volume Manager</a>" as a way to get around this. If you're at all uncertain, skip step 11, but be aware that the number of images you can store on the Pi will be limited.
@@ -27,13 +26,13 @@ In so doing however, your average Windows PC will no longer be able to read the 
 11. Select `(7) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
 12. Select `(2) Network Options` and `Hostname` and give the Pi a recognisable hostname.
 13. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 15.
-14. Select `(2) Network Options` and `WiFi`. At this stage we'll be a wifi *client*. When prompted:
+14. Select `(2) Network Options` and `Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
 15. Navigate to `Finish` and DECLINE the prompt to reboot.
 16. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
 
-17. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 18.
+17. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 19.
 18. Run `sudo nano /etc/dhcpcd.conf`. Add the lines shown, customising the addresses to suit your network:
 
 ```txt
@@ -43,9 +42,10 @@ static routers=192.168.44.254
 static domain_name_servers=192.168.44.254
 ```
 > If you have more than one DNS server, add them on the same line with each separated by a space
+
 19. Reboot the Pi to pickup its new IP address and lock in all the changes made above, including the change to the hostname: `sudo reboot`
 
-20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you added in Step 17.
+20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you added in Step 18.
 (Alternatively, just see if it responds to pings and you can SSH to it on its new IP).
 
 ## Remote config via SSH
