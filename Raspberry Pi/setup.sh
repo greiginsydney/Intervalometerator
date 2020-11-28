@@ -231,10 +231,10 @@ install_website ()
 		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
 		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
 		then 
-			sed -i 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|'g /etc/systemd/system/redis.service
+			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|'g /etc/systemd/system/redis.service
 		else
 			#NO? OK, then just insert the new line:
-			sed -i "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
+			sed -i --follow-symlinks "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
 		fi
 	fi
 
