@@ -238,6 +238,13 @@ install_website ()
 		fi
 	fi
 
+	if grep -q "^Type=notify$" /etc/systemd/system/redis.service;
+	then
+		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "Type=notify"'
+	else
+		sed -i --follow-symlinks 's|^Type=.*|Type=notify|'g /etc/systemd/system/redis.service
+	fi
+
 	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
 	then 
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
