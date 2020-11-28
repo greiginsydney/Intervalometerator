@@ -238,12 +238,12 @@ install_website ()
 		fi
 	fi
 
-	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
-	then 
-		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
-	else
-		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
-	fi
+	#if grep -q "^daemonize yes$" /etc/redis/redis.conf;
+	#then 
+	#	echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
+	#else
+	#	sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
+	#fi
 
 	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
 	then 
