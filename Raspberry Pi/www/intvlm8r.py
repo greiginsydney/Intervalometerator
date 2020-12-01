@@ -1017,7 +1017,7 @@ def readValue ( camera, attribute ):
 def readRange ( camera, context, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
-    It's only called by "camera", so in that context we already have an established connection to the
+    It's only called by "camera" and "main" when we already have an established connection to the
     camera, so it's inappropriate (and inefficient) to attempt a reconnection here.
     """
     options = []
