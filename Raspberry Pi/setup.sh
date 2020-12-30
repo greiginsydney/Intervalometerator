@@ -573,7 +573,7 @@ prompt_for_reboot()
 
 if [ "$EUID" -ne 0 ];
 then
-	echo -e "\nPlease re-run as 'sudo ./AutoSetup.sh <step>'"
+	echo -e "\nPlease re-run as 'sudo ./setup.sh <step>'"
 	exit 1
 fi
 
