@@ -573,7 +573,8 @@ prompt_for_reboot()
 
 if [ "$EUID" -ne 0 ];
 then
-	echo -e "\nPlease re-run as 'sudo ./setup.sh <step>'"
+	echo -e "\nPlease re-run as 'sudo -E [-H] ./setup.sh <step>'"
+	echo -e "(Only the 'start' step needs the extra -H switch)"
 	exit 1
 fi
 
