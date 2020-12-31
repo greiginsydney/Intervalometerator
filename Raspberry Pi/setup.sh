@@ -209,6 +209,15 @@ install_website ()
 		echo "Upgrade file found. Skipping the login prompt step."
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
 		echo ""
+		
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" upgrade | tail -1) # Delimiter is a '|' here
+		if [ ! -z "$firstLogin" ];
+		then
+			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
+			echo "Upgrade file found. Restored first login."
+		else
+			echo "Upgrade file found but the first login was not found/detected."
+		fi
 	else
 		# Prompt the user to change the default web login from admin/password:
 		chg_web_login
