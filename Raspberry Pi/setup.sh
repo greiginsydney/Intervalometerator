@@ -203,8 +203,16 @@ install_website ()
 		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
 	fi
 
-	# Prompt the user to change the default web login from admin/password:
-	chg_web_login
+	if [ upgrade ];
+	then
+		echo ""
+		echo "Upgrade file found. Skipping the login prompt step."
+		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
+		echo ""
+	else
+		# Prompt the user to change the default web login from admin/password:
+		chg_web_login
+	fi
 
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
