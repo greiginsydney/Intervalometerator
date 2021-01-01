@@ -203,18 +203,18 @@ install_website ()
 		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
 	fi
 
-	if [ upgrade ];
+	if [ www/intvlm8r.old ];
 	then
 		echo ""
-		echo "Upgrade file found. Skipping the login prompt step."
+		echo "intvlm8r.old found. Skipping the login prompt step."
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
 		echo ""
 		
-		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" upgrade | tail -1) # Delimiter is a '|' here
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
 			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
-			echo "Upgrade file found. Restored first login."
+			echo "intvlm8r.old found. Restored first login."
 		else
 			echo "Upgrade file found but the first login was not found/detected."
 		fi
