@@ -222,6 +222,25 @@ install_website ()
 		else
 			echo "Upgrade file found but the first login was not found/detected."
 		fi
+		
+		if grep -q "^users.update" ~/www/intvlm8r.old;
+		then
+			#There are additional users we need to reinstate.
+			matchRegex="^(users.update\(\{')(\w+)'.*$"
+			# Read each extra user in turn and reinstate them in the file - if they're not present already:
+			while read line; do
+				if [[ $line =~ $matchRegex ]] ;
+				then
+					if grep -q "^${BASH_REMATCH[1]}${BASH_REMATCH[2]}'" ~/www/intvlm8r.py;
+					then
+						echo "Skipped - user '${BASH_REMATCH[2]}' already exists"
+					else
+						sed -i "/^users\s*=.*/a $line" ~/www/intvlm8r.py
+						echo "Reinstated user '${BASH_REMATCH[2]}'"
+					fi
+				fi
+			done <~/www/intvlm8r.old
+		fi
 	else
 		# Prompt the user to change the default web login from admin/password:
 		chg_web_login
