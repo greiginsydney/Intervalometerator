@@ -187,20 +187,24 @@ install_website ()
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
 	rm -f /etc/nginx/sites-enabled/default
 
-	if [ upgrade ];
+	if [ www/intvlm8r.old ];
 	then
-		if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
+		oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		if [ ! -z "$oldSecretKey" ];
 		then
-			echo "Upgrade file found. The original Secret Key was restored."
-			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" upgrade | tail -1) # Delimiter is a '|' here
 			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			echo "intvlm8r.old found. The original Secret Key was restored."
 		else
-			echo "Upgrade file found but the Secret Key did not need to be restored."
+			echo "intvlm8r.old found but the original Secret Key was not found/detected"
 		fi
-	else
+	fi
+	
+	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
+	then
 		#Generate a secret key here & paste in to intvlm8r.py:
 		UUID=$(cat /proc/sys/kernel/random/uuid)
 		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+		echo "A new Secret Key has been created."
 	fi
 
 	if [ www/intvlm8r.old ];
