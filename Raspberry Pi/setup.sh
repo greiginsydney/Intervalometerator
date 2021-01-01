@@ -324,19 +324,6 @@ END
 }
 
 
-pre_upgrade ()
-{
-	echo -e "Commencing pre-upgrade preparation."
-	echo -e " Saving secret key."
-	cat ${HOME}/www/intvlm8r.py | grep "app.secret_key" > upgrade
-	echo -e " Saving user logins."
-	cat ${HOME}/www/intvlm8r.py | grep "^users" >> upgrade
-
-	echo -e "Completed  pre-upgrade preparation."
-	echo ""
-}
-
-
 chg_web_login ()
 {
 	# This matches the format of the  user/password dictionary, even allowing for some random spaces:
@@ -632,9 +619,6 @@ case "$1" in
 	("login")
 		chg_web_login
 		;;
-	("preup")
-		pre_upgrade
-		;;
 	("ap")
 		make_ap
 		prompt_for_reboot
@@ -647,7 +631,7 @@ case "$1" in
 		test_install
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'preup', 'login', 'ap', 'noap' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap' or 'test' after the script name\n"
 		exit 1
 		;;
 	(*)
