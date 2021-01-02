@@ -234,22 +234,24 @@ def login():
         app.logger.debug('Its a GET to LOGIN')
         return render_template('login.html')
     username = (str(request.form['username']))
-    if username in users:
-        #if (check_password_hash(users[username]['password'], request.form['password'])):
-        if users[username]['password'] == request.form['password']:
-            user = User()
-            user.id = username
-            remember = 'false'
-            if request.form.get('rememberme'):
-                remember = 'true'
-            login_user(user,'remember=' + remember)
-            app.logger.debug('Logged-in ' + username)
-            next = request.args.get('next')
-            # is_safe_url should check if the url is safe for redirects.
-            # See http://flask.pocoo.org/snippets/62/ for an example.
-            if not is_safe_url(next):
-                return abort(400)
-            return redirect(next or url_for('main'))
+    for name, _ in users.items():
+        if (username.casefold() == name.casefold()): 
+            #OK, we have the user name (regardless of the case)!
+            if users[name]['password'] == request.form['password']:
+            #if (check_password_hash(users[username]['password'], request.form['password'])):
+                user = User()
+                user.id = name
+                remember = 'false'
+                if request.form.get('rememberme'):
+                    remember = 'true'
+                login_user(user,'remember=' + remember)
+                app.logger.debug('Logged-in ' + name)
+                next = request.args.get('next')
+                # is_safe_url should check if the url is safe for redirects.
+                # See http://flask.pocoo.org/snippets/62/ for an example.
+                if not is_safe_url(next):
+                    return abort(400)
+                return redirect(next or url_for('main'))
     app.logger.debug('User \'' + username + '\' failed to login')
     flash('Bad creds. Try again')
     return redirect(url_for('login'))
