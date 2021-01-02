@@ -37,11 +37,11 @@
 			<a href="{{ url_for ('transfer') }}">Transfer Settings</a>
 			<a href="{{ url_for ('thermal') }}">Thermal Settings</a>
 			<a href="{{ url_for ('system') }}">System Maintenance</a>
-			{% if current_user.is_anonymous %}
-				<a href="{{ url_for('login') }}">Login</a>
-			{% else %}
-				<a href="{{ url_for('logout') }}">Logout</a>
-			{% endif %}
+		{% if current_user.is_anonymous %}
+			<a href="{{ url_for('login') }}">Login</a>
+		{% else %}
+			<a href="{{ url_for('logout') }}">Logout {{current_user.id}}</a>
+		{% endif %}
 			
 		</div>
 	</div>
