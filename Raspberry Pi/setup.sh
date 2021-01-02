@@ -177,8 +177,62 @@ install_website ()
 
 	chown -R pi:www-data /home/pi
 
-	# Prompt the user to change the default web login from admin/password:
-	chg_web_login
+	if [ www/intvlm8r.old ];
+	then
+		echo ""
+		echo "intvlm8r.old found. Skipping the login prompt step."
+		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
+		echo ""
+		
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		if [ ! -z "$firstLogin" ];
+		then
+			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
+			echo "intvlm8r.old found. Restored first login."
+		else
+			echo "Upgrade file found but the first login was not found/detected."
+		fi
+		
+		if grep -q "^users.update" ~/www/intvlm8r.old;
+		then
+			#There are additional users we need to reinstate.
+			matchRegex="^(users.update\(\{')(\w+)'.*$"
+			# Read each extra user in turn and reinstate them in the file - if they're not present already:
+			while read line; do
+				if [[ $line =~ $matchRegex ]] ;
+				then
+					if grep -q "^${BASH_REMATCH[1]}${BASH_REMATCH[2]}'" ~/www/intvlm8r.py;
+					then
+						echo "Skipped - user '${BASH_REMATCH[2]}' already exists"
+					else
+						sed -i "/^users\s*=.*/a $line" ~/www/intvlm8r.py
+						echo "Reinstated user '${BASH_REMATCH[2]}'"
+					fi
+				fi
+			done <~/www/intvlm8r.old
+		fi
+    
+    oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		if [ ! -z "$oldSecretKey" ];
+		then
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			echo "intvlm8r.old found. The original Secret Key was restored."
+		else
+			echo "intvlm8r.old found but the original Secret Key was not found/detected"
+		fi
+
+	else
+		# Prompt the user to change the default web login from admin/password:
+		chg_web_login
+	fi
+
+	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
+	then
+		#Generate a secret key here & paste in to intvlm8r.py:
+		UUID=$(cat /proc/sys/kernel/random/uuid)
+		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+		echo "A new Secret Key has been created."
+	fi
 
 	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
 	systemctl start intvlm8r
@@ -198,11 +252,6 @@ install_website ()
 
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
 	rm -f /etc/nginx/sites-enabled/default
-
-	#Generate a secret key here & paste in to intvlm8r.py:
-	UUID=$(cat /proc/sys/kernel/random/uuid)
-	sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
-
 
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
@@ -643,7 +692,8 @@ prompt_for_reboot()
 
 if [ "$EUID" -ne 0 ];
 then
-	echo -e "\nPlease re-run as 'sudo ./AutoSetup.sh <step>'"
+	echo -e "\nPlease re-run as 'sudo -E [-H] ./setup.sh <step>'"
+	echo -e "(Only the 'start' step needs the extra -H switch)"
 	exit 1
 fi
 

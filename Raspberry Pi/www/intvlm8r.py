@@ -343,9 +343,27 @@ def main():
         templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
         templateData['fileCount']                = fileCount
         templateData['lastImage']                = lastImage
-        templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
-    
+
+        #Find the capturetarget config item. (TY Jim.)
+        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+        if currentTarget == "Internal RAM":
+            #Change it to "Memory Card"
+            try:
+                newTarget = 1
+                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                gp.check_result(gp.gp_camera_set_config(camera, config))
+                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                app.logger.debug('Set captureTarget to "Memory Card" in main')
+            except gp.GPhoto2Error as e:
+                app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
+            except Exception as e:
+                app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
+        templateData['availableShots'] = readValue (config, 'availableshots')
+        gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
         if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
             flash(e.string)
@@ -651,6 +669,23 @@ def intervalometer():
         context = gp.gp_context_new()
         camera.init(context)
         config = camera.get_config(context)
+        #Find the capturetarget config item. (TY Jim.)
+        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+        if currentTarget == "Internal RAM":
+            #Change it to "Memory Card"
+            try:
+                newTarget = 1
+                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                gp.check_result(gp.gp_camera_set_config(camera, config))
+                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
+            except gp.GPhoto2Error as e:
+                app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
+            except Exception as e:
+                app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
         templateData['availableShots'] = readValue (config, 'availableshots')
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
@@ -1073,7 +1108,7 @@ def readValue ( camera, attribute ):
 def readRange ( camera, context, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
-    It's only called by "camera", so in that context we already have an established connection to the
+    It's only called by "camera" and "main" when we already have an established connection to the
     camera, so it's inappropriate (and inefficient) to attempt a reconnection here.
     """
     options = []
@@ -1361,7 +1396,7 @@ def createConfigFile(iniFile):
         config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
-        config.set('Global', 'thumbscount', '20')
+        config.set('Global', 'thumbscount', '24')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
         config.set('Transfer', 'deleteAfterTransfer', 'Off')
