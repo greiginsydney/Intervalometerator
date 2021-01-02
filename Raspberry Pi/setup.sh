@@ -71,6 +71,8 @@ install_apps ()
 	pip3 install Werkzeug cachelib
 	pip3 install flask flask-bootstrap flask-login configparser
 	pip3 install gunicorn psutil
+	sudo apt install redis-server -y
+	pip3 install "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
 	then
@@ -98,6 +100,8 @@ install_apps ()
 	pip3 install -v gphoto2
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	pip3 install -v pillow --no-cache-dir
+	pip3 install ExifReader
+	
 	pip3 install smbus2
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
@@ -164,48 +168,14 @@ install_website ()
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
+	#mkdir -pv /var/log/celery
+	#mkdir -pv /var/run/celery
+	[ -f celery.conf ] && mv -fv celery.conf /etc/tmpfiles.d/celery.conf
+
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
 
 	chown -R pi:www-data /home/pi
-
-	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
-	systemctl start intvlm8r
-	systemctl enable intvlm8r
-
-	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
-	if [ -f intvlm8r ];
-	then
-		[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
-		#Copy new intvlm8r site across:
-		[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
-	else
-		echo "Skipped: no new 'intvlm8r' file to copy."
-	fi
-	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
-
-	#Original Step 76 was here - edit sites-enabled/default - now obsolete
-	rm -f /etc/nginx/sites-enabled/default
-
-	if [ www/intvlm8r.old ];
-	then
-		oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
-		if [ ! -z "$oldSecretKey" ];
-		then
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
-			echo "intvlm8r.old found. The original Secret Key was restored."
-		else
-			echo "intvlm8r.old found but the original Secret Key was not found/detected"
-		fi
-	fi
-	
-	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
-	then
-		#Generate a secret key here & paste in to intvlm8r.py:
-		UUID=$(cat /proc/sys/kernel/random/uuid)
-		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
-		echo "A new Secret Key has been created."
-	fi
 
 	if [ www/intvlm8r.old ];
 	then
@@ -241,20 +211,110 @@ install_website ()
 				fi
 			done <~/www/intvlm8r.old
 		fi
+    
+    oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		if [ ! -z "$oldSecretKey" ];
+		then
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			echo "intvlm8r.old found. The original Secret Key was restored."
+		else
+			echo "intvlm8r.old found but the original Secret Key was not found/detected"
+		fi
+
 	else
 		# Prompt the user to change the default web login from admin/password:
 		chg_web_login
 	fi
 
+	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
+	then
+		#Generate a secret key here & paste in to intvlm8r.py:
+		UUID=$(cat /proc/sys/kernel/random/uuid)
+		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+		echo "A new Secret Key has been created."
+	fi
+
+	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
+	systemctl start intvlm8r
+	echo "Enabling intvlm8r"
+	systemctl enable intvlm8r
+
+	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
+	if [ -f intvlm8r ];
+	then
+		[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
+		#Copy new intvlm8r site across:
+		[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
+	else
+		echo "Skipped: no new 'intvlm8r' file to copy."
+	fi
+	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
+
+	#Original Step 76 was here - edit sites-enabled/default - now obsolete
+	rm -f /etc/nginx/sites-enabled/default
+
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/cameraTransfer.service
+	echo "Enabling cameraTransfer.service"
 	systemctl enable cameraTransfer.service
-	
+
 	#Pi Transfer
 	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
 	chmod 644 /etc/systemd/system/piTransfer.service
+	echo "Enabling piTransfer.service"
 	systemctl enable piTransfer.service
+
+	#Celery
+	[ -f celery ] && mv celery /etc/default/
+	[ -f celery.service ] && mv celery.service /etc/systemd/system/
+	chmod 644 /etc/systemd/system/celery.service
+	echo "Enabling celery.service"
+	systemctl enable celery.service
+
+	#Redis
+	if grep -q "^ExecStartPost=/bin/sleep 1$" /etc/systemd/system/redis.service;
+	then
+		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "ExecStartPost=/bin/sleep 1"'
+	else
+		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
+		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
+		then 
+			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|'g /etc/systemd/system/redis.service
+		else
+			#NO? OK, then just insert the new line:
+			sed -i --follow-symlinks "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
+		fi
+	fi
+
+	if grep -q "^Type=notify$" /etc/systemd/system/redis.service;
+	then
+		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "Type=notify"'
+	else
+		sed -i --follow-symlinks 's|^Type=.*|Type=notify|'g /etc/systemd/system/redis.service
+	fi
+
+	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
+	then 
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
+	else
+		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
+	fi
+
+	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
+	then 
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "supervised systemd"'
+	else
+		sed -i 's/^#\?supervised .*/supervised systemd/'g /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
+	fi
+	
+	#Redis is just a *little* too chatty by default:
+	if grep -q "^loglevel warning$" /etc/redis/redis.conf;
+	then
+		echo 'Skipped: "/etc/redis/redis.conf" already contains "loglevel warning"'
+	else
+		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/'g /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
+	fi
 
 	#Camera Transfer - Cron Job
 
@@ -287,6 +347,7 @@ install_website ()
 	rm cronTemp
 
 	#NTP
+	echo ""
 	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
 	case $Response in
 		(y|Y|"")
@@ -297,11 +358,13 @@ install_website ()
 		(*)
 			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service
 			chmod 644 /etc/systemd/system/setTime.service
+			echo "Enabling setTime.service"
 			systemctl enable setTime.service
 			systemctl disable systemd-timesyncd
 			systemctl stop systemd-timesyncd
 			;;
 	esac
+	echo ""
 
 
 	# Step 101 - slows the I2C speed
@@ -364,6 +427,7 @@ chg_web_login ()
 
 	if [ ! -z "$oldLoginName" ];
 	then
+			echo ""
 			read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
 			if [ ! -z "$loginName" ];
 			then
@@ -384,6 +448,7 @@ chg_web_login ()
 	else
 			echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
 	fi
+	echo ""
 }
 
 
@@ -505,7 +570,9 @@ END
 	sed -i -E "s/^(wpa_passphrase=)(.*)$/\1$wifiPwd/" /etc/hostapd/hostapd.conf
 
 	systemctl unmask hostapd
+	echo "Enabling hostapd"
 	systemctl enable hostapd
+	echo "Enabling dnsmasq"
 	systemctl enable dnsmasq
 	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
 }

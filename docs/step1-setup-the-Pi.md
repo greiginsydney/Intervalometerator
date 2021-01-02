@@ -42,7 +42,8 @@ static routers=192.168.44.254
 static domain_name_servers=192.168.44.254
 ```
 > If you have more than one DNS server, add them on the same line with each separated by a space
-19. Reboot the Pi to pickup any new IP address and lock in all the changes made above, including the change to the hostname: `sudo reboot now`
+
+19. Reboot the Pi to pickup its new IP address and lock in all the changes made above, including the change to the hostname: `sudo reboot`
 
 20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you added in Step 18.
 (Alternatively, just see if it responds to pings and you can SSH to it on its new IP).
@@ -76,7 +77,7 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 > If this ends with an error "Some index files failed to download. They have been ignored, or old ones used instead." just press up-arrow and return to retry the command. You want to be sure the Pi is healthy and updated before continuing.
 
-28. `sudo reboot now`
+28. `sudo reboot`
 
 Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue
 

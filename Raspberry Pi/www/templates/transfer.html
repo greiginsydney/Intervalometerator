@@ -1,6 +1,8 @@
 {% extends "index.html" %}
 {% block content %}
 
+<div id="progress"></div>
+
 <form method="post">
 	<table>
 		<tr>
@@ -173,6 +175,7 @@
 			<td class="noborder">
 				<div class="alignleft">
 					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
+					<!-- <button type="button" name="copy" id="copy">Copy now</button> -->
 				</div>
 				<div class="alignright">
 					<button type="submit" name="tfrApply" id="apply">Apply</button>
@@ -184,7 +187,7 @@
 
 <!-- Hidden form for the various "do something now" buttons, as you can't nest forms -->
 <form style="display: none">
-	<button type="submit" name="copyNow"  id="copyNow"  value="1">Copy Now</button>
+	<!-- <button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button> -->
 	<button type="submit" name="clear" id="clear" value="1">Clear log</button>
 </form>
 
@@ -257,10 +260,6 @@ else
 // Run when the form first loads:
 lightButtons(); 
 
-function copyNow()
-{
-	document.getElementById("copyNow").click();
-}
 function tfrClear()
 {
 	document.getElementById("tfrClear").click();
@@ -351,6 +350,26 @@ function lightButtons()
 function openInNewTab(url) {
   var win = window.open(url, '_blank');
   win.focus();
+}
+
+function copyNow() {
+	// send ajax POST request to start background job
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open('POST', '/trnCopyNow', true);
+	xmlhttp.onload = function()
+	{
+		if (this.status >= 200 && this.status < 400)
+		{
+			//We received a positive response. Job underway. Reload this page.
+			location.href = location.href;
+		}
+		//else
+		//{
+			// We reached our target server, but it returned an error
+			//alert('Nope, that failed');
+		//}
+	};
+	xmlhttp.send();
 }
 
 </script>

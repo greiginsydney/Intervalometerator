@@ -19,18 +19,21 @@
 
 
 from datetime import timedelta, datetime
-from PIL import Image   #For the camera page / preview button
+from decimal import Decimal     # Thumbs exposure time calculations
+from PIL import Image           # For the camera page preview button
 from urllib.parse import urlparse, urljoin
 import calendar
-import configparser # for the ini file (used by the Transfer page)
-import fnmatch # Used for testing filenames
-import importlib.util # Testing installed packages
-import io   #Camera preview
+import configparser             # For the ini file (used by the Transfer page)
+import exifreader               # For thumbnails
+import fnmatch                  # Used for testing filenames
+import importlib.util           # Testing installed packages
+import io                       # Camera preview
+import json
 import logging
-import os
+import os                       # Hostname
 import psutil
-import re    #RegEx. Used in Copy Files
-from smbus2 import SMBus # For I2C
+import re                       # RegEx. Used in Copy Files
+from smbus2 import SMBus        # For I2C
 import struct
 import subprocess
 import sys
@@ -43,17 +46,32 @@ cache = SimpleCache()
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
+from celery import Celery, chain
+from celery.app.control import Inspect
+
 app = Flask(__name__)
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['result_backend'] = 'redis://localhost:6379/0'
+
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
+celery.conf.update(app.config)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = ''
 
+#Deep gphoto logging enabled when debugging:
+callback_obj = gp.check_result(gp.use_python_logging(mapping={
+    gp.GP_LOG_ERROR   : logging.INFO,
+    gp.GP_LOG_DEBUG   : logging.DEBUG,
+    gp.GP_LOG_VERBOSE : logging.DEBUG - 3,
+    gp.GP_LOG_DATA    : logging.DEBUG - 6}))
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -61,6 +79,7 @@ login_manager.login_view = ''
 
 PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
 PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
+PI_THUMBS_INFO_FILE = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
 PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
@@ -68,6 +87,7 @@ PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
 PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer page will link to when you click "View Log"
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
+HOSTNAME = os.uname()[1]
 
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
@@ -307,7 +327,7 @@ def main():
         storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
         if len(storage_info) == 0:
             flash('No storage info available') # The memory card is missing or faulty
-            
+
         abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
         config = camera.get_config(context)
         files = list_camera_files(camera)
@@ -324,6 +344,7 @@ def main():
         templateData['fileCount']                = fileCount
         templateData['lastImage']                = lastImage
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
+
         #Find the capturetarget config item. (TY Jim.)
         capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
         currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
@@ -344,8 +365,9 @@ def main():
         templateData['availableShots'] = readValue (config, 'availableshots')
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug('GPhoto camera error in main: ' + str(e))
+        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
+            flash(e.string)
+            app.logger.debug('GPhoto camera error in main: ' + str(e))
     except Exception as e:
         app.logger.debug('Unknown camera error in main: ' + str(e))
 
@@ -419,6 +441,14 @@ def getArduinoTime():
 @app.route("/thumbnails")
 @login_required
 def thumbnails():
+    """
+    The logic here warrants some explanation: It's *assumed* that for every photo on the Pi there's a matching thumbnail, as the 
+    copy and thumb creation process are linked. You *shouldn't* have one without the other.
+    This code creates the thumbnails list based on the filename of the main image, and then only adds the assumed -thumbs.JPG suffix as it calls the view.
+    Thus, even if a thumb is absent (broken?), the view will still reveal its main image, the image's metadata, and you can still click-through to see it.
+    
+    Had I started with "list_Pi_Images(PI_THUMBS_DIR)", then a missing thumb would result in its main image not being displayed here.
+    """
     ThumbFiles = []
 
     if not os.path.exists(iniFile):
@@ -429,36 +459,38 @@ def thumbnails():
         ThumbsToShow = int(config.get('Global', 'thumbsCount'))
     except Exception as e:
         app.logger.debug('INI file error reading: ' + str(e))
-        ThumbsToShow = 20
+        ThumbsToShow = 24
 
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
-        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         PI_PHOTO_COUNT = len(FileList)
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
-
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
+            #Read all the thumb metadata ready to create the page:
+            ThumbsInfo = {}
+            if os.path.exists(PI_THUMBS_INFO_FILE):
+                with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+                    for line in f:
+                        if ' = ' in line:
+                            (key, val) = line.rstrip('\n').split(' = ')
+                            ThumbsInfo[key] = val
+            #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
-                sourceFolderTree, imageFileName = os.path.split(FileList[loop])
-                dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
-                dest = os.path.join(dest, imageFileName)
-                dest = dest.replace('.JPG', '-thumb.JPG')
-                app.logger.debug('Thumb dest = ' + dest)
-                # This adds the shortened path to the list to pass to the web-page
-                ThumbFiles.append(str(dest).replace((PI_THUMBS_DIR  + "/"), ""))
-                if dest in ThumbList:
-                    app.logger.debug('Thumbnail exists')
-                    continue
-                try:
-                    thumb = Image.open(str(FileList[loop]))
-                    thumb.thumbnail((128, 128), Image.ANTIALIAS)
-                    thumb.save(dest, "JPEG")
-                except Exception as e:
-                    app.logger.debug('Thumbs Pillow error: ' + str(e))
+                _, imageFileName = os.path.split(FileList[loop])
+                #Read the metadata:
+                thumbTimeStamp = 'Unknown'
+                thumbInfo = 'Unknown'
+                metadata = ThumbsInfo.get(imageFileName)
+                #app.logger.debug(str(metadata))
+                if metadata != None:
+                    thumbTimeStamp = metadata.split("|")[0]
+                    thumbInfo = metadata.split("|")[1]
+                #Build the list for the page:
+                ThumbFileName = createThumbFilename(FileList[loop]) #Adds the '-thumb.JPG' suffix
+                ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
-            
     except Exception as e:
         app.logger.debug('Thumbs error: ' + str(e))
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
@@ -556,8 +588,9 @@ def camera():
         cameraData['expoptions']    = expoptions
 
     except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug('Camera GET error: ' + e.string)
+        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
+            flash(e.string)
+            app.logger.debug('Camera GET error: ' + e.string)
     except Exception as e:
         app.logger.debug('Unknown camera GET error: ' + str(e))
         
@@ -618,7 +651,9 @@ def cameraPOST():
 @login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
-
+    writeString("WC") # Sends the camera WAKE command to the Arduino
+    time.sleep(0.5);    # (Adds another 0.5s on top of the 0.5s already baked into WriteString)
+    
     templateData = {
         'piDoW' : '',
         'piStartHour' : '',
@@ -654,8 +689,11 @@ def intervalometer():
         templateData['availableShots'] = readValue (config, 'availableshots')
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
+        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
+            flash(e.string)
+            app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
+        else:
+            app.logger.debug('Nope, camera not awake yet: ' + str(e)) #DEBUG line GREIG. remove before release.
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
@@ -709,11 +747,14 @@ def intervalometerPOST():
 @login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    args = request.args.to_dict()
-    if args.get('copyNow'):
-        app.logger.debug('Detected /transfer/copyNow')
-        copyNow()
-        return redirect(url_for('main')) #If we transfer OK, return to main
+    
+    # Commented-out 4Oct2020, NLR(?)
+    # args = request.args.to_dict()
+    # if args.get('copyNow'):
+        # app.logger.debug('Detected GET to /transfer/copyNow - calling task')
+        # task = copyNow.apply_async()
+        # return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
+
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
@@ -843,9 +884,9 @@ def transferPOST():
 
     return redirect(url_for('transfer'))
 
-  
+
 @app.route("/copyNow")
-def name():
+def copyNowCronJob():
     """
     This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
     the cron job/script and will only execute if the calling IP is itself/localhost.
@@ -853,8 +894,14 @@ def name():
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
         abort(403)
-    copyNow()
-    res = make_response("")
+    
+    tasks = [
+        copyNow.si(),
+        newThumbs.si()
+    ]
+    chain(*tasks).apply_async()
+    
+    res = make_response('OK')
     return res, 200
 
 
@@ -915,16 +962,18 @@ def thermalPOST():
 def system():
 
     templateData = {
-        'piThumbCount'   : '80',
+        'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
         'arduinoTime'    : 'Unknown',
+        'piHostname'     : 'Unknown',
         'piUptime'       : 'Unknown',
         'piModel'        : 'Unknown',
         'piLinuxVer'     : 'Unknown',
         'piSpaceFree'    : 'Unknown',
         'wakePiTime'     : '',
         'wakePiDuration' : '',
-        'rebootSafeWord' : REBOOT_SAFE_WORD
+        'rebootSafeWord' : REBOOT_SAFE_WORD,
+        'intvlm8rVersion': 'Unknown'
         }
 
     if not os.path.exists(iniFile):
@@ -935,7 +984,7 @@ def system():
         templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
     except Exception as e:
         app.logger.debug('INI file error reading: ' + str(e))
-        templateData['piThumbCount'] = '20'
+        templateData['piThumbCount'] = '24'
 
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
@@ -967,10 +1016,17 @@ def system():
 
     try:
         templateData['piUptime']    = getPiUptime()
+        templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
-
+    
+    try:
+        with open('version', 'r') as versionFile:
+            templateData['intvlm8rVersion'] = versionFile.read()
+    except:
+        pass
+    
     return render_template('system.html', **templateData)
 
 
@@ -1121,52 +1177,42 @@ def get_camera_file_info(camera, path):
         gp.gp_camera_file_get_info(camera, folder, name))
 
 
-def copy_files(camera):
-    """ Straight from Jim's examples again """
+def files_to_copy(camera):
+    newFilesList = []
     if not os.path.isdir(PI_PHOTO_DIR):
         os.makedirs(PI_PHOTO_DIR)
     computer_files = list_Pi_Images(PI_PHOTO_DIR)
     camera_files = list_camera_files(camera)
     if not camera_files:
         app.logger.debug('No files found')
-        return 1
-    app.logger.debug('Copying files...')
-    
-    try:
-        if not os.path.exists(iniFile):
-            createConfigFile(iniFile)
-        config = configparser.ConfigParser()
-        config.read(iniFile)
-        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
-    except Exception as e:
-        #Looks like the flag doesn't exist. Let's add it
-        try:
-            if not config.has_section('Copy'):
-                config.add_section('Copy')
-            config.set('Copy', 'deleteAfterCopy', 'Off')
-            with open(iniFile, 'w') as config_file:
-                config.write(config_file)
-            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
-        except Exception as e:
-            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
-        deleteAfterCopy = False
-    
+        return
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
-        app.logger.debug('Copying {0} --> {1}'.format(path, dest))
-        try:
-            camera_file = gp.check_result(gp.gp_camera_file_get(
-                camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
-            copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
-            if ((copyOK >= gp.GP_OK) and (deleteAfterCopy == True)):
+        newFilesList.append(path)
+    return newFilesList
+
+
+def copy_files(camera, imageToCopy, deleteAfterCopy):
+    """ Straight from Jim's examples again """
+    app.logger.debug('Copying files...')
+    sourceFolderTree, imageFileName = os.path.split(imageToCopy)
+    dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
+    dest = os.path.join(dest, imageFileName)
+    app.logger.debug('Copying {0} --> {1}'.format(imageToCopy, dest))
+    try:
+        camera_file = gp.check_result(gp.gp_camera_file_get(
+            camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
+        copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
+        if (copyOK >= gp.GP_OK):
+            if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
-                app.logger.debug('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
-        except Exception as e:
-            app.logger.debug('Exception in copy_files: ' + str(e))
+                app.logger.info('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+    except Exception as e:
+        app.logger.info('Exception in copy_files: ' + str(e))
     return 0
 
 
@@ -1189,6 +1235,112 @@ def CreateDestPath(folder, NewDestDir):
         app.logger.debug('Error in DCIM decoder: ' + str(e))
         dest = NewDestDir
     return dest
+
+
+def createThumbFilename(imageFullFilename):
+    """
+    Called by 'makeThumb' and also /thumbnails
+    Manipulates the path and filename of every image:
+    - Changes the root path from the PI_PHOTO_DIR to the PI_THUMBS_DIR
+    - Adds the '-thumb.JPG' suffix
+    """
+    sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
+    dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
+    dest = os.path.join(dest, imageFileName)
+    dest = dest.replace('.JPG', '-thumb.JPG')
+    dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
+    dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
+    return dest
+
+
+def makeThumb(imageFile):
+    try:
+        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        _, imageFileName = os.path.split(imageFile)
+        dest = createThumbFilename(imageFile)
+        app.logger.debug('Thumb dest = ' + dest)
+        alreadyExists = False
+        if dest in ThumbList:
+            app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
+            alreadyExists = True
+        else:
+            #Lots of nested TRYs here to minimise any bad data errors in the output.
+            try:
+                app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
+                with Image.open(imageFile) as thumb:
+                    thumb.thumbnail((160, 160), Image.ANTIALIAS)
+                    thumb.save(dest, "JPEG")
+                try:
+                    # Open image file for reading (binary mode)
+                    with open(imageFile, 'rb') as photo:
+                        tags = exifreader.process_file(photo) # Return Exif tags
+                    try:
+                        dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
+                        dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
+                        timeOriginal = dateTimeOriginal[1]
+                    except Exception as e:
+                        dateOriginal = ''
+                        timeOriginal = ''
+                        app.logger.info('makeThumb() dateTimeOriginal error: ' + str(e))
+                    try:
+                        #Reformat depending on the value:
+                        # 6/1   becomes 6s
+                        # 15/10 becomes 1.5s
+                        # 3/10  becomes 0.3s
+                        # 1/30  becomes 1/30s
+                        exposureTime = convert_to_float(str(tags['EXIF ExposureTime']))
+                        if (exposureTime).is_integer():
+                            #It's a whole number of seconds. Strip the '.0'
+                            exposureTime = str(exposureTime).replace('.0','')
+                        elif (Decimal(exposureTime).as_tuple().exponent <= -2):
+                            #Yuk. it has lots of decimal places. Display as originally reported
+                            exposureTime = str(tags['EXIF ExposureTime'])
+                        else:
+                            pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
+                    except Exception as e:
+                        exposureTime = '?'
+                        app.logger.info('makeThumb() ExposureTime error: ' + str(e))
+                    try:
+                        fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
+                        #Strip the '.0' if it's a whole F-stop
+                        fNumber = fNumber.replace('.0','')
+                    except Exception as e:
+                        fNumber = '?'
+                        app.logger.info('makeThumb() fNumber error: ' + str(e))
+                    try:
+                        ISO = tags['EXIF ISOSpeedRatings']
+                    except Exception as e:
+                        ISO = '?'
+                        app.logger.info('makeThumb() ISO error: ' + str(e))
+                    try:
+                        with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
+                            thumbsInfoFile.write('{0} = {1} {2}|{3}s &bull; F{4} &bull; ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
+                    except Exception as e:
+                        app.logger.info('makeThumb() error writing to thumbsInfoFile: ' + str(e))
+                except Exception as e:
+                    app.logger.info('makeThumb() EXIF error: ' + str(e))
+            except Exception as e:
+                app.logger.info('makeThumb() Pillow error: ' + str(e))
+        return dest, alreadyExists
+    except Exception as e:
+        app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
+        return None
+
+
+#TY SO: https://stackoverflow.com/a/30629776
+def convert_to_float(frac_str):
+    """ The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display """
+    try:
+        return float(frac_str)
+    except ValueError:
+        num, denom = frac_str.split('/')
+        try:
+            leading, num = num.split(' ')
+            whole = float(leading)
+        except ValueError:
+            whole = 0
+        frac = float(num) / float(denom)
+        return whole - frac if whole < 0 else whole + frac
 
 
 def getPreviewImage(camera, context, config):
@@ -1257,21 +1409,195 @@ def createConfigFile(iniFile):
     return
 
 
-def copyNow():
-    writeString("WC") # Sends the WAKE command to the Arduino (just in case)
-    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+def getIni():
+    """
+    deleteAfterCopy was added late, so I'm giving it some special handling here,
+    adding it into the file 'on the fly' if it's not already there.
+    TODO: use getIni for all calls to the ini file for a single value
+    """
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        copy_files(camera)
-        gp.check_result(gp.gp_camera_exit(camera))
-    except gp.GPhoto2Error as e:
-        flash(e.string)
-        app.logger.debug("Transfer wasn't able to connect to the camera: " + e.string)
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
     except Exception as e:
-        app.logger.debug('Unknown error in copyNow: ' + str(e))
-    return
+        #Looks like the flag doesn't exist. Let's add it
+        try:
+            if not config.has_section('Copy'):
+                config.add_section('Copy')
+            config.set('Copy', 'deleteAfterCopy', 'Off')
+            with open(iniFile, 'w') as config_file:
+                config.write(config_file)
+            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
+        except Exception as e:
+            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
+            deleteAfterCopy = False
+    return deleteAfterCopy
+
+
+@app.route('/trnCopyNow', methods=['POST'])
+@login_required
+def trnCopyNow():
+    """
+    This page is called in the background by the 'Copy now' button on the Transfer page
+    It kicks off the background task, and returns the taskID so its progress can be followed
+    """
+    app.logger.debug('trnCopyNow(): entered')
+    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    
+    tasks = [
+        copyNow.si(),
+        newThumbs.si()
+    ]
+    task = chain(*tasks).apply_async()
+    
+    app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
+
+
+@celery.task(time_limit=1800, bind=True)
+def copyNow(self):
+    writeString("WC") # Sends the camera WAKE command to the Arduino
+    app.logger.info('copyNow(): entered') #This logs to /var/log/celery/celery_worker.log
+    camera = gp.Camera()
+    context = gp.gp_context_new()
+    retries = 0
+    filesToCopy = []
+    while True:
+        time.sleep(1);  # Pause between retries
+        retries += 1
+        if retries >= 6:
+            #We've waited too long. Abort.
+            app.logger.info('copyNow() could not claim the USB device after ' + str(retries) + ' attempts.')
+            return {'status': 'USB error'}
+        try:
+            app.logger.info('copyNow() trying to init the camera')
+            camera.init(context)
+            #The line above will throw an exception if we can't connect to the camera
+            break
+        except gp.GPhoto2Error as e:
+            app.logger.info("copyNow() wasn't able to connect to the camera: " + e.string)
+            continue
+        except Exception as e:
+            app.logger.info('Unknown error in copyNow(): ' + str(e))
+            continue
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
+    filesToCopy = files_to_copy(camera)
+    numberToCopy = len(filesToCopy)
+    app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+    deleteAfterCopy = getIni()
+    thisImage = 0
+    while len(filesToCopy) > 0:
+        try:
+            thisImage += 1
+            self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
+            thisFile = filesToCopy.pop(0)
+            app.logger.info('About to copy file: ' + str(thisFile))
+            copy_files(camera, thisFile, deleteAfterCopy)
+        except Exception as e:
+            app.logger.info('Unknown error in copyNow(self): ' + str(e))
+    try:
+        gp.check_result(gp.gp_camera_exit(camera))
+        app.logger.info('copyNow() ended happily')
+    except Exception as e:
+        app.logger.info('copyNow() ended sad: ' + str(e))
+    if thisImage == 0:
+        statusMessage = "There were no new images to copy"
+    else:
+        statusMessage = 'Copied ' + str(thisImage) + ' images OK'
+    return {'status': statusMessage}
+
+
+@celery.task(time_limit=1800, bind=True)
+def newThumbs(self):
+    app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
+    try:
+        FileList  = list_Pi_Images(PI_PHOTO_DIR)
+        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
+        PI_PHOTO_COUNT = len(FileList)
+        PI_THUMB_COUNT = len(ThumbList)
+        if PI_PHOTO_COUNT - PI_THUMB_COUNT <= 0:
+            thumbsToCreate = 'Unknown'
+            app.logger.info('Thumbs to create = ' + thumbsToCreate)
+        else:
+            thumbsToCreate = str(PI_PHOTO_COUNT - PI_THUMB_COUNT)
+        thumbsCreated = 0
+        app.logger.info('Thumbs to create = ' + thumbsToCreate)
+        if PI_PHOTO_COUNT >= 1:
+            #Read the thumb files themselves:
+            for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
+                dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+                if not alreadyExists:
+                    thumbsCreated += 1
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
+                    app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
+                else:
+                    app.logger.debug('Thumb for ' + dest + ' already exists')
+                if (dest == None):
+                    #Something went wrong
+                    continue
+        else:
+            app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
+    except Exception as e:
+        app.logger.info('newThumbs error: ' + str(e))
+    app.logger.info('newThumbs(): returned')
+    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
+
+
+# TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
+@app.route('/backgroundStatus/<task_id>')
+@login_required
+def backgroundStatus(task_id):
+    task = copyNow.AsyncResult(task_id)
+    app.logger.debug('backgroundStatus(): entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
+    if task.state == 'PENDING':
+        # job did not start yet
+        response = {
+            'state': task.state,
+            'status': 'Background task pending'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'status': task.info.get('status', '')
+        }
+    else:
+        # something went wrong in the background job
+        app.logger.debug("Something went wrong in the background job: {0}".format(task.info))
+        response = {
+            'state': task.state,
+            'status': str(task.info),  # this is the exception raised
+        }
+    app.logger.debug('backgroundStatus(): returned')
+    return jsonify(response)
+
+
+# https://stackoverflow.com/questions/5544629/retrieve-list-of-tasks-in-a-queue-in-celery
+@app.before_request
+def getCeleryTasks():
+    """
+    This executes before EVERY page load, feeding any active task ID into the 
+    ensuing response. Javascript in the footer of every page (in index.html)
+    will then query for status updates if a task ID is present.
+    """
+    try:
+        # Inspect all nodes.
+        i = celery.control.inspect(['celery_worker@' + HOSTNAME])
+        # Show tasks that are currently active.
+        activeTasks = i.active()
+        if activeTasks != None:
+            for _, tasks in list(activeTasks.items()):
+                if tasks:
+                    g.taskstr = ','.join("%s" % (t['id']) for t in tasks[:1]) #Just the first task will do
+                else:
+                    #app.logger.debug('getCeleryTasks cleared g.taskstr')
+                    g.taskstr = None
+            #app.logger.debug("getCeleryTasks g.taskstr = {0}".format(g.taskstr))
+        else:
+            app.logger.debug('getCeleryTasks reports there are no activeTasks')
+    except Exception as e:
+        app.logger.debug('getCeleryTasks exception: ' + str(e))
 
 
 def reformatSlashes(folder):
