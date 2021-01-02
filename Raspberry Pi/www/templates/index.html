@@ -59,20 +59,28 @@
 <!--MENU ENDS -->
 </header>
 {% with messages = get_flashed_messages() %}
-	{% if not current_user.is_anonymous %}
 	<table id="progress">
+	{% if current_user.is_anonymous %}
 	  {% if messages %}
 		<tr class="red">
 			{% for message in messages %}
 				<td style="text-align:center">{{ message }}</td>
 			{% endfor %}
+	  {% endif %}
+	{% else %}
+	  {% if messages %}
+		<tr class="red">
+			{% for message in messages %}
+				<td style="text-align:center">{{ message }}</td>
+			{% endfor %}
+		</tr>
 	  {% else %}
 		<tr>
 			<td style="text-align:center">Background tasks idle</td>
-	  {% endif %}
 		</tr>
-	</table>
+	  {% endif %}
 	{% endif %}
+	</table>
 {% endwith %}
 
 {% block content %}
