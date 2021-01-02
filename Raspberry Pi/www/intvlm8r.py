@@ -234,6 +234,7 @@ def login():
         app.logger.debug('Its a GET to LOGIN')
         return render_template('login.html')
     username = (str(request.form['username']))
+    remember = 'false'
     for name, _ in users.items():
         if (username.casefold() == name.casefold()): 
             #OK, we have the user name (regardless of the case)!
@@ -241,7 +242,6 @@ def login():
             #if (check_password_hash(users[username]['password'], request.form['password'])):
                 user = User()
                 user.id = name
-                remember = 'false'
                 if request.form.get('rememberme'):
                     remember = 'true'
                 login_user(user,'remember=' + remember)
