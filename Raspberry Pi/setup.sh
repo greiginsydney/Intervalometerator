@@ -427,26 +427,26 @@ chg_web_login ()
 
 	if [ ! -z "$oldLoginName" ];
 	then
-			echo ""
-			read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
-			if [ ! -z "$loginName" ];
+		echo ""
+		read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
+		if [ ! -z "$loginName" ];
+		then
+			sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
+			if [ ! -z "$oldPassword" ];
 			then
-					sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
-					if [ ! -z "$oldPassword" ];
-					then
-						read -e -i "$oldPassword" -p "Change the website's password  : " password
-						if [ ! -z "$password" ];
+				read -e -i "$oldPassword" -p "Change the website's password  : " password
+				if [ ! -z "$password" ];
 				then
 					sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':\s*)'($oldPassword)'}}$/\1'$password'}}/" ~/www/intvlm8r.py
 				else
 					echo -e "Error: An empty password is invalid. Skipping"
 				fi
-					else
-						echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
-					fi
+			else
+				echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
 			fi
+		fi
 	else
-			echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
+		echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
 	fi
 	echo ""
 }
