@@ -427,8 +427,17 @@ chg_web_login ()
 
 	if [ ! -z "$oldLoginName" ];
 	then
-		echo ""
-		read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
+		matchLoginName="^\w+$"
+		while true; do
+			echo ""
+			read -e -r -i "$oldLoginName" -p "Change the website's login name: " loginName
+			if [[ $loginName =~ $matchLoginName ]];
+			then
+				break
+			else
+				echo "Please use only standard word characters for the login name"
+			fi
+		done
 		if [ ! -z "$loginName" ];
 		then
 			sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
