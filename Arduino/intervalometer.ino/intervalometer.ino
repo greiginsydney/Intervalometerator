@@ -240,6 +240,15 @@ void SetAlarm1()
   byte nextDay  = rtc.getDay();
   byte nextShot = rtc.getMinute();
   byte nextHour = rtc.getHour();
+ 
+  // Lunchtime kludge
+  // Un-comment this code and set nextHour and nextShot values as appropriate
+  //  if (nextHour == 12)
+  //  {
+  //     nextHour = 13;
+  //     nextShot = 59;
+  //  }
+ 
   do
   {
     nextShot++;
