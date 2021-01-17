@@ -431,12 +431,17 @@ chg_web_login ()
 		while true; do
 			echo ""
 			read -e -r -i "$oldLoginName" -p "Change the website's login name: " loginName
-			if [[ $loginName =~ $matchLoginName ]];
+			if [[ ${#loginName} -lt 1 ]];
 			then
-				break
-			else
-				echo "Please use only standard word characters for the login name"
+				echo "The login name can't be empty/blank"
+				continue
 			fi
+			if [[ ! $loginName =~ $matchLoginName ]];
+			then
+				echo "Please use only standard word characters for the login name"
+				continue
+			fi
+			break	# We only get to here if the login name is not blank and doesn't contain naughty characters
 		done
 		if [ ! -z "$loginName" ];
 		then
