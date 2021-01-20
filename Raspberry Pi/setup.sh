@@ -433,9 +433,9 @@ chg_web_login ()
 	while read line; do
 		if [[ $line =~ $matchRegex ]] ;
 		then
-				oldLoginName=${BASH_REMATCH[1]}
-				oldPassword=${BASH_REMATCH[2]}
-				break
+			oldLoginName=${BASH_REMATCH[1]}
+			oldPassword=${BASH_REMATCH[2]}
+			break
 		fi
 	done <~/www/intvlm8r.py
 
@@ -443,11 +443,11 @@ chg_web_login ()
 	then
 		matchLoginName="^\w+$"
 		while true; do
-			echo ""
+			echo ''
 			read -e -r -i "$oldLoginName" -p "Change the website's login name: " loginName
 			if [[ ${#loginName} -lt 1 ]];
 			then
-				echo "The login name can't be empty/blank"
+				echo " The login name can't be empty/blank"
 				continue
 			fi
 			if [[ ! $loginName =~ $matchLoginName ]];
@@ -455,28 +455,41 @@ chg_web_login ()
 				echo "Please use only standard word characters for the login name"
 				continue
 			fi
-			break	# We only get to here if the login name is not blank and doesn't contain naughty characters
+			break	# We only get to here if the login name is not blank and doesn't contain invalid characters
 		done
-		if [ ! -z "$loginName" ];
-		then
-			sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
-			if [ ! -z "$oldPassword" ];
+		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
+		matchPassword="[\']+"
+		while true; do
+			read -e -r -i "$oldPassword" -p "Change the website's password  : " password
+			if [ -z "$password" ];
 			then
-				read -e -i "$oldPassword" -p "Change the website's password  : " password
-				if [ ! -z "$password" ];
-				then
-					sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':\s*)'($oldPassword)'}}$/\1'$password'}}/" ~/www/intvlm8r.py
-				else
-					echo -e "Error: An empty password is invalid. Skipping"
-				fi
-			else
-				echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
+				echo -e "Error: An empty password is invalid."
+				echo ''
+				continue
 			fi
-		fi
+			if [[ $password =~ $matchPassword ]];
+			then
+				echo ''
+				echo "Please try a different password. Don't use backslashes or apostrophes/single-quotes"
+				echo ''
+				continue
+			fi
+			echo ''
+			set +e #Suspend the error trap
+			escapedPassword=$(echo "$password" | sed 's/[]<>[\\\/.&""|$(){}?+*^]/\\&/g')
+			sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':)\s*'.*'}}$/\1 '$escapedPassword'}}/" ~/www/intvlm8r.py
+			if [[ "$?" -ne 0 ]];
+			then
+				echo "Whoops - something broke. Please try again with a less complex password"
+				echo ''
+				continue
+			fi
+			set -e #Resume the error trap
+			break
+		done
 	else
-		echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
+		echo "Error: Login name not found. Please edit ~/www/intvlm8r.py to resolve."
 	fi
-	echo ""
 }
 
 
