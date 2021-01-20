@@ -203,7 +203,7 @@ install_website ()
 				then
 					if grep -q "^${BASH_REMATCH[1]}${BASH_REMATCH[2]}'" ~/www/intvlm8r.py;
 					then
-						echo "Skipped - user '${BASH_REMATCH[2]}' already exists"
+						echo "Skipped: user '${BASH_REMATCH[2]}' already exists"
 					else
 						sed -i "/^users\s*=.*/a $line" ~/www/intvlm8r.py
 						echo "Reinstated user '${BASH_REMATCH[2]}'"
