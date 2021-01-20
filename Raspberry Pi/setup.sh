@@ -231,10 +231,18 @@ install_website ()
 
 	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
 	then
-		#Generate a secret key here & paste in to intvlm8r.py:
-		UUID=$(cat /proc/sys/kernel/random/uuid)
-		sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
-		echo "A new Secret Key has been created."
+		if [ ! -z "$oldSecretKey" ];
+		then
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			echo 'intvlm8r.old found and the original Secret Key has been restored.'
+		else
+			#Generate a secret key here & paste in to intvlm8r.py:
+			UUID=$(cat /proc/sys/kernel/random/uuid)
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+			echo 'A new Secret Key was created.'
+		fi
+	else
+		echo 'Skipped: a Secret Key already exists.'
 	fi
 
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
