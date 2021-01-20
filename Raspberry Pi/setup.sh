@@ -177,7 +177,7 @@ install_website ()
 
 	chown -R pi:www-data /home/pi
 
-	if [ www/intvlm8r.old ];
+	if [ -f www/intvlm8r.old ];
 	then
 		echo ""
 		echo "intvlm8r.old found. Skipping the login prompt step."
