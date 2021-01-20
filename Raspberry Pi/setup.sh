@@ -234,11 +234,6 @@ install_website ()
 		echo "A new Secret Key has been created."
 	fi
 
-	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
-	systemctl start intvlm8r
-	echo "Enabling intvlm8r"
-	systemctl enable intvlm8r
-
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
@@ -252,6 +247,14 @@ install_website ()
 
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
 	rm -f /etc/nginx/sites-enabled/default
+
+	echo ''
+
+	#intvlm8r
+	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
+	systemctl start intvlm8r
+	echo "Enabling intvlm8r"
+	systemctl enable intvlm8r
 
 	#Camera Transfer
 	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
