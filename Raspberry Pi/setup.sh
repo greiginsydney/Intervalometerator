@@ -212,7 +212,7 @@ install_website ()
 			done <~/www/intvlm8r.old
 		fi
     
-    oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+    		oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$oldSecretKey" ];
 		then
 			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
@@ -220,7 +220,6 @@ install_website ()
 		else
 			echo "intvlm8r.old found but the original Secret Key was not found/detected"
 		fi
-
 	else
 		# Prompt the user to change the default web login from admin/password:
 		chg_web_login
