@@ -420,7 +420,15 @@ install_website ()
 			
 			;;
 		(*)
-			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service
+			if [ -f setTime.service ];
+			then
+				if cmp -s setTime.service /etc/systemd/system/setTime.service;
+				then
+					echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
+				else
+					mv -fv setTime.service /etc/systemd/system/setTime.service
+				fi
+			fi
 			chmod 644 /etc/systemd/system/setTime.service
 			echo "Enabling setTime.service"
 			systemctl enable setTime.service
