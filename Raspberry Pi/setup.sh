@@ -168,10 +168,6 @@ install_website ()
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
-	#mkdir -pv /var/log/celery
-	#mkdir -pv /var/run/celery
-	[ -f celery.conf ] && mv -fv celery.conf /etc/tmpfiles.d/celery.conf
-
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
 
@@ -248,11 +244,14 @@ install_website ()
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
-		[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
-		#Copy new intvlm8r site across:
-		[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
-	else
-		echo "Skipped: no new 'intvlm8r' file to copy."
+		if cmp -s intvlm8r /etc/nginx/sites-available/intvlm8r;
+		then
+			echo "Skipped: the file '/etc/nginx/sites-available/intvlm8r' already exists & the new version is unchanged"
+		else
+			[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
+			#Copy new intvlm8r site across:
+			mv -fv intvlm8r /etc/nginx/sites-available/intvlm8r
+		fi
 	fi
 	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
 
@@ -262,26 +261,77 @@ install_website ()
 	echo ''
 
 	#intvlm8r
-	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
+	if [ -f intvlm8r.service ];
+	then
+		if cmp -s intvlm8r.service /etc/systemd/system/intvlm8r.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/intvlm8r.service' already exists & the new version is unchanged"
+		else
+			mv -fv intvlm8r.service /etc/systemd/system/intvlm8r.service
+		fi
+	fi
 	systemctl start intvlm8r
 	echo "Enabling intvlm8r"
 	systemctl enable intvlm8r
 
 	#Camera Transfer
-	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
+	if [ -f cameraTransfer.service ];
+	then
+		if cmp -s cameraTransfer.service /etc/systemd/system/cameraTransfer.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/cameraTransfer.service' already exists & the new version is unchanged"
+		else
+			mv -fv cameraTransfer.service /etc/systemd/system/cameraTransfer.service
+		fi
+	fi
 	chmod 644 /etc/systemd/system/cameraTransfer.service
 	echo "Enabling cameraTransfer.service"
 	systemctl enable cameraTransfer.service
 
 	#Pi Transfer
-	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
+	if [ -f piTransfer.service ];
+	then
+		if cmp -s piTransfer.service /etc/systemd/system/piTransfer.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/piTransfer.service' already exists & the new version is unchanged"
+		else
+			mv -fv piTransfer.service /etc/systemd/system/piTransfer.service
+		fi
+	fi
 	chmod 644 /etc/systemd/system/piTransfer.service
 	echo "Enabling piTransfer.service"
 	systemctl enable piTransfer.service
 
 	#Celery
-	[ -f celery ] && mv celery /etc/default/
-	[ -f celery.service ] && mv celery.service /etc/systemd/system/
+	if [ -f celery.conf ];
+	then
+		if cmp -s celery.conf /etc/tmpfiles.d/celery.conf;
+		then
+			echo "Skipped: the file '/etc/tmpfiles.d/celery.conf' already exists & the new version is unchanged"
+		else
+			mv -fv celery.conf /etc/tmpfiles.d/celery.conf
+		fi
+	fi
+	
+	if [ -f celery ];
+	then
+		if cmp -s celery /etc/default/celery;
+		then
+			echo "Skipped: the file '/etc/default/celery' already exists & the new version is unchanged"
+		else
+			mv -fv celery /etc/default/celery
+		fi
+	fi
+	
+	if [ -f celery.service ];
+	then
+		if cmp -s celery.service /etc/systemd/system/celery.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/celery.service' already exists & the new version is unchanged" 
+		else
+			mv -fv celery.service /etc/systemd/system/celery.service
+		fi
+	fi
 	chmod 644 /etc/systemd/system/celery.service
 	echo "Enabling celery.service"
 	systemctl enable celery.service
