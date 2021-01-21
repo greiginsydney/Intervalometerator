@@ -231,7 +231,7 @@ def request_loader(request):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        app.logger.debug('Its a GET to LOGIN')
+        app.logger.debug("It's a GET to LOGIN")
         return render_template('login.html')
     username = (str(request.form['username']))
     remember = 'false'
