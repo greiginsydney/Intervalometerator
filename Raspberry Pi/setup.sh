@@ -168,57 +168,170 @@ install_website ()
 	ln -sfnv ${HOME}/preview ${HOME}/www/static
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
-	#mkdir -pv /var/log/celery
-	#mkdir -pv /var/run/celery
-	[ -f celery.conf ] && mv -fv celery.conf /etc/tmpfiles.d/celery.conf
-
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
 
 	chown -R pi:www-data /home/pi
 
-	# Prompt the user to change the default web login from admin/password:
-	chg_web_login
+	if [ -f www/intvlm8r.old ];
+	then
+		echo ""
+		echo "intvlm8r.old found. Skipping the login prompt step."
+		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
+		echo ""
+		
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		if [ ! -z "$firstLogin" ];
+		then
+			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
+			echo "intvlm8r.old found. Restored first login."
+		else
+			echo "Upgrade file found but the first login was not found/detected."
+		fi
+		
+		if grep -q "^users.update" ~/www/intvlm8r.old;
+		then
+			#There are additional users we need to reinstate.
+			matchRegex="^(users.update\(\{')(\w+)'.*$"
+			# Read each extra user in turn and reinstate them in the file - if they're not present already:
+			while read line; do
+				if [[ $line =~ $matchRegex ]] ;
+				then
+					if grep -q "^${BASH_REMATCH[1]}${BASH_REMATCH[2]}'" ~/www/intvlm8r.py;
+					then
+						echo "Skipped: user '${BASH_REMATCH[2]}' already exists"
+					else
+						sed -i "/^users\s*=.*/a $line" ~/www/intvlm8r.py
+						echo "Reinstated user '${BASH_REMATCH[2]}'"
+					fi
+				fi
+			done <~/www/intvlm8r.old
+		fi
+    
+    		if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.old;
+		then
+			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
+		else
+			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+			if [ ! -z "$oldSecretKey" ];
+			then
+				echo 'intvlm8r.old found and the original Secret Key has been extracted.'
+			else
+				echo 'intvlm8r.old found but unable to detect the original Secret Key.'
+			fi
+		fi
+	else
+		# Prompt the user to change the default web login from admin/password:
+		chg_web_login
+	fi
 
-	[ -f intvlm8r.service ] && mv -fv intvlm8r.service /etc/systemd/system/
-	systemctl start intvlm8r
-	echo "Enabling intvlm8r"
-	systemctl enable intvlm8r
+	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
+	then
+		if [ ! -z "$oldSecretKey" ];
+		then
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			echo 'intvlm8r.old found and the original Secret Key has been restored.'
+		else
+			#Generate a secret key here & paste in to intvlm8r.py:
+			UUID=$(cat /proc/sys/kernel/random/uuid)
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+			echo 'A new Secret Key was created.'
+		fi
+	else
+		echo 'Skipped: a Secret Key already exists.'
+	fi
 
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
-		[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
-		#Copy new intvlm8r site across:
-		[ -f intvlm8r ] && mv -fv intvlm8r /etc/nginx/sites-available/
-	else
-		echo "Skipped: no new 'intvlm8r' file to copy."
+		if cmp -s intvlm8r /etc/nginx/sites-available/intvlm8r;
+		then
+			echo "Skipped: the file '/etc/nginx/sites-available/intvlm8r' already exists & the new version is unchanged"
+		else
+			[ -f /etc/nginx/sites-available/intvlm8r ] && mv -fv /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-available/intvlm8r.old
+			#Copy new intvlm8r site across:
+			mv -fv intvlm8r /etc/nginx/sites-available/intvlm8r
+		fi
 	fi
 	ln -sf /etc/nginx/sites-available/intvlm8r /etc/nginx/sites-enabled
 
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
 	rm -f /etc/nginx/sites-enabled/default
 
-	#Generate a secret key here & paste in to intvlm8r.py:
-	UUID=$(cat /proc/sys/kernel/random/uuid)
-	sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+	echo ''
 
+	#intvlm8r
+	if [ -f intvlm8r.service ];
+	then
+		if cmp -s intvlm8r.service /etc/systemd/system/intvlm8r.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/intvlm8r.service' already exists & the new version is unchanged"
+		else
+			mv -fv intvlm8r.service /etc/systemd/system/intvlm8r.service
+		fi
+	fi
+	systemctl start intvlm8r
+	echo "Enabling intvlm8r"
+	systemctl enable intvlm8r
 
 	#Camera Transfer
-	[ -f cameraTransfer.service ] && mv cameraTransfer.service /etc/systemd/system/
+	if [ -f cameraTransfer.service ];
+	then
+		if cmp -s cameraTransfer.service /etc/systemd/system/cameraTransfer.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/cameraTransfer.service' already exists & the new version is unchanged"
+		else
+			mv -fv cameraTransfer.service /etc/systemd/system/cameraTransfer.service
+		fi
+	fi
 	chmod 644 /etc/systemd/system/cameraTransfer.service
 	echo "Enabling cameraTransfer.service"
 	systemctl enable cameraTransfer.service
 
 	#Pi Transfer
-	[ -f piTransfer.service ] && mv piTransfer.service /etc/systemd/system/
+	if [ -f piTransfer.service ];
+	then
+		if cmp -s piTransfer.service /etc/systemd/system/piTransfer.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/piTransfer.service' already exists & the new version is unchanged"
+		else
+			mv -fv piTransfer.service /etc/systemd/system/piTransfer.service
+		fi
+	fi
 	chmod 644 /etc/systemd/system/piTransfer.service
 	echo "Enabling piTransfer.service"
 	systemctl enable piTransfer.service
 
 	#Celery
-	[ -f celery ] && mv celery /etc/default/
-	[ -f celery.service ] && mv celery.service /etc/systemd/system/
+	if [ -f celery.conf ];
+	then
+		if cmp -s celery.conf /etc/tmpfiles.d/celery.conf;
+		then
+			echo "Skipped: the file '/etc/tmpfiles.d/celery.conf' already exists & the new version is unchanged"
+		else
+			mv -fv celery.conf /etc/tmpfiles.d/celery.conf
+		fi
+	fi
+	
+	if [ -f celery ];
+	then
+		if cmp -s celery /etc/default/celery;
+		then
+			echo "Skipped: the file '/etc/default/celery' already exists & the new version is unchanged"
+		else
+			mv -fv celery /etc/default/celery
+		fi
+	fi
+	
+	if [ -f celery.service ];
+	then
+		if cmp -s celery.service /etc/systemd/system/celery.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/celery.service' already exists & the new version is unchanged" 
+		else
+			mv -fv celery.service /etc/systemd/system/celery.service
+		fi
+	fi
 	chmod 644 /etc/systemd/system/celery.service
 	echo "Enabling celery.service"
 	systemctl enable celery.service
@@ -307,7 +420,15 @@ install_website ()
 			
 			;;
 		(*)
-			[ -f setTime.service ] && mv setTime.service /etc/systemd/system/setTime.service
+			if [ -f setTime.service ];
+			then
+				if cmp -s setTime.service /etc/systemd/system/setTime.service;
+				then
+					echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
+				else
+					mv -fv setTime.service /etc/systemd/system/setTime.service
+				fi
+			fi
 			chmod 644 /etc/systemd/system/setTime.service
 			echo "Enabling setTime.service"
 			systemctl enable setTime.service
@@ -370,36 +491,63 @@ chg_web_login ()
 	while read line; do
 		if [[ $line =~ $matchRegex ]] ;
 		then
-				oldLoginName=${BASH_REMATCH[1]}
-				oldPassword=${BASH_REMATCH[2]}
-				break
+			oldLoginName=${BASH_REMATCH[1]}
+			oldPassword=${BASH_REMATCH[2]}
+			break
 		fi
 	done <~/www/intvlm8r.py
 
 	if [ ! -z "$oldLoginName" ];
 	then
-			echo ""
-			read -e -i "$oldLoginName" -p "Change the website's login name: " loginName
-			if [ ! -z "$loginName" ];
+		matchLoginName="^\w+$"
+		while true; do
+			echo ''
+			read -e -r -i "$oldLoginName" -p "Change the website's login name: " loginName
+			if [[ ${#loginName} -lt 1 ]];
 			then
-					sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
-					if [ ! -z "$oldPassword" ];
-					then
-						read -e -i "$oldPassword" -p "Change the website's password  : " password
-						if [ ! -z "$password" ];
-				then
-					sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':\s*)'($oldPassword)'}}$/\1'$password'}}/" ~/www/intvlm8r.py
-				else
-					echo -e "Error: An empty password is invalid. Skipping"
-				fi
-					else
-						echo -e "Error: An empty password is invalid. Please edit ~/www/intvlm8r.py to resolve"
-					fi
+				echo " The login name can't be empty/blank"
+				continue
 			fi
+			if [[ ! $loginName =~ $matchLoginName ]];
+			then
+				echo "Please use only standard word characters for the login name"
+				continue
+			fi
+			break	# We only get to here if the login name is not blank and doesn't contain invalid characters
+		done
+		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
+		matchPassword="[\']+"
+		while true; do
+			read -e -r -i "$oldPassword" -p "Change the website's password  : " password
+			if [ -z "$password" ];
+			then
+				echo -e "Error: An empty password is invalid."
+				echo ''
+				continue
+			fi
+			if [[ $password =~ $matchPassword ]];
+			then
+				echo ''
+				echo "Please try a different password. Don't use backslashes or apostrophes/single-quotes"
+				echo ''
+				continue
+			fi
+			echo ''
+			set +e #Suspend the error trap
+			escapedPassword=$(echo "$password" | sed 's/[]<>[\\\/.&""|$(){}?+*^]/\\&/g')
+			sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':)\s*'.*'}}$/\1 '$escapedPassword'}}/" ~/www/intvlm8r.py
+			if [[ "$?" -ne 0 ]];
+			then
+				echo "Whoops - something broke. Please try again with a less complex password"
+				echo ''
+				continue
+			fi
+			set -e #Resume the error trap
+			break
+		done
 	else
-			echo "Error: Login name not found in ~/www/intvlm8r.py. Skipping."
+		echo "Error: Login name not found. Please edit ~/www/intvlm8r.py to resolve."
 	fi
-	echo ""
 }
 
 
@@ -643,7 +791,8 @@ prompt_for_reboot()
 
 if [ "$EUID" -ne 0 ];
 then
-	echo -e "\nPlease re-run as 'sudo ./AutoSetup.sh <step>'"
+	echo -e "\nPlease re-run as 'sudo -E [-H] ./setup.sh <step>'"
+	echo -e "(Only the 'start' step needs the extra -H switch)"
 	exit 1
 fi
 

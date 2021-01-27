@@ -16,6 +16,9 @@ https://intvlm8r.com
 References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
+ 
+Last updated/changed in version:
+4.0.1
 *****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -237,6 +240,15 @@ void SetAlarm1()
   byte nextDay  = rtc.getDay();
   byte nextShot = rtc.getMinute();
   byte nextHour = rtc.getHour();
+ 
+  // Lunchtime kludge
+  // Un-comment this code and set nextHour and nextShot values as appropriate
+  //  if (nextHour == 12)
+  //  {
+  //     nextHour = 13;
+  //     nextShot = 59;
+  //  }
+ 
   do
   {
     nextShot++;

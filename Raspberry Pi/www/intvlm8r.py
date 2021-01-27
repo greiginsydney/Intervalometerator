@@ -231,25 +231,27 @@ def request_loader(request):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        app.logger.debug('Its a GET to LOGIN')
+        app.logger.debug("It's a GET to LOGIN")
         return render_template('login.html')
     username = (str(request.form['username']))
-    if username in users:
-        #if (check_password_hash(users[username]['password'], request.form['password'])):
-        if users[username]['password'] == request.form['password']:
-            user = User()
-            user.id = username
-            remember = 'false'
-            if request.form.get('rememberme'):
-                remember = 'true'
-            login_user(user,'remember=' + remember)
-            app.logger.debug('Logged-in ' + username)
-            next = request.args.get('next')
-            # is_safe_url should check if the url is safe for redirects.
-            # See http://flask.pocoo.org/snippets/62/ for an example.
-            if not is_safe_url(next):
-                return abort(400)
-            return redirect(next or url_for('main'))
+    remember = 'false'
+    for name, _ in users.items():
+        if (username.casefold() == name.casefold()): 
+            #OK, we have the user name (regardless of the case)!
+            if users[name]['password'] == request.form['password']:
+            #if (check_password_hash(users[username]['password'], request.form['password'])):
+                user = User()
+                user.id = name
+                if request.form.get('rememberme'):
+                    remember = 'true'
+                login_user(user,'remember=' + remember)
+                app.logger.debug('Logged-in ' + name)
+                next = request.args.get('next')
+                # is_safe_url should check if the url is safe for redirects.
+                # See http://flask.pocoo.org/snippets/62/ for an example.
+                if not is_safe_url(next):
+                    return abort(400)
+                return redirect(next or url_for('main'))
     app.logger.debug('User \'' + username + '\' failed to login')
     flash('Bad creds. Try again')
     return redirect(url_for('login'))
@@ -343,9 +345,27 @@ def main():
         templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
         templateData['fileCount']                = fileCount
         templateData['lastImage']                = lastImage
-        templateData['availableShots']           = readValue (config, 'availableshots')
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
-    
+
+        #Find the capturetarget config item. (TY Jim.)
+        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+        if currentTarget == "Internal RAM":
+            #Change it to "Memory Card"
+            try:
+                newTarget = 1
+                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                gp.check_result(gp.gp_camera_set_config(camera, config))
+                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                app.logger.debug('Set captureTarget to "Memory Card" in main')
+            except gp.GPhoto2Error as e:
+                app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
+            except Exception as e:
+                app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
+        templateData['availableShots'] = readValue (config, 'availableshots')
+        gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
         if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
             flash(e.string)
@@ -651,6 +671,23 @@ def intervalometer():
         context = gp.gp_context_new()
         camera.init(context)
         config = camera.get_config(context)
+        #Find the capturetarget config item. (TY Jim.)
+        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+        if currentTarget == "Internal RAM":
+            #Change it to "Memory Card"
+            try:
+                newTarget = 1
+                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                gp.check_result(gp.gp_camera_set_config(camera, config))
+                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
+            except gp.GPhoto2Error as e:
+                app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
+            except Exception as e:
+                app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
         templateData['availableShots'] = readValue (config, 'availableshots')
         gp.check_result(gp.gp_camera_exit(camera))
     except gp.GPhoto2Error as e:
@@ -1073,7 +1110,7 @@ def readValue ( camera, attribute ):
 def readRange ( camera, context, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
-    It's only called by "camera", so in that context we already have an established connection to the
+    It's only called by "camera" and "main" when we already have an established connection to the
     camera, so it's inappropriate (and inefficient) to attempt a reconnection here.
     """
     options = []
@@ -1361,7 +1398,7 @@ def createConfigFile(iniFile):
         config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
-        config.set('Global', 'thumbscount', '20')
+        config.set('Global', 'thumbscount', '24')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
         config.set('Transfer', 'deleteAfterTransfer', 'Off')
