@@ -12,21 +12,21 @@ If you're starting from scratch, start here at Step 1.
 4. Login.
 5. Now we'll perform the basic customisation steps:
 6. Run `sudo raspi-config`.
-7. Select `(4) Localisation Options` then:
-    * `(I3) - change keyboard layout`
+7. Select `(5) Localisation Options` then:
+    * `(L3) - change keyboard layout`
     I've never needed to do anything but accept the defaults here. I found the Pi stopped responding for >10s after selecting "no compose key", so just wait for it and it will take you back to the main page.
-8. Return to (4) and set `(I2) the timezone`. Select the appropriate options and you'll be returned to the menu.
-9. Select `(5) - Interfacing Options`
+8. Return to (5) and set `(L2) the timezone`. Select the appropriate options and you'll be returned to the menu.
+9. Select `(3) - Interfacing Options`
     * `(P2) Enable SSH` and at the prompt "Would you like the SSH server to be enabled?" change the selection to `<Yes>` and hit return, then return again at the `OK`.
 10. This step intentionally left blank. ;-)
     
 > Micro SD cards come in some large sizes these days, and if you want to keep backups of the photos off the camera, you'll probably want a card larger than the standard 32G limit of FAT. If you've started with a standard FAT format, this next step lets you expand the disk to consume the whole card. This is a good thing.  
 In so doing however, your average Windows PC will no longer be able to read the card. Check out "<a href="https://ext2-volume-manager.en.lo4d.com/" target="_blank">Ext2 Volume Manager</a>" as a way to get around this. If you're at all uncertain, skip step 11, but be aware that the number of images you can store on the Pi will be limited.
 
-11. Select `(7) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
-12. Select `(2) Network Options` and `Hostname` and give the Pi a recognisable hostname.
+11. Select `(6) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
+12. Select `(1) System Options` and `(S4) Hostname` and give the Pi a recognisable hostname.
 13. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 15.
-14. Select `(2) Network Options` and `Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
+14. Select `(1) System Options` and `(S1) Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
 15. Navigate to `Finish` and DECLINE the prompt to reboot.
