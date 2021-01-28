@@ -3,9 +3,9 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the latest [Rasbian Buster Lite](https://www.raspberrypi.org/downloads/raspbian/) image.
+1. Prepare the memory card with the latest [Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image.
 
-> "Stretch" is no longer supported due to the move to Python3. "Buster" is the minimum.
+> The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
 3. The boot process ends at a login screen. The default credentials are `pi` / `raspberry`.
