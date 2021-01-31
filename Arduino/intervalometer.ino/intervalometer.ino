@@ -222,6 +222,7 @@ void WakeCamera()
 void TakePhoto()
 {
   //Serial.println("Take Photo\r\n");
+  bitWrite(PORTD, LED_PIN, LOW); //Make sure the LED's off when we take a photo
   digitalWrite(WAKE_PIN, HIGH); // Wake the camera up
   DelaymS (800);
   digitalWrite(FIRE_PIN, HIGH); // You take photo!
