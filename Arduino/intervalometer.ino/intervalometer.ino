@@ -519,15 +519,18 @@ void SetWakePiTime(String NewTimeDuration)
   EEPROM.write(MEMWakePiHour,     WakePiHour);
   EEPROM.write(MEMWakePiDuration, WakePiDuration);
  
-  //The Pi is running. Set the alarm to put it to sleep:
-  PiShutdownAlarm = rtc.getMinute() + WakePiDuration;
-  if (PiShutdownAlarm >= 60)
+  //The Pi is running. Set the alarm to put it to sleep (if it's not set to always run of course):
+  if (WakePiHour != 25)
   {
-    PiShutdownAlarm -= 60 ;
+    PiShutdownAlarm = rtc.getMinute() + WakePiDuration;
+    if (PiShutdownAlarm >= 60)
+    {
+      PiShutdownAlarm -= 60 ;
+    }
+    rtc.setAlarm2(PiShutdownAlarm);
+    //Serial.println(" - Snoozing Pi @ minute = " + String(PiShutdownAlarm));
+    //Serial.println(" - New WakePi duration = " + String(WakePiDuration));
   }
-  rtc.setAlarm2(PiShutdownAlarm);
-  //Serial.println(" - Snoozing Pi @ minute = " + String(PiShutdownAlarm));
-  //Serial.println(" - New WakePi duration = " + String(WakePiDuration));
 }
 
 
