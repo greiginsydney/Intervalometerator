@@ -363,6 +363,17 @@ void setTimeDate(String newTime)
   rtc.setTime(ss, minut, hh, dayOfWeek, dd, mm, yyyy);
 
   //Serial.print("Day = " + String(dayOfWeek) + "\r\n");
+ 
+  if (WakePiHour != 25)
+  {
+    PiShutdownMinute = minut + WakePiDuration;
+    if (PiShutdownMinute >= 60)
+    {
+      PiShutdownMinute -= 60;
+    }
+    //Serial.println("Time was changed. Set Alarm 2 for minute = " + String(PiShutdownMinute));
+    rtc.setAlarm2(PiShutdownMinute);
+  }
 }
 
 
