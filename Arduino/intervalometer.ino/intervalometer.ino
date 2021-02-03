@@ -790,11 +790,10 @@ void loop()
       else if (bitRead(PORTD, PI_POWER) == HIGH) // PI_POWER is read as PORTD bit 7, so this is OK
       {
         //It's NOT "wake time" and the Pi is already running, so it might be time to put it to sleep:
-        //Serial.println(" - ALARM 2 fired @ " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ". Shutting down the Pi");
-        //Serial.println(" - About to shut the Pi down");
+        //Serial.println(" - ALARM 2 fired @ " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + " & the Pi is running.");
+        // Safety net: don't want rogue code turning the Pi off if it's meant to be always on 
         if (WakePiHour != 25)
         {
-          // Safety net: don't want rogue code turning the Pi off if it's meant to be always on
           //Serial.println(" - Initiated a Pi shutdown");
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
         }
