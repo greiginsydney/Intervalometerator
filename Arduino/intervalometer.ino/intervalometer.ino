@@ -86,7 +86,7 @@ byte   StartHour = 00;          // Default start hour.
 byte   EndHour   = 23;          // Default end hour.
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
 byte   WakePiHour = 14;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
-byte   WakePiDuration = 5;      // This is how long we leave the Pi awake for. Changeable from the Pi
+byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute;        // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
 
 String newTimeDate = "";        // A new time and date sent by the Pi
