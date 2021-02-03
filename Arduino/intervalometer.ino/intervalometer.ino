@@ -838,7 +838,6 @@ void loop()
     digitalWrite(PI_POWER, HIGH); // Turn the Pi on.
     WakePi = false; //We can reset the flag now.
     SLEEP = false;  //We won't sleep while the Pi is on.
-    wakeCameraFlag = true; //Wake the camera, as one of the first things the Pi will do is attempt to sync photos
   }
 
   if (resetArduinoFlag == true)
