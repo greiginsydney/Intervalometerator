@@ -914,7 +914,7 @@ void loop()
   // - made any changes pushed via the Pi
   // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
 
-  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && resetArduinoFlag == false))
+  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false))
   {
     // The Pi is powered-off, nothing left to do, it's now safe for us to sleep
     //Serial.println(" - About to sleep");
