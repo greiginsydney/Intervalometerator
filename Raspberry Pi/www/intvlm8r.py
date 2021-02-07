@@ -1403,6 +1403,8 @@ def createConfigFile(iniFile):
         config.set('Transfer', 'tfrMethod', 'Off')
         config.set('Transfer', 'deleteAfterTransfer', 'Off')
         config.add_section('Copy')
+        config.set('Copy', 'copyDay', 'Daily')
+        config.set('Copy', 'copyHour', '14')
         config.set('Copy', 'deleteAfterCopy', 'Off')
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
