@@ -475,8 +475,12 @@ def thumbnails():
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if ' = ' in line:
-                            (key, val) = line.rstrip('\n').split(' = ')
-                            ThumbsInfo[key] = val
+                            try:
+                                (key, val) = line.rstrip('\n').split(' = ')
+                                ThumbsInfo[key] = val
+                             except Exception as e:
+                                #Skip over bad line
+                                app.logger.debug('Error in thumbs info file: ' + str(e))   
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 _, imageFileName = os.path.split(FileList[loop])
