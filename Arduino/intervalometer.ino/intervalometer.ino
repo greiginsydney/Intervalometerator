@@ -110,7 +110,9 @@ void setup()
   // LEAVE ALL THE SERIAL LINES COMMENTED-OUT IN PRODUCTION.
   // They're left here for short-term debugging use ONLY
   //Serial.begin(9600);
-
+  //Serial.println("");
+  //Serial.println("Hello. I've just booted");
+  
   // initialize i2c as slave
   Wire.begin(SLAVE_ADDRESS);
   // define callbacks for i2c communication
@@ -784,6 +786,7 @@ void loop()
   {
     //bitWrite(PORTD, LED_PIN, ON); //DEBUG: Turn the LED on. Remove this line when in operation to minimise current drain.
     //Serial.println(" - ALARM   fired");
+    printTime();
     if (rtc.alarm1())
     {
       //Serial.println(" - ALARM 1 fired");
@@ -811,6 +814,7 @@ void loop()
         // Safety net: don't want rogue code turning the Pi off if it's meant to be always on
         if (WakePiHour != 25)
         {
+          //Serial.println(" - ALARM 2 fired @ PiShutdownMinute " + String(rtc.hour()) + ":" + String(rtc.minute()) + ".");
           //Serial.println(" - Initiated a Pi shutdown");
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
           PiShutdownMinute = 61;  // Reset to an invalid value.
@@ -855,18 +859,22 @@ void loop()
                             // It's both a feature and also a safety-net to make sure the shutdown timer is set.
     digitalWrite(PI_SHUTDOWN, HIGH); // Make sure the shutdown pin is high before we turn it on
     digitalWrite(PI_POWER, HIGH); // Turn the Pi on.
+    //Serial.println("The Pi has just been powered on");
     WakePi = false; //We can reset the flag now.
     SLEEP = false;  //We won't sleep while the Pi is on.
   }
 
   if (resetArduinoFlag == true)
   {
+    //Serial.println("ResetArduinoFlag set.");
     if (bitRead(PINB, 0) == HIGH) //PI_RUNNING (Pin 8) is read as PORTB bit *0*
     {
       digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
+      //Serial.println(" - Telling the Pi to shutdown");
     }
     else
     {
+      //Serial.println(" - Resetting the Arduino");
       resetArduinoFlag = false;
       digitalWrite(PI_POWER, LOW); // Turn the Pi off. May be redundant, but as softReset is ambiguous, best be on the safe side.
       DelaymS(1000); //Just to be sure the above has 'taken'
@@ -899,6 +907,7 @@ void loop()
     {
       //This is a falling edge - the Pi has just gone to sleep.
       //Serial.println(" - PI_RUNNING went LOW");
+      //Serial.println("LastRunningState WAS high, and PI_RUNNING went LOW. (The Pi has gone to sleep)");
       DelaymS(2000); //Just to be sure
       digitalWrite(PI_POWER, LOW);    // Turn the Pi off.
       digitalWrite(PI_SHUTDOWN, LOW); // This should already be low.
@@ -912,6 +921,7 @@ void loop()
     {
       //This is a rising edge - the Pi's just woken up.
       //Set alarm2 in readiness to put it to sleep:
+      //Serial.println("LastRunningState WAS low, and PI_RUNNING went HIGH. The Pi has just woken up");
       SetAlarm2(HIGH);
       LastRunningState = HIGH;
     }
@@ -933,6 +943,8 @@ void loop()
   if (SLEEP == true)
   {
     //Serial.println(" - SLEEP");
+    //Serial.println("");
+    //DelaymS(2000); //Only enabled when Debugging, to ensure println messages are written before we sleep.
     SLEEP = false; //Reset the flag BEFORE we power-down, otherwise we risk looping
     bitWrite(PORTD, LED_PIN, LOW); //Make sure the LED's off before going to sleep
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); //SLEEP_FOREVER will only be woken by an IRQ
