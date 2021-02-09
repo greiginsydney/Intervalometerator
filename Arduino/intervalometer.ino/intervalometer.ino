@@ -87,7 +87,7 @@ byte   EndHour   = 23;          // Default end hour.
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
 byte   WakePiHour = 14;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
-byte   PiShutdownMinute;        // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
+byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
 
 String newTimeDate = "";        // A new time and date sent by the Pi
 String newInterval = "";        // A new interval sent by the Pi
@@ -305,6 +305,44 @@ void SetAlarm1()
 }
 
 
+void SetAlarm2(bool reset)
+{
+  byte AlarmMinute = 0;
+  
+  printTime();
+
+  if (WakePiHour == 25)
+  {
+    //The Pi is always running. Alarm2 is only ever needed at the top of the hour:
+    AlarmMinute = 0;
+  }
+  else
+  {
+    if (reset == HIGH)
+    {
+      // Reset/restart the Pi Shutdown timer. Either the real time or the PiDuration has changed, or the Pi's just woken up:
+      PiShutdownMinute = rtc.getMinute() + WakePiDuration;
+      if (PiShutdownMinute >= 60)
+      {
+        PiShutdownMinute -= 60 ;
+      }
+      else
+      {
+        AlarmMinute = PiShutdownMinute;
+      }
+    }
+    else
+    {
+      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; }
+      // Else it defaults to 0.
+    }
+  }
+
+  rtc.setAlarm2(AlarmMinute); // Alarm2 format is "(minute)" or "(minute, hours)"
+  //Serial.println(" - Alarm 2 set for minute = " + String(AlarmMinute));
+  //Serial.println(" - PiShutdownMinute = " + String(PiShutdownMinute));
+}
+
 void FlashLed(int flashes)
 {
   for (int i = 1; i <= flashes; i++)
@@ -363,17 +401,8 @@ void setTimeDate(String newTime)
   rtc.setTime(ss, minut, hh, dayOfWeek, dd, mm, yyyy);
 
   //Serial.print("Day = " + String(dayOfWeek) + "\r\n");
- 
-  if (WakePiHour != 25)
-  {
-    PiShutdownMinute = minut + WakePiDuration;
-    if (PiShutdownMinute >= 60)
-    {
-      PiShutdownMinute -= 60;
-    }
-    //Serial.println("Time was changed. Set Alarm 2 for minute = " + String(PiShutdownMinute));
-    rtc.setAlarm2(PiShutdownMinute);
-  }
+
+  SetAlarm2(HIGH);
 }
 
 
@@ -519,18 +548,7 @@ void SetWakePiTime(String NewTimeDuration)
   EEPROM.write(MEMWakePiHour,     WakePiHour);
   EEPROM.write(MEMWakePiDuration, WakePiDuration);
  
-  //The Pi is running. Set the alarm to put it to sleep (if it's not set to always run of course):
-  if (WakePiHour != 25)
-  {
-    PiShutdownAlarm = rtc.getMinute() + WakePiDuration;
-    if (PiShutdownAlarm >= 60)
-    {
-      PiShutdownAlarm -= 60 ;
-    }
-    rtc.setAlarm2(PiShutdownAlarm);
-    //Serial.println(" - Snoozing Pi @ minute = " + String(PiShutdownAlarm));
-    //Serial.println(" - New WakePi duration = " + String(WakePiDuration));
-  }
+  SetAlarm2(HIGH);
 }
 
 
@@ -780,24 +798,25 @@ void loop()
     if (rtc.alarm2())
     {
       //Serial.println(" - ALARM 2 fired");
-      if  (rtc.getMinute() == 0) { UpdateTempMinMax(""); }
-      if ((rtc.getMinute() == 0) && (rtc.getHour() == WakePiHour))
+      rtc.update();
+      if  (rtc.minute() == 0) { UpdateTempMinMax(""); }  // Runs at the top of the hour, 24x7
+      if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
-        //Serial.println(" -           " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + "       WAKING the Pi");
-        //Serial.println(" - WAKING the Pi via ALARM 2");
+        //Serial.println(" -           " + String(rtc.hour()) + ":" + String(rtc.minute()) + "       WAKING the Pi");
+        //Serial.println(" - WAKING the Pi via ALARM 2. WakePi set TRUE");
         WakePi = true; //Actioned elsewhere in loop()
       }
-      else if (bitRead(PORTD, PI_POWER) == HIGH) // PI_POWER is read as PORTD bit 7, so this is OK
+      else if ((rtc.minute() == PiShutdownMinute))
       {
-        //It's NOT "wake time" and the Pi is already running, so it might be time to put it to sleep:
-        //Serial.println(" - ALARM 2 fired @ " + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + " & the Pi is running.");
-        // Safety net: don't want rogue code turning the Pi off if it's meant to be always on 
+        // Safety net: don't want rogue code turning the Pi off if it's meant to be always on
         if (WakePiHour != 25)
         {
           //Serial.println(" - Initiated a Pi shutdown");
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
+          PiShutdownMinute = 61;  // Reset to an invalid value.
         }
       }
+      SetAlarm2(LOW);
     }
     ALARM = false;
   }
@@ -873,7 +892,7 @@ void loop()
     resetTempMaxFlag = false;
   }
   
-  if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*
+  if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*. LOW means the Pi has gone to sleep
   {
     // Only remove power if we've prevously taken PI_SHUTDOWN (Pin 9) LOW *and* now PI_RUNNING has gone LOW:
     if ((LastRunningState == HIGH) && (bitRead(PORTB, 1) == LOW)) 
@@ -883,10 +902,7 @@ void loop()
       DelaymS(2000); //Just to be sure
       digitalWrite(PI_POWER, LOW);    // Turn the Pi off.
       digitalWrite(PI_SHUTDOWN, LOW); // This should already be low.
-      if (WakePiHour != 25)
-      {
-        rtc.setAlarm2(0, WakePiHour);   // Reset the alarm to wake the Pi tomorrow
-      }
+      SetAlarm2(LOW);
     }
     LastRunningState = LOW;
   }
@@ -896,14 +912,7 @@ void loop()
     {
       //This is a rising edge - the Pi's just woken up.
       //Set alarm2 in readiness to put it to sleep:
-      //Serial.println(" - PI_RUNNING went HIGH");
-      PiShutdownMinute = rtc.getMinute() + WakePiDuration;
-      if (PiShutdownMinute >= 60)
-      {
-        PiShutdownMinute -= 60;
-      }
-      //Serial.println(" - Set Alarm 2 for minute = " + String(PiShutdownMinute));
-      rtc.setAlarm2(PiShutdownMinute);
+      SetAlarm2(HIGH);
       LastRunningState = HIGH;
     }
   }
@@ -916,7 +925,7 @@ void loop()
 
   if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false))
   {
-    // The Pi is powered-off, nothing left to do, it's now safe for us to sleep
+    // The Pi is powered-off. It's safe for us to sleep
     //Serial.println(" - About to sleep");
     SLEEP = true;
   }
