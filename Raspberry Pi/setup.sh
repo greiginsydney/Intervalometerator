@@ -696,6 +696,61 @@ unmake_ap ()
 		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
 	fi
 
+	oldCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	oldSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	oldPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	while true; do
+		read -e -i "$oldCountry" -p "Set your two-letter WiFi country code : " newCountry
+		if [ -z "$newCountry" ];
+		then
+			echo -e "Error: Country value cannot be empty."
+			echo ''
+			continue
+		fi
+		break
+	done
+	while true; do
+		read -e -i "$oldSsid"    -p "Set the network's SSID                : " newSsid
+		if [ -z "$newSsid" ];
+		then
+			echo -e "Error: SSID value cannot be empty."
+			echo ''
+			continue
+		fi
+		break
+	done
+	while true; do
+		read -e -i "$oldPsk"     -p "Set the network's Psk (password)      : " newPsk
+		if [ -z "$newPsk" ];
+		then
+			echo -e "Error: Psk value cannot be empty."
+			echo ''
+			continue
+		fi
+		break
+	done
+	
+	sed -i -E "s|^\s*country=.*|country=$newCountry|" /etc/wpa_supplicant/wpa_supplicant.conf
+	
+	set +e #Suspend the error trap
+	sed -i -E "s|^(\s*ssid=).*|\1\"$newSsid\"|" /etc/wpa_supplicant/wpa_supplicant.conf
+	if [[ "$?" -ne 0 ]];
+	then
+		echo 'Whoops - something broke setting the SSID. Please manually edit /etc/wpa_supplicant/wpa_supplicant.conf to add the required values'
+		echo '(The most likely cause is that your SSID contains the quote (") or pipe (|) characters)'
+		echo ''
+		continue
+	fi
+	sed -i -E "s|^(\s*psk=).*|\1\"$newPsk\"|" /etc/wpa_supplicant/wpa_supplicant.conf
+	if [[ "$?" -ne 0 ]];
+	then
+		echo 'Whoops - something broke setting the Psk. Please manually edit /etc/wpa_supplicant/wpa_supplicant.conf to add the required values'
+		echo '(The most likely cause is that your Psk contains the quote (") or pipe (|) characters)'
+		echo ''
+		continue
+	fi
+	set -e #Resume the error trap
+
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
 	if ! grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
 	then
