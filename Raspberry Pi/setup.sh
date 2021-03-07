@@ -684,9 +684,17 @@ END
 
 unmake_ap ()
 {
-	systemctl disable dnsmasq #Stops it launching on bootup
-	systemctl disable hostapd
-	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
+	if systemctl --all --type service | grep -q "dnsmasq";
+	then
+		systemctl disable dnsmasq #Stops it launching on bootup
+		echo 'Disabled dnsmasq'
+	fi
+	if systemctl --all --type service | grep -q "hostapd";
+	then
+		systemctl disable hostapd
+		echo 'Disabled hostapd'
+		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
+	fi
 
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
 	if ! grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
