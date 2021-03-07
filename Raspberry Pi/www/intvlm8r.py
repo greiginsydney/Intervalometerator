@@ -1491,20 +1491,21 @@ def copyNow(self):
             app.logger.info('Unknown error in copyNow(): ' + str(e))
             continue
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
-    filesToCopy = files_to_copy(camera)
-    numberToCopy = len(filesToCopy)
-    app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
-    deleteAfterCopy = getIni()
     thisImage = 0
-    while len(filesToCopy) > 0:
-        try:
-            thisImage += 1
-            self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
-            thisFile = filesToCopy.pop(0)
-            app.logger.info('About to copy file: ' + str(thisFile))
-            copy_files(camera, thisFile, deleteAfterCopy)
-        except Exception as e:
-            app.logger.info('Unknown error in copyNow(self): ' + str(e))
+    filesToCopy = files_to_copy(camera)
+    if filesToCopy:
+        numberToCopy = len(filesToCopy)
+        app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+        deleteAfterCopy = getIni()
+        while len(filesToCopy) > 0:
+            try:
+                thisImage += 1
+                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
+                thisFile = filesToCopy.pop(0)
+                app.logger.info('About to copy file: ' + str(thisFile))
+                copy_files(camera, thisFile, deleteAfterCopy)
+            except Exception as e:
+                app.logger.info('Unknown error in copyNow(self): ' + str(e))
     try:
         gp.check_result(gp.gp_camera_exit(camera))
         app.logger.info('copyNow() ended happily')
