@@ -374,7 +374,7 @@ void printTime()
   {
     now += (rtc.pm()) ? " PM" : " AM"; // Returns true if PM
   }
-  //Serial.print(now + "\r\n");
+  //Serial.print("Timestamp " + now + "\r\n");
 }
 
 
