@@ -52,14 +52,33 @@ Reboot now? [Y/n]:
 
 ## Un-make AP
 
-1. If for some reason you want to revert this AP step, run:
+1. If at any time you want to switch the Pi from being an Access Point to being a wireless client on another network, run:
 ```txt
 sudo -E ./setup.sh noap
 ```
 
-2. Upon completion the script will prompt for a reboot. 
+2. The script will then prompt you to set or reconfirm the WiFi details:
+```txt
+Set your two-letter WiFi country code : AU
+Set the network's SSID                : yourWiFiSSID
+Set the network's Psk (password)      : 12345Password!
+```
+
+3. In the next step you have the option of setting a static IP address and related values. If you respond 'n' to this prompt, the Pi will request a dynamic IP address from the wireless router:
+```txt
+Do you want to assign the Pi a static IP address? [Y/n]: y
+Choose an IP address for the Pi         : 192.168.19.123
+Set the appropriate subnet mask         : 255.255.255.0
+Set the Router IP                       : 192.168.19.1
+Set the DNS Server(s) (space-delimited) : 192.168.19.2
+```
+
+3. Upon completion the script will prompt for a reboot. 
 ```txt
 WARNING: After the next reboot, the Pi will come up as a WiFi *client*
+WARNING: It will attempt to connect to this/these SSIDs: yourWiFiSSID
+WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change
+
 Reboot now? [Y/n]:
 ```
 
