@@ -478,7 +478,7 @@ def thumbnails():
                             try:
                                 (key, val) = line.rstrip('\n').split(' = ')
                                 ThumbsInfo[key] = val
-                             except Exception as e:
+                            except Exception as e:
                                 #Skip over bad line
                                 app.logger.debug('Error in thumbs info file: ' + str(e))   
             #Read the thumb files themselves:
