@@ -475,8 +475,12 @@ def thumbnails():
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if ' = ' in line:
-                            (key, val) = line.rstrip('\n').split(' = ')
-                            ThumbsInfo[key] = val
+                            try:
+                                (key, val) = line.rstrip('\n').split(' = ')
+                                ThumbsInfo[key] = val
+                            except Exception as e:
+                                #Skip over bad line
+                                app.logger.debug('Error in thumbs info file: ' + str(e))   
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 _, imageFileName = os.path.split(FileList[loop])
@@ -1403,6 +1407,8 @@ def createConfigFile(iniFile):
         config.set('Transfer', 'tfrMethod', 'Off')
         config.set('Transfer', 'deleteAfterTransfer', 'Off')
         config.add_section('Copy')
+        config.set('Copy', 'copyDay', 'Daily')
+        config.set('Copy', 'copyHour', '14')
         config.set('Copy', 'deleteAfterCopy', 'Off')
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
@@ -1485,20 +1491,21 @@ def copyNow(self):
             app.logger.info('Unknown error in copyNow(): ' + str(e))
             continue
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
-    filesToCopy = files_to_copy(camera)
-    numberToCopy = len(filesToCopy)
-    app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
-    deleteAfterCopy = getIni()
     thisImage = 0
-    while len(filesToCopy) > 0:
-        try:
-            thisImage += 1
-            self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
-            thisFile = filesToCopy.pop(0)
-            app.logger.info('About to copy file: ' + str(thisFile))
-            copy_files(camera, thisFile, deleteAfterCopy)
-        except Exception as e:
-            app.logger.info('Unknown error in copyNow(self): ' + str(e))
+    filesToCopy = files_to_copy(camera)
+    if filesToCopy:
+        numberToCopy = len(filesToCopy)
+        app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+        deleteAfterCopy = getIni()
+        while len(filesToCopy) > 0:
+            try:
+                thisImage += 1
+                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
+                thisFile = filesToCopy.pop(0)
+                app.logger.info('About to copy file: ' + str(thisFile))
+                copy_files(camera, thisFile, deleteAfterCopy)
+            except Exception as e:
+                app.logger.info('Unknown error in copyNow(self): ' + str(e))
     try:
         gp.check_result(gp.gp_camera_exit(camera))
         app.logger.info('copyNow() ended happily')
