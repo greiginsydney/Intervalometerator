@@ -188,12 +188,7 @@ def customisation():
     loc = cache.get('locationName')
     if loc is None:
         #The cache is empty? Read the location from the Ini file
-        config = configparser.ConfigParser({'locationName' : 'Intervalometerator'})
-        config.read(iniFile)
-        try:
-            loc = config.get('Global', 'locationName') #This will fail the VERY first time the script runs
-        except:
-            loc = 'Intervalometerator'
+        loc = getIni('Global', 'locationName', 'string', 'Intvlm8r')
         cache.set('locationName', loc, timeout = 0)
     return dict (locationName = loc )
 
