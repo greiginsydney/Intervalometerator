@@ -1417,31 +1417,36 @@ def createConfigFile(iniFile):
     return
 
 
-def getIni():
+def getIni(keySection, keyName, keyType, defaultValue):
     """
-    deleteAfterCopy was added late, so I'm giving it some special handling here,
-    adding it into the file 'on the fly' if it's not already there.
-    TODO: use getIni for all calls to the ini file for a single value
+    Reads a key from the INI file and returns its value.
+    If it doesn't exist, it's created with a default value, which is then returned.
     """
+    returnValue = defaultValue
     try:
         if not os.path.exists(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         config.read(iniFile)
-        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
-    except Exception as e:
+        if 'bool' in keyType:
+            returnValue = config.getboolean(keySection, keyName)
+        else:
+            returnValue = config.get(keySection, keyName)
+    except configparser.Error as e:
+        app.logger.info('getIni() reports key error: ' + str(e))
         #Looks like the flag doesn't exist. Let's add it
         try:
-            if not config.has_section('Copy'):
-                config.add_section('Copy')
-            config.set('Copy', 'deleteAfterCopy', 'Off')
+            if not config.has_section(keySection):
+                config.add_section(keySection)
+            config.set(keySection, keyName, defaultValue)
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
-            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
+            app.logger.debug('Added {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
         except Exception as e:
-            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
-            deleteAfterCopy = False
-    return deleteAfterCopy
+            app.logger.debug('Exception thrown trying to add {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
+    except Exception as e:
+        app.logger.info('Unhandled error in getIni(): ' + str(e))
+    return returnValue
 
 
 @app.route('/trnCopyNow', methods=['POST'])
@@ -1496,7 +1501,7 @@ def copyNow(self):
     if filesToCopy:
         numberToCopy = len(filesToCopy)
         app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
-        deleteAfterCopy = getIni()
+        deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         while len(filesToCopy) > 0:
             try:
                 thisImage += 1
