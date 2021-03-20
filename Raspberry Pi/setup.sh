@@ -34,13 +34,40 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 install_apps ()
 {
 
-	#Ask the admin if they want to NOT install some of the transfer/upload options:
-	echo ""
-	echo "====== Select Upload/Transfer options ======="
-	echo "An 'X' indicates the option will be installed"
-	installSftp=1
-	installDropbox=1
-	installGoogle=1
+	if [ -f www/intvlm8r.old ];
+	then
+		echo ""
+		echo "intvlm8r.old found. Looks like this is an upgrade."
+		echo ""
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
+		then
+			installSftp=1
+		else
+			installSftp=0
+		fi
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("dropbox"))';
+		then
+			installDropbox=1
+		else
+			installDropbox=0
+		fi
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("oauth2client"))';
+		then
+			installGoogle=1
+		else
+			installGoogle=0
+		fi
+		echo "====== Select Upload/Transfer options ======="
+		echo "An 'X' indicates the option is already installed"
+	else
+		#Ask the admin if they want to NOT install some of the transfer/upload options:
+		echo ""
+		echo "====== Select Upload/Transfer options ======="
+		echo "An 'X' indicates the option will be installed"
+		installSftp=1
+		installDropbox=1
+		installGoogle=1
+	fi
 	while true; do
 		echo ""
 		
