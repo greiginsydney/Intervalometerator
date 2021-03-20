@@ -975,13 +975,7 @@ def system():
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
-    config = configparser.ConfigParser()
-    config.read(iniFile)
-    try:
-        templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
-    except Exception as e:
-        app.logger.debug('INI file error reading: ' + str(e))
-        templateData['piThumbCount'] = '24'
+    templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
