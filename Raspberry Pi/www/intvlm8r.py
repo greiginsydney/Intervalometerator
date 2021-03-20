@@ -452,11 +452,7 @@ def thumbnails():
         createConfigFile(iniFile)
     config = configparser.ConfigParser()
     config.read(iniFile)
-    try:
-        ThumbsToShow = int(config.get('Global', 'thumbsCount'))
-    except Exception as e:
-        app.logger.debug('INI file error reading: ' + str(e))
-        ThumbsToShow = 24
+    ThumbsToShow = int(getIni('Global', 'thumbsCount', 'int', '24'))
 
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
