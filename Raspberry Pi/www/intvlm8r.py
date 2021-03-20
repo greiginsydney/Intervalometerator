@@ -447,11 +447,6 @@ def thumbnails():
     Had I started with "list_Pi_Images(PI_THUMBS_DIR)", then a missing thumb would result in its main image not being displayed here.
     """
     ThumbFiles = []
-
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
-    config = configparser.ConfigParser()
-    config.read(iniFile)
     ThumbsToShow = int(getIni('Global', 'thumbsCount', 'int', '24'))
 
     try:
@@ -973,8 +968,6 @@ def system():
         'intvlm8rVersion': 'Unknown'
         }
 
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     try:
