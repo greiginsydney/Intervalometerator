@@ -442,6 +442,20 @@ install_website ()
 	fi
 	rm cronTemp
 
+	#midnight time sync
+	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
+
+	if grep -q setTime.py "cronTemp";
+	then
+		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
+	else
+		echo "0 0 * * * /usr/bin/python3 ${HOME}/www/setTime.py midnight 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
+	fi
+	rm cronTemp
+
 	#NTP
 	echo ""
 	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
