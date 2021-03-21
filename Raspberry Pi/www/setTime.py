@@ -27,6 +27,7 @@ import logging
 import os
 import re
 import subprocess
+import sys
 
 LOGFILE_PATH = os.path.expanduser('/home/pi')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
@@ -35,7 +36,7 @@ htmltext = ''
 newTime = 'Unknown'
 
 
-def main():
+def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     log('')
     retryCount = 0
@@ -90,4 +91,4 @@ def log(message):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
