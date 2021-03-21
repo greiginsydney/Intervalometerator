@@ -940,10 +940,13 @@ def system():
         'wakePiTime'     : '',
         'wakePiDuration' : '',
         'rebootSafeWord' : REBOOT_SAFE_WORD,
-        'intvlm8rVersion': 'Unknown'
+        'intvlm8rVersion': 'Unknown',
+        'cameraDateTime' : 'Unknown'
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
+    
+    writeString("WC") # Sends the WAKE command to the Arduino, in prep for the time query commands shortly
 
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
@@ -986,6 +989,16 @@ def system():
     try:
         with open('version', 'r') as versionFile:
             templateData['intvlm8rVersion'] = versionFile.read()
+    except:
+        pass
+    
+    try:
+        camera = gp.Camera()
+        context = gp.gp_context_new()
+        camera.init(context)
+        config = camera.get_config(context)
+        templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
+        gp.check_result(gp.gp_camera_exit(camera))
     except:
         pass
     
