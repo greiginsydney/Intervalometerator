@@ -526,34 +526,7 @@ def camera():
         context = gp.gp_context_new()
         camera.init(context)
         config = camera.get_config(context)
-        cameraTimeAndDate = "Unknown"
-        try:
-            # find the date/time setting config item and get it
-            # name varies with camera driver
-            #   Canon EOS350d - 'datetime'
-            #   PTP - 'd034'
-            for name, fmt in (('datetime', '%Y-%m-%d %H:%M:%S'),
-                              ('datetimeutc', None),
-                              ('d034',     None)):
-                OK, datetime_config = gp.gp_widget_get_child_by_name(config, name)
-                if OK >= gp.GP_OK:
-                    widget_type = gp.check_result(gp.gp_widget_get_type(datetime_config))
-                    if widget_type == gp.GP_WIDGET_DATE:
-                        raw_value = gp.check_result(
-                            gp.gp_widget_get_value(datetime_config))
-                        camera_time = datetime.fromtimestamp(raw_value)
-                    else:
-                        raw_value = gp.check_result(
-                            gp.gp_widget_get_value(datetime_config))
-                        if fmt:
-                            camera_time = datetime.strptime(raw_value, fmt)
-                        else:
-                            camera_time = datetime.utcfromtimestamp(float(raw_value))
-                    cameraTimeAndDate = camera_time.isoformat(' ')
-                    break
-        except Exception as e:
-            app.logger.debug('Error reading camera time and date: ' + str(e))
-            cameraTimeAndDate = "Unknown"   
+        cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
         imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
         wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
         isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
@@ -1143,6 +1116,36 @@ def readRange ( camera, context, group, attribute ):
     except:
         app.logger.debug('readRange Threw')
     return currentValue, options
+
+
+def getCameraTimeAndDate( camera, context, config, returnvalue ):
+    try:
+        # find the date/time setting config item and get it
+        # name varies with camera driver
+        #   Canon EOS350d - 'datetime'
+        #   PTP - 'd034'
+        for name, fmt in (('datetime', '%Y-%m-%d %H:%M:%S'),
+                          ('datetimeutc', None),
+                          ('d034',     None)):
+            OK, datetime_config = gp.gp_widget_get_child_by_name(config, name)
+            if OK >= gp.GP_OK:
+                widget_type = gp.check_result(gp.gp_widget_get_type(datetime_config))
+                if widget_type == gp.GP_WIDGET_DATE:
+                    raw_value = gp.check_result(
+                        gp.gp_widget_get_value(datetime_config))
+                    camera_time = datetime.fromtimestamp(raw_value)
+                else:
+                    raw_value = gp.check_result(
+                        gp.gp_widget_get_value(datetime_config))
+                    if fmt:
+                        camera_time = datetime.strptime(raw_value, fmt)
+                    else:
+                        camera_time = datetime.utcfromtimestamp(float(raw_value))
+                returnvalue = camera_time.isoformat(' ')
+                break
+    except Exception as e:
+        app.logger.debug('Error reading camera time and date: ' + str(e))
+    return returnvalue
 
 
 def list_camera_files(camera, path='/'):
