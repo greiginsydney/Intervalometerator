@@ -147,10 +147,10 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft">Set Pi date/time:</div>
+				<div class="alignleft{% if piNtp == True %} grey-out{% endif %}">Set Pi date/time:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" name="setPiTime" />
+						<input type="checkbox" name="setPiTime"{% if piNtp == True %} DISABLED{% endif %}/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
