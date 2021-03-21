@@ -47,18 +47,6 @@
 <table>
 	<tr>
 		<td>
-			<div class="alignleft">System (Arduino) date:</div>
-			<div class="alignright">{{ arduinoDate }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">System (Arduino) time:</div>
-			<div class="alignright">{{ arduinoTime }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
 			<div class="alignleft">Pi model:</div>
 			<div class="alignright">{{ piModel }}</div>
 		</td>
@@ -128,6 +116,18 @@
 
 <form name="sendTime" method="post" onsubmit="return sendTimeToServer();">
 	<table>
+		<tr>
+			<td>
+				<div class="alignleft">Arduino date/time:</div>
+				<div class="alignright">{{ arduinoDate }} {{ arduinoTime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi date/time:</div>
+				<div class="alignright">{{ piDateTime }}</div>
+			</td>
+		</tr>
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">Current PC date/time is</div>
