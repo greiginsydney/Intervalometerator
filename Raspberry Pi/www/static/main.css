@@ -109,6 +109,11 @@ input[type=radio] {
 	cursor: pointer;
 }
 
+.grey-out{
+	opacity: 0.6;
+	filter: alpha(opacity = 60); /* MSIE */
+}
+
 /* End: General CSS */
 /* ---------------------------------------------------------*/
 /* Start: checkbox */
