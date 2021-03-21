@@ -114,6 +114,30 @@ input[type=radio] {
 	filter: alpha(opacity = 60); /* MSIE */
 }
 
+/* Tooltip container */
+.tooltip {
+	position: relative;
+	display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+	visibility: hidden;
+	width: 200px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	padding: 5px 0;
+	border-radius: 6px;
+	position: absolute;
+	z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+	visibility: visible;
+}
+
 /* End: General CSS */
 /* ---------------------------------------------------------*/
 /* Start: checkbox */
@@ -241,6 +265,7 @@ input[type=radio] {
 	border-style: none;
 }
 
+/* End: radio button */
 /* ---------------------------------------------------------*/
 /* Start: Menu */
 
@@ -291,7 +316,7 @@ input[type=radio] {
 
 /* End: Menu */
 /* ----------------------------------------------------------------------------------*/
-/* Start: Thumbnails. --*/
+/* Start: Thumbnails --*/
 
 .thumb {
   background-color: black;
@@ -321,8 +346,7 @@ input[type=radio] {
   .view { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* END  Thumbs  */
-/* END General CSS */
+/* End: Thumbs  */
 /* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
@@ -374,6 +398,7 @@ input[type=radio] {
 @media screen and (max-width: 900px) {
 
 }
-/* END Mobile Devices */
+/* End: Mobile Devices */
 
-/* The radio buttons & checkbox came from https://www.w3schools.com/howto/howto_css_custom_checkbox.asp*/
+/* The radio buttons & checkbox came from https://www.w3schools.com/howto/howto_css_custom_checkbox.asp */
+/* Tooltip came from here: https://www.w3schools.com/css/css_tooltip.asp */
