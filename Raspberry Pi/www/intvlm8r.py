@@ -1124,7 +1124,7 @@ def getCameraTimeAndDate( camera, context, config, returnvalue ):
         # name varies with camera driver
         #   Canon EOS350d - 'datetime'
         #   PTP - 'd034'
-        for name, fmt in (('datetime', '%Y-%m-%d %H:%M:%S'),
+        for name, fmt in (('datetime', '%Y %b %d %H:%M:%S'),
                           ('datetimeutc', None),
                           ('d034',     None)):
             OK, datetime_config = gp.gp_widget_get_child_by_name(config, name)
@@ -1133,15 +1133,14 @@ def getCameraTimeAndDate( camera, context, config, returnvalue ):
                 if widget_type == gp.GP_WIDGET_DATE:
                     raw_value = gp.check_result(
                         gp.gp_widget_get_value(datetime_config))
-                    camera_time = datetime.fromtimestamp(raw_value)
+                    returnvalue = datetime.fromtimestamp(raw_value).strftime('%Y %b %d %H:%M:%S')
                 else:
-                    raw_value = gp.check_result(
-                        gp.gp_widget_get_value(datetime_config))
+                    raw_value = gp.check_result(gp.gp_widget_get_value(datetime_config))
                     if fmt:
                         camera_time = datetime.strptime(raw_value, fmt)
                     else:
                         camera_time = datetime.utcfromtimestamp(float(raw_value))
-                returnvalue = camera_time.isoformat(' ')
+                    returnvalue = camera_time.isoformat(' ')
                 break
     except Exception as e:
         app.logger.debug('Error reading camera time and date: ' + str(e))
