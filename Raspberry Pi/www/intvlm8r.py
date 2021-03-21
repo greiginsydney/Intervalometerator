@@ -491,6 +491,7 @@ def thumbnails():
 @app.route("/camera")
 @login_required
 def camera():
+    writeString("WC") # Sends the WAKE command to the Arduino
     cameraData = {
         'cameraDate'    : '',
         'focusmode'     : '',
@@ -567,6 +568,7 @@ def camera():
 @login_required
 def cameraPOST():
     """ This page is where you manage all the camera settings."""
+    writeString("WC") # Sends the WAKE command to the Arduino
     try:
         camera = gp.Camera()
         context = gp.gp_context_new()
