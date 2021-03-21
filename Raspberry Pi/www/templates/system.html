@@ -152,10 +152,10 @@
 			</td>
 		</tr>
 		<tr>
-			<td class="noborder ">
+			<td class="noborder">
 				<div class="alignleft{% if piNtp == True %} grey-out tooltip{% endif %}">
 					Set Pi date/time:
-					<span class="tooltiptext">The Pi is sync'd to NTP</span>
+					{% if piNtp == True %}<span class="tooltiptext">The Pi is sync'd to NTP</span>{% endif %}
 				</div>
 				<div class="alignright">
 					<label class="loginChkbox">
