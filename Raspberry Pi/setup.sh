@@ -426,6 +426,7 @@ install_website ()
 		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+		echo "Success: 'cameraTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
 
@@ -439,6 +440,7 @@ install_website ()
 		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+		echo "Success: 'piTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
 
