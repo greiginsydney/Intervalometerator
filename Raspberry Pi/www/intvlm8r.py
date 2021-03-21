@@ -958,6 +958,7 @@ def system():
         'arduinoDate'    : 'Unknown',
         'arduinoTime'    : 'Unknown',
         'piDateTime'     : 'Unknown',
+        'piNtp'          : '',
         'piHostname'     : 'Unknown',
         'piUptime'       : 'Unknown',
         'piModel'        : 'Unknown',
@@ -1000,6 +1001,7 @@ def system():
         pass
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
+    templateData['piNtp'] = checkNTP()
     
     try:
         templateData['piUptime']    = getPiUptime()
@@ -1080,6 +1082,27 @@ def systemPOST():
 
     return redirect(url_for('system'))
 
+
+def checkNTP():
+    try:
+        cmd = ['systemctl', 'is-active', 'systemd-timesyncd']
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            if stdoutdata == 'active':
+                app.logger.debug('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP')
+                return True
+            else:
+                app.logger.debug('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP')
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.debug('systemd-timesyncd error = ' + str(stderrdata))
+            return True
+    except Exception as e:
+        app.logger.debug('Unhandled systemd-timesyncd error: ' + str(e))
+        return True
+    return False
 
 
 def readValue ( camera, attribute ):
