@@ -957,6 +957,7 @@ def system():
         'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
         'arduinoTime'    : 'Unknown',
+        'piDateTime'     : 'Unknown',
         'piHostname'     : 'Unknown',
         'piUptime'       : 'Unknown',
         'piModel'        : 'Unknown',
@@ -998,6 +999,8 @@ def system():
     except:
         pass
 
+    templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
+    
     try:
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
