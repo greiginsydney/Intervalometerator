@@ -237,6 +237,8 @@ var piHour = document.getElementById("wakePiTime");
 var piMinutes = document.getElementById("piMinutes");
 piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
+var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+	
 function update_time()
 {
 	var refresh=1000; // Refresh rate in milliseconds
@@ -246,12 +248,17 @@ function update_time()
 function sendTimeToServer()
 {
 	var today = new Date();
+	//This is what we send to the Pi & Arduino:
 	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
 	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
 	var dateTime = date + time;
 	document.forms["sendTime"]["SyncSystem"].value = dateTime;
-	var options = { year: 'numeric', month: 'short', day: 'numeric', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'};
-	document.getElementById("now").innerHTML = today.toLocaleString('en-AU', options); // Customise (or customIZE) as appropriate for your locale
+	
+	//This is what we display on-screen:
+	var displayedDateTime = today.getFullYear() + ' ' + short_month[today.getMonth()] + ' ' + ('0' + (today.getDate())).slice(-2)
+	displayedDateTime += ' ' + ('0' + (today.getHours())).slice(-2) + ':' + ('0' + (today.getMinutes())).slice(-2) + ':' + ('0' + (today.getSeconds())).slice(-2);
+	document.getElementById("now").innerHTML = displayedDateTime;
+
 	update_time();
 	}
 
