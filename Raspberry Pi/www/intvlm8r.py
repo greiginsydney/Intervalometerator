@@ -979,7 +979,7 @@ def system():
         pass
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
-    templateData['piNtp'] = checkNTP()
+    templateData['piNtp'] = checkNTP(None)
     
     try:
         templateData['piUptime']    = getPiUptime()
@@ -1071,26 +1071,24 @@ def systemPOST():
     return redirect(url_for('system'))
 
 
-def checkNTP():
+def checkNTP(returnvalue):
     try:
-        cmd = ['systemctl', 'is-active', 'systemd-timesyncd']
+        cmd = ['/bin/systemctl', 'is-active', 'systemd-timesyncd']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
             if stdoutdata == 'active':
-                app.logger.debug('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP')
-                return True
+                app.logger.info('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP')
+                returnvalue = True
             else:
-                app.logger.debug('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP')
+                app.logger.info('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP')
         if stderrdata:
             stderrdata = stderrdata.strip()
             app.logger.debug('systemd-timesyncd error = ' + str(stderrdata))
-            return True
     except Exception as e:
         app.logger.debug('Unhandled systemd-timesyncd error: ' + str(e))
-        return True
-    return False
+    return returnvalue
 
 
 def readValue ( camera, attribute ):
