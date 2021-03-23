@@ -868,9 +868,47 @@ test_install ()
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
 	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
 	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
+	grep -q "i2c_arm_baudrate" /boot/config.txt && echo "PASS: i2c_arm_baudrate is present in /boot/config.txt" || echo "FAIL: i2c_arm_baudrate not present in /boot/config.txt"
 	echo ''
 	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
 	i2cdetect -y 1
+	echo ''
+	# Test for ap/noap mode:
+	ap_test=0
+	if systemctl --all --type service | grep -q "dnsmasq";
+	then
+		$ap_test=$((ap_test+1))
+	fi
+	if systemctl --all --type service | grep -q "hostapd";
+	then
+		$ap_test=$((ap_test+2))
+	fi
+	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
+	
+	case $ap_test in
+		(0)
+			echo 'PASS: The Pi is NOT an AP'
+			;;
+		(1)
+			echo 'FAIL: dnsmasq running alone. hostapd should also be running for the Pi to be an AP'
+			;;
+		(2)
+			echo 'FAIL: hostapd running alone. dnsmasq should also be running for the Pi to be an AP'
+			;;
+		(3)
+			echo 'FAIL: hostapd & dnsmasq are installed, but hostapd.conf is missing'
+			;;
+		(4)
+			echo 'FAIL: hostapd.conf is present but hostapd & dnsmasq are missing'
+			;;
+		(7)
+			echo 'PASS: hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP'
+			;;
+	esac
+	echo ''
+	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 }
 
 
