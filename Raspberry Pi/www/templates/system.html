@@ -145,7 +145,7 @@
 				<div class="alignleft">Set Arduino date/time:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" name="setArduinoTime" />
+						<input type="checkbox" id="setArduinoTime" name="setArduinoTime" onchange="newSetTimeSelected(this.id)"/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
@@ -159,7 +159,7 @@
 				</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" name="setPiTime"{% if piNtp == True %} DISABLED{% endif %}/>
+						<input type="checkbox" id="setPiTime" name="setPiTime" onchange="newSetTimeSelected(this.id)"{% if piNtp == True %} DISABLED{% endif %}/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
@@ -170,7 +170,7 @@
 				<div class="alignleft">Set camera date/time:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" name="setCameraTime" />
+						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
@@ -178,7 +178,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<button name="SyncSystem" type="submit" class="hwbutton" value="SetPiTime">Set date &amp; time</button>
+				<button name="SyncSystem" type="submit" class="hwbutton" id="setDateTimeButton" value="SetDateTime">Set date &amp; time</button>
 			</td>
 		</tr>
 	</table>
@@ -226,10 +226,17 @@ var SelectionBits = new Array();
 SelectionBits["wakePiTime"]     = 1;
 SelectionBits["wakePiDuration"] = 2;
 
+var SetTimeSelectionByte = 0;
+var SetTimeSelectionBits = new Array();
+SetTimeSelectionBits["setArduinoTime"]     = 1;
+SetTimeSelectionBits["setPiTime"] = 2;
+SetTimeSelectionBits["setCameraTime"] = 4;
+
 // This drives the default display on load:
 document.getElementById("submitLocation").disabled = true;
 document.getElementById("submitThumbsCount").disabled = true;
 document.getElementById("submitWakePi").disabled = true;
+document.getElementById("setDateTimeButton").disabled = true;
 document.getElementById("submitReboot").disabled = true;
 
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
@@ -238,7 +245,7 @@ var piMinutes = document.getElementById("piMinutes");
 piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
 var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
-	
+
 function update_time()
 {
 	var refresh=1000; // Refresh rate in milliseconds
@@ -307,7 +314,22 @@ function newSelected(id)
 	}
 	lightButtons();
 }
-	
+
+function newSetTimeSelected(id)
+{
+	var option = document.getElementById(id);
+
+	if (option.checked == true)
+	{
+		SetTimeSelectionByte = SetTimeSelectionByte | SetTimeSelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SetTimeSelectionByte = SetTimeSelectionByte ^ SetTimeSelectionBits[id]; //XOR turns it off
+	}
+	lightSetTimeButton();
+}
+
 function newRebootText(id)
 {
 	var option = document.getElementById(id);
@@ -321,7 +343,7 @@ function newRebootText(id)
 		button.disabled  = true;
 	}
 }
-	
+
 function lightButtons()
 {
 	if (SelectionByte == 0)
@@ -331,6 +353,18 @@ function lightButtons()
 	else
 	{
 		document.getElementById("submitWakePi").disabled  = false;
+	}
+}
+
+function lightSetTimeButton()
+{
+	if (SetTimeSelectionByte == 0)
+	{
+		document.getElementById("setDateTimeButton").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("setDateTimeButton").disabled  = false;
 	}
 }
 
