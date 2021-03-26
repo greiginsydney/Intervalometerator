@@ -1057,8 +1057,30 @@ def systemPOST():
         writeString("SP=" + WakePiHour + str(request.form.get('wakePiDuration')))
 
     if 'SyncSystem' in request.form:
-        app.logger.debug('Yes we got the SyncSystem button & value ' + str(request.form.get('SyncSystem')))
-        writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new time and date to the Arduino
+        newTime = str(request.form.get('SyncSystem'))
+        app.logger.debug('Yes we got the SyncSystem button & value ' + newTime)
+        if request.form.get('setArduinoTime'):
+            app.logger.debug('Checked: setArduinoTime')
+            writeString("ST=" + newTime) # Send the new time and date to the Arduino
+        if request.form.get('setPiTime'):
+            app.logger.debug('Checked: setPiTime' )
+            setTime(datetime.strptime(newTime,'%Y%m%d%H%M%S'))
+        if request.form.get('setCameraTime'):
+            app.logger.debug('Checked: setCameraTime')
+            writeString("WC")
+            try:
+                camera = gp.Camera()
+                context = gp.gp_context_new()
+                camera.init(context)
+                config = camera.get_config(context)
+                if setCameraTimeAndDate(camera, config, newTime):
+                    # apply the changed config
+                    camera.set_config(config)
+                else:
+                    app.logger.debug('Failed to setCameraTimeAndDate')
+                camera.exit()
+            except:
+                pass
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
@@ -1158,6 +1180,42 @@ def getCameraTimeAndDate( camera, context, config, returnvalue ):
     except Exception as e:
         app.logger.debug('Error reading camera time and date: ' + str(e))
     return returnvalue
+
+
+def setCameraTimeAndDate(camera, config, newTimeDate):
+    """
+    Straight out of Jim's examples again, this time from "set-camera-clock.py"
+    """
+    abilities = camera.get_abilities()
+    # get configuration tree
+    if abilities.model == 'Canon EOS 100D':
+        OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
+        if OK >= gp.GP_OK:
+            app.logger.debug('Camera time set fn 1')
+            now = datetime.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            epochTime = int(time.mktime(now))
+            date_config.set_value(epochTime)
+            return True
+    OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
+    if OK >= gp.GP_OK:
+        app.logger.debug('Camera time set fn 2')
+        sync_config.set_value(1)
+        return True
+    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
+    if OK >= gp.GP_OK:
+        widget_type = date_config.get_type()
+        if widget_type == gp.GP_WIDGET_DATE:
+            app.logger.debug('Camera time set fn 3')
+            now = datetime.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            epochTime = int(time.mktime(now))
+            date_config.set_value(epochTime)
+        else:
+            app.logger.debug('Camera time set fn 4')
+            now = datetime.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
+            date_config.set_value(newNow)
+        return True
+    return False
 
 
 def list_camera_files(camera, path='/'):
