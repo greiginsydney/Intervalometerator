@@ -1188,14 +1188,13 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
     """
     abilities = camera.get_abilities()
     # get configuration tree
-    if abilities.model == 'Canon EOS 100D':
-        OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
-        if OK >= gp.GP_OK:
-            app.logger.debug('Camera time set fn 1')
-            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-            epochTime = int(time.mktime(now))
-            date_config.set_value(epochTime)
-            return True
+    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
+    if OK >= gp.GP_OK:
+        app.logger.debug('Camera time set fn 1')
+        now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+        epochTime = int(time.mktime(now))
+        date_config.set_value(epochTime)
+        return True
     OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
     if OK >= gp.GP_OK:
         app.logger.debug('Camera time set fn 2')
