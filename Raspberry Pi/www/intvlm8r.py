@@ -1184,7 +1184,7 @@ def getCameraTimeAndDate( camera, context, config, returnvalue ):
 
 def setCameraTimeAndDate(camera, config, newTimeDate):
     """
-    Straight out of Jim's examples again, this time from "set-camera-clock.py"
+    Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
     """
     abilities = camera.get_abilities()
     # get configuration tree
@@ -1195,11 +1195,6 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
         epochTime = int(time.mktime(now))
         date_config.set_value(epochTime)
         return True
-    OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
-    if OK >= gp.GP_OK:
-        app.logger.debug('Camera time set fn 2')
-        sync_config.set_value(1)
-        return True
     OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
     if OK >= gp.GP_OK:
         widget_type = date_config.get_type()
@@ -1207,6 +1202,7 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
             app.logger.debug('Camera time set fn 3')
             now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
             epochTime = int(time.mktime(now))
+            app.logger.debug('epochTime = {0}'.format(epochTime))
             date_config.set_value(epochTime)
         else:
             app.logger.debug('Camera time set fn 4')
