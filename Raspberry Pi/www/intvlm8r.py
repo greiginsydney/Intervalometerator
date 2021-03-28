@@ -518,7 +518,8 @@ def camera():
         'shutoptions'   : '',
         'expselected'   : '',
         'expoptions'    : '',
-        'piPreviewFile' : ''
+        'piPreviewFile' : '',
+        'cameraMfr'     : 'Unknown'
         }
 
     args = request.args.to_dict()
@@ -537,16 +538,24 @@ def camera():
         camera.init(context)
         config = camera.get_config(context)
         cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
-        imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
-        if not imgfmtoptions:
-            #try 'imagequality'
+        cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
+        if 'Nikon' in cameraMfr:
+            cameraMfr = 'Nikon'
+            cameraData['cameraMfr'] = 'Nikon'
+        elif 'Canon' in cameraMfr:
+            cameraMfr = 'Canon'
+            cameraData['cameraMfr'] = 'Canon'
+        if (cameraMfr == 'Nikon'):
             imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
+            apselected, apoptions           = readRange (camera, context, 'capturesettings', 'f-number')
+            cameraData['exposuremode']      = readValue (config, 'expprogram')
+        else:
+            imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
+            apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
+            cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+        #Attributes generic to all cameras:
         wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
         isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
-        apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
-        if not apoptions:
-            #Try "f-number"
-            apselected, apoptions       = readRange (camera, context, 'capturesettings', 'f-number')
         shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
         expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
 
