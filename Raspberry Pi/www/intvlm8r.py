@@ -548,6 +548,9 @@ def camera():
         cameraData['cameraDate']    = cameraTimeAndDate
         cameraData['focusmode']     = readValue (config, 'focusmode')
         cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
+        if (cameraData['exposuremode'] == "Not available"):
+            #try "expprogram"
+            cameraData['exposuremode']  = readValue (config, 'expprogram')
         cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
         cameraData['imgfmtselected']= imgfmtselected
         cameraData['imgfmtoptions'] = imgfmtoptions
