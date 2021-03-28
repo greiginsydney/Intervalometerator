@@ -1163,8 +1163,8 @@ def readRange ( camera, context, group, attribute ):
                     except:
                         pass
                         #break   #We have found and extracted the attribute we were seeking
-    except:
-        app.logger.debug('readRange Threw')
+    except Exception as e:
+        app.logger.debug('readRange threw: ' + str(e))
     return currentValue, options
 
 
