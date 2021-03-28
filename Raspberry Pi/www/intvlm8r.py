@@ -338,6 +338,15 @@ def main():
         gp.check_result(gp.gp_camera_exit(camera))
         templateData['cameraModel']              = abilities.model
         templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+        if (templateData['cameraLens'] == 'Unknown'):
+            #Try to build this from focal length:
+            focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
+            focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+            if (focalMin == focalMax):
+                templateData['cameraLens'] = focalMin
+            else:
+                focalMin = focalMin.replace(" mm", "")
+                templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
         templateData['fileCount']                = fileCount
         templateData['lastImage']                = lastImage
         templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
