@@ -19,7 +19,13 @@
 				<div class="alignright">{{ focusmode }}</div>
 			</td>
 		</tr>
-		<tr{{ (' class="red"' | safe) if (exposuremode != "Manual" and exposuremode != "AV") }}>
+		{% if exposuremode == "Not available" %}
+		<tr>
+		{% elif (exposuremode != "Manual" and exposuremode != "AV" and exposuremode != "M" and exposuremode != "A") %}
+		<tr class="red">
+		{% else %}
+		<tr>
+		{% endif %}
 			<td>
 				<div class="alignleft">Exposure mode:</div>
 				<div class="alignright">{{ exposuremode }}</div>
