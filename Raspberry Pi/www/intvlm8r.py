@@ -604,9 +604,24 @@ def cameraPOST():
 
         if request.form['CamSubmit'] == 'apply':
             app.logger.debug('-- Camera Apply selected')
-            #This *does* write a new setting to the camera:
-            node = config.get_child_by_name('imageformat') #
-            node.set_value(str(request.form.get('img')))
+            cameraMfr = request.form.get('cameraMfr')
+            app.logger.debug('cameraMfr = {0}'.format(cameraMfr))
+            if cameraMfr == 'Canon':
+                #This *does* write a new setting to the camera:
+                node = config.get_child_by_name('imageformat') #
+                node.set_value(str(request.form.get('img')))
+                if (request.form.get('aperture') != 'implicit auto'):
+                    node = config.get_child_by_name('aperture')
+                    node.set_value(str(request.form.get('aperture')))
+            elif cameraMfr == 'Nikon':
+                #This *does* write a new setting to the camera:
+                node = config.get_child_by_name('imagequality') #
+                node.set_value(str(request.form.get('img')))
+                if (request.form.get('aperture') != 'implicit auto'):
+                    node = config.get_child_by_name('f-stop')
+                    node.set_value(str(request.form.get('aperture')))
+            else:
+                pass
             # Don't bother sending any of the "read only" settings:
             if (request.form.get('wb') != None):
                 node = config.get_child_by_name('whitebalance')
@@ -614,9 +629,6 @@ def cameraPOST():
             if (request.form.get('iso') != None):
                 node = config.get_child_by_name('iso')
                 node.set_value(str(request.form.get('iso')))
-            if (request.form.get('aperture') != 'implicit auto'):
-                node = config.get_child_by_name('aperture')
-                node.set_value(str(request.form.get('aperture')))
             if (request.form.get('shutter') != "auto"):
                 node = config.get_child_by_name('shutterspeed')
                 node.set_value(str(request.form.get('shutter')))
