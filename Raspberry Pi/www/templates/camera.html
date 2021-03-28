@@ -25,7 +25,9 @@
 				<div class="alignright">{{ exposuremode }}</div>
 			</td>
 		</tr>
-		{% if autopoweroff|int == 0 or autopoweroff|int > 300 %}
+		{% if autopoweroff == "Not available" %}
+		<tr>
+		{% elif autopoweroff|int == 0 or autopoweroff|int > 300 %}
 		<tr class="red">
 		{% elif autopoweroff|int > 60 %}
 		<tr class="orange">
