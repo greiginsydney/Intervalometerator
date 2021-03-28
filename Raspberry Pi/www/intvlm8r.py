@@ -541,6 +541,9 @@ def camera():
         wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
         isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
         apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
+        if not apoptions:
+            #Try "f-number"
+            apselected, apoptions       = readRange (camera, context, 'capturesettings', 'f-number')
         shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
         expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
 
