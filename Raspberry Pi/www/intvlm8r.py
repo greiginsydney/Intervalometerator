@@ -1119,7 +1119,7 @@ def readValue ( camera, attribute ):
         object = gp.check_result(gp.gp_widget_get_child_by_name(camera, attribute))
         value = gp.check_result(gp.gp_widget_get_value(object))
     except:
-        value = '<Error>'
+        value = 'Not available'
     return value
 
 
