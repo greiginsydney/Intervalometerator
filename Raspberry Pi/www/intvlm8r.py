@@ -538,6 +538,9 @@ def camera():
         config = camera.get_config(context)
         cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
         imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
+        if not imgfmtoptions:
+            #try 'imagequality'
+            imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
         wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
         isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
         apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
