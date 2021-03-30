@@ -618,7 +618,7 @@ def cameraPOST():
                 node = config.get_child_by_name('imagequality') #
                 node.set_value(str(request.form.get('img')))
                 if (request.form.get('aperture') != 'implicit auto'):
-                    node = config.get_child_by_name('f-stop')
+                    node = config.get_child_by_name('f-number')
                     node.set_value(str(request.form.get('aperture')))
             else:
                 pass
