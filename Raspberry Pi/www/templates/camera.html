@@ -58,13 +58,13 @@
 			</td>
 		</tr>
 	{% endif %}
-	</table>	
+	</table>
 </form>
 
 
 <form method="post">
 	<table>
-		<tr>
+		<tr{% if imgfmtoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft"><label for="img">Image format:</label></div>
 			<div class="alignright">
@@ -86,13 +86,13 @@
 					<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
 				{% endfor %}
 				{% else %}
-					<option disabled selected value style="display:none">n/a</option>
+					<option disabled selected value="n/a" style="display:none">n/a</option>
 				{% endif %}
 				</select>
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if isooptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft"><label for="iso">ISO:</label></div>
 			<div class="alignright">
@@ -104,7 +104,7 @@
 			</div>
 			</td>
 		</tr>
-		<tr{% if exposuremode == "S" or exposuremode == "TV" or (apoptions|length == 1) %} class="grey"{% endif %}>
+		<tr{% if exposuremode == "S" or exposuremode == "TV" or (apoptions|length <= 1) %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft"><label for="aperture">Aperture:</label></div>
 			<div class="alignright">
@@ -116,7 +116,7 @@
 			</div>
 			</td>
 		</tr>
-		<tr{% if exposuremode == "A" or exposuremode == "AV" or (shutoptions|length == 1) %} class="grey"{% endif %}>
+		<tr{% if exposuremode == "A" or exposuremode == "AV" or (shutoptions|length <= 1) %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft"><label for="shutter">Shutter speed:</label></div>
 			<div class="alignright">
@@ -137,8 +137,8 @@
 					{% for exp in expoptions %}
 					<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
 					{% endfor %}
-				{% else %}	
-					<option disabled selected value style="display:none">n/a</option>
+				{% else %}
+					<option disabled selected value="n/a" style="display:none">n/a</option>
 				{% endif %}
 				</select>
 			</div>
@@ -146,14 +146,14 @@
 		</tr>
 	</table>
 
-{% if piPreviewFile != '' %}	
+{% if piPreviewFile != '' %}
 <table>
 	<tr>
 		<td>
 		<a href="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" target="_blank"><img src="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" alt="preview image" width="100%"></a>
 		</td>
 	</tr>
-</table> 
+</table>
 {% endif %}
 
 <table class="noborder">
@@ -222,13 +222,18 @@ function lightButtons()
 function checkWhiteBalance()
 {
 	var wbselected = document.getElementById("wb");
+	var wbRow = document.getElementById("wbRow")
 	if (wbselected.value == "Auto")
 	{
-		document.getElementById("wbRow").className = "red";
+		wbRow.className = "red";
+	}
+	else if (wbselected.value == "n/a")
+	{
+		wbRow.className = "grey";
 	}
 	else
 	{
-		document.getElementById("wbRow").className = "";
+		wbRow.className = "";
 	}
 }
 </script>
