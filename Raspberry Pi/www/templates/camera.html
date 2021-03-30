@@ -104,31 +104,31 @@
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if exposuremode == "S" or exposuremode == "TV" or (apoptions|length == 1) %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft">Aperture:</div>
 			<div class="alignright">
 				<select name="aperture" id="aperture" onchange="newSelected(this.id)">
 					{% for aperture in apoptions %}
-						<option value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
+						<option {% if exposuremode == "S" or exposuremode == "TV" or aperture == "implicit auto"%} disabled{% endif %} value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
 					{% endfor %}
 				</select>
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if exposuremode == "A" or exposuremode == "AV" or (shutoptions|length == 1) %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft">Shutter speed:</div>
 			<div class="alignright">
 				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
 					{% for shutterspeed in shutoptions %}
-						<option value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
+						<option {% if exposuremode == "A" or exposuremode == "AV" or shutterspeed == "auto" %} disabled{% endif %} value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
 					{% endfor %}
 				</select>
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if expoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft">Exposure comp:</div>
 			<div class="alignright">
