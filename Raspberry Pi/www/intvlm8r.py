@@ -610,14 +610,14 @@ def cameraPOST():
                 #This *does* write a new setting to the camera:
                 node = config.get_child_by_name('imageformat') #
                 node.set_value(str(request.form.get('img')))
-                if (request.form.get('aperture') != 'implicit auto'):
+                if (request.form.get('aperture') != None):
                     node = config.get_child_by_name('aperture')
                     node.set_value(str(request.form.get('aperture')))
             elif cameraMfr == 'Nikon':
                 #This *does* write a new setting to the camera:
                 node = config.get_child_by_name('imagequality') #
                 node.set_value(str(request.form.get('img')))
-                if (request.form.get('aperture') != 'implicit auto'):
+                if (request.form.get('aperture') != None):
                     node = config.get_child_by_name('f-number')
                     node.set_value(str(request.form.get('aperture')))
             else:
@@ -629,7 +629,7 @@ def cameraPOST():
             if (request.form.get('iso') != None):
                 node = config.get_child_by_name('iso')
                 node.set_value(str(request.form.get('iso')))
-            if (request.form.get('shutter') != "auto"):
+            if (request.form.get('shutter') != None):
                 node = config.get_child_by_name('shutterspeed')
                 node.set_value(str(request.form.get('shutter')))
             if (request.form.get('exp') != None):
