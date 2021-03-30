@@ -59,6 +59,10 @@ a {
 	background-color: #FFFFFF;
 }
 
+.grey {
+	background-color: #DCDCDC; /* gainsboro */
+}
+
 .alignleft {
 	float: left;
 }
