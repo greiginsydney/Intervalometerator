@@ -66,7 +66,7 @@
 	<table>
 		<tr>
 			<td>
-			<div class="alignleft">Image format:</div>
+			<div class="alignleft"><label for="img">Image format:</label></div>
 			<div class="alignright">
 				<select name="img" id="img" onchange="newSelected(this.id)">
 					{% for img in imgfmtoptions %}
@@ -78,7 +78,7 @@
 		</tr>
 		<tr id="wbRow">
 			<td>
-			<div class="alignleft">White balance:</div>
+			<div class="alignleft"><label for="wb">White balance:</label></div>
 			<div class="alignright">
 				<select name="wb" id="wb" onchange="newSelected(this.id)">
 				{% if wboptions %}
@@ -94,7 +94,7 @@
 		</tr>
 		<tr>
 			<td>
-			<div class="alignleft">ISO:</div>
+			<div class="alignleft"><label for="iso">ISO:</label></div>
 			<div class="alignright">
 				<select name="iso" id="iso" onchange="newSelected(this.id)">
 					{% for iso in isooptions %}
@@ -106,7 +106,7 @@
 		</tr>
 		<tr{% if exposuremode == "S" or exposuremode == "TV" or (apoptions|length == 1) %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Aperture:</div>
+			<div class="alignleft"><label for="aperture">Aperture:</label></div>
 			<div class="alignright">
 				<select name="aperture" id="aperture" onchange="newSelected(this.id)">
 					{% for aperture in apoptions %}
@@ -118,7 +118,7 @@
 		</tr>
 		<tr{% if exposuremode == "A" or exposuremode == "AV" or (shutoptions|length == 1) %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Shutter speed:</div>
+			<div class="alignleft"><label for="shutter">Shutter speed:</label></div>
 			<div class="alignright">
 				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
 					{% for shutterspeed in shutoptions %}
@@ -130,7 +130,7 @@
 		</tr>
 		<tr{% if expoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Exposure comp:</div>
+			<div class="alignleft"><label for="exp">Exposure comp:</label></div>
 			<div class="alignright">
 				<select name="exp" id="exp" onchange="newSelected(this.id)">
 				{% if expoptions %}
