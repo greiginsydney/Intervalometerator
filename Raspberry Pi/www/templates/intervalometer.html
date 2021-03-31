@@ -1,7 +1,7 @@
 {% extends "index.html" %}
 {% block content %}
 
-<form method="POST">
+<form method="POST" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<th>Intervalometer Settings</th>
