@@ -596,6 +596,7 @@ def camera():
 def cameraPOST():
     """ This page is where you manage all the camera settings."""
     writeString("WC") # Sends the WAKE command to the Arduino
+    preview = None
     try:
         camera = gp.Camera()
         context = gp.gp_context_new()
@@ -642,7 +643,7 @@ def cameraPOST():
             app.logger.debug('-- Camera Preview selected')
             getPreviewImage(camera, context, config)
             gp.check_result(gp.gp_camera_exit(camera))
-            return redirect(url_for('camera', preview=1))
+            preview = 1
 
     except gp.GPhoto2Error as e:
         app.logger.debug('Camera POST error: ' + e.string)
@@ -650,7 +651,7 @@ def cameraPOST():
     except Exception as e:
         app.logger.debug('Unknown camera POST error: ' + str(e))
 
-    return redirect(url_for('camera'))
+    return redirect(url_for('camera', preview = preview))
 
 
 @app.route("/intervalometer")
