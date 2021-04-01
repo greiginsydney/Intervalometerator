@@ -317,16 +317,12 @@ def main():
 
     # Camera comms:
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-
+        camera, context, config = connectCamera()
         storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
         if len(storage_info) == 0:
             flash('No storage info available') # The memory card is missing or faulty
 
         abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
-        config = camera.get_config(context)
         files = list_camera_files(camera)
         if not files:
             fileCount = 0
@@ -533,10 +529,7 @@ def camera():
         return redirect(url_for('camera'))
 
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
+        camera, context, config = connectCamera()
         cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
         cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
         if 'Nikon' in cameraMfr:
@@ -598,10 +591,7 @@ def cameraPOST():
     writeString("WC") # Sends the WAKE command to the Arduino
     preview = None
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
+        camera, context, config = connectCamera()
 
         if request.form['CamSubmit'] == 'apply':
             app.logger.debug('-- Camera Apply selected')
@@ -672,10 +662,7 @@ def intervalometer():
 
     # Camera comms:
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
+        camera, context, config = connectCamera()
         #Find the capturetarget config item. (TY Jim.)
         capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
         currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
@@ -1035,10 +1022,7 @@ def system():
         pass
     
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
+        camera, context, config = connectCamera()
         templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
         gp.check_result(gp.gp_camera_exit(camera))
     except:
@@ -1109,10 +1093,7 @@ def systemPOST():
             app.logger.debug('Checked: setCameraTime')
             writeString("WC")
             try:
-                camera = gp.Camera()
-                context = gp.gp_context_new()
-                camera.init(context)
-                config = camera.get_config(context)
+                camera, context, config = connectCamera()
                 if setCameraTimeAndDate(camera, config, newTime):
                     # apply the changed config
                     camera.set_config(config)
