@@ -582,52 +582,48 @@ def cameraPOST():
     preview = None
     try:
         camera, context, config = connectCamera()
+        if camera:
+            if request.form['CamSubmit'] == 'apply':
+                app.logger.debug('-- Camera Apply selected')
+                cameraMfr = request.form.get('cameraMfr')
+                app.logger.debug('cameraMfr = {0}'.format(cameraMfr))
+                if cameraMfr == 'Canon':
+                    #This *does* write a new setting to the camera:
+                    node = config.get_child_by_name('imageformat') #
+                    node.set_value(str(request.form.get('img')))
+                    if (request.form.get('aperture') != None):
+                        node = config.get_child_by_name('aperture')
+                        node.set_value(str(request.form.get('aperture')))
+                elif cameraMfr == 'Nikon':
+                    #This *does* write a new setting to the camera:
+                    node = config.get_child_by_name('imagequality') #
+                    node.set_value(str(request.form.get('img')))
+                    if (request.form.get('aperture') != None):
+                        node = config.get_child_by_name('f-number')
+                        node.set_value(str(request.form.get('aperture')))
+                else:
+                    pass
+                # Don't bother sending any of the "read only" settings:
+                if (request.form.get('wb') != None):
+                    node = config.get_child_by_name('whitebalance')
+                    node.set_value(str(request.form.get('wb')))
+                if (request.form.get('iso') != None):
+                    node = config.get_child_by_name('iso')
+                    node.set_value(str(request.form.get('iso')))
+                if (request.form.get('shutter') != None):
+                    node = config.get_child_by_name('shutterspeed')
+                    node.set_value(str(request.form.get('shutter')))
+                if (request.form.get('exp') != None):
+                    node = config.get_child_by_name('exposurecompensation')
+                    node.set_value(str(request.form.get('exp')))
+                camera.set_config(config, context)
+                gp.check_result(gp.gp_camera_exit(camera))
 
-        if request.form['CamSubmit'] == 'apply':
-            app.logger.debug('-- Camera Apply selected')
-            cameraMfr = request.form.get('cameraMfr')
-            app.logger.debug('cameraMfr = {0}'.format(cameraMfr))
-            if cameraMfr == 'Canon':
-                #This *does* write a new setting to the camera:
-                node = config.get_child_by_name('imageformat') #
-                node.set_value(str(request.form.get('img')))
-                if (request.form.get('aperture') != None):
-                    node = config.get_child_by_name('aperture')
-                    node.set_value(str(request.form.get('aperture')))
-            elif cameraMfr == 'Nikon':
-                #This *does* write a new setting to the camera:
-                node = config.get_child_by_name('imagequality') #
-                node.set_value(str(request.form.get('img')))
-                if (request.form.get('aperture') != None):
-                    node = config.get_child_by_name('f-number')
-                    node.set_value(str(request.form.get('aperture')))
-            else:
-                pass
-            # Don't bother sending any of the "read only" settings:
-            if (request.form.get('wb') != None):
-                node = config.get_child_by_name('whitebalance')
-                node.set_value(str(request.form.get('wb')))
-            if (request.form.get('iso') != None):
-                node = config.get_child_by_name('iso')
-                node.set_value(str(request.form.get('iso')))
-            if (request.form.get('shutter') != None):
-                node = config.get_child_by_name('shutterspeed')
-                node.set_value(str(request.form.get('shutter')))
-            if (request.form.get('exp') != None):
-                node = config.get_child_by_name('exposurecompensation')
-                node.set_value(str(request.form.get('exp')))
-            camera.set_config(config, context)
-            gp.check_result(gp.gp_camera_exit(camera))
-
-        if request.form['CamSubmit'] == 'preview':
-            app.logger.debug('-- Camera Preview selected')
-            getPreviewImage(camera, context, config)
-            gp.check_result(gp.gp_camera_exit(camera))
-            preview = 1
-
-    except gp.GPhoto2Error as e:
-        app.logger.debug('Camera POST error: ' + e.string)
-        flash(e.string)
+            if request.form['CamSubmit'] == 'preview':
+                app.logger.debug('-- Camera Preview selected')
+                getPreviewImage(camera, context, config)
+                gp.check_result(gp.gp_camera_exit(camera))
+                preview = 1
     except Exception as e:
         app.logger.debug('Unknown camera POST error: ' + str(e))
 
