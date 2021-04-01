@@ -1153,6 +1153,37 @@ def checkNTP(returnvalue):
     return returnvalue
 
 
+def connectCamera():
+    app.logger.debug('== connectCamera ENTERED')
+    retries = 0
+    while True:
+        app.logger.debug('== connectCamera retries = {0}'.format (retries))
+        if retries > 3:
+            app.logger.debug('== connectCamera returning None')
+            return None, None, None
+        try:
+            camera = gp.Camera()
+            context = gp.gp_context_new()
+            camera.init(context)
+            config = camera.get_config(context)
+            break
+        except gp.GPhoto2Error as e:
+            app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
+            if e.string == 'Unknown model':
+                if retries > 1:
+                    app.logger.debug('== connectCamera waking the camera & going again')
+                    writeString("WC") # Sends the WAKE command to the Arduino
+                    time.sleep(2);    # (Adds another second on top of the 0.5s baked into WriteString)
+                else:
+                    app.logger.debug('== connectCamera NOT waking the camera & going again')
+                    time.sleep(2);
+        except Exception as e:
+            app.logger.debug('connectCamera error: ' + str(e))
+        retries += 1
+    app.logger.debug('== connectCamera returning 3 values')
+    return camera, context, config
+
+
 def readValue ( camera, attribute ):
     """ Reads a simple attribute in the camera and returns the value """
     try:
