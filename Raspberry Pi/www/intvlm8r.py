@@ -525,53 +525,49 @@ def camera():
 
     try:
         camera, context, config = connectCamera()
-        cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
-        cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
-        if 'Nikon' in cameraMfr:
-            cameraMfr = 'Nikon'
-            cameraData['cameraMfr'] = 'Nikon'
-        elif 'Canon' in cameraMfr:
-            cameraMfr = 'Canon'
-            cameraData['cameraMfr'] = 'Canon'
-        if (cameraMfr == 'Nikon'):
-            imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
-            apselected, apoptions           = readRange (camera, context, 'capturesettings', 'f-number')
-            cameraData['exposuremode']      = readValue (config, 'expprogram')
-        else:
-            imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
-            apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
-            cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
-        #Attributes generic to all cameras:
-        wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
-        isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
-        shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
-        expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
+        if camera:
+            cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
+            cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
+            if 'Nikon' in cameraMfr:
+                cameraMfr = 'Nikon'
+                cameraData['cameraMfr'] = 'Nikon'
+            elif 'Canon' in cameraMfr:
+                cameraMfr = 'Canon'
+                cameraData['cameraMfr'] = 'Canon'
+            if (cameraMfr == 'Nikon'):
+                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
+                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'f-number')
+                cameraData['exposuremode']      = readValue (config, 'expprogram')
+            else:
+                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
+                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
+                cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+            #Attributes generic to all cameras:
+            wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
+            isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
+            shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
+            expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
 
-        gp.check_result(gp.gp_camera_exit(camera))
-        cameraData['cameraDate']    = cameraTimeAndDate
-        cameraData['focusmode']     = readValue (config, 'focusmode')
-        cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
-        if (cameraData['exposuremode'] == "Not available"):
-            #try "expprogram"
-            cameraData['exposuremode']  = readValue (config, 'expprogram')
-        cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
-        cameraData['imgfmtselected']= imgfmtselected
-        cameraData['imgfmtoptions'] = imgfmtoptions
-        cameraData['wbselected']    = wbselected
-        cameraData['wboptions']     = wboptions
-        cameraData['isoselected']   = isoselected
-        cameraData['isooptions']    = isooptions
-        cameraData['apselected']    = apselected
-        cameraData['apoptions']     = apoptions
-        cameraData['shutselected']  = shutselected
-        cameraData['shutoptions']   = shutoptions
-        cameraData['expselected']   = expselected
-        cameraData['expoptions']    = expoptions
-
-    except gp.GPhoto2Error as e:
-        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
-            flash(e.string)
-            app.logger.debug('Camera GET error: ' + e.string)
+            gp.check_result(gp.gp_camera_exit(camera))
+            cameraData['cameraDate']    = cameraTimeAndDate
+            cameraData['focusmode']     = readValue (config, 'focusmode')
+            cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
+            if (cameraData['exposuremode'] == "Not available"):
+                #try "expprogram"
+                cameraData['exposuremode']  = readValue (config, 'expprogram')
+            cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
+            cameraData['imgfmtselected']= imgfmtselected
+            cameraData['imgfmtoptions'] = imgfmtoptions
+            cameraData['wbselected']    = wbselected
+            cameraData['wboptions']     = wboptions
+            cameraData['isoselected']   = isoselected
+            cameraData['isooptions']    = isooptions
+            cameraData['apselected']    = apselected
+            cameraData['apoptions']     = apoptions
+            cameraData['shutselected']  = shutselected
+            cameraData['shutoptions']   = shutoptions
+            cameraData['expselected']   = expselected
+            cameraData['expoptions']    = expoptions
     except Exception as e:
         app.logger.debug('Unknown camera GET error: ' + str(e))
         
