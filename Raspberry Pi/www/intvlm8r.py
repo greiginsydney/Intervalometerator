@@ -1071,12 +1071,13 @@ def systemPOST():
             app.logger.debug('Checked: setCameraTime')
             try:
                 camera, context, config = connectCamera()
-                if setCameraTimeAndDate(camera, config, newTime):
-                    # apply the changed config
-                    camera.set_config(config)
-                else:
-                    app.logger.debug('Failed to setCameraTimeAndDate')
-                camera.exit()
+                if camera:
+                    if setCameraTimeAndDate(camera, config, newTime):
+                        # apply the changed config
+                        camera.set_config(config)
+                    else:
+                        app.logger.debug('Failed to setCameraTimeAndDate')
+                    camera.exit()
             except:
                 pass
 
