@@ -1000,8 +1000,9 @@ def system():
     
     try:
         camera, context, config = connectCamera()
-        templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
-        gp.check_result(gp.gp_camera_exit(camera))
+        if camera:
+            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
+            gp.check_result(gp.gp_camera_exit(camera))
     except:
         pass
     
