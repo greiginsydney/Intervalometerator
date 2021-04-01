@@ -318,58 +318,54 @@ def main():
     # Camera comms:
     try:
         camera, context, config = connectCamera()
-        storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
-        if len(storage_info) == 0:
-            flash('No storage info available') # The memory card is missing or faulty
-
-        abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
-        files = list_camera_files(camera)
-        if not files:
-            fileCount = 0
-            lastImage = 'n/a'
-        else:
-            fileCount = len(files)
-            info = get_camera_file_info(camera, files[-1]) #Get the last file
-            lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
-        gp.check_result(gp.gp_camera_exit(camera))
-        templateData['cameraModel']              = abilities.model
-        templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
-        if (templateData['cameraLens'] == 'Unknown'):
-            #Try to build this from focal length:
-            focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
-            focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
-            if (focalMin == focalMax):
-                templateData['cameraLens'] = focalMin
+        if camera:
+            storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
+            if len(storage_info) == 0:
+                flash('No storage info available') # The memory card is missing or faulty
+            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            files = list_camera_files(camera)
+            if not files:
+                fileCount = 0
+                lastImage = 'n/a'
             else:
-                focalMin = focalMin.replace(" mm", "")
-                templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
-        templateData['fileCount']                = fileCount
-        templateData['lastImage']                = lastImage
-        templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
+                fileCount = len(files)
+                info = get_camera_file_info(camera, files[-1]) #Get the last file
+                lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
+            gp.check_result(gp.gp_camera_exit(camera))
+            templateData['cameraModel']              = abilities.model
+            templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            if (templateData['cameraLens'] == 'Unknown'):
+                #Try to build this from focal length:
+                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
+                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+                if (focalMin == focalMax):
+                    templateData['cameraLens'] = focalMin
+                else:
+                    focalMin = focalMin.replace(" mm", "")
+                    templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
+            templateData['fileCount']                = fileCount
+            templateData['lastImage']                = lastImage
+            templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
 
-        #Find the capturetarget config item. (TY Jim.)
-        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
-        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
-        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
-        if currentTarget == "Internal RAM":
-            #Change it to "Memory Card"
-            try:
-                newTarget = 1
-                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
-                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
-                gp.check_result(gp.gp_camera_set_config(camera, config))
-                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
-                app.logger.debug('Set captureTarget to "Memory Card" in main')
-            except gp.GPhoto2Error as e:
-                app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
-            except Exception as e:
-                app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
-        templateData['availableShots'] = readValue (config, 'availableshots')
-        gp.check_result(gp.gp_camera_exit(camera))
-    except gp.GPhoto2Error as e:
-        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
-            flash(e.string)
-            app.logger.debug('GPhoto camera error in main: ' + str(e))
+            #Find the capturetarget config item. (TY Jim.)
+            capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+            currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+            #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+            if currentTarget == "Internal RAM":
+                #Change it to "Memory Card"
+                try:
+                    newTarget = 1
+                    newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                    gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                    gp.check_result(gp.gp_camera_set_config(camera, config))
+                    config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                    app.logger.debug('Set captureTarget to "Memory Card" in main')
+                except gp.GPhoto2Error as e:
+                    app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
+                except Exception as e:
+                    app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
+            templateData['availableShots'] = readValue (config, 'availableshots')
+            gp.check_result(gp.gp_camera_exit(camera))
     except Exception as e:
         app.logger.debug('Unknown camera error in main: ' + str(e))
 
