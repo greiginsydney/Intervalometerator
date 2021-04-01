@@ -647,31 +647,26 @@ def intervalometer():
     # Camera comms:
     try:
         camera, context, config = connectCamera()
-        #Find the capturetarget config item. (TY Jim.)
-        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
-        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
-        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
-        if currentTarget == "Internal RAM":
-            #Change it to "Memory Card"
-            try:
-                newTarget = 1
-                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
-                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
-                gp.check_result(gp.gp_camera_set_config(camera, config))
-                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
-                app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
-            except gp.GPhoto2Error as e:
-                app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
-            except Exception as e:
-                app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
-        templateData['availableShots'] = readValue (config, 'availableshots')
-        gp.check_result(gp.gp_camera_exit(camera))
-    except gp.GPhoto2Error as e:
-        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
-            flash(e.string)
-            app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
-        else:
-            app.logger.debug('Nope, camera not awake yet: ' + str(e)) #DEBUG line GREIG. remove before release.
+        if camera:
+            #Find the capturetarget config item. (TY Jim.)
+            capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+            currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+            #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+            if currentTarget == "Internal RAM":
+                #Change it to "Memory Card"
+                try:
+                    newTarget = 1
+                    newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                    gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                    gp.check_result(gp.gp_camera_set_config(camera, config))
+                    config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                    app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
+                except gp.GPhoto2Error as e:
+                    app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
+                except Exception as e:
+                    app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
+            templateData['availableShots'] = readValue (config, 'availableshots')
+            gp.check_result(gp.gp_camera_exit(camera))
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
