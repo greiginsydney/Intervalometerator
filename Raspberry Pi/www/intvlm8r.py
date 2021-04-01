@@ -496,7 +496,6 @@ def thumbnails():
 @app.route("/camera")
 @login_required
 def camera():
-    writeString("WC") # Sends the WAKE command to the Arduino
     cameraData = {
         'cameraDate'    : '',
         'focusmode'     : '',
@@ -588,7 +587,6 @@ def camera():
 @login_required
 def cameraPOST():
     """ This page is where you manage all the camera settings."""
-    writeString("WC") # Sends the WAKE command to the Arduino
     preview = None
     try:
         camera, context, config = connectCamera()
@@ -648,8 +646,6 @@ def cameraPOST():
 @login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
-    writeString("WC") # Sends the camera WAKE command to the Arduino
-    time.sleep(0.5);    # (Adds another 0.5s on top of the 0.5s already baked into WriteString)
     
     templateData = {
         'piDoW' : '',
@@ -975,8 +971,6 @@ def system():
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
     
-    writeString("WC") # Sends the WAKE command to the Arduino, in prep for the time query commands shortly
-
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1091,7 +1085,6 @@ def systemPOST():
             setTime(datetime.strptime(newTime,'%Y%m%d%H%M%S'))
         if request.form.get('setCameraTime'):
             app.logger.debug('Checked: setCameraTime')
-            writeString("WC")
             try:
                 camera, context, config = connectCamera()
                 if setCameraTimeAndDate(camera, config, newTime):
