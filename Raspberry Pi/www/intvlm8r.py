@@ -1066,7 +1066,7 @@ def systemPOST():
             writeString("ST=" + newTime) # Send the new time and date to the Arduino
         if request.form.get('setPiTime'):
             app.logger.debug('Checked: setPiTime' )
-            setTime(datetime.strptime(newTime,'%Y%m%d%H%M%S'))
+            setTime(newTime)
         if request.form.get('setCameraTime'):
             app.logger.debug('Checked: setCameraTime')
             try:
@@ -1110,6 +1110,23 @@ def checkNTP(returnvalue):
     except Exception as e:
         app.logger.debug('Unhandled systemd-timesyncd error: ' + str(e))
     return returnvalue
+
+
+def setTime(newTime):
+    """ Takes the time passed from the user's PC and sets the Pi's real time clock """
+    try:
+        #convert it to a form the date command will accept: Incoming is "20181129215800" representing "2018 Nov 29 21:58:00"
+        timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y%m%d%H%M%S')]
+        result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            app.logger.debug('setTime result = ' + str(stdoutdata))
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.debug('setTime error = ' + str(stderrdata))
+    except Exception as e:
+        app.logger.debug('setTime unhandled time error: ' + str(e))
 
 
 def connectCamera():
