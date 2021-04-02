@@ -458,6 +458,9 @@ install_website ()
 	fi
 	rm cronTemp
 
+	setcap CAP_SYS_TIME+ep /bin/date #Allows the Pi user (actually ALL users) to issue date without needing to be root.
+	# (Thank you SO: https://unix.stackexchange.com/a/78309)
+
 	#NTP
 	echo ""
 	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
