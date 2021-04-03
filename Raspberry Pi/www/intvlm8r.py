@@ -1392,9 +1392,12 @@ def makeThumb(imageFile):
             #Lots of nested TRYs here to minimise any bad data errors in the output.
             try:
                 app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
-                with Image.open(imageFile) as thumb:
-                    thumb.thumbnail((160, 160), Image.ANTIALIAS)
-                    thumb.save(dest, "JPEG")
+                try:
+                    with Image.open(imageFile) as thumb:
+                        thumb.thumbnail((160, 160), Image.ANTIALIAS)
+                        thumb.save(dest, "JPEG")
+                except Exception as e:
+                    app.logger.info('makeThumb() thumbnail save error: ' + str(e))       
                 try:
                     # Open image file for reading (binary mode)
                     with open(imageFile, 'rb') as photo:
