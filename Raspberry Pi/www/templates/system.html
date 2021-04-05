@@ -114,7 +114,7 @@
 	</table>
 </form>
 
-<form name="sendTime" method="post" onsubmit="return !!(userFeedback(this, event) & sendTimeToServer())">
+<form name="sendTime" method="post" onsubmit="userFeedback(this, event); sendTimeToServer()">
 	<table>
 		<tr>
 			<td>
