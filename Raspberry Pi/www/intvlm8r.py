@@ -1664,15 +1664,16 @@ def newThumbs(self):
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
                 dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+                if (dest == None):
+                    #Something went wrong
+                    app.logger.debug('A thumb was not created for {0}'.format(FileList[loop]))
+                    continue
                 if not alreadyExists:
                     thumbsCreated += 1
                     self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
                     app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
                 else:
                     app.logger.debug('Thumb for ' + dest + ' already exists')
-                if (dest == None):
-                    #Something went wrong
-                    continue
         else:
             app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
     except Exception as e:
