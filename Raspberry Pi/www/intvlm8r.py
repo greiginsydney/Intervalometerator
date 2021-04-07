@@ -1410,16 +1410,19 @@ def getExifData(imageFilePath, imageFileName):
         with open(imageFile, 'rb') as photo:
             tags = exifreader.process_file(photo) # Return Exif tags
         try:
+            dateOriginal = ''
+            timeOriginal = ''
             dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
             dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
             timeOriginal = dateTimeOriginal[1]
-            fileExtension = '?'
+        except Exception as e:
+            app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
+        try:
             _, fileExtension = os.path.splitext(imageFilePath)
             fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
         except Exception as e:
-            dateOriginal = ''
-            timeOriginal = ''
-            app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
+            fileExtension = '?'        
+            app.logger.info('getExifData() fileExtension error: ' + str(e))            
         try:
             #Reformat depending on the value:
             # 6/1   becomes 6s
