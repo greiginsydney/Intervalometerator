@@ -32,7 +32,7 @@ import json
 import logging
 import os                       # Hostname
 import psutil
-import re                       # RegEx. Used in Copy Files
+import re                       # RegEx. Used in Copy Files & createThumbFilename
 from smbus2 import SMBus        # For I2C
 import struct
 import subprocess
@@ -1372,9 +1372,9 @@ def createThumbFilename(imageFullFilename):
     sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
     dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
     dest = os.path.join(dest, imageFileName)
-    dest = dest.replace('.JPG', '-thumb.JPG')
-    dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
-    dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
+    dest = re.sub('.JPG', '-thumb.JPG', dest, flags=re.IGNORECASE)
+    dest = re.sub('.CR2', '-thumb.JPG', dest, flags=re.IGNORECASE) # Canon raw
+    dest = re.sub('.NEF', '-thumb.JPG', dest, flags=re.IGNORECASE) # Nikon raw
     return dest
 
 
