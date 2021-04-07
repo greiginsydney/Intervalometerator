@@ -1407,7 +1407,7 @@ def getExifData(imageFilePath, imageFileName):
     #Lots of TRYs here to minimise any bad data errors in the output.
     try:
         # Open image file for reading (binary mode)
-        with open(imageFile, 'rb') as photo:
+        with open(imageFilePath, 'rb') as photo:
             tags = exifreader.process_file(photo) # Return Exif tags
         try:
             dateOriginal = ''
