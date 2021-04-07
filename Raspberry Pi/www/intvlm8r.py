@@ -143,7 +143,7 @@ def readString(value):
     if (ascii == 51 ): rxLength = 7  # "3" - Interval
     # if (ascii == 52 ): rxLength = 7  # "4" - All temps (current, max, min)
     # if (ascii == 53 ): rxLength = 4  # "5" - WakePi hour and runtime
-    
+
     for x in range(0, 2):
         try:
             array = bus.read_i2c_block_data(address, ascii, rxLength)
@@ -231,7 +231,7 @@ def login():
     username = (str(request.form['username']))
     remember = 'false'
     for name, _ in users.items():
-        if (username.casefold() == name.casefold()): 
+        if (username.casefold() == name.casefold()):
             #OK, we have the user name (regardless of the case)!
             if users[name]['password'] == request.form['password']:
             #if (check_password_hash(users[username]['password'], request.form['password'])):
@@ -300,7 +300,7 @@ def main():
 
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
-    
+
     try:
         arduinoStats = str(readString("2"))
         if arduinoStats != "Unknown":
@@ -400,7 +400,7 @@ def main():
 @app.route("/getTime")
 def getTime():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
     the cron job/script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
@@ -440,11 +440,11 @@ def getArduinoTime():
 @login_required
 def thumbnails():
     """
-    The logic here warrants some explanation: It's *assumed* that for every photo on the Pi there's a matching thumbnail, as the 
+    The logic here warrants some explanation: It's *assumed* that for every photo on the Pi there's a matching thumbnail, as the
     copy and thumb creation process are linked. You *shouldn't* have one without the other.
     This code creates the thumbnails list based on the filename of the main image, and then only adds the assumed -thumbs.JPG suffix as it calls the view.
     Thus, even if a thumb is absent (broken?), the view will still reveal its main image, the image's metadata, and you can still click-through to see it.
-    
+
     Had I started with "list_Pi_Images(PI_THUMBS_DIR)", then a missing thumb would result in its main image not being displayed here.
     """
     ThumbFiles = []
@@ -467,7 +467,7 @@ def thumbnails():
                                 ThumbsInfo[key] = val
                             except Exception as e:
                                 #Skip over bad line
-                                app.logger.debug('Error in thumbs info file: ' + str(e))   
+                                app.logger.debug('Error in thumbs info file: ' + str(e))
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 _, imageFileName = os.path.split(FileList[loop])
@@ -526,7 +526,7 @@ def camera():
     try:
         camera, context, config = connectCamera()
         if camera:
-            cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown') 
+            cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
             cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
                 cameraMfr = 'Nikon'
@@ -570,7 +570,7 @@ def camera():
             cameraData['expoptions']    = expoptions
     except Exception as e:
         app.logger.debug('Unknown camera GET error: ' + str(e))
-        
+
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
 
@@ -634,7 +634,7 @@ def cameraPOST():
 @login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
-    
+
     templateData = {
         'piDoW' : '',
         'piStartHour' : '',
@@ -720,7 +720,7 @@ def intervalometerPOST():
 @login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    
+
     # Commented-out 4Oct2020, NLR(?)
     # args = request.args.to_dict()
     # if args.get('copyNow'):
@@ -794,8 +794,8 @@ def transfer():
 
     rawWakePi = str(readString("5"))
     if rawWakePi != "Unknown":
-        templateData['wakePiTime']     = rawWakePi[0:2] 
-        
+        templateData['wakePiTime']     = rawWakePi[0:2]
+
     return render_template('transfer.html', **templateData)
 
 
@@ -861,19 +861,19 @@ def transferPOST():
 @app.route("/copyNow")
 def copyNowCronJob():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
     the cron job/script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
         abort(403)
-    
+
     tasks = [
         copyNow.si(),
         newThumbs.si()
     ]
     chain(*tasks).apply_async()
-    
+
     res = make_response('OK')
     return res, 200
 
@@ -953,7 +953,7 @@ def system():
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
-    
+
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -984,20 +984,20 @@ def system():
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
     templateData['piNtp'] = checkNTP(None)
-    
+
     try:
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
-    
+
     try:
         with open('version', 'r') as versionFile:
             templateData['intvlm8rVersion'] = versionFile.read()
     except:
         pass
-    
+
     try:
         camera, context, config = connectCamera()
         if camera:
@@ -1005,7 +1005,7 @@ def system():
             gp.check_result(gp.gp_camera_exit(camera))
     except:
         pass
-    
+
     return render_template('system.html', **templateData)
 
 
@@ -1395,14 +1395,14 @@ def makeThumb(imageFile):
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
                     thumb.save(dest, "JPEG")
             except Exception as e:
-                app.logger.info('makeThumb() thumbnail save error: ' + str(e))       
+                app.logger.info('makeThumb() thumbnail save error: ' + str(e))
             getExifData(imageFile, imageFileName)
         return dest, alreadyExists
     except Exception as e:
         app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
         return None, None
 
-    
+
 def getExifData(imageFilePath, imageFileName):
     #Lots of TRYs here to minimise any bad data errors in the output.
     try:
@@ -1421,8 +1421,8 @@ def getExifData(imageFilePath, imageFileName):
             _, fileExtension = os.path.splitext(imageFilePath)
             fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
         except Exception as e:
-            fileExtension = '?'        
-            app.logger.info('getExifData() fileExtension error: ' + str(e))            
+            fileExtension = '?'
+            app.logger.info('getExifData() fileExtension error: ' + str(e))
         try:
             #Reformat depending on the value:
             # 6/1   becomes 6s
@@ -1461,7 +1461,7 @@ def getExifData(imageFilePath, imageFileName):
     except Exception as e:
         app.logger.info('getExifData() EXIF error: ' + str(e))
     return
-    
+
 
 #TY SO: https://stackoverflow.com/a/30629776
 def convert_to_float(frac_str):
@@ -1588,13 +1588,13 @@ def trnCopyNow():
     """
     app.logger.debug('trnCopyNow(): entered')
     app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
-    
+
     tasks = [
         copyNow.si(),
         newThumbs.si()
     ]
     task = chain(*tasks).apply_async()
-    
+
     app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
@@ -1722,7 +1722,7 @@ def backgroundStatus(task_id):
 @app.before_request
 def getCeleryTasks():
     """
-    This executes before EVERY page load, feeding any active task ID into the 
+    This executes before EVERY page load, feeding any active task ID into the
     ensuing response. Javascript in the footer of every page (in index.html)
     will then query for status updates if a task ID is present.
     """
