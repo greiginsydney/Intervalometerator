@@ -1396,14 +1396,14 @@ def makeThumb(imageFile):
                     thumb.save(dest, "JPEG")
             except Exception as e:
                 app.logger.info('makeThumb() thumbnail save error: ' + str(e))       
-            getExifData(imageFile)
+            getExifData(imageFile, imageFileName)
         return dest, alreadyExists
     except Exception as e:
         app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
         return None, None
 
     
-def getExifData(imageFile):
+def getExifData(imageFilePath, imageFileName):
     #Lots of TRYs here to minimise any bad data errors in the output.
     try:
         # Open image file for reading (binary mode)
@@ -1413,6 +1413,9 @@ def getExifData(imageFile):
             dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
             dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
             timeOriginal = dateTimeOriginal[1]
+            fileExtension = '?'
+            _, fileExtension = os.path.splitext(imageFilePath)
+            fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
         except Exception as e:
             dateOriginal = ''
             timeOriginal = ''
@@ -1449,7 +1452,7 @@ def getExifData(imageFile):
             app.logger.info('getExifData() ISO error: ' + str(e))
         try:
             with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                thumbsInfoFile.write('{0} = {1} {2}|{3}s &bull; F{4} &bull; ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
+                thumbsInfoFile.write('{0} = {1} {2}|{3} &bull; {4}s &bull; F{5} &bull; ISO{6}\r\n'.format(imageFileName, dateOriginal, timeOriginal, fileExtension, exposureTime, fNumber, ISO))
         except Exception as e:
             app.logger.info('getExifData() error writing to thumbsInfoFile: ' + str(e))
     except Exception as e:
