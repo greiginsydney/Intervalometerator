@@ -456,7 +456,7 @@ def thumbnails():
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
-            #Read all the thumb metadata ready to create the page:
+            #Read all the thumb exifData ready to create the page:
             ThumbsInfo = {}
             if os.path.exists(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
@@ -471,14 +471,14 @@ def thumbnails():
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 _, imageFileName = os.path.split(FileList[loop])
-                #Read the metadata:
+                #Read the exifData:
                 thumbTimeStamp = 'Unknown'
                 thumbInfo = 'Unknown'
-                metadata = ThumbsInfo.get(imageFileName)
-                #app.logger.debug(str(metadata))
-                if metadata != None:
-                    thumbTimeStamp = metadata.split("|")[0]
-                    thumbInfo = metadata.split("|")[1]
+                exifData = ThumbsInfo.get(imageFileName)
+                #app.logger.debug(str(exifData))
+                if exifData != None:
+                    thumbTimeStamp = exifData.split("|")[0]
+                    thumbInfo = exifData.split("|")[1]
                 #Build the list for the page:
                 ThumbFileName = createThumbFilename(FileList[loop]) #Adds the '-thumb.JPG' suffix
                 ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
