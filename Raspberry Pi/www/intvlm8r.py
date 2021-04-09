@@ -1451,27 +1451,27 @@ def getExifData(imageFilePath, imageFileName):
                     pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
             except Exception as e:
                 exposureTime = '?'
-                app.logger.info('makeThumb() ExposureTime error: ' + str(e))
+                app.logger.info('getExifData() ExposureTime error: ' + str(e))
             try:
                 fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
                 #Strip the '.0' if it's a whole F-stop
                 fNumber = fNumber.replace('.0','')
             except Exception as e:
                 fNumber = '?'
-                app.logger.info('makeThumb() fNumber error: ' + str(e))
+                app.logger.info('getExifData() fNumber error: ' + str(e))
             try:
                 ISO = tags['EXIF ISOSpeedRatings']
             except Exception as e:
                 ISO = '?'
-                app.logger.info('makeThumb() ISO error: ' + str(e))
+                app.logger.info('getExifData() ISO error: ' + str(e))
             try:
                 with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
                     thumbsInfoFile.write('{0} = {1} {2}|{3} &bull; {4}s &bull; F{5} &bull; ISO{6}\r\n'.format(imageFileName, dateOriginal, timeOriginal, fileExtension, exposureTime, fNumber, ISO))
             except Exception as e:
-                app.logger.info('makeThumb() error writing to thumbsInfoFile: ' + str(e))
+                app.logger.info('getExifData() error writing to thumbsInfoFile: ' + str(e))
             break
         except Exception as e:
-            app.logger.info('makeThumb() EXIF error: ' + str(e))
+            app.logger.info('getExifData() EXIF error: ' + str(e))
             break
     return
 
