@@ -1396,7 +1396,7 @@ def makeThumb(imageFile):
                     thumb.save(dest, "JPEG")
             except Exception as e:
                 app.logger.info('makeThumb() thumbnail save error: ' + str(e))
-            getExifData(imageFile, imageFileName)
+        getExifData(imageFile, imageFileName)
         return dest, alreadyExists
     except Exception as e:
         app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
@@ -1404,62 +1404,75 @@ def makeThumb(imageFile):
 
 
 def getExifData(imageFilePath, imageFileName):
-    #Lots of TRYs here to minimise any bad data errors in the output.
-    try:
-        # Open image file for reading (binary mode)
-        with open(imageFilePath, 'rb') as photo:
-            tags = exifreader.process_file(photo) # Return Exif tags
+    while True:
+        #Lots of TRYs here to minimise any bad data errors in the output.
         try:
-            dateOriginal = ''
-            timeOriginal = ''
-            dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
-            dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
-            timeOriginal = dateTimeOriginal[1]
+            # Open image file for reading (binary mode)
+            abort = None
+            with open(imageFilePath, 'rb') as photo:
+                tags = exifreader.process_file(photo) # Return Exif tags.
+            try:
+                dateOriginal = ''
+                timeOriginal = ''
+                dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
+                dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
+                timeOriginal = dateTimeOriginal[1]
+            except Exception as e:
+                app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
+            if os.path.exists(PI_THUMBS_INFO_FILE):
+                with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+                    for line in f:
+                        if ('{0} = {1} {2}|'.format(imageFileName, dateOriginal, timeOriginal)) in line:
+                            app.logger.info('getExifData() image {0} already exists in Exif file. Aborting'.format(imageFileName))
+                            abort = True
+                            break
+            if abort:
+                break
+            try:
+                _, fileExtension = os.path.splitext(imageFilePath)
+                fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
+            except Exception as e:
+                fileExtension = '?'
+                app.logger.info('getExifData() fileExtension error: ' + str(e))
+            try:
+                #Reformat depending on the value:
+                # 6/1   becomes 6s
+                # 15/10 becomes 1.5s
+                # 3/10  becomes 0.3s
+                # 1/30  becomes 1/30s
+                exposureTime = convert_to_float(str(tags['EXIF ExposureTime']))
+                if (exposureTime).is_integer():
+                    #It's a whole number of seconds. Strip the '.0'
+                    exposureTime = str(exposureTime).replace('.0','')
+                elif (Decimal(exposureTime).as_tuple().exponent <= -2):
+                    #Yuk. it has lots of decimal places. Display as originally reported
+                    exposureTime = str(tags['EXIF ExposureTime'])
+                else:
+                    pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
+            except Exception as e:
+                exposureTime = '?'
+                app.logger.info('makeThumb() ExposureTime error: ' + str(e))
+            try:
+                fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
+                #Strip the '.0' if it's a whole F-stop
+                fNumber = fNumber.replace('.0','')
+            except Exception as e:
+                fNumber = '?'
+                app.logger.info('makeThumb() fNumber error: ' + str(e))
+            try:
+                ISO = tags['EXIF ISOSpeedRatings']
+            except Exception as e:
+                ISO = '?'
+                app.logger.info('makeThumb() ISO error: ' + str(e))
+            try:
+                with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
+                    thumbsInfoFile.write('{0} = {1} {2}|{3} &bull; {4}s &bull; F{5} &bull; ISO{6}\r\n'.format(imageFileName, dateOriginal, timeOriginal, fileExtension, exposureTime, fNumber, ISO))
+            except Exception as e:
+                app.logger.info('makeThumb() error writing to thumbsInfoFile: ' + str(e))
+            break
         except Exception as e:
-            app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
-        try:
-            _, fileExtension = os.path.splitext(imageFilePath)
-            fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
-        except Exception as e:
-            fileExtension = '?'
-            app.logger.info('getExifData() fileExtension error: ' + str(e))
-        try:
-            #Reformat depending on the value:
-            # 6/1   becomes 6s
-            # 15/10 becomes 1.5s
-            # 3/10  becomes 0.3s
-            # 1/30  becomes 1/30s
-            exposureTime = convert_to_float(str(tags['EXIF ExposureTime']))
-            if (exposureTime).is_integer():
-                #It's a whole number of seconds. Strip the '.0'
-                exposureTime = str(exposureTime).replace('.0','')
-            elif (Decimal(exposureTime).as_tuple().exponent <= -2):
-                #Yuk. it has lots of decimal places. Display as originally reported
-                exposureTime = str(tags['EXIF ExposureTime'])
-            else:
-                pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
-        except Exception as e:
-            exposureTime = '?'
-            app.logger.info('getExifData() ExposureTime error: ' + str(e))
-        try:
-            fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
-            #Strip the '.0' if it's a whole F-stop
-            fNumber = fNumber.replace('.0','')
-        except Exception as e:
-            fNumber = '?'
-            app.logger.info('getExifData() fNumber error: ' + str(e))
-        try:
-            ISO = tags['EXIF ISOSpeedRatings']
-        except Exception as e:
-            ISO = '?'
-            app.logger.info('getExifData() ISO error: ' + str(e))
-        try:
-            with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                thumbsInfoFile.write('{0} = {1} {2}|{3} &bull; {4}s &bull; F{5} &bull; ISO{6}\r\n'.format(imageFileName, dateOriginal, timeOriginal, fileExtension, exposureTime, fNumber, ISO))
-        except Exception as e:
-            app.logger.info('getExifData() error writing to thumbsInfoFile: ' + str(e))
-    except Exception as e:
-        app.logger.info('getExifData() EXIF error: ' + str(e))
+            app.logger.info('makeThumb() EXIF error: ' + str(e))
+            break
     return
 
 
