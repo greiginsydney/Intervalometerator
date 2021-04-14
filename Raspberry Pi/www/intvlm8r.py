@@ -103,9 +103,9 @@ address = 0x04
 
 iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 
-arduinoDoW=["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+arduinoDoW = ["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
-previewButtonBlocklist=["Canon EOS 650D"]
+cameraPreviewBlocklist = ["Canon EOS 650D"]
 
 #Suppress the display of any uninstalled transfer options:
 hiddenTransferOptions = ''
