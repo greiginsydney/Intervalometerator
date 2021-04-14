@@ -512,7 +512,8 @@ def camera():
         'expselected'   : '',
         'expoptions'    : '',
         'piPreviewFile' : '',
-        'cameraMfr'     : 'Unknown'
+        'cameraMfr'     : 'Unknown',
+        'blockPreview'  : 'False'
         }
 
     args = request.args.to_dict()
@@ -550,6 +551,10 @@ def camera():
             shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
             expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
 
+            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            if abilities.model in cameraPreviewBlocklist:
+                cameraData['blockPreview']  = 'True'
+                
             gp.check_result(gp.gp_camera_exit(camera))
             cameraData['cameraDate']    = cameraTimeAndDate
             cameraData['focusmode']     = readValue (config, 'focusmode')
