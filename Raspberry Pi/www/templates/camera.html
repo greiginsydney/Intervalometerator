@@ -159,9 +159,10 @@
 <table class="noborder">
 	<tr>
 		<td class="noborder">
-		<div class="alignleft">
-			<button name="CamSubmit" id="CamPreview" type="submit" value="preview">Preview</button>
+		<div class="alignleft{% if blockPreview == 'True' %} tooltip{% endif %}">
+			<button name="CamSubmit" id="CamPreview" type="submit" value="preview"{% if blockPreview == 'True' %} disabled{% endif %}>Preview</button>
 			<!-- See "capture preview" in focus-gui.py -->
+{% if blockPreview == "True" %}			<span class="tooltiptext">This camera does not support Preview</span>{% endif %}
 		</div>
 		<div class="alignright">
 			<button name="CamSubmit" id="CamSubmit" type="submit" value="apply">Apply</button>
@@ -209,7 +210,10 @@ function lightButtons()
 	{
 		if (SelectionByte == 0)
 		{
-			document.getElementById("CamPreview").disabled = false;
+			if ("{{blockPreview}}" != "True")
+			{
+				document.getElementById("CamPreview").disabled = false;
+			}
 			document.getElementById("CamSubmit").disabled  = true;
 		}
 		else
