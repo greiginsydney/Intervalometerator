@@ -105,7 +105,7 @@ iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 
 arduinoDoW = ["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
-cameraPreviewBlocklist = ["Canon EOS 650D"]
+cameraPreviewBlocklist = [""]
 
 #Suppress the display of any uninstalled transfer options:
 hiddenTransferOptions = ''
