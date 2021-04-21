@@ -1483,6 +1483,31 @@ def getExifData(imageFilePath, imageFileName):
     return
 
 
+def dedupeExifData():
+    lines = 0
+    ThumbsInfo = {}
+    if os.path.exists(PI_THUMBS_INFO_FILE):
+        with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+            for line in f:
+                if ' = ' in line:
+                    try:
+                        lines += 1
+                        (key, val) = line.rstrip('\n').split(' = ')
+                        ThumbsInfo[key] = val
+                    except Exception as e:
+                        #Skip over bad line
+                        app.logger.debug('dedupeExifData info file error: ' + str(e))
+        if lines != len(ThumbsInfo):
+            #We have a discrepancy (dupe or bad line). Re-write the file:
+            app.logger.info('dedupeExifData() recreating thumbs info file: lines = {0}, UniqueImages = {1}'.format(lines, len(ThumbsInfo)))
+            with open(PI_THUMBS_INFO_FILE, 'r+') as file:
+                file.seek(0)
+                for key, value in ThumbsInfo.items():
+                    file.write('{0} = {1}\n'.format(key, value))
+                file.truncate() #Trash the leftovers.
+    return
+
+
 #TY SO: https://stackoverflow.com/a/30629776
 def convert_to_float(frac_str):
     """ The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display """
@@ -1706,6 +1731,7 @@ def newThumbs(self):
             app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
     except Exception as e:
         app.logger.info('newThumbs error: ' + str(e))
+    dedupeExifData()
     app.logger.info('newThumbs(): returned')
     return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
 
