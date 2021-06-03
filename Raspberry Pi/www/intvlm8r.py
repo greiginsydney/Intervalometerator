@@ -1632,7 +1632,7 @@ def trnCopyNow():
     This page is called in the background by the 'Copy now' button on the Transfer page
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('trnCopyNow(): entered')
+    app.logger.debug('trnCopyNow() entered')
     app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
@@ -1641,14 +1641,14 @@ def trnCopyNow():
     ]
     task = chain(*tasks).apply_async()
 
-    app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
+    app.logger.debug('trnCopyNow() returned with task_id= ' + str(task.id))
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
 @celery.task(time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the camera WAKE command to the Arduino
-    app.logger.info('copyNow(): entered') #This logs to /var/log/celery/celery_worker.log
+    app.logger.info('copyNow() entered') #This logs to /var/log/celery/celery_worker.log
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
@@ -1701,7 +1701,7 @@ def copyNow(self):
 
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
-    app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
+    app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -1733,7 +1733,7 @@ def newThumbs(self):
     except Exception as e:
         app.logger.info('newThumbs error: ' + str(e))
     dedupeExifData()
-    app.logger.info('newThumbs(): returned')
+    app.logger.info('newThumbs() returned')
     return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
 
 
@@ -1742,7 +1742,7 @@ def newThumbs(self):
 @login_required
 def backgroundStatus(task_id):
     task = copyNow.AsyncResult(task_id)
-    app.logger.debug('backgroundStatus(): entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
+    app.logger.debug('backgroundStatus() entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
     if task.state == 'PENDING':
         # job did not start yet
         response = {
@@ -1761,7 +1761,7 @@ def backgroundStatus(task_id):
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
         }
-    app.logger.debug('backgroundStatus(): returned')
+    app.logger.debug('backgroundStatus() returned')
     return jsonify(response)
 
 
