@@ -1,0 +1,1 @@
+default_image.JPG = 2021/01/01 09:00:00|JPG &bull; 1/10s &bull; F5.6 &bull; ISO200
