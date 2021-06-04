@@ -1157,10 +1157,10 @@ def connectCamera():
                 if retries > 1:
                     app.logger.debug('connectCamera waking the camera & going again')
                     writeString("WC") # Sends the WAKE command to the Arduino
-                    time.sleep(2);    # (Adds another second on top of the 0.5s baked into WriteString)
+                    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
                 else:
                     app.logger.debug('connectCamera going again without waking the camera')
-                    time.sleep(2);
+                    time.sleep(0.5);
         except Exception as e:
             app.logger.debug('connectCamera error: ' + str(e))
         retries += 1
