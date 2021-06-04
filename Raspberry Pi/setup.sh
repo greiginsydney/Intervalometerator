@@ -198,11 +198,21 @@ install_website ()
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
 
-	if [ -f default_image.jpg ];
+	if [ -f default_image.JPG ];
 	then
-		mv -fv default_image.jpg ~/photos/default_image.jpg
+		mv -fv default_image.JPG ~/photos/default_image.JPG
 	fi
 
+	if [ -f default_image-thumb.JPG ];
+	then
+		mv -fv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
+	fi
+	
+	if [ -f piThumbsInfo.txt ];
+	then
+		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
+	fi
+	
 	chown -R pi:www-data /home/pi
 
 	if [ -f www/intvlm8r.old ];
