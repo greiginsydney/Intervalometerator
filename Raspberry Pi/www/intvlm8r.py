@@ -1137,7 +1137,7 @@ def setTime(newTime):
 
 
 def connectCamera():
-    app.logger.debug('connectCamera ENTERED')
+    app.logger.debug('connectCamera entered')
     retries = 0
     while True:
         app.logger.debug('connectCamera retries = {0}'.format (retries))
@@ -1149,7 +1149,7 @@ def connectCamera():
             context = gp.gp_context_new()
             camera.init(context)
             config = camera.get_config(context)
-            app.logger.debug('connectCamera has a connection to the camera. Exiting')
+            app.logger.debug('connectCamera has made a connection to the camera. Exiting')
             break
         except gp.GPhoto2Error as e:
             app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
