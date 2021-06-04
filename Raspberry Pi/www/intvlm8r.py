@@ -1245,7 +1245,7 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
     # get configuration tree
     OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
     if OK >= gp.GP_OK:
-        app.logger.debug('Camera time set fn 1')
+        app.logger.debug('Set camera time (opt 1)')
         now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
         epochTime = int(time.mktime(now))
         date_config.set_value(epochTime)
@@ -1254,17 +1254,18 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
     if OK >= gp.GP_OK:
         widget_type = date_config.get_type()
         if widget_type == gp.GP_WIDGET_DATE:
-            app.logger.debug('Camera time set fn 3')
+            app.logger.debug('Set camera time (opt 2)')
             now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
             epochTime = int(time.mktime(now))
             app.logger.debug('epochTime = {0}'.format(epochTime))
             date_config.set_value(epochTime)
         else:
-            app.logger.debug('Camera time set fn 4')
+            app.logger.debug('Set camera time (opt 3)')
             now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
             newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
             date_config.set_value(newNow)
         return True
+    app.logger.debug('Failed to set camera time')
     return False
 
 
