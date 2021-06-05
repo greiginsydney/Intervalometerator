@@ -19,13 +19,21 @@
 				<div class="alignright">{{ focusmode }}</div>
 			</td>
 		</tr>
-		<tr{{ (' class="red"' | safe) if (exposuremode != "Manual" and exposuremode != "AV") }}>
+		{% if exposuremode == "Not available" %}
+		<tr>
+		{% elif (exposuremode != "Manual" and exposuremode != "AV" and exposuremode != "M" and exposuremode != "A") %}
+		<tr class="red">
+		{% else %}
+		<tr>
+		{% endif %}
 			<td>
 				<div class="alignleft">Exposure mode:</div>
 				<div class="alignright">{{ exposuremode }}</div>
 			</td>
 		</tr>
-		{% if autopoweroff|int == 0 or autopoweroff|int > 300 %}
+		{% if autopoweroff == "Not available" %}
+		<tr>
+		{% elif autopoweroff|int == 0 or autopoweroff|int > 300 %}
 		<tr class="red">
 		{% elif autopoweroff|int > 60 %}
 		<tr class="orange">
@@ -50,15 +58,15 @@
 			</td>
 		</tr>
 	{% endif %}
-	</table>	
+	</table>
 </form>
 
 
-<form method="post">
+<form method="post" onsubmit="return userFeedback(this, event)">
 	<table>
-		<tr>
+		<tr{% if imgfmtoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Image format:</div>
+			<div class="alignleft"><label for="img">Image format:</label></div>
 			<div class="alignright">
 				<select name="img" id="img" onchange="newSelected(this.id)">
 					{% for img in imgfmtoptions %}
@@ -70,7 +78,7 @@
 		</tr>
 		<tr id="wbRow">
 			<td>
-			<div class="alignleft">White balance:</div>
+			<div class="alignleft"><label for="wb">White balance:</label></div>
 			<div class="alignright">
 				<select name="wb" id="wb" onchange="newSelected(this.id)">
 				{% if wboptions %}
@@ -78,15 +86,15 @@
 					<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
 				{% endfor %}
 				{% else %}
-					<option disabled selected value style="display:none">n/a</option>
+					<option disabled selected value="n/a" style="display:none">n/a</option>
 				{% endif %}
 				</select>
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if isooptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">ISO:</div>
+			<div class="alignleft"><label for="iso">ISO:</label></div>
 			<div class="alignright">
 				<select name="iso" id="iso" onchange="newSelected(this.id)">
 					{% for iso in isooptions %}
@@ -96,41 +104,41 @@
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if exposuremode == "S" or exposuremode == "TV" or (apoptions|length <= 1) %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Aperture:</div>
+			<div class="alignleft"><label for="aperture">Aperture:</label></div>
 			<div class="alignright">
 				<select name="aperture" id="aperture" onchange="newSelected(this.id)">
 					{% for aperture in apoptions %}
-						<option value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
+						<option {% if exposuremode == "S" or exposuremode == "TV" or aperture == "implicit auto"%} disabled{% endif %} value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
 					{% endfor %}
 				</select>
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if exposuremode == "A" or exposuremode == "AV" or (shutoptions|length <= 1) %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Shutter speed:</div>
+			<div class="alignleft"><label for="shutter">Shutter speed:</label></div>
 			<div class="alignright">
 				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
 					{% for shutterspeed in shutoptions %}
-						<option value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
+						<option {% if exposuremode == "A" or exposuremode == "AV" or shutterspeed == "auto" %} disabled{% endif %} value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
 					{% endfor %}
 				</select>
 			</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if expoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
-			<div class="alignleft">Exposure comp:</div>
+			<div class="alignleft"><label for="exp">Exposure comp:</label></div>
 			<div class="alignright">
 				<select name="exp" id="exp" onchange="newSelected(this.id)">
 				{% if expoptions %}
 					{% for exp in expoptions %}
 					<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
 					{% endfor %}
-				{% else %}	
-					<option disabled selected value style="display:none">n/a</option>
+				{% else %}
+					<option disabled selected value="n/a" style="display:none">n/a</option>
 				{% endif %}
 				</select>
 			</div>
@@ -138,22 +146,23 @@
 		</tr>
 	</table>
 
-{% if piPreviewFile != '' %}	
+{% if piPreviewFile != '' %}
 <table>
 	<tr>
 		<td>
 		<a href="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" target="_blank"><img src="{{ url_for('static',filename=('preview/' + piPreviewFile )) | replace('%3F', '?') }}" alt="preview image" width="100%"></a>
 		</td>
 	</tr>
-</table> 
+</table>
 {% endif %}
 
 <table class="noborder">
 	<tr>
 		<td class="noborder">
-		<div class="alignleft">
-			<button name="CamSubmit" id="CamPreview" type="submit" value="preview">Preview</button>
+		<div class="alignleft{% if blockPreview == 'True' %} tooltip{% endif %}">
+			<button name="CamSubmit" id="CamPreview" type="submit" value="preview"{% if blockPreview == 'True' %} disabled{% endif %}>Preview</button>
 			<!-- See "capture preview" in focus-gui.py -->
+{% if blockPreview == "True" %}			<span class="tooltiptext">This camera does not support Preview</span>{% endif %}
 		</div>
 		<div class="alignright">
 			<button name="CamSubmit" id="CamSubmit" type="submit" value="apply">Apply</button>
@@ -161,6 +170,7 @@
 		</td>
 	</tr>
 </table>
+<input type="hidden" name="cameraMfr" value="{{ cameraMfr }}">
 </form>
 
 <script>
@@ -200,7 +210,10 @@ function lightButtons()
 	{
 		if (SelectionByte == 0)
 		{
-			document.getElementById("CamPreview").disabled = false;
+			if ("{{blockPreview}}" != "True")
+			{
+				document.getElementById("CamPreview").disabled = false;
+			}
 			document.getElementById("CamSubmit").disabled  = true;
 		}
 		else
@@ -213,15 +226,21 @@ function lightButtons()
 function checkWhiteBalance()
 {
 	var wbselected = document.getElementById("wb");
+	var wbRow = document.getElementById("wbRow")
 	if (wbselected.value == "Auto")
 	{
-		document.getElementById("wbRow").className = "red";
+		wbRow.className = "red";
+	}
+	else if (wbselected.value == "n/a")
+	{
+		wbRow.className = "grey";
 	}
 	else
 	{
-		document.getElementById("wbRow").className = "";
+		wbRow.className = "";
 	}
 }
+
 </script>
 
 {% endblock %}

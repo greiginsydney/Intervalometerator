@@ -32,7 +32,7 @@ import json
 import logging
 import os                       # Hostname
 import psutil
-import re                       # RegEx. Used in Copy Files
+import re                       # RegEx. Used in Copy Files & createThumbFilename
 from smbus2 import SMBus        # For I2C
 import struct
 import subprocess
@@ -103,7 +103,9 @@ address = 0x04
 
 iniFile = os.path.join(app.root_path, 'intvlm8r.ini')
 
-arduinoDoW=["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+arduinoDoW = ["Unknown", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+cameraPreviewBlocklist = [""]
 
 #Suppress the display of any uninstalled transfer options:
 hiddenTransferOptions = ''
@@ -143,7 +145,7 @@ def readString(value):
     if (ascii == 51 ): rxLength = 7  # "3" - Interval
     # if (ascii == 52 ): rxLength = 7  # "4" - All temps (current, max, min)
     # if (ascii == 53 ): rxLength = 4  # "5" - WakePi hour and runtime
-    
+
     for x in range(0, 2):
         try:
             array = bus.read_i2c_block_data(address, ascii, rxLength)
@@ -188,12 +190,7 @@ def customisation():
     loc = cache.get('locationName')
     if loc is None:
         #The cache is empty? Read the location from the Ini file
-        config = configparser.ConfigParser({'locationName' : 'Intervalometerator'})
-        config.read(iniFile)
-        try:
-            loc = config.get('Global', 'locationName') #This will fail the VERY first time the script runs
-        except:
-            loc = 'Intervalometerator'
+        loc = getIni('Global', 'locationName', 'string', 'Intvlm8r')
         cache.set('locationName', loc, timeout = 0)
     return dict (locationName = loc )
 
@@ -236,7 +233,7 @@ def login():
     username = (str(request.form['username']))
     remember = 'false'
     for name, _ in users.items():
-        if (username.casefold() == name.casefold()): 
+        if (username.casefold() == name.casefold()):
             #OK, we have the user name (regardless of the case)!
             if users[name]['password'] == request.form['password']:
             #if (check_password_hash(users[username]['password'], request.form['password'])):
@@ -305,7 +302,7 @@ def main():
 
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
-    
+
     try:
         arduinoStats = str(readString("2"))
         if arduinoStats != "Unknown":
@@ -322,54 +319,55 @@ def main():
 
     # Camera comms:
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
+        camera, context, config = connectCamera()
+        if camera:
+            storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
+            if len(storage_info) == 0:
+                flash('No storage info available') # The memory card is missing or faulty
+            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            files = list_camera_files(camera)
+            if not files:
+                fileCount = 0
+                lastImage = 'n/a'
+            else:
+                fileCount = len(files)
+                info = get_camera_file_info(camera, files[-1]) #Get the last file
+                lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
+            gp.check_result(gp.gp_camera_exit(camera))
+            templateData['cameraModel']              = abilities.model
+            templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            if (templateData['cameraLens'] == 'Unknown'):
+                #Try to build this from focal length:
+                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
+                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+                if (focalMin == focalMax):
+                    templateData['cameraLens'] = focalMin
+                else:
+                    focalMin = focalMin.replace(" mm", "")
+                    templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
+            templateData['fileCount']                = fileCount
+            templateData['lastImage']                = lastImage
+            templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
 
-        storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
-        if len(storage_info) == 0:
-            flash('No storage info available') # The memory card is missing or faulty
-
-        abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
-        config = camera.get_config(context)
-        files = list_camera_files(camera)
-        if not files:
-            fileCount = 0
-            lastImage = 'n/a'
-        else:
-            fileCount = len(files)
-            info = get_camera_file_info(camera, files[-1]) #Get the last file
-            lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
-        gp.check_result(gp.gp_camera_exit(camera))
-        templateData['cameraModel']              = abilities.model
-        templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
-        templateData['fileCount']                = fileCount
-        templateData['lastImage']                = lastImage
-        templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
-
-        #Find the capturetarget config item. (TY Jim.)
-        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
-        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
-        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
-        if currentTarget == "Internal RAM":
-            #Change it to "Memory Card"
-            try:
-                newTarget = 1
-                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
-                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
-                gp.check_result(gp.gp_camera_set_config(camera, config))
-                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
-                app.logger.debug('Set captureTarget to "Memory Card" in main')
-            except gp.GPhoto2Error as e:
-                app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
-            except Exception as e:
-                app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
-        templateData['availableShots'] = readValue (config, 'availableshots')
-        gp.check_result(gp.gp_camera_exit(camera))
-    except gp.GPhoto2Error as e:
-        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
-            flash(e.string)
-            app.logger.debug('GPhoto camera error in main: ' + str(e))
+            #Find the capturetarget config item. (TY Jim.)
+            capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+            currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+            #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+            if currentTarget == "Internal RAM":
+                #Change it to "Memory Card"
+                try:
+                    newTarget = 1
+                    newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                    gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                    gp.check_result(gp.gp_camera_set_config(camera, config))
+                    config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                    app.logger.debug('Set captureTarget to "Memory Card" in main')
+                except gp.GPhoto2Error as e:
+                    app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
+                except Exception as e:
+                    app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
+            templateData['availableShots'] = readValue (config, 'availableshots')
+            gp.check_result(gp.gp_camera_exit(camera))
     except Exception as e:
         app.logger.debug('Unknown camera error in main: ' + str(e))
 
@@ -404,7 +402,7 @@ def main():
 @app.route("/getTime")
 def getTime():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
     the cron job/script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
@@ -444,24 +442,15 @@ def getArduinoTime():
 @login_required
 def thumbnails():
     """
-    The logic here warrants some explanation: It's *assumed* that for every photo on the Pi there's a matching thumbnail, as the 
+    The logic here warrants some explanation: It's *assumed* that for every photo on the Pi there's a matching thumbnail, as the
     copy and thumb creation process are linked. You *shouldn't* have one without the other.
     This code creates the thumbnails list based on the filename of the main image, and then only adds the assumed -thumbs.JPG suffix as it calls the view.
     Thus, even if a thumb is absent (broken?), the view will still reveal its main image, the image's metadata, and you can still click-through to see it.
-    
+
     Had I started with "list_Pi_Images(PI_THUMBS_DIR)", then a missing thumb would result in its main image not being displayed here.
     """
     ThumbFiles = []
-
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
-    config = configparser.ConfigParser()
-    config.read(iniFile)
-    try:
-        ThumbsToShow = int(config.get('Global', 'thumbsCount'))
-    except Exception as e:
-        app.logger.debug('INI file error reading: ' + str(e))
-        ThumbsToShow = 24
+    ThumbsToShow = int(getIni('Global', 'thumbsCount', 'int', '24'))
 
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
@@ -469,7 +458,7 @@ def thumbnails():
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
-            #Read all the thumb metadata ready to create the page:
+            #Read all the thumb exifData ready to create the page:
             ThumbsInfo = {}
             if os.path.exists(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
@@ -480,18 +469,18 @@ def thumbnails():
                                 ThumbsInfo[key] = val
                             except Exception as e:
                                 #Skip over bad line
-                                app.logger.debug('Error in thumbs info file: ' + str(e))   
+                                app.logger.debug('Error in thumbs info file: ' + str(e))
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 _, imageFileName = os.path.split(FileList[loop])
-                #Read the metadata:
+                #Read the exifData:
                 thumbTimeStamp = 'Unknown'
                 thumbInfo = 'Unknown'
-                metadata = ThumbsInfo.get(imageFileName)
-                #app.logger.debug(str(metadata))
-                if metadata != None:
-                    thumbTimeStamp = metadata.split("|")[0]
-                    thumbInfo = metadata.split("|")[1]
+                exifData = ThumbsInfo.get(imageFileName)
+                #app.logger.debug(str(exifData))
+                if exifData != None:
+                    thumbTimeStamp = exifData.split("|")[0]
+                    thumbInfo = exifData.split("|")[1]
                 #Build the list for the page:
                 ThumbFileName = createThumbFilename(FileList[loop]) #Adds the '-thumb.JPG' suffix
                 ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
@@ -522,7 +511,9 @@ def camera():
         'shutoptions'   : '',
         'expselected'   : '',
         'expoptions'    : '',
-        'piPreviewFile' : ''
+        'piPreviewFile' : '',
+        'cameraMfr'     : 'Unknown',
+        'blockPreview'  : 'False'
         }
 
     args = request.args.to_dict()
@@ -536,70 +527,57 @@ def camera():
         return redirect(url_for('camera'))
 
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
-        cameraTimeAndDate = "Unknown"
-        try:
-            # find the date/time setting config item and get it
-            # name varies with camera driver
-            #   Canon EOS350d - 'datetime'
-            #   PTP - 'd034'
-            for name, fmt in (('datetime', '%Y-%m-%d %H:%M:%S'),
-                              ('datetimeutc', None),
-                              ('d034',     None)):
-                OK, datetime_config = gp.gp_widget_get_child_by_name(config, name)
-                if OK >= gp.GP_OK:
-                    widget_type = gp.check_result(gp.gp_widget_get_type(datetime_config))
-                    if widget_type == gp.GP_WIDGET_DATE:
-                        raw_value = gp.check_result(
-                            gp.gp_widget_get_value(datetime_config))
-                        camera_time = datetime.fromtimestamp(raw_value)
-                    else:
-                        raw_value = gp.check_result(
-                            gp.gp_widget_get_value(datetime_config))
-                        if fmt:
-                            camera_time = datetime.strptime(raw_value, fmt)
-                        else:
-                            camera_time = datetime.utcfromtimestamp(float(raw_value))
-                    cameraTimeAndDate = camera_time.isoformat(' ')
-                    break
-        except Exception as e:
-            app.logger.debug('Error reading camera time and date: ' + str(e))
-            cameraTimeAndDate = "Unknown"   
-        imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
-        wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
-        isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
-        apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
-        shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
-        expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
+        camera, context, config = connectCamera()
+        if camera:
+            cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
+            cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
+            if 'Nikon' in cameraMfr:
+                cameraMfr = 'Nikon'
+                cameraData['cameraMfr'] = 'Nikon'
+            elif 'Canon' in cameraMfr:
+                cameraMfr = 'Canon'
+                cameraData['cameraMfr'] = 'Canon'
+            if (cameraMfr == 'Nikon'):
+                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
+                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'f-number')
+                cameraData['exposuremode']      = readValue (config, 'expprogram')
+            else:
+                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
+                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
+                cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+            #Attributes generic to all cameras:
+            wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
+            isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
+            shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
+            expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
 
-        gp.check_result(gp.gp_camera_exit(camera))
-        cameraData['cameraDate']    = cameraTimeAndDate
-        cameraData['focusmode']     = readValue (config, 'focusmode')
-        cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
-        cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
-        cameraData['imgfmtselected']= imgfmtselected
-        cameraData['imgfmtoptions'] = imgfmtoptions
-        cameraData['wbselected']    = wbselected
-        cameraData['wboptions']     = wboptions
-        cameraData['isoselected']   = isoselected
-        cameraData['isooptions']    = isooptions
-        cameraData['apselected']    = apselected
-        cameraData['apoptions']     = apoptions
-        cameraData['shutselected']  = shutselected
-        cameraData['shutoptions']   = shutoptions
-        cameraData['expselected']   = expselected
-        cameraData['expoptions']    = expoptions
-
-    except gp.GPhoto2Error as e:
-        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
-            flash(e.string)
-            app.logger.debug('Camera GET error: ' + e.string)
+            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            if abilities.model in cameraPreviewBlocklist:
+                cameraData['blockPreview']  = 'True'
+                
+            gp.check_result(gp.gp_camera_exit(camera))
+            cameraData['cameraDate']    = cameraTimeAndDate
+            cameraData['focusmode']     = readValue (config, 'focusmode')
+            cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
+            if (cameraData['exposuremode'] == "Not available"):
+                #try "expprogram"
+                cameraData['exposuremode']  = readValue (config, 'expprogram')
+            cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
+            cameraData['imgfmtselected']= imgfmtselected
+            cameraData['imgfmtoptions'] = imgfmtoptions
+            cameraData['wbselected']    = wbselected
+            cameraData['wboptions']     = wboptions
+            cameraData['isoselected']   = isoselected
+            cameraData['isooptions']    = isooptions
+            cameraData['apselected']    = apselected
+            cameraData['apoptions']     = apoptions
+            cameraData['shutselected']  = shutselected
+            cameraData['shutoptions']   = shutoptions
+            cameraData['expselected']   = expselected
+            cameraData['expoptions']    = expoptions
     except Exception as e:
         app.logger.debug('Unknown camera GET error: ' + str(e))
-        
+
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
 
@@ -608,58 +586,62 @@ def camera():
 @login_required
 def cameraPOST():
     """ This page is where you manage all the camera settings."""
+    preview = None
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
+        camera, context, config = connectCamera()
+        if camera:
+            if request.form['CamSubmit'] == 'apply':
+                app.logger.debug('-- Camera Apply selected')
+                cameraMfr = request.form.get('cameraMfr')
+                app.logger.debug('cameraMfr = {0}'.format(cameraMfr))
+                if cameraMfr == 'Canon':
+                    #This *does* write a new setting to the camera:
+                    node = config.get_child_by_name('imageformat') #
+                    node.set_value(str(request.form.get('img')))
+                    if (request.form.get('aperture') != None):
+                        node = config.get_child_by_name('aperture')
+                        node.set_value(str(request.form.get('aperture')))
+                elif cameraMfr == 'Nikon':
+                    #This *does* write a new setting to the camera:
+                    node = config.get_child_by_name('imagequality') #
+                    node.set_value(str(request.form.get('img')))
+                    if (request.form.get('aperture') != None):
+                        node = config.get_child_by_name('f-number')
+                        node.set_value(str(request.form.get('aperture')))
+                else:
+                    pass
+                # Don't bother sending any of the "read only" settings:
+                if (request.form.get('wb') != None):
+                    node = config.get_child_by_name('whitebalance')
+                    node.set_value(str(request.form.get('wb')))
+                if (request.form.get('iso') != None):
+                    node = config.get_child_by_name('iso')
+                    node.set_value(str(request.form.get('iso')))
+                if (request.form.get('shutter') != None):
+                    node = config.get_child_by_name('shutterspeed')
+                    node.set_value(str(request.form.get('shutter')))
+                if (request.form.get('exp') != None):
+                    node = config.get_child_by_name('exposurecompensation')
+                    node.set_value(str(request.form.get('exp')))
+                camera.set_config(config, context)
+                gp.check_result(gp.gp_camera_exit(camera))
 
-        if request.form['CamSubmit'] == 'apply':
-            app.logger.debug('-- Camera Apply selected')
-            #This *does* write a new setting to the camera:
-            node = config.get_child_by_name('imageformat') #
-            node.set_value(str(request.form.get('img')))
-            # Don't bother sending any of the "read only" settings:
-            if (request.form.get('wb') != None):
-                node = config.get_child_by_name('whitebalance')
-                node.set_value(str(request.form.get('wb')))
-            if (request.form.get('iso') != None):
-                node = config.get_child_by_name('iso')
-                node.set_value(str(request.form.get('iso')))
-            if (request.form.get('aperture') != 'implicit auto'):
-                node = config.get_child_by_name('aperture')
-                node.set_value(str(request.form.get('aperture')))
-            if (request.form.get('shutter') != "auto"):
-                node = config.get_child_by_name('shutterspeed')
-                node.set_value(str(request.form.get('shutter')))
-            if (request.form.get('exp') != None):
-                node = config.get_child_by_name('exposurecompensation')
-                node.set_value(str(request.form.get('exp')))
-            camera.set_config(config, context)
-            gp.check_result(gp.gp_camera_exit(camera))
-
-        if request.form['CamSubmit'] == 'preview':
-            app.logger.debug('-- Camera Preview selected')
-            getPreviewImage(camera, context, config)
-            gp.check_result(gp.gp_camera_exit(camera))
-            return redirect(url_for('camera', preview=1))
-
-    except gp.GPhoto2Error as e:
-        app.logger.debug('Camera POST error: ' + e.string)
-        flash(e.string)
+            if request.form['CamSubmit'] == 'preview':
+                app.logger.debug('-- Camera Preview selected')
+                getPreviewImage(camera, context, config)
+                gp.check_result(gp.gp_camera_exit(camera))
+                preview = 1
     except Exception as e:
         app.logger.debug('Unknown camera POST error: ' + str(e))
 
-    return redirect(url_for('camera'))
+    return redirect(url_for('camera', preview = preview))
 
 
 @app.route("/intervalometer")
 @login_required
 def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
-    writeString("WC") # Sends the camera WAKE command to the Arduino
-    time.sleep(0.5);    # (Adds another 0.5s on top of the 0.5s already baked into WriteString)
-    
+
     templateData = {
         'piDoW' : '',
         'piStartHour' : '',
@@ -671,35 +653,27 @@ def intervalometer():
 
     # Camera comms:
     try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        camera.init(context)
-        config = camera.get_config(context)
-        #Find the capturetarget config item. (TY Jim.)
-        capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
-        currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
-        #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
-        if currentTarget == "Internal RAM":
-            #Change it to "Memory Card"
-            try:
-                newTarget = 1
-                newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
-                gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
-                gp.check_result(gp.gp_camera_set_config(camera, config))
-                config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
-                app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
-            except gp.GPhoto2Error as e:
-                app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
-            except Exception as e:
-                app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
-        templateData['availableShots'] = readValue (config, 'availableshots')
-        gp.check_result(gp.gp_camera_exit(camera))
-    except gp.GPhoto2Error as e:
-        if e.code != gp.GP_ERROR_MODEL_NOT_FOUND:
-            flash(e.string)
-            app.logger.debug('GPhoto camera error in intervalometer: ' + str(e))
-        else:
-            app.logger.debug('Nope, camera not awake yet: ' + str(e)) #DEBUG line GREIG. remove before release.
+        camera, context, config = connectCamera()
+        if camera:
+            #Find the capturetarget config item. (TY Jim.)
+            capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
+            currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
+            #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+            if currentTarget == "Internal RAM":
+                #Change it to "Memory Card"
+                try:
+                    newTarget = 1
+                    newTarget = gp.check_result(gp.gp_widget_get_choice(capture_target, newTarget))
+                    gp.check_result(gp.gp_widget_set_value(capture_target, newTarget))
+                    gp.check_result(gp.gp_camera_set_config(camera, config))
+                    config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
+                    app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
+                except gp.GPhoto2Error as e:
+                    app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
+                except Exception as e:
+                    app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
+            templateData['availableShots'] = readValue (config, 'availableshots')
+            gp.check_result(gp.gp_camera_exit(camera))
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
@@ -753,7 +727,7 @@ def intervalometerPOST():
 @login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
-    
+
     # Commented-out 4Oct2020, NLR(?)
     # args = request.args.to_dict()
     # if args.get('copyNow'):
@@ -827,8 +801,8 @@ def transfer():
 
     rawWakePi = str(readString("5"))
     if rawWakePi != "Unknown":
-        templateData['wakePiTime']     = rawWakePi[0:2] 
-        
+        templateData['wakePiTime']     = rawWakePi[0:2]
+
     return render_template('transfer.html', **templateData)
 
 
@@ -894,19 +868,19 @@ def transferPOST():
 @app.route("/copyNow")
 def copyNowCronJob():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by 
+    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
     the cron job/script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
         abort(403)
-    
+
     tasks = [
         copyNow.si(),
         newThumbs.si()
     ]
     chain(*tasks).apply_async()
-    
+
     res = make_response('OK')
     return res, 200
 
@@ -971,6 +945,8 @@ def system():
         'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
         'arduinoTime'    : 'Unknown',
+        'piDateTime'     : 'Unknown',
+        'piNtp'          : '',
         'piHostname'     : 'Unknown',
         'piUptime'       : 'Unknown',
         'piModel'        : 'Unknown',
@@ -979,18 +955,11 @@ def system():
         'wakePiTime'     : '',
         'wakePiDuration' : '',
         'rebootSafeWord' : REBOOT_SAFE_WORD,
-        'intvlm8rVersion': 'Unknown'
+        'intvlm8rVersion': 'Unknown',
+        'cameraDateTime' : 'Unknown'
         }
 
-    if not os.path.exists(iniFile):
-        createConfigFile(iniFile)
-    config = configparser.ConfigParser()
-    config.read(iniFile)
-    try:
-        templateData['piThumbCount'] = config.get('Global', 'thumbsCount')
-    except Exception as e:
-        app.logger.debug('INI file error reading: ' + str(e))
-        templateData['piThumbCount'] = '24'
+    templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
@@ -1020,19 +989,30 @@ def system():
     except:
         pass
 
+    templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
+    templateData['piNtp'] = checkNTP(None)
+
     try:
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'] = getDiskSpace()
     except:
         pass
-    
+
     try:
         with open('version', 'r') as versionFile:
             templateData['intvlm8rVersion'] = versionFile.read()
     except:
         pass
-    
+
+    try:
+        camera, context, config = connectCamera()
+        if camera:
+            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
+            gp.check_result(gp.gp_camera_exit(camera))
+    except:
+        pass
+
     return render_template('system.html', **templateData)
 
 
@@ -1086,8 +1066,27 @@ def systemPOST():
         writeString("SP=" + WakePiHour + str(request.form.get('wakePiDuration')))
 
     if 'SyncSystem' in request.form:
-        app.logger.debug('Yes we got the SyncSystem button & value ' + str(request.form.get('SyncSystem')))
-        writeString("ST=" + str(request.form.get('SyncSystem'))) # Send the new time and date to the Arduino
+        newTime = str(request.form.get('SyncSystem'))
+        app.logger.debug('Yes we got the SyncSystem button & value ' + newTime)
+        if request.form.get('setArduinoTime'):
+            app.logger.debug('Checked: setArduinoTime')
+            writeString("ST=" + newTime) # Send the new time and date to the Arduino
+        if request.form.get('setPiTime'):
+            app.logger.debug('Checked: setPiTime' )
+            setTime(newTime)
+        if request.form.get('setCameraTime'):
+            app.logger.debug('Checked: setCameraTime')
+            try:
+                camera, context, config = connectCamera()
+                if camera:
+                    if setCameraTimeAndDate(camera, config, newTime):
+                        # apply the changed config
+                        camera.set_config(config)
+                    else:
+                        app.logger.debug('Failed to setCameraTimeAndDate')
+                    camera.exit()
+            except:
+                pass
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
@@ -1100,6 +1099,74 @@ def systemPOST():
     return redirect(url_for('system'))
 
 
+def checkNTP(returnvalue):
+    try:
+        cmd = ['/bin/systemctl', 'is-active', 'systemd-timesyncd']
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            if stdoutdata == 'active':
+                app.logger.info('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP')
+                returnvalue = True
+            else:
+                app.logger.info('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP')
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.debug('systemd-timesyncd error = ' + str(stderrdata))
+    except Exception as e:
+        app.logger.debug('Unhandled systemd-timesyncd error: ' + str(e))
+    return returnvalue
+
+
+def setTime(newTime):
+    """ Takes the time passed from the user's PC and sets the Pi's real time clock """
+    try:
+        #convert it to a form the date command will accept: Incoming is "20181129215800" representing "2018 Nov 29 21:58:00"
+        timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y%m%d%H%M%S')]
+        result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            app.logger.debug('setTime result = ' + str(stdoutdata))
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.debug('setTime error = ' + str(stderrdata))
+    except Exception as e:
+        app.logger.debug('setTime unhandled time error: ' + str(e))
+
+
+def connectCamera():
+    app.logger.debug('connectCamera entered')
+    retries = 0
+    while True:
+        app.logger.debug('connectCamera retries = {0}'.format (retries))
+        if retries > 3:
+            app.logger.debug('connectCamera returning None')
+            return None, None, None
+        try:
+            camera = gp.Camera()
+            context = gp.gp_context_new()
+            camera.init(context)
+            config = camera.get_config(context)
+            app.logger.debug('connectCamera has made a connection to the camera. Exiting')
+            break
+        except gp.GPhoto2Error as e:
+            app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
+            if e.string == 'Unknown model':
+                if retries > 1:
+                    app.logger.debug('connectCamera waking the camera & going again')
+                    writeString("WC") # Sends the WAKE command to the Arduino
+                    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+                else:
+                    app.logger.debug('connectCamera going again without waking the camera')
+                    time.sleep(0.5);
+        except Exception as e:
+            app.logger.debug('connectCamera error: ' + str(e))
+        retries += 1
+    app.logger.debug('connectCamera returning 3 values')
+    return camera, context, config
+
 
 def readValue ( camera, attribute ):
     """ Reads a simple attribute in the camera and returns the value """
@@ -1107,7 +1174,7 @@ def readValue ( camera, attribute ):
         object = gp.check_result(gp.gp_widget_get_child_by_name(camera, attribute))
         value = gp.check_result(gp.gp_widget_get_value(object))
     except:
-        value = '<Error>'
+        value = 'Not available'
     return value
 
 
@@ -1136,9 +1203,70 @@ def readRange ( camera, context, group, attribute ):
                     except:
                         pass
                         #break   #We have found and extracted the attribute we were seeking
-    except:
-        app.logger.debug('readRange Threw')
+    except Exception as e:
+        app.logger.debug('readRange threw: ' + str(e))
     return currentValue, options
+
+
+def getCameraTimeAndDate( camera, context, config, returnvalue ):
+    try:
+        # find the date/time setting config item and get it
+        # name varies with camera driver
+        #   Canon EOS350d - 'datetime'
+        #   PTP - 'd034'
+        for name, fmt in (('datetime', '%Y %b %d %H:%M:%S'),
+                          ('datetimeutc', None),
+                          ('d034',     None)):
+            OK, datetime_config = gp.gp_widget_get_child_by_name(config, name)
+            if OK >= gp.GP_OK:
+                widget_type = gp.check_result(gp.gp_widget_get_type(datetime_config))
+                if widget_type == gp.GP_WIDGET_DATE:
+                    raw_value = gp.check_result(
+                        gp.gp_widget_get_value(datetime_config))
+                    returnvalue = datetime.fromtimestamp(raw_value).strftime('%Y %b %d %H:%M:%S')
+                else:
+                    raw_value = gp.check_result(gp.gp_widget_get_value(datetime_config))
+                    if fmt:
+                        camera_time = datetime.strptime(raw_value, fmt)
+                    else:
+                        camera_time = datetime.utcfromtimestamp(float(raw_value))
+                    returnvalue = camera_time.isoformat(' ')
+                break
+    except Exception as e:
+        app.logger.debug('Error reading camera time and date: ' + str(e))
+    return returnvalue
+
+
+def setCameraTimeAndDate(camera, config, newTimeDate):
+    """
+    Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
+    """
+    abilities = camera.get_abilities()
+    # get configuration tree
+    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
+    if OK >= gp.GP_OK:
+        app.logger.debug('Set camera time (opt 1)')
+        now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+        epochTime = int(time.mktime(now))
+        date_config.set_value(epochTime)
+        return True
+    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
+    if OK >= gp.GP_OK:
+        widget_type = date_config.get_type()
+        if widget_type == gp.GP_WIDGET_DATE:
+            app.logger.debug('Set camera time (opt 2)')
+            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            epochTime = int(time.mktime(now))
+            app.logger.debug('epochTime = {0}'.format(epochTime))
+            date_config.set_value(epochTime)
+        else:
+            app.logger.debug('Set camera time (opt 3)')
+            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
+            date_config.set_value(newNow)
+        return True
+    app.logger.debug('Failed to set camera time')
+    return False
 
 
 def list_camera_files(camera, path='/'):
@@ -1253,9 +1381,9 @@ def createThumbFilename(imageFullFilename):
     sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
     dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
     dest = os.path.join(dest, imageFileName)
-    dest = dest.replace('.JPG', '-thumb.JPG')
-    dest = dest.replace('.CR2', '-thumb.JPG') # Canon raw
-    dest = dest.replace('.NEF', '-thumb.JPG') # Nikon raw
+    dest = re.sub('.JPG', '-thumb.JPG', dest, flags=re.IGNORECASE)
+    dest = re.sub('.CR2', '-thumb.JPG', dest, flags=re.IGNORECASE) # Canon raw
+    dest = re.sub('.NEF', '-thumb.JPG', dest, flags=re.IGNORECASE) # Nikon raw
     return dest
 
 
@@ -1270,67 +1398,116 @@ def makeThumb(imageFile):
             app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
-            #Lots of nested TRYs here to minimise any bad data errors in the output.
+            app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
             try:
-                app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
                     thumb.save(dest, "JPEG")
-                try:
-                    # Open image file for reading (binary mode)
-                    with open(imageFile, 'rb') as photo:
-                        tags = exifreader.process_file(photo) # Return Exif tags
-                    try:
-                        dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
-                        dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
-                        timeOriginal = dateTimeOriginal[1]
-                    except Exception as e:
-                        dateOriginal = ''
-                        timeOriginal = ''
-                        app.logger.info('makeThumb() dateTimeOriginal error: ' + str(e))
-                    try:
-                        #Reformat depending on the value:
-                        # 6/1   becomes 6s
-                        # 15/10 becomes 1.5s
-                        # 3/10  becomes 0.3s
-                        # 1/30  becomes 1/30s
-                        exposureTime = convert_to_float(str(tags['EXIF ExposureTime']))
-                        if (exposureTime).is_integer():
-                            #It's a whole number of seconds. Strip the '.0'
-                            exposureTime = str(exposureTime).replace('.0','')
-                        elif (Decimal(exposureTime).as_tuple().exponent <= -2):
-                            #Yuk. it has lots of decimal places. Display as originally reported
-                            exposureTime = str(tags['EXIF ExposureTime'])
-                        else:
-                            pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
-                    except Exception as e:
-                        exposureTime = '?'
-                        app.logger.info('makeThumb() ExposureTime error: ' + str(e))
-                    try:
-                        fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
-                        #Strip the '.0' if it's a whole F-stop
-                        fNumber = fNumber.replace('.0','')
-                    except Exception as e:
-                        fNumber = '?'
-                        app.logger.info('makeThumb() fNumber error: ' + str(e))
-                    try:
-                        ISO = tags['EXIF ISOSpeedRatings']
-                    except Exception as e:
-                        ISO = '?'
-                        app.logger.info('makeThumb() ISO error: ' + str(e))
-                    try:
-                        with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                            thumbsInfoFile.write('{0} = {1} {2}|{3}s &bull; F{4} &bull; ISO{5}\r\n'.format(imageFileName, dateOriginal, timeOriginal, exposureTime, fNumber, ISO))
-                    except Exception as e:
-                        app.logger.info('makeThumb() error writing to thumbsInfoFile: ' + str(e))
-                except Exception as e:
-                    app.logger.info('makeThumb() EXIF error: ' + str(e))
             except Exception as e:
-                app.logger.info('makeThumb() Pillow error: ' + str(e))
+                app.logger.info('makeThumb() thumbnail save error: ' + str(e))
+        getExifData(imageFile, imageFileName)
         return dest, alreadyExists
     except Exception as e:
         app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
-        return None
+        return None, None
+
+
+def getExifData(imageFilePath, imageFileName):
+    while True:
+        #Lots of TRYs here to minimise any bad data errors in the output.
+        try:
+            # Open image file for reading (binary mode)
+            abort = None
+            with open(imageFilePath, 'rb') as photo:
+                tags = exifreader.process_file(photo) # Return Exif tags.
+            try:
+                dateOriginal = ''
+                timeOriginal = ''
+                dateTimeOriginal = str(tags['EXIF DateTimeOriginal']).split(' ')
+                dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
+                timeOriginal = dateTimeOriginal[1]
+            except Exception as e:
+                app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
+            if os.path.exists(PI_THUMBS_INFO_FILE):
+                with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+                    for line in f:
+                        if ('{0} = {1} {2}|'.format(imageFileName, dateOriginal, timeOriginal)) in line:
+                            app.logger.info('getExifData() image {0} already exists in Exif file. Aborting'.format(imageFileName))
+                            abort = True
+                            break
+            if abort:
+                break
+            try:
+                _, fileExtension = os.path.splitext(imageFilePath)
+                fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
+            except Exception as e:
+                fileExtension = '?'
+                app.logger.info('getExifData() fileExtension error: ' + str(e))
+            try:
+                #Reformat depending on the value:
+                # 6/1   becomes 6s
+                # 15/10 becomes 1.5s
+                # 3/10  becomes 0.3s
+                # 1/30  becomes 1/30s
+                exposureTime = convert_to_float(str(tags['EXIF ExposureTime']))
+                if (exposureTime).is_integer():
+                    #It's a whole number of seconds. Strip the '.0'
+                    exposureTime = str(exposureTime).replace('.0','')
+                elif (Decimal(exposureTime).as_tuple().exponent <= -2):
+                    #Yuk. it has lots of decimal places. Display as originally reported
+                    exposureTime = str(tags['EXIF ExposureTime'])
+                else:
+                    pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
+            except Exception as e:
+                exposureTime = '?'
+                app.logger.info('getExifData() ExposureTime error: ' + str(e))
+            try:
+                fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
+                #Strip the '.0' if it's a whole F-stop
+                fNumber = fNumber.replace('.0','')
+            except Exception as e:
+                fNumber = '?'
+                app.logger.info('getExifData() fNumber error: ' + str(e))
+            try:
+                ISO = tags['EXIF ISOSpeedRatings']
+            except Exception as e:
+                ISO = '?'
+                app.logger.info('getExifData() ISO error: ' + str(e))
+            try:
+                with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
+                    thumbsInfoFile.write('{0} = {1} {2}|{3} &bull; {4}s &bull; F{5} &bull; ISO{6}\r\n'.format(imageFileName, dateOriginal, timeOriginal, fileExtension, exposureTime, fNumber, ISO))
+            except Exception as e:
+                app.logger.info('getExifData() error writing to thumbsInfoFile: ' + str(e))
+            break
+        except Exception as e:
+            app.logger.info('getExifData() EXIF error: ' + str(e))
+            break
+    return
+
+
+def dedupeExifData():
+    lines = 0
+    ThumbsInfo = {}
+    if os.path.exists(PI_THUMBS_INFO_FILE):
+        with open(PI_THUMBS_INFO_FILE, 'rt') as f:
+            for line in f:
+                if ' = ' in line:
+                    try:
+                        lines += 1
+                        (key, val) = line.rstrip('\n').split(' = ')
+                        ThumbsInfo[key] = val
+                    except Exception as e:
+                        #Skip over bad line
+                        app.logger.debug('dedupeExifData info file error: ' + str(e))
+        if lines != len(ThumbsInfo):
+            #We have a discrepancy (dupe or bad line). Re-write the file:
+            app.logger.info('dedupeExifData() recreating thumbs info file: lines = {0}, UniqueImages = {1}'.format(lines, len(ThumbsInfo)))
+            with open(PI_THUMBS_INFO_FILE, 'r+') as file:
+                file.seek(0)
+                for key, value in ThumbsInfo.items():
+                    file.write('{0} = {1}\n'.format(key, value))
+                file.truncate() #Trash the leftovers.
+    return
 
 
 #TY SO: https://stackoverflow.com/a/30629776
@@ -1417,31 +1594,36 @@ def createConfigFile(iniFile):
     return
 
 
-def getIni():
+def getIni(keySection, keyName, keyType, defaultValue):
     """
-    deleteAfterCopy was added late, so I'm giving it some special handling here,
-    adding it into the file 'on the fly' if it's not already there.
-    TODO: use getIni for all calls to the ini file for a single value
+    Reads a key from the INI file and returns its value.
+    If it doesn't exist, it's created with a default value, which is then returned.
     """
+    returnValue = defaultValue
     try:
         if not os.path.exists(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         config.read(iniFile)
-        deleteAfterCopy = config.getboolean('Copy', 'deleteAfterCopy')
-    except Exception as e:
+        if 'bool' in keyType:
+            returnValue = config.getboolean(keySection, keyName)
+        else:
+            returnValue = config.get(keySection, keyName)
+    except configparser.Error as e:
+        app.logger.info('getIni() reports key error: ' + str(e))
         #Looks like the flag doesn't exist. Let's add it
         try:
-            if not config.has_section('Copy'):
-                config.add_section('Copy')
-            config.set('Copy', 'deleteAfterCopy', 'Off')
+            if not config.has_section(keySection):
+                config.add_section(keySection)
+            config.set(keySection, keyName, defaultValue)
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
-            app.logger.debug('Added deleteAfterCopy flag to the INI file, after error : ' + str(e))
+            app.logger.debug('Added {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
         except Exception as e:
-            app.logger.debug('Exception thrown trying to add deleteAfterCopy to the INI file : ' + str(e))
-            deleteAfterCopy = False
-    return deleteAfterCopy
+            app.logger.debug('Exception thrown trying to add {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
+    except Exception as e:
+        app.logger.info('Unhandled error in getIni(): ' + str(e))
+    return returnValue
 
 
 @app.route('/trnCopyNow', methods=['POST'])
@@ -1451,23 +1633,23 @@ def trnCopyNow():
     This page is called in the background by the 'Copy now' button on the Transfer page
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('trnCopyNow(): entered')
+    app.logger.debug('trnCopyNow() entered')
     app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
-    
+
     tasks = [
         copyNow.si(),
         newThumbs.si()
     ]
     task = chain(*tasks).apply_async()
-    
-    app.logger.debug('trnCopyNow(): returned with task_id= ' + str(task.id))
+
+    app.logger.debug('trnCopyNow() returned with task_id= ' + str(task.id))
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
 @celery.task(time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the camera WAKE command to the Arduino
-    app.logger.info('copyNow(): entered') #This logs to /var/log/celery/celery_worker.log
+    app.logger.info('copyNow() entered') #This logs to /var/log/celery/celery_worker.log
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
@@ -1496,7 +1678,7 @@ def copyNow(self):
     if filesToCopy:
         numberToCopy = len(filesToCopy)
         app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
-        deleteAfterCopy = getIni()
+        deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         while len(filesToCopy) > 0:
             try:
                 thisImage += 1
@@ -1520,7 +1702,7 @@ def copyNow(self):
 
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
-    app.logger.info('newThumbs(): entered') #This logs to /var/log/celery/celery_worker.log
+    app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -1537,20 +1719,22 @@ def newThumbs(self):
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
                 dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+                if (dest == None):
+                    #Something went wrong
+                    app.logger.debug('A thumb was not created for {0}'.format(FileList[loop]))
+                    continue
                 if not alreadyExists:
                     thumbsCreated += 1
                     self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
                     app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
                 else:
                     app.logger.debug('Thumb for ' + dest + ' already exists')
-                if (dest == None):
-                    #Something went wrong
-                    continue
         else:
             app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
     except Exception as e:
         app.logger.info('newThumbs error: ' + str(e))
-    app.logger.info('newThumbs(): returned')
+    dedupeExifData()
+    app.logger.info('newThumbs() returned')
     return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
 
 
@@ -1559,7 +1743,7 @@ def newThumbs(self):
 @login_required
 def backgroundStatus(task_id):
     task = copyNow.AsyncResult(task_id)
-    app.logger.debug('backgroundStatus(): entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
+    app.logger.debug('backgroundStatus() entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
     if task.state == 'PENDING':
         # job did not start yet
         response = {
@@ -1578,7 +1762,7 @@ def backgroundStatus(task_id):
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
         }
-    app.logger.debug('backgroundStatus(): returned')
+    app.logger.debug('backgroundStatus() returned')
     return jsonify(response)
 
 
@@ -1586,7 +1770,7 @@ def backgroundStatus(task_id):
 @app.before_request
 def getCeleryTasks():
     """
-    This executes before EVERY page load, feeding any active task ID into the 
+    This executes before EVERY page load, feeding any active task ID into the
     ensuing response. Javascript in the footer of every page (in index.html)
     will then query for status updates if a task ID is present.
     """

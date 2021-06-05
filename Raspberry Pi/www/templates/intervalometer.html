@@ -1,7 +1,7 @@
 {% extends "index.html" %}
 {% block content %}
 
-<form method="POST">
+<form method="POST" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<th>Intervalometer Settings</th>
@@ -165,7 +165,7 @@ function calculateShots()
 function calculateCameraDays(shotsperday)
 {
 	var availableShots = "{{ availableShots }}";
-	if (availableShots != "Unknown")
+	if (availableShots != "Unknown" && availableShots != "Not available")
 	{
 		var result = ~~(availableShots / shotsperday); 
 		if (result == result)
@@ -179,7 +179,7 @@ function calculateCameraDays(shotsperday)
 	}
 	else
 	{
-		document.getElementById("shotsincamera").innerHTML = "Unknown";
+		document.getElementById("shotsincamera").innerHTML = "{{ availableShots }}";
 	}
 }
 

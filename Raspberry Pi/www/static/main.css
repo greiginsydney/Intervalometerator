@@ -59,6 +59,10 @@ a {
 	background-color: #FFFFFF;
 }
 
+.grey {
+	background-color: #DCDCDC; /* gainsboro */
+}
+
 .alignleft {
 	float: left;
 }
@@ -107,6 +111,35 @@ input[type=radio] {
 	opacity: 0;
 	position: absolute;
 	cursor: pointer;
+}
+
+.grey-out{
+	opacity: 0.6;
+	filter: alpha(opacity = 60); /* MSIE */
+}
+
+/* Tooltip container */
+.tooltip {
+	position: relative;
+	display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+	visibility: hidden;
+	width: 200px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	padding: 5px 0;
+	border-radius: 6px;
+	position: absolute;
+	z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+	visibility: visible;
 }
 
 /* End: General CSS */
@@ -236,6 +269,7 @@ input[type=radio] {
 	border-style: none;
 }
 
+/* End: radio button */
 /* ---------------------------------------------------------*/
 /* Start: Menu */
 
@@ -286,15 +320,23 @@ input[type=radio] {
 
 /* End: Menu */
 /* ----------------------------------------------------------------------------------*/
-/* Start: Thumbnails. --*/
+/* Start: Thumbnails --*/
 
 .thumb {
   background-color: black;
-  color: white;
   padding: .5em;
-  height: 12em;
+  height: 7em;
+  justify-self: start;
+}
+
+.thumbtext {
+  background-color: black;
+  color: white;
+  padding: 1em;
+  height: 2em;
   font-size: 0.8em;
   text-align: center;
+  justify-self: end;
 }
 
 .view {
@@ -316,8 +358,7 @@ input[type=radio] {
   .view { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* END  Thumbs  */
-/* END General CSS */
+/* End: Thumbs  */
 /* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
@@ -369,6 +410,7 @@ input[type=radio] {
 @media screen and (max-width: 900px) {
 
 }
-/* END Mobile Devices */
+/* End: Mobile Devices */
 
-/* The radio buttons & checkbox came from https://www.w3schools.com/howto/howto_css_custom_checkbox.asp*/
+/* The radio buttons & checkbox came from https://www.w3schools.com/howto/howto_css_custom_checkbox.asp */
+/* Tooltip came from here: https://www.w3schools.com/css/css_tooltip.asp */

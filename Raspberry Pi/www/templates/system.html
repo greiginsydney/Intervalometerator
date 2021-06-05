@@ -1,7 +1,7 @@
 {% extends "index.html" %}
 {% block content %}
 
-<form name="setLocation" method="post" >
+<form name="setLocation" method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<th>System Maintenance</th>
@@ -22,7 +22,7 @@
 	</table>
 </form>
 
-<form name="setThumbsCount" method="post">
+<form name="setThumbsCount" method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<td class="noborder">
@@ -45,18 +45,6 @@
 </form>
 
 <table>
-	<tr>
-		<td>
-			<div class="alignleft">System (Arduino) date:</div>
-			<div class="alignright">{{ arduinoDate }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">System (Arduino) time:</div>
-			<div class="alignright">{{ arduinoTime }}</div>
-		</td>
-	</tr>
 	<tr>
 		<td>
 			<div class="alignleft">Pi model:</div>
@@ -90,7 +78,7 @@
 </table>
 
 
-<form name="PiEnable" method="post" >
+<form name="PiEnable" method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<td class="noborder">
@@ -126,8 +114,26 @@
 	</table>
 </form>
 
-<form name="sendTime" method="post" onsubmit="return sendTimeToServer();">
+<form name="sendTime" method="post" onsubmit="userFeedback(this, event); sendTimeToServer()">
 	<table>
+		<tr>
+			<td>
+				<div class="alignleft">Arduino date/time:</div>
+				<div class="alignright">{{ arduinoDate }} {{ arduinoTime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Pi date/time:</div>
+				<div class="alignright">{{ piDateTime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Camera date/time:</div>
+				<div class="alignright">{{ cameraDateTime }}</div>
+			</td>
+		</tr>
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">Current PC date/time is</div>
@@ -136,18 +142,49 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<button name="SyncSystem" type="submit" class="hwbutton" value="SetPiTime">Set system time &amp; date</button>
+				<div class="alignleft">Set Arduino date/time:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="setArduinoTime" name="setArduinoTime" onchange="newSetTimeSelected(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
 			</td>
 		</tr>
 		<tr>
 			<td class="noborder">
-				<button name="SyncCamera" type="submit" class="hwbutton" value="SetCameraTime" DISABLED>Set camera time &amp; date</button>
+				<div class="alignleft{% if piNtp == True %} grey-out tooltip{% endif %}">
+					Set Pi date/time:
+					{% if piNtp == True %}<span class="tooltiptext">The Pi is sync'd to NTP</span>{% endif %}
+				</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="setPiTime" name="setPiTime" onchange="newSetTimeSelected(this.id)"{% if piNtp == True %} DISABLED{% endif %}/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Set camera date/time:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<button name="SyncSystem" type="submit" class="hwbutton" id="setDateTimeButton" value="SetDateTime">Set date &amp; time</button>
 			</td>
 		</tr>
 	</table>
 </form>
 
-<form name="reboot" method="post" >
+<form name="reboot" method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<td class="noborder">
@@ -189,16 +226,25 @@ var SelectionBits = new Array();
 SelectionBits["wakePiTime"]     = 1;
 SelectionBits["wakePiDuration"] = 2;
 
+var SetTimeSelectionByte = 0;
+var SetTimeSelectionBits = new Array();
+SetTimeSelectionBits["setArduinoTime"]     = 1;
+SetTimeSelectionBits["setPiTime"] = 2;
+SetTimeSelectionBits["setCameraTime"] = 4;
+
 // This drives the default display on load:
 document.getElementById("submitLocation").disabled = true;
 document.getElementById("submitThumbsCount").disabled = true;
 document.getElementById("submitWakePi").disabled = true;
+document.getElementById("setDateTimeButton").disabled = true;
 document.getElementById("submitReboot").disabled = true;
 
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
 var piHour = document.getElementById("wakePiTime");
 var piMinutes = document.getElementById("piMinutes");
 piMinutes.style.display = (piHour.value == "25") ? "none":"";
+
+var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
 
 function update_time()
 {
@@ -209,12 +255,17 @@ function update_time()
 function sendTimeToServer()
 {
 	var today = new Date();
+	//This is what we send to the Pi & Arduino:
 	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
 	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
 	var dateTime = date + time;
 	document.forms["sendTime"]["SyncSystem"].value = dateTime;
-	var options = { year: 'numeric', month: 'short', day: 'numeric', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'};
-	document.getElementById("now").innerHTML = today.toLocaleString('en-AU', options); // Customise (or customIZE) as appropriate for your locale
+	
+	//This is what we display on-screen:
+	var displayedDateTime = today.getFullYear() + ' ' + short_month[today.getMonth()] + ' ' + ('0' + (today.getDate())).slice(-2)
+	displayedDateTime += ' ' + ('0' + (today.getHours())).slice(-2) + ':' + ('0' + (today.getMinutes())).slice(-2) + ':' + ('0' + (today.getSeconds())).slice(-2);
+	document.getElementById("now").innerHTML = displayedDateTime;
+
 	update_time();
 	}
 
@@ -263,7 +314,22 @@ function newSelected(id)
 	}
 	lightButtons();
 }
-	
+
+function newSetTimeSelected(id)
+{
+	var option = document.getElementById(id);
+
+	if (option.checked == true)
+	{
+		SetTimeSelectionByte = SetTimeSelectionByte | SetTimeSelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SetTimeSelectionByte = SetTimeSelectionByte ^ SetTimeSelectionBits[id]; //XOR turns it off
+	}
+	lightSetTimeButton();
+}
+
 function newRebootText(id)
 {
 	var option = document.getElementById(id);
@@ -277,7 +343,7 @@ function newRebootText(id)
 		button.disabled  = true;
 	}
 }
-	
+
 function lightButtons()
 {
 	if (SelectionByte == 0)
@@ -287,6 +353,18 @@ function lightButtons()
 	else
 	{
 		document.getElementById("submitWakePi").disabled  = false;
+	}
+}
+
+function lightSetTimeButton()
+{
+	if (SetTimeSelectionByte == 0)
+	{
+		document.getElementById("setDateTimeButton").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("setDateTimeButton").disabled  = false;
 	}
 }
 

@@ -27,6 +27,7 @@ import logging
 import os
 import re
 import subprocess
+import sys
 
 LOGFILE_PATH = os.path.expanduser('/home/pi')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
@@ -35,10 +36,33 @@ htmltext = ''
 newTime = 'Unknown'
 
 
-def main():
+def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     log('')
-    retryCount = 0
+    # If the 'midnight' flag is set, do NOT run if the systemd-timesyncd is active (as this means NTP controls the Pi's RTC)
+    try:
+        if sys.argv[1] == 'midnight':
+            try:
+                cmd = ['systemctl', 'is-active', 'systemd-timesyncd']
+                result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+                (stdoutdata, stderrdata) = result.communicate()
+                if stdoutdata:
+                    stdoutdata = stdoutdata.strip()
+                    if stdoutdata == 'active':
+                        log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP. setTime.py aborting')
+                        return
+                    else:
+                        log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. setTime.py continuing')
+                if stderrdata:
+                    stderrdata = stderrdata.strip()
+                    log('systemd-timesyncd error = ' + str(stderrdata) + '. setTime.py aborting')
+                    return
+            except Exception as e:
+                log('Unhandled systemd-timesyncd error: ' + str(e) + '. setTime.py aborting')
+                return
+        retryCount = 0
+    except:
+        pass
     while True:
         try:
             response = urlopen('http://localhost:8080/getTime')
@@ -90,4 +114,4 @@ def log(message):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

@@ -34,13 +34,40 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 install_apps ()
 {
 
-	#Ask the admin if they want to NOT install some of the transfer/upload options:
-	echo ""
-	echo "====== Select Upload/Transfer options ======="
-	echo "An 'X' indicates the option will be installed"
-	installSftp=1
-	installDropbox=1
-	installGoogle=1
+	if [ -f www/intvlm8r.old ];
+	then
+		echo ""
+		echo "intvlm8r.old found. Looks like this is an upgrade."
+		echo ""
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
+		then
+			installSftp=1
+		else
+			installSftp=0
+		fi
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("dropbox"))';
+		then
+			installDropbox=1
+		else
+			installDropbox=0
+		fi
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("oauth2client"))';
+		then
+			installGoogle=1
+		else
+			installGoogle=0
+		fi
+		echo "====== Select Upload/Transfer options ======="
+		echo "An 'X' indicates the option is already installed"
+	else
+		#Ask the admin if they want to NOT install some of the transfer/upload options:
+		echo ""
+		echo "====== Select Upload/Transfer options ======="
+		echo "An 'X' indicates the option will be installed"
+		installSftp=1
+		installDropbox=1
+		installGoogle=1
+	fi
 	while true; do
 		echo ""
 		
@@ -171,11 +198,21 @@ install_website ()
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
 
-	if [ -f default_image.jpg ];
+	if [ -f default_image.JPG ];
 	then
-		mv -fv default_image.jpg ~/photos/default_image.jpg
+		mv -fv default_image.JPG ~/photos/default_image.JPG
 	fi
 
+	if [ -f default_image-thumb.JPG ];
+	then
+		mv -fv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
+	fi
+	
+	if [ -f piThumbsInfo.txt ];
+	then
+		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
+	fi
+	
 	chown -R pi:www-data /home/pi
 
 	if [ -f www/intvlm8r.old ];
@@ -399,6 +436,7 @@ install_website ()
 		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+		echo "Success: 'cameraTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
 
@@ -412,8 +450,26 @@ install_website ()
 		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+		echo "Success: 'piTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
+
+	#midnight time sync
+	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
+
+	if grep -q setTime.py "cronTemp";
+	then
+		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
+	else
+		echo "0 0 * * * /usr/bin/python3 ${HOME}/www/setTime.py midnight 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
+		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
+	fi
+	rm cronTemp
+
+	setcap CAP_SYS_TIME+ep /bin/date #Allows the Pi user (actually ALL users) to issue date without needing to be root.
+	# (Thank you SO: https://unix.stackexchange.com/a/78309)
 
 	#NTP
 	echo ""
@@ -825,9 +881,47 @@ test_install ()
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
 	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
 	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
+	grep -q "i2c_arm_baudrate" /boot/config.txt && echo "PASS: i2c_arm_baudrate is present in /boot/config.txt" || echo "FAIL: i2c_arm_baudrate not present in /boot/config.txt"
 	echo ''
 	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
 	i2cdetect -y 1
+	echo ''
+	# Test for ap/noap mode:
+	ap_test=0
+	if systemctl --all --type service | grep -q "dnsmasq";
+	then
+		$ap_test=$((ap_test+1))
+	fi
+	if systemctl --all --type service | grep -q "hostapd";
+	then
+		$ap_test=$((ap_test+2))
+	fi
+	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
+	
+	case $ap_test in
+		(0)
+			echo 'PASS: The Pi is NOT an AP'
+			;;
+		(1)
+			echo 'FAIL: dnsmasq running alone. hostapd should also be running for the Pi to be an AP'
+			;;
+		(2)
+			echo 'FAIL: hostapd running alone. dnsmasq should also be running for the Pi to be an AP'
+			;;
+		(3)
+			echo 'FAIL: hostapd & dnsmasq are installed, but hostapd.conf is missing'
+			;;
+		(4)
+			echo 'FAIL: hostapd.conf is present but hostapd & dnsmasq are missing'
+			;;
+		(7)
+			echo 'PASS: hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP'
+			;;
+	esac
+	echo ''
+	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 }
 
 
