@@ -286,6 +286,7 @@ def main():
         'piImageCount'      : 'Unknown',
         'piLastImage'       : 'Unknown',
         'piSpaceFree'       : 'Unknown',
+        'piDaysFree'        : 'Unknown',
         'lastTrnResult'     : 'Unknown',
         'lastTrnLogFile'    : PI_TRANSFER_LINK,
         'piLastImageFile'   : 'Unknown'
@@ -387,6 +388,12 @@ def main():
     templateData['piImageCount']    = PI_PHOTO_COUNT
     templateData['piLastImage']     = piLastImage
     templateData['piSpaceFree'],piBytesFree = getDiskSpace()
+    largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
+    shotsPerDay = getShotsPerDay()
+    try:
+        templateData['piDaysFree'] = str(round((piBytesFree / largestImageSize) / shotsPerDay))
+    except:
+        None
     templateData['piLastImageFile'] = piLastImageFile
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
