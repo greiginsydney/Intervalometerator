@@ -1807,6 +1807,10 @@ def reformatSlashes(folder):
 
 
 def getLargestImageSize(path):
+    '''
+    Finds the largest file on the /photos/ folder tree.
+    Used to calculate the number of days' worth of storage left on the Pi
+    '''    
     max_size = 0
     try:
         for folder, subfolders, files in os.walk(path):
@@ -1824,6 +1828,9 @@ def getLargestImageSize(path):
 
     
 def getShotsPerDay():
+    '''
+    Used to calculate the number of days' worth of storage left on the Pi and camera
+    '''
     shotsPerDay = 0
     try:
         ArdInterval = str(readString("3"))
