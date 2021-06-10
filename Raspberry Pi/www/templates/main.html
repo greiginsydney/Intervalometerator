@@ -53,8 +53,8 @@
 			</tr>
 			<tr>
 				<td>
-					<div class="alignleft">Available shots:</div>
-					<div class="alignright">{{ availableShots }}</div>
+					<div class="alignleft">Available shots (days):</div>
+					<div class="alignright">{{ availableShots }} ({{ cameraDaysFree }})</div>
 				</td>
 			</tr>
 			<tr {{ 'class="red"' if cameraBattery == "Low" }}>
@@ -94,8 +94,8 @@
 	</tr>
 	<tr>
 		<td>
-			<div class="alignleft">Pi storage free:</div>
-			<div class="alignright">{{ piSpaceFree }}</div>
+			<div class="alignleft">Pi storage free (days):</div>
+			<div class="alignright">{{ piSpaceFree }} ({{ piDaysFree }})</div>
 		</td>
 	</tr>
 </table>
