@@ -282,6 +282,7 @@ def main():
         'fileCount'         : 'Unknown',
         'lastImage'         : 'Unknown',
         'availableShots'    : 'Unknown',
+        'cameraDaysFree'    : 'Unknown',
         'piInterval'        : '',
         'piImageCount'      : 'Unknown',
         'piLastImage'       : 'Unknown',
@@ -392,6 +393,10 @@ def main():
     shotsPerDay = getShotsPerDay()
     try:
         templateData['piDaysFree'] = str(round((piBytesFree / largestImageSize) / shotsPerDay))
+    except:
+        None
+    try:
+        templateData['cameraDaysFree'] = round(int(templateData['availableShots']) / shotsPerDay)
     except:
         None
     templateData['piLastImageFile'] = piLastImageFile
