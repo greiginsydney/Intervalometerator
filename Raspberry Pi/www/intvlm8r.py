@@ -1806,6 +1806,23 @@ def reformatSlashes(folder):
     return folder
 
 
+def getLargestImageSize(path):
+    max_size = 0
+    try:
+        for folder, subfolders, files in os.walk(path):
+            # checking the size of each file
+            for file in files:
+                size = os.stat(os.path.join( folder, file  )).st_size
+                # updating maximum size
+                if size > max_size:
+                    max_size = size
+        app.logger.debug('getLargestImageSize returned: ' + str(max_size))
+        return max_size
+    except Exception as e:
+        app.logger.debug('getLargestImageSize exception: ' + str(e))
+        return None
+
+    
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
    app.run(host='0.0.0.0')
