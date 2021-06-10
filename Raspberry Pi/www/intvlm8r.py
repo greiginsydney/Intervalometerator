@@ -386,7 +386,7 @@ def main():
         PI_PHOTO_COUNT = 0
     templateData['piImageCount']    = PI_PHOTO_COUNT
     templateData['piLastImage']     = piLastImage
-    templateData['piSpaceFree']     = getDiskSpace()
+    templateData['piSpaceFree'],piBytesFree = getDiskSpace()
     templateData['piLastImageFile'] = piLastImageFile
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
@@ -995,7 +995,7 @@ def system():
     try:
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
-        templateData['piSpaceFree'] = getDiskSpace()
+        templateData['piSpaceFree'],_ = getDiskSpace()
     except:
         pass
 
@@ -1565,12 +1565,13 @@ def getDiskSpace():
     """ https://www.raspberrypi.org/forums/viewtopic.php?t=22180 """
     try:
         disk = psutil.disk_usage('/')
-        disk_total = disk.total / 2**30     # GiB.
-        disk_used = disk.used / 2**30
-        disk_free = str(round(disk.free / 2**30,2)) + ' GB'
+        #disk_total = disk.total / 2**30     # GiB.
+        #disk_used = disk.used / 2**30
+        disk_free_bytes = disk.free
+        disk_free_str = str(round(disk_free_bytes / 2**30,2)) + ' GB'
     except:
-        disk_free = "Unknown"
-    return disk_free
+        return "Unknown",None
+    return disk_free_str,disk_free_bytes
 
 
 def createConfigFile(iniFile):
