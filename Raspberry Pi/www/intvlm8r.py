@@ -1823,6 +1823,28 @@ def getLargestImageSize(path):
         return None
 
     
+def getShotsPerDay():
+    shotsPerDay = 0
+    try:
+        ArdInterval = str(readString("3"))
+        #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
+        if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
+            startHour = int(ArdInterval[1:3])
+            endHour   = int(ArdInterval[3:5])
+            interval  = int(ArdInterval[5:7])
+            if endHour >= startHour:
+                shotsPerDay = (endHour - startHour) * (60 / interval)
+            else:
+                shotsPerDay = ((endHour + 24) - startHour) * (60 / interval) #Future: when I finally code overnight shot handling
+            app.logger.debug('getShotsPerDay returned: ' + str(shotsPerDay))
+            return shotsPerDay
+        else:
+            return None
+    except Exception as e:
+        app.logger.debug('getShotsPerDay exception: ' + str(e))
+        return None
+
+
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
    app.run(host='0.0.0.0')
