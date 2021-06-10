@@ -483,6 +483,9 @@ def commenceGoogle(remoteFolder):
                 if 'returned' in errorMsg:
                     errorReason = errorMsg.split('"')[1]
                     log('STATUS: Google error: %s' % (errorReason))
+                    if 'The user has exceeded their Drive storage quota' in errorReason:
+                        log('Google upload aborted - no space')
+                        return 0
             previousFilePath = remoteFolderTree[0]
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     return 0
