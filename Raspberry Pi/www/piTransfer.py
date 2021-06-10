@@ -478,7 +478,11 @@ def commenceGoogle(remoteFolder):
                 else:
                     log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
-                log('Exception uploading ''%s'' to Google: %s' % (needupload,str(e)))
+                errorMsg = str(e)
+                log('Exception uploading ''%s'' to Google: %s' % (needupload,errorMsg))
+                if 'returned' in errorMsg:
+                    errorReason = errorMsg.split('"')[1]
+                    log('STATUS: Google error: %s' % (errorReason))
             previousFilePath = remoteFolderTree[0]
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     return 0
