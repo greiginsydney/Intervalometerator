@@ -382,7 +382,8 @@ def main():
     except:
         None
     try:
-        templateData['cameraDaysFree'] = round(int(templateData['availableShots']) / shotsPerDay)
+        templateData['cameraDaysFree'] = round((int(templateData['availableShots']) / shotsPerDay) - 0.5)
+        #Python rounds up, which I don't want. This "- 0.5" is also to align with the same result calculated by Javascript on the /intervalometer page.
     except:
         None
     templateData['piLastImageFile'] = piLastImageFile
