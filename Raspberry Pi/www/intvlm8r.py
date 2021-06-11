@@ -656,11 +656,12 @@ def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
 
     templateData = {
-        'piDoW' : '',
-        'piStartHour' : '',
-        'piEndHour' : '',
-        'piInterval' : '',
-        'availableShots': 'Unknown'
+        'piDoW'            : '',
+        'piStartHour'      : '',
+        'piEndHour'        : '',
+        'piInterval'       : '',
+        'availableShots'   : 'Unknown',
+        'piAvailableShots' : 'Unknown'
     }
     app.logger.debug('This is a GET to Intervalometer')
 
@@ -702,7 +703,11 @@ def intervalometer():
         templateData['piEndHour'] = ArdInterval[3:5]
         templateData['piInterval'] = ArdInterval[5:7]
         app.logger.debug('Decoded Interval = ' + ArdInterval[5:7])
-
+    
+    _,piBytesFree = getDiskSpace()
+    largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
+    templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
+    
     return render_template('intervalometer.html', **templateData)
 
 
