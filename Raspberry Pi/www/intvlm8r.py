@@ -324,7 +324,6 @@ def main():
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
                 flash('No storage info available') # The memory card is missing or faulty
-            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             files = list_camera_files(camera)
             if not files:
                 fileCount = 0
@@ -530,17 +529,18 @@ def camera():
     try:
         camera, context, config = connectCamera()
         if camera:
-            templateData['cameraModel']              = abilities.model
-            templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
-            if (templateData['cameraLens'] == 'Unknown'):
+            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            cameraData['cameraModel']              = abilities.model
+            cameraData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            if (cameraData['cameraLens'] == 'Unknown'):
                 #Try to build this from focal length:
                 focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
                 focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
                 if (focalMin == focalMax):
-                    templateData['cameraLens'] = focalMin
+                    cameraData['cameraLens'] = focalMin
                 else:
                     focalMin = focalMin.replace(" mm", "")
-                    templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
+                    cameraData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
             cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
             cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
