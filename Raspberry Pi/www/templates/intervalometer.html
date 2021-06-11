@@ -72,7 +72,7 @@
 		<tr>
 			<td>
 				<div class="alignleft">Days in camera:</div>
-				<div class="alignright" id="shotsincamera"></div>
+				<div class="alignright" id="daysincamera"></div>
 			</td>
 		</tr>
 		<tr>
@@ -165,7 +165,8 @@ function calculateShots()
 	else
 	{
 		document.getElementById("shotsperday").innerHTML = "Unknown";
-		document.getElementById("shotsincamera").innerHTML = "Unknown";
+		document.getElementById("daysincamera").innerHTML = "Unknown";
+		document.getElementById("daysinpi").innerHTML = "Unknown";
 	}
 }
 
@@ -177,16 +178,16 @@ function calculateCameraDays(shotsperday)
 		var result = ~~(availableShots / shotsperday); 
 		if (result == result)
 		{
-			document.getElementById("shotsincamera").innerHTML = result;
+			document.getElementById("daysincamera").innerHTML = result;
 		}
 		else
 		{
-			document.getElementById("shotsincamera").innerHTML = "Unknown";
+			document.getElementById("daysincamera").innerHTML = "Unknown";
 		}
 	}
 	else
 	{
-		document.getElementById("shotsincamera").innerHTML = "{{ availableShots }}";
+		document.getElementById("daysincamera").innerHTML = "{{ availableShots }}";
 	}
 }
 
