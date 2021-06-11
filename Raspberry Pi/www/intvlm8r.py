@@ -276,8 +276,6 @@ def main():
         'arduinoTime'       : '',
         'arduinoLastShot'   : 'Unknown',
         'arduinoNextShot'   : 'Unknown',
-        'cameraModel'       : '',
-        'cameraLens'        : 'Unknown',
         'cameraBattery'     : 'Unknown',
         'fileCount'         : 'Unknown',
         'lastImage'         : 'Unknown',
@@ -336,17 +334,6 @@ def main():
                 info = get_camera_file_info(camera, files[-1]) #Get the last file
                 lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
             gp.check_result(gp.gp_camera_exit(camera))
-            templateData['cameraModel']              = abilities.model
-            templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
-            if (templateData['cameraLens'] == 'Unknown'):
-                #Try to build this from focal length:
-                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
-                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
-                if (focalMin == focalMax):
-                    templateData['cameraLens'] = focalMin
-                else:
-                    focalMin = focalMin.replace(" mm", "")
-                    templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
             templateData['fileCount']                = fileCount
             templateData['lastImage']                = lastImage
             templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
@@ -507,6 +494,8 @@ def thumbnails():
 @login_required
 def camera():
     cameraData = {
+        'cameraModel'   : '',
+        'cameraLens'    : 'Unknown',
         'cameraDate'    : '',
         'focusmode'     : '',
         'exposuremode'  : '',
@@ -541,6 +530,17 @@ def camera():
     try:
         camera, context, config = connectCamera()
         if camera:
+            templateData['cameraModel']              = abilities.model
+            templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            if (templateData['cameraLens'] == 'Unknown'):
+                #Try to build this from focal length:
+                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
+                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+                if (focalMin == focalMax):
+                    templateData['cameraLens'] = focalMin
+                else:
+                    focalMin = focalMin.replace(" mm", "")
+                    templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
             cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
             cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
