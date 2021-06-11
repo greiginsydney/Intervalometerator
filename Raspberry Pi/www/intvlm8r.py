@@ -379,13 +379,13 @@ def main():
     templateData['piSpaceFree'],piBytesFree = getDiskSpace()
     largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
     shotsPerDay = getShotsPerDay()
+    #Python rounds up, which I don't want. This "- 0.5" is also to align with the same result calculated by Javascript on the /intervalometer page.
     try:
-        templateData['piDaysFree'] = str(round((piBytesFree / largestImageSize) / shotsPerDay))
+        templateData['piDaysFree'] = str(round(((piBytesFree / largestImageSize) / shotsPerDay) - 0.5))
     except:
         None
     try:
         templateData['cameraDaysFree'] = round((int(templateData['availableShots']) / shotsPerDay) - 0.5)
-        #Python rounds up, which I don't want. This "- 0.5" is also to align with the same result calculated by Javascript on the /intervalometer page.
     except:
         None
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
