@@ -26,19 +26,7 @@
 
 <form method="get">
 	<table>
-		{% if cameraModel != "" %}
-			<tr>
-				<td>
-					<div class="alignleft">Camera:</div>
-					<div class="alignright">{{ cameraModel }}</div>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<div class="alignleft">Lens:</div>
-					<div class="alignright">{{ cameraLens }}</div>
-				</td>
-			</tr>
+		{% if fileCount != "Unknown" %}
 			<tr>
 				<td>
 					<div class="alignleft">Images on camera:</div>
