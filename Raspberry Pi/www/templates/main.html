@@ -39,7 +39,13 @@
 					<div class="alignright">{{ lastImage }}</div>
 				</td>
 			</tr>
+			{% if cameraDaysFree|int < daysFreeAlarm %}
+			<tr class="red">
+			{% elif cameraDaysFree|int < daysFreeWarn %}
+			<tr class="orange">
+			{% else %}
 			<tr>
+			{% endif %}
 				<td>
 					<div class="alignleft">Available shots (days):</div>
 					<div class="alignright">{{ availableShots }} ({{ cameraDaysFree }})</div>
@@ -80,7 +86,13 @@
 			<div class="alignright">{{ piLastImage }}</div>
 		</td>
 	</tr>
+	{% if piDaysFree|int < daysFreeAlarm %}
+	<tr class="red">
+	{% elif piDaysFree|int < daysFreeWarn %}
+	<tr class="orange">
+	{% else %}
 	<tr>
+	{% endif %}
 		<td>
 			<div class="alignleft">Pi storage free (days):</div>
 			<div class="alignright">{{ piSpaceFree }} ({{ piDaysFree }})</div>
