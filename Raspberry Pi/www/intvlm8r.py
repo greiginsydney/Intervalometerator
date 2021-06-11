@@ -286,6 +286,8 @@ def main():
         'piLastImage'       : 'Unknown',
         'piSpaceFree'       : 'Unknown',
         'piDaysFree'        : 'Unknown',
+        'daysFreeWarn'      : '0',
+        'daysFreeAlarm'     : '0',
         'lastTrnResult'     : 'Unknown',
         'lastTrnLogFile'    : PI_TRANSFER_LINK,
         'piLastImageFile'   : 'Unknown'
@@ -386,6 +388,9 @@ def main():
         #Python rounds up, which I don't want. This "- 0.5" is also to align with the same result calculated by Javascript on the /intervalometer page.
     except:
         None
+    templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
+    templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
+    
     templateData['piLastImageFile'] = piLastImageFile
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
