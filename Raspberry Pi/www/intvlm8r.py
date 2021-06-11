@@ -661,7 +661,9 @@ def intervalometer():
         'piEndHour'        : '',
         'piInterval'       : '',
         'availableShots'   : 'Unknown',
-        'piAvailableShots' : 'Unknown'
+        'piAvailableShots' : 'Unknown',
+        'daysFreeWarn'     : '0',
+        'daysFreeAlarm'    : '0'
     }
     app.logger.debug('This is a GET to Intervalometer')
 
@@ -707,6 +709,8 @@ def intervalometer():
     _,piBytesFree = getDiskSpace()
     largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
     templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
+    templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
+    templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
     
     return render_template('intervalometer.html', **templateData)
 
