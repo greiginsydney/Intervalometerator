@@ -69,13 +69,13 @@
 				<div class="alignright" id="shotsperday"></div>
 			</td>
 		</tr>
-		<tr>
+		<tr id="cameraDaysRow">
 			<td>
 				<div class="alignleft">Days in camera:</div>
 				<div class="alignright" id="daysincamera"></div>
 			</td>
 		</tr>
-		<tr>
+		<tr id="piDaysRow">
 			<td>
 				<div class="alignleft">Days in Pi:</div>
 				<div class="alignright" id="daysinpi"></div>
@@ -161,12 +161,15 @@ function calculateShots()
 		document.getElementById("shotsperday").innerHTML = result;
 		calculateCameraDays(result);
 		calculatePiDays(result);
+		checkThresholds("cameraDaysRow", "daysincamera");
+		checkThresholds("piDaysRow", "daysinpi");
 	}
 	else
 	{
 		document.getElementById("shotsperday").innerHTML = "Unknown";
 		document.getElementById("daysincamera").innerHTML = "Unknown";
 		document.getElementById("daysinpi").innerHTML = "Unknown";
+		document.getElementById("daysinpi").className = "";
 	}
 }
 
@@ -209,6 +212,24 @@ function calculatePiDays(shotsperday)
 	else
 	{
 		document.getElementById("daysinpi").innerHTML = "{{ piAvailableShots }}";
+	}
+}
+
+function checkThresholds(thisRow, thisValue)
+{
+	var rowId = document.getElementById(thisRow);
+	var rowValue = document.getElementById(thisValue)
+	if (rowValue.innerHTML < {{ daysFreeAlarm }})
+	{
+		rowId.className = "red";
+	}
+	else if (rowValue.innerHTML < {{ daysFreeWarn }} )
+	{
+		rowId.className = "orange";
+	}
+	else
+	{
+		rowId.className = "";
 	}
 }
 
