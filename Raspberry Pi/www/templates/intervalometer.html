@@ -75,6 +75,12 @@
 				<div class="alignright" id="shotsincamera"></div>
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Days in Pi:</div>
+				<div class="alignright" id="daysinpi"></div>
+			</td>
+		</tr>
 	</table>
 
 	<table class="noborder">
@@ -154,6 +160,7 @@ function calculateShots()
 		}
 		document.getElementById("shotsperday").innerHTML = result;
 		calculateCameraDays(result);
+		calculatePiDays(result);
 	}
 	else
 	{
@@ -180,6 +187,27 @@ function calculateCameraDays(shotsperday)
 	else
 	{
 		document.getElementById("shotsincamera").innerHTML = "{{ availableShots }}";
+	}
+}
+
+function calculatePiDays(shotsperday)
+{
+	var piAvailableShots = "{{ piAvailableShots }}";
+	if (piAvailableShots != "Unknown" && piAvailableShots != "Not available")
+	{
+		var result = ~~(piAvailableShots / shotsperday); 
+		if (result == result)
+		{
+			document.getElementById("daysinpi").innerHTML = result;
+		}
+		else
+		{
+			document.getElementById("daysinpi").innerHTML = "Unknown";
+		}
+	}
+	else
+	{
+		document.getElementById("daysinpi").innerHTML = "{{ piAvailableShots }}";
 	}
 }
 
