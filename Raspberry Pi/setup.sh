@@ -482,7 +482,6 @@ install_website ()
 			(y|Y|"")
 				sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
 				sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
-
 				;;
 			(*)
 				if [ -f setTime.service ];
