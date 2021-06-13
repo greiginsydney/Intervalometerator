@@ -418,6 +418,23 @@ def getTime():
     return res, 200
 
 
+@app.route("/setArduinoDateTime")
+def setArduinoDateTime():
+    """
+    This 'page' is only one of three called without the "@login_required" decorator. It's only called by
+    the cron job/ setTime.py script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+
+    newTime = datetime.now().strftime('%Y%m%d%H%M%S') #20190613235900
+    writeString("ST=" + newTime) # Send the new time and date to the Arduino
+    app.logger.debug('setArduinoDateTime to {0}'.format(newTime))
+    res = make_response('<p>Set Arduino datetime to ' + newTime + '</p>')
+    return res, 200
+
+
 def getArduinoDate():
     formattedDate = 'Unknown'
     try:
