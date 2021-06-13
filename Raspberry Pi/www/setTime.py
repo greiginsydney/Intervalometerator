@@ -61,9 +61,13 @@ def main(argv):
             except Exception as e:
                 log('Unhandled systemd-timesyncd error: ' + str(e) + '. setTime.py aborting')
                 return
-        retryCount = 0
+        getArduinoDateTime()
     except:
-        pass
+        log('Unhandled error in sys.argv: ' + str(e))
+
+
+def getArduinoDateTime():
+    retryCount = 0
     while True:
         try:
             response = urlopen('http://localhost:8080/getTime')
@@ -105,7 +109,7 @@ def main(argv):
     except Exception as e:
         log('Unhandled time error: ' + str(e))
 
-        
+
 def setArduinoDateTime():
     retryCount = 0
     while True:
