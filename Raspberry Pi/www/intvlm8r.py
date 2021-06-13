@@ -406,8 +406,8 @@ def main():
 @app.route("/getTime")
 def getTime():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
-    the cron job/script and will only execute if the calling IP is itself/localhost.
+    This 'page' is only one of three called without the "@login_required" decorator. It's only called by
+    the cron job/ setTime.py script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
@@ -912,8 +912,8 @@ def transferPOST():
 @app.route("/copyNow")
 def copyNowCronJob():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
-    the cron job/script and will only execute if the calling IP is itself/localhost.
+    This 'page' is only one of three called without the "@login_required" decorator. It's only called by
+    the cron job/cameraTransfer.py script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
