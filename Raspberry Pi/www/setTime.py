@@ -49,7 +49,8 @@ def main(argv):
                 if stdoutdata:
                     stdoutdata = stdoutdata.strip()
                     if stdoutdata == 'active':
-                        log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP. setTime.py aborting')
+                        log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP. Updating the Arduino to follow Pi time')
+                        setArduinoDateTime()
                         return
                     else:
                         log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. setTime.py continuing')
@@ -103,6 +104,34 @@ def main(argv):
             log('Failed to set time. newTime = ' + newTime)
     except Exception as e:
         log('Unhandled time error: ' + str(e))
+
+        
+def setArduinoDateTime():
+    retryCount = 0
+    while True:
+        try:
+            response = urlopen('http://localhost:8080/setArduinoDateTime')
+            log('Response code = ' + str(response.getcode()))
+            htmltext = response.read().decode('utf-8')
+            log('This is what I received: ' + str(htmltext))
+            responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
+            if responseText != None:
+                newTime = responseText.group(1)
+                log('New Arduino time is ' + newTime)
+                break
+            else:
+                log('Failed to set the time')
+        except URLError as e:
+            if hasattr(e, 'reason'):
+                log('URL error. Reason = ' + str(e.reason))
+            elif hasattr(e, 'code'):
+                log('URL error. Code = ' + str(e.code))
+        except Exception as e:
+            log('Unhandled web error: ' + str(e))
+        retryCount += 1
+        if retryCount == 3:
+            break
+        log('RETRYING')
 
 
 def log(message):
