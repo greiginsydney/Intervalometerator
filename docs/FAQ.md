@@ -1,5 +1,18 @@
 # Frequently Asked Questions
 
+
+- [Where do I change the website's login name and/or password?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#where-do-i-change-the-websites-login-name-andor-password)
+- [How can I add more users to the list of website logins?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#how-can-i-add-more-users-to-the-list-of-website-logins)
+- [Can I move the intvlm8r off port 80 or 443?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-move-the-intvlm8r-off-port-80-or-443)
+- [My camera and/or Pi are running low on storage. How can I delete old images?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#my-camera-andor-pi-are-running-low-on-storage-how-can-i-delete-old-images)
+- [Can I copy/transfer images more than once per day?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-copytransfer-images-more-than-once-per-day)
+- [Can I pause the shooting schedule during the day (e.g. at lunchtime)?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-pause-the-shooting-schedule-during-the-day-eg-at-lunchtime)
+- [Does the intvlm8r support Daylight Saving Time?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#does-the-intvlm8r-support-daylight-saving-time)
+
+<br>
+
+<hr>
+
 ## Where do I change the website's login name and/or password?
 
 If you only have one login (the default configuration), you can use the setup script with the "login" switch. This prompts you to change the _first_ login in the file:
@@ -46,7 +59,7 @@ server {
 }
 ```
 
-## My Camera and/or Pi are running low on storage. How can I delete old images?
+## My camera and/or Pi are running low on storage. How can I delete old images?
 
 Hidden config options in the INI file will let you delete images off the camera after they've been safely transferred to the Pi, and after they've been safely uploaded to your nominated "off-box" destination.
 
