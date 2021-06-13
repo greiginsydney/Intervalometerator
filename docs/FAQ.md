@@ -127,6 +127,26 @@ If you only want to break for an hour, you can delete the `nextHour = 13;` line 
 
 > This code runs at the start of the lunch break and tricks the intvlm8r into thinking it's already taken the shots that it would have during lunch. It then sets the next alarm time - the next shot to be taken - for the time immediately after lunch.
 
+## Does the intvlm8r support Daylight Saving Time?
+
+It depends.
+
+If your intvlm8r is running off-grid, disconnected from the outside world, it relies on the battery-backed red ["DeadOn RTC"](https://www.sparkfun.com/products/10160) board as the master real-time clock, which is in itself not aware of timezone and thus when to adjust for DST. In such a config, manual intervention will be required as you enter and return from DST.
+
+DST is catered for automatically if the intvlm8r has network connectivity, although this assumes you set the correct timezone in [setup step 8](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) and answered Yes to the NTP question:
+
+```python
+NTP Step. Does the Pi have network connectivity? [Y/n]:
+```
+
+If the Pi is set to always run, a cron job that fires every day at midnight will perform a sync of the time and date from the Pi to the Arduino. Here's an example of that from the /home/pi/setTime.log file:
+
+```python
+2021/06/14 00:00:02 systemd-timesyncd = active. The Pi takes its time from NTP. Updating the Arduino to follow Pi time
+2021/06/14 00:00:02 Response code = 200
+2021/06/14 00:00:02 This is what I received: <p>Set Arduino datetime to 20210614000002</p>
+2021/06/14 00:00:02 New Arduino time is 20210614000002
+```
 <br>
 <br>
 
