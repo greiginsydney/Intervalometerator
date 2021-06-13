@@ -473,30 +473,35 @@ install_website ()
 
 	#NTP
 	echo ""
-	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
-	case $Response in
-		(y|Y|"")
-			sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
-			sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
-			
-			;;
-		(*)
-			if [ -f setTime.service ];
-			then
-				if cmp -s setTime.service /etc/systemd/system/setTime.service;
+	if [ -f www/intvlm8r.old ];
+	then
+		echo "intvlm8r.old found. Skipping the NTP prompt step."
+	else
+		read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
+		case $Response in
+			(y|Y|"")
+				sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
+				sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
+
+				;;
+			(*)
+				if [ -f setTime.service ];
 				then
-					echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
-				else
-					mv -fv setTime.service /etc/systemd/system/setTime.service
+					if cmp -s setTime.service /etc/systemd/system/setTime.service;
+					then
+						echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
+					else
+						mv -fv setTime.service /etc/systemd/system/setTime.service
+					fi
 				fi
-			fi
-			chmod 644 /etc/systemd/system/setTime.service
-			echo "Enabling setTime.service"
-			systemctl enable setTime.service
-			systemctl disable systemd-timesyncd
-			systemctl stop systemd-timesyncd
-			;;
-	esac
+				chmod 644 /etc/systemd/system/setTime.service
+				echo "Enabling setTime.service"
+				systemctl enable setTime.service
+				systemctl disable systemd-timesyncd
+				systemctl stop systemd-timesyncd
+				;;
+		esac
+	fi
 	echo ""
 
 
