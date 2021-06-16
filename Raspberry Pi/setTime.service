@@ -25,7 +25,7 @@ Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
 ExecStartPre=/bin/sleep 30
-ExecStart=/usr/bin/python3 /home/pi/www/setTime.py
+ExecStart=sudo /usr/bin/python3 /home/pi/www/setTime.py
 StandardError=journal
 
 [Install]
