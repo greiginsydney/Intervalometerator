@@ -98,7 +98,7 @@ install_apps ()
 	pip3 install Werkzeug cachelib
 	pip3 install flask flask-bootstrap flask-login configparser
 	pip3 install gunicorn psutil
-	sudo apt install redis-server -y
+	apt install redis-server -y
 	pip3 install "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
