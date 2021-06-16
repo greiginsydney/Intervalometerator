@@ -39,34 +39,28 @@ newTime = 'Unknown'
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     log('')
-    # If the 'midnight' flag is set, do NOT run if the systemd-timesyncd is active (as this means NTP controls the Pi's RTC)
     try:
-        if sys.argv[1] == 'midnight':
-            try:
-                cmd = ['systemctl', 'is-active', 'systemd-timesyncd']
-                result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
-                (stdoutdata, stderrdata) = result.communicate()
-                if stdoutdata:
-                    stdoutdata = stdoutdata.strip()
-                    if stdoutdata == 'active':
-                        log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP. Updating the Arduino to follow Pi time')
-                        setArduinoDateTime()
-                        return
-                    else:
-                        log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. setTime.py continuing')
-                if stderrdata:
-                    stderrdata = stderrdata.strip()
-                    log('systemd-timesyncd error = ' + str(stderrdata) + '. setTime.py aborting')
-                    return
-            except Exception as e:
-                log('Unhandled systemd-timesyncd error: ' + str(e) + '. setTime.py aborting')
+        cmd = ['systemctl', 'is-active', 'systemd-timesyncd']
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            if stdoutdata == 'active':
+                log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP. Updating the Arduino with time from the Pi')
+                setArduinoDateTime()
                 return
-        getArduinoDateTime()
-    except:
-        log('Unhandled error in sys.argv: ' + str(e))
+            else:
+                log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. Updating the Pi with time from the Arduino')
+                setPiDateTime()
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            log('systemd-timesyncd error = ' + str(stderrdata) + '. setTime.py aborting')
+            return
+    except Exception as e:
+        log('Unhandled systemd-timesyncd error: ' + str(e) + '. setTime.py aborting')
 
 
-def getArduinoDateTime():
+def setPiDateTime():
     retryCount = 0
     while True:
         try:
