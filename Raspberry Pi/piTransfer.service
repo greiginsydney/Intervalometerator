@@ -15,7 +15,7 @@
 # Reference: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04
 
 [Unit]
-Description=Runs once on boot to copy images FROM the Pi
+Description=piTransfer.service. Runs once on boot to copy images FROM the Pi
 Requires=intvlm8r.service
 After=intvlm8r.service setTime.service cameraTransfer.service
 
