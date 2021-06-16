@@ -1,5 +1,5 @@
 [Unit]
-Description=Celery Service
+Description=celery.service
 Requires=intvlm8r.service
 After=network.target intvlm8r.service
 
