@@ -480,28 +480,28 @@ install_website ()
 		read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
 		case $Response in
 			(y|Y|"")
-				sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
-				sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
+				systemctl enable systemd-timesyncd
+				systemctl start systemd-timesyncd
 				;;
 			(*)
-				if [ -f setTime.service ];
-				then
-					if cmp -s setTime.service /etc/systemd/system/setTime.service;
-					then
-						echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
-					else
-						mv -fv setTime.service /etc/systemd/system/setTime.service
-					fi
-				fi
-				chmod 644 /etc/systemd/system/setTime.service
-				echo "Enabling setTime.service"
-				systemctl enable setTime.service
 				systemctl disable systemd-timesyncd
 				systemctl stop systemd-timesyncd
 				;;
 		esac
 	fi
+	if [ -f setTime.service ];
+	then
+		if cmp -s setTime.service /etc/systemd/system/setTime.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
+		else
+			mv -fv setTime.service /etc/systemd/system/setTime.service
+		fi
+	fi
 	echo ""
+	chmod 644 /etc/systemd/system/setTime.service
+	echo "Enabling setTime.service"
+	systemctl enable setTime.service
 
 
 	# Step 101 - slows the I2C speed
