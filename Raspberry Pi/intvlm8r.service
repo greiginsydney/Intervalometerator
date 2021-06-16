@@ -15,7 +15,7 @@
 # Reference: https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-16-04
 
 [Unit]
-Description=Gunicorn instance to serve intvlm8r
+Description=intvlm8r.service. Gunicorn instance to serve intvlm8r
 After=network.target
 
 [Service]
