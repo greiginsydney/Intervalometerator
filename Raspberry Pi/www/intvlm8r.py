@@ -377,10 +377,11 @@ def main():
                 piLastImageFileAsJpg = piLastImageFileAsJpg.replace(".NEF", ".JPG")
                 if os.path.exists(piLastImageFileAsJpg):
                     piLastImageFile = piLastImageFileAsJpg
+                    piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
                 else:
-                    pass
-                    #This is where the code to show the thumbnail will go. TODO.
-            piLastImageFile = piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
+                    piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
+            else:
+                piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
     except:
         flash('Error talking to the Pi')
         PI_PHOTO_COUNT = 0
