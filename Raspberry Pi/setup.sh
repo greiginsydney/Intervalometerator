@@ -462,7 +462,7 @@ install_website ()
 	then
 		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 0 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+		echo "0 0 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
