@@ -197,6 +197,7 @@ install_website ()
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
+	touch ${HOME}/setTime.log # Created here so it has correct ownership
 
 	if [ -f default_image.JPG ];
 	then
