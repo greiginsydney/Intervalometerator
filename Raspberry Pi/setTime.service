@@ -20,7 +20,7 @@ After=intvlm8r.service
 [Service]
 #This means we don't run until the dust has settled and everything else - like Gunicorn - has started:
 Type=oneshot 
-User=root
+User=pi
 Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
