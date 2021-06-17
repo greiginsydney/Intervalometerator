@@ -370,10 +370,21 @@ def main():
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
             piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1])).replace(microsecond=0)
-            piLastImageFile = str(FileList[-1]).replace((PI_PHOTO_DIR  + "/"), "")
+            piLastImageFile = str(FileList[-1])
+            #This code replaces a RAW image on the main page with its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
+            if (piLastImageFile.endswith('.CR2') or piLastImageFile.endswith('.NEF')):
+                piLastImageFileAsJpg = piLastImageFile.replace(".CR2", ".JPG")
+                piLastImageFileAsJpg = piLastImageFileAsJpg.replace(".NEF", ".JPG")
+                if os.path.exists(piLastImageFileAsJpg):
+                    piLastImageFile = piLastImageFileAsJpg
+                else:
+                    pass
+                    #This is where the code to show the thumbnail will go. TODO.
+            piLastImageFile = piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
     except:
         flash('Error talking to the Pi')
         PI_PHOTO_COUNT = 0
+    templateData['piLastImageFile'] = piLastImageFile
     templateData['piImageCount']    = PI_PHOTO_COUNT
     templateData['piLastImage']     = piLastImage
     templateData['piSpaceFree'],piBytesFree = getDiskSpace()
@@ -391,7 +402,6 @@ def main():
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
     
-    templateData['piLastImageFile'] = piLastImageFile
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
