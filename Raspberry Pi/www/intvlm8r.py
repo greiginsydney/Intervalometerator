@@ -784,13 +784,6 @@ def intervalometerPOST():
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
 
-    # Commented-out 4Oct2020, NLR(?)
-    # args = request.args.to_dict()
-    # if args.get('copyNow'):
-        # app.logger.debug('Detected GET to /transfer/copyNow - calling task')
-        # task = copyNow.apply_async()
-        # return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
-
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
