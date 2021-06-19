@@ -377,9 +377,10 @@ def main():
                 piLastImageFileAsJpg = piLastImageFileAsJpg.replace(".NEF", ".JPG")
                 if os.path.exists(piLastImageFileAsJpg):
                     piLastImageFile = piLastImageFileAsJpg
-                    piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
+                    piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")      #Fix the path
                 else:
-                    piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
+                    piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "") #Fix the path
+                    piLastImageFile = piLastImageFile.replace((".JPG"), "-thumb.JPG")                     #Add the '-thumb' suffix
             else:
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
     except:
