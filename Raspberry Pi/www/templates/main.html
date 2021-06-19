@@ -39,9 +39,9 @@
 					<div class="alignright">{{ lastImage }}</div>
 				</td>
 			</tr>
-			{% if cameraDaysFree|int < daysFreeAlarm %}
+			{% if (cameraDaysFree != "Unknown") and (cameraDaysFree|int < daysFreeAlarm) %}
 			<tr class="red">
-			{% elif cameraDaysFree|int < daysFreeWarn %}
+			{% elif (cameraDaysFree != "Unknown") and (cameraDaysFree|int < daysFreeWarn) %}
 			<tr class="orange">
 			{% else %}
 			<tr>
