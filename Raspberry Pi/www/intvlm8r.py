@@ -372,7 +372,7 @@ def main():
             piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1])).replace(microsecond=0)
             piLastImageFile = str(FileList[-1])
             #This code replaces a RAW image on the main page with its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
-            if (piLastImageFile.endswith('.CR2') or piLastImageFile.endswith('.NEF')):
+            if piLastImageFile.endswith('.CR2', '.NEF'):
                 piLastImageFileAsJpg = piLastImageFile.replace(".CR2", ".JPG")
                 piLastImageFileAsJpg = piLastImageFileAsJpg.replace(".NEF", ".JPG")
                 if os.path.exists(piLastImageFileAsJpg):
