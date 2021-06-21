@@ -88,6 +88,7 @@ PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer p
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 HOSTNAME = os.uname()[1]
+RAWEXTENSIONS = ('.CR2', '.NEF')
 
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
@@ -372,7 +373,7 @@ def main():
             piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1])).replace(microsecond=0)
             piLastImageFile = str(FileList[-1])
             #This code replaces a RAW image on the main page with its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
-            if piLastImageFile.endswith('.CR2', '.NEF'):
+            if piLastImageFile.endswith(RAWEXTENSIONS):
                 piLastImageFileAsJpg = piLastImageFile.replace(".CR2", ".JPG")
                 piLastImageFileAsJpg = piLastImageFileAsJpg.replace(".NEF", ".JPG")
                 if os.path.exists(piLastImageFileAsJpg):
