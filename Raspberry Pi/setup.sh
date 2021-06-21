@@ -146,6 +146,8 @@ install_apps ()
 	pip3 install numpy cython
 	pip3 install .
 	rm -r LibRaw-master -f
+	echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/99local.conf
+	ldconfig
 	
 	pip3 install smbus2
 	apt-get install i2c-tools -y
