@@ -130,6 +130,7 @@ install_apps ()
 	pip3 install ExifReader
 	
 	#Initial install steps for rawpy:
+	pip3 install imageio
 	apt install git -y
 	apt-get install cmake -y
 	git clone https://github.com/LibRaw/LibRaw.git libraw
