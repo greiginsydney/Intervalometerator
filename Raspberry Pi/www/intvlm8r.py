@@ -20,11 +20,12 @@
 
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
-from PIL import Image           # For the camera page preview button
+#from PIL import Image           # For the camera page preview button
 from urllib.parse import urlparse, urljoin
 import calendar
 import configparser             # For the ini file (used by the Transfer page)
 import exifreader               # For thumbnails
+import imageio                  # Thumbnails & the camera page preview button
 import fnmatch                  # Used for testing filenames
 import importlib.util           # Testing installed packages
 import io                       # Camera preview
@@ -32,6 +33,7 @@ import json
 import logging
 import os                       # Hostname
 import psutil
+import rawpy                    # Thumbnails
 import re                       # RegEx. Used in Copy Files & createThumbFilename
 from smbus2 import SMBus        # For I2C
 import struct
