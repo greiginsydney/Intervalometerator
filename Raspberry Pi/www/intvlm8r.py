@@ -1802,29 +1802,30 @@ def newThumbs(self):
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
-        PI_PHOTO_COUNT = len(FileList)
-        PI_THUMB_COUNT = len(ThumbList)
-        if PI_PHOTO_COUNT - PI_THUMB_COUNT <= 0:
-            thumbsToCreate = 'Unknown'
-            app.logger.info('Thumbs to create = ' + thumbsToCreate)
-        else:
-            thumbsToCreate = str(PI_PHOTO_COUNT - PI_THUMB_COUNT)
+
+        DifferenceList = []
+        for image in FileList:
+            newImageThumb = re.sub('.CR2|.NEF|.JPG', '-thumb.JPG', image)
+            newImageThumb = newImageThumb.replace(PI_PHOTO_DIR,PI_THUMBS_DIR)
+            if newImageThumb not in ThumbList:
+                DifferenceList.append(image)
+        thumbsToCreate = len(DifferenceList)
         thumbsCreated = 0
-        app.logger.info('Thumbs to create = ' + thumbsToCreate)
-        if PI_PHOTO_COUNT >= 1:
-            #Read the thumb files themselves:
-            for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
-                dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+        app.logger.info('Thumbs to create = ' + str(thumbsToCreate))
+
+        if thumbsToCreate >= 1:
+            for loop in range(-1, (-1 * (thumbsToCreate + 1)), -1):
+                dest, alreadyExists = makeThumb(DifferenceList[loop]) #Create a thumb, and metadata for every image on the Pi
                 if (dest == None):
                     #Something went wrong
-                    app.logger.debug('A thumb was not created for {0}'.format(FileList[loop]))
+                    app.logger.info('A thumb was not created for {0}'.format(DifferenceList[loop]))
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
-                    app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate)})
+                    app.logger.info('Thumb  of {0} is {1}'.format(DifferenceList[loop], dest))
                 else:
-                    app.logger.debug('Thumb for ' + dest + ' already exists')
+                    app.logger.info('Thumb for ' + dest + ' already exists')
         else:
             app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
     except Exception as e:
