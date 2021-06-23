@@ -1772,7 +1772,7 @@ def copyNow(self):
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
         numberToCopy = len(filesToCopy)
-        app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+        app.logger.info('copyNow() has been tasked with copying ' + str(numberToCopy) + ' images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         while len(filesToCopy) > 0:
             try:
@@ -1782,7 +1782,7 @@ def copyNow(self):
                 app.logger.info('About to copy file: ' + str(thisFile))
                 copy_files(camera, thisFile, deleteAfterCopy)
             except Exception as e:
-                app.logger.info('Unknown error in copyNow(self): ' + str(e))
+                app.logger.info('Unknown error in copyNow(): ' + str(e))
     try:
         gp.check_result(gp.gp_camera_exit(camera))
         app.logger.info('copyNow() ended happily')
