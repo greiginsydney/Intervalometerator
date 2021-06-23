@@ -1441,20 +1441,57 @@ def createThumbFilename(imageFullFilename):
 
 def makeThumb(imageFile):
     try:
-        ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
-        dest = createThumbFilename(imageFile)
+        dest = createDestFilename(imageFile, PI_THUMBS_DIR, '-thumb')
         app.logger.debug('Thumb dest = ' + dest)
         alreadyExists = False
-        if dest in ThumbList:
+        if os.path.exists(dest):
             app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
-            app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
+            app.logger.info('We need to make a thumbnail of {0}'.format(imageFile)) #This logs to /var/log/celery/celery_worker.log
             try:
-                with Image.open(imageFile) as thumb:
-                    thumb.thumbnail((160, 160), Image.ANTIALIAS)
-                    thumb.save(dest, "JPEG")
+                while True:
+                    if imageFile.endswith(RAWEXTENSIONS):
+                        #It's a RAW:
+                        with rawpy.imread(imageFile) as raw:
+                            # (1/2) See if we can extract a large-format JPG to use internally
+                            try:
+                                rgb = raw.postprocess()
+                                previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
+                                imageio.imwrite(previewfilename, rgb)
+                                app.logger.info('makeThumb() rawpy extracted preview   from RAW OK')
+                            except Exception as e:
+                                app.logger.info('makeThumb() unknown rawpy preview error: ' + str(e))
+                            # (2/2) See if we can extract a pre-made thumb
+                            try:
+                                thumb = raw.extract_thumb()
+                                if thumb.format == rawpy.ThumbFormat.JPEG:
+                                    # thumb.data is already in JPEG format, save as-is
+                                    with open(dest, 'wb') as f:
+                                        f.write(thumb.data)
+                                        app.logger.info('makeThumb() rawpy extracted thumbnail from RAW OK')
+                                        break
+                                elif thumb.format == rawpy.ThumbFormat.BITMAP:
+                                    # thumb.data is an RGB numpy array, convert with imageio
+                                    imageio.imwrite(dest, thumb.data)
+                                    app.logger.info('makeThumb() rawpy extracted bitmap thumbnail from RAW OK')
+                                    break
+                                else:
+                                    #No can do? Let PIL handle it.
+                                    pass
+                            except rawpy.LibRawNoThumbnailError as e:
+                                app.logger.info('makeThumb() rawpy LibRawNoThumbnailError error: ' + str(e))
+                            except rawpy.LibRawUnsupportedThumbnailError as e:
+                                app.logger.info('makeThumb() rawpy LibRawUnsupportedThumbnailError error: ' + str(e))
+                            except Exception as e:
+                                app.logger.info('makeThumb() unknown rawpy save error: ' + str(e))
+                    else:
+                        app.logger.info('makeThumb() image filename {0} is not RAW'.format(imageFile))
+                    with Image.open(imageFile) as thumb:
+                        thumb.thumbnail((160, 160), Image.ANTIALIAS)
+                        thumb.save(dest, "JPEG")
+                        break
             except Exception as e:
                 app.logger.info('makeThumb() thumbnail save error: ' + str(e))
         getExifData(imageFile, imageFileName)
