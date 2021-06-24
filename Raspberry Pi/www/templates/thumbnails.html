@@ -1,9 +1,9 @@
 {% extends "index.html" %}
 {% block content %}
 
-<div class="view">
-		{% for thumbFilename in ThumbFiles %}
-			<a href="{{ url_for('static',filename=('photos/' + thumbFilename['Name'])) | replace('-thumb', '')}}" target="_blank"><div class="thumb"><img src="{{ url_for('static',filename=('thumbs/' + thumbFilename['Name']))}}" alt="{{thumbFilename['Name'] | replace('-thumb', '')}}" width="160px"></div><div class="thumbtext">{{ thumbFilename['TimeStamp'] }}<br>{{ thumbFilename['Info']|safe }}</div></a>
+	<div class="view">
+		{% for ThisThumbFile in ThumbFiles %}
+			<a href="{{ url_for('static',filename=(ThisThumbFile['PreviewImage']))}}" target="_blank"><div class="thumb"><img src="{{ url_for('static',filename=(ThisThumbFile['ThumbImage']))}}" alt="{{ThisThumbFile['PreviewImage']}}" width="160px"></div><div class="thumbtext">{{ ThisThumbFile['TimeStamp'] }}<br>{{ ThisThumbFile['Info']|safe }}</div></a>
 		{% endfor %}
 	</div>
 
