@@ -86,9 +86,9 @@
 			<div class="alignright">{{ piLastImage }}</div>
 		</td>
 	</tr>
-	{% if piDaysFree|int < daysFreeAlarm %}
+	{% if (piDaysFree != "Unknown") and (piDaysFree|int < daysFreeAlarm) %}
 	<tr class="red">
-	{% elif piDaysFree|int < daysFreeWarn %}
+	{% elif (piDaysFree != "Unknown") and (piDaysFree|int < daysFreeWarn) %}
 	<tr class="orange">
 	{% else %}
 	<tr>
