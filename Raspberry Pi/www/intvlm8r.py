@@ -20,7 +20,7 @@
 
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
-#from PIL import Image           # For the camera page preview button
+from PIL import Image           # For the camera page preview button
 from urllib.parse import urlparse, urljoin
 import calendar
 import configparser             # For the ini file (used by the Transfer page)
@@ -33,7 +33,7 @@ import json
 import logging
 import os                       # Hostname
 import psutil
-import rawpy                    # Thumbnails
+import rawpy                    # Thumbnails & main page preview image
 import re                       # RegEx. Used in Copy Files & createDestFilename
 from smbus2 import SMBus        # For I2C
 import struct
