@@ -1445,7 +1445,7 @@ def createDestFilename(imageFullFilename, targetFolder, suffix):
     sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
     dest = CreateDestPath(sourceFolderTree, targetFolder)
     dest = os.path.join(dest, imageFileName)
-    dest = re.sub('.JPG|.CR2|.NEF', (suffix + '.JPG'), dest, flags=re.IGNORECASE)
+    dest = os.path.splitext(dest)[0] + suffix + '.JPG'
     return dest
 
 
@@ -1812,7 +1812,7 @@ def newThumbs(self):
 
         DifferenceList = []
         for image in FileList:
-            newImageThumb = re.sub('.CR2|.NEF|.JPG', '-thumb.JPG', image)
+            newImageThumb = os.path.splitext(image)[0] + '-thumb.JPG'
             newImageThumb = newImageThumb.replace(PI_PHOTO_DIR,PI_THUMBS_DIR)
             if newImageThumb not in ThumbList:
                 #Check for and remove any dupes.
