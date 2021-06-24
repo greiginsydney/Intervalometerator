@@ -379,7 +379,7 @@ def main():
             # 2: its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
             # 3: its thumbnail (yuk).
             if piLastImageFile.endswith(RAWEXTENSIONS):
-                piLastImageFileAsJpg = re.sub(".CR2|.NEF", ".JPG", piLastImageFile)
+                piLastImageFileAsJpg = re.sub('|'.join(RAWEXTENSIONS), ".JPG", piLastImageFile)
                 piLastImageFilePreview = createDestFilename(piLastImageFile, PI_PREVIEW_DIR, '-preview')
                 if os.path.exists(piLastImageFilePreview):
                     piLastImageFile = 'preview/' + piLastImageFilePreview.replace((PI_PREVIEW_DIR  + "/"), "")
