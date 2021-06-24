@@ -1466,13 +1466,14 @@ def makeThumb(imageFile):
                         #It's a RAW:
                         with rawpy.imread(imageFile) as raw:
                             # (1/2) See if we can extract a large-format JPG to use internally
-                            try:
-                                rgb = raw.postprocess()
-                                previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
-                                imageio.imwrite(previewfilename, rgb)
-                                app.logger.info('makeThumb() rawpy extracted preview   from RAW OK')
-                            except Exception as e:
-                                app.logger.info('makeThumb() unknown rawpy preview error: ' + str(e))
+                            previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
+                            if not os.path.exists(previewfilename):
+                                try:
+                                    rgb = raw.postprocess()
+                                    imageio.imwrite(previewfilename, rgb)
+                                    app.logger.info('makeThumb() rawpy extracted preview   from RAW OK')
+                                except Exception as e:
+                                    app.logger.info('makeThumb() unknown rawpy preview error: ' + str(e))
                             # (2/2) See if we can extract a pre-made thumb
                             try:
                                 thumb = raw.extract_thumb()
