@@ -1808,6 +1808,17 @@ def newThumbs(self):
             newImageThumb = re.sub('.CR2|.NEF|.JPG', '-thumb.JPG', image)
             newImageThumb = newImageThumb.replace(PI_PHOTO_DIR,PI_THUMBS_DIR)
             if newImageThumb not in ThumbList:
+                #Check for and remove any dupes.
+                if image.endswith(RAWEXTENSIONS):
+                    if re.sub('|'.join(RAWEXTENSIONS), '.JPG', image) in DifferenceList:
+                        DifferenceList.remove(re.sub('|'.join(RAWEXTENSIONS), '.JPG', image)) # A raw trumps a JPG.
+                elif image.endswith('.JPG'):
+                    discarded = False
+                    for RAW in RAWEXTENSIONS:
+                        if image.replace('.JPG', RAW) in DifferenceList:
+                            #Discard a JPG if there's already a RAW of the same name in the list
+                            discarded = True #You can't 'continue' out of nested loops in Python
+                    if discarded: continue
                 DifferenceList.append(image)
         thumbsToCreate = len(DifferenceList)
         thumbsCreated = 0
