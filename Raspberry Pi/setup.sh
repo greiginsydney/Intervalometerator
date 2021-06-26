@@ -503,6 +503,12 @@ install_website ()
 	chmod 644 /etc/systemd/system/setTime.service
 	echo "Enabling setTime.service"
 	systemctl enable setTime.service
+	
+	# If upgrading, reload all services as a precautionary measure:
+	if [ -f www/intvlm8r.old ];
+	then
+		systemctl daemon-reload
+	fi
 
 
 	# Step 101 - slows the I2C speed
