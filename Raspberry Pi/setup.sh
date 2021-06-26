@@ -133,7 +133,15 @@ install_apps ()
 	pip3 install imageio
 	apt install git -y
 	apt-get install cmake -y
+	if [ -d "libraw" ];
+	then
+		rm -rf "libraw"
+	fi
 	git clone https://github.com/LibRaw/LibRaw.git libraw
+	if [ -d "libraw-cmake" ];
+	then
+		rm -rf "libraw-cmake"
+	fi
 	git clone https://github.com/LibRaw/LibRaw-cmake.git libraw-cmake
 	cd libraw
 	git checkout 0.20.0
