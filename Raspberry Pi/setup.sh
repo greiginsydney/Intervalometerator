@@ -524,6 +524,11 @@ install_website ()
 	echo "Enabling setTime.service"
 	systemctl enable setTime.service
 
+	# If upgrading, reload all services as a precautionary measure:
+	if [ -f www/intvlm8r.old ];
+	then
+		systemctl daemon-reload
+	fi
 
 	# Step 101 - slows the I2C speed
 	if  grep -q "dtparam=i2c1=on" /boot/config.txt;
