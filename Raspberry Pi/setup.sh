@@ -1003,6 +1003,31 @@ test_install ()
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	
+	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET"intvlm8r service is dead"
+	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET"celery   service is dead"
+	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET"redis    service is dead"
+	
+	echo ""
+	
+	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
+	oneShotList="setTime piTransfer cameraTransfer"
+	for service in $oneShotList; do
+		status=$(systemctl show $service)
+		if [[ $status =~ $matchRegex ]] ;
+		then
+			serviceName=${BASH_REMATCH[1]}
+			serviceLoadState=${BASH_REMATCH[2]}
+			serviceActiveState=${BASH_REMATCH[3]}
+			serviceSubState=${BASH_REMATCH[4]}
+		fi
+		echo -e "Service = $serviceName"
+		
+		[ $serviceLoadState == "loaded" ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+		[ $serviceActiveState == "inactive" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+		[ $serviceSubState != "failed" ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
+		echo ""
+	done
 }
 
 
