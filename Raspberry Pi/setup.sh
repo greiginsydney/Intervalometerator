@@ -954,12 +954,15 @@ END
 test_install ()
 {
 	echo "TEST!"
-	[ -f /etc/nginx/sites-available/intvlm8r ] && echo "PASS: /etc/nginx/sites-available/intvlm8r" || echo "FAIL: /etc/nginx/sites-available/intvlm8r not found"
-	[ -f /etc/systemd/system/intvlm8r.service ] && echo "PASS: /etc/systemd/system/intvlm8r.service exists" || echo "FAIL: /etc/systemd/system/intvlm8r.service not found"
-	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
-	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
-	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
-	grep -q "i2c_arm_baudrate" /boot/config.txt && echo "PASS: i2c_arm_baudrate is present in /boot/config.txt" || echo "FAIL: i2c_arm_baudrate not present in /boot/config.txt"
+	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
+	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
+	[ -f /etc/systemd/system/cameraTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/cameraTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/cameraTransfer.service not found"
+	[ -f /etc/systemd/system/piTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/piTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/piTransfer.service not found"
+	[ -f /etc/systemd/system/setTime.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/setTime.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/setTime.service not found"
+	[ -f /etc/systemd/system/redis.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/redis.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/redis.service not found"
+	[ -f /etc/systemd/system/celery.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/celery.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/celery.service not found"
+	grep -qcim1 "i2c-dev" /etc/modules && echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules" || echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
+	grep -q "i2c_arm_baudrate" /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
 	echo ''
 	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
 	i2cdetect -y 1
