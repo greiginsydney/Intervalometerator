@@ -27,9 +27,18 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 
 
 # -----------------------------------
-# START FUNCTIONS
+# CONSTANTS
 # -----------------------------------
 
+GREEN="\033[38;5;10m"
+YELLOW="\033[38;5;11m"
+GREY="\033[38;5;60m"
+RESET="\033[0m"
+
+
+# -----------------------------------
+# START FUNCTIONS
+# -----------------------------------
 
 install_apps ()
 {
@@ -93,56 +102,81 @@ install_apps ()
 		esac
 	done
 
+	echo -e ""$GREEN"Installing subversion"$RESET""
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
+	echo -e ""$GREEN"Installing python3-pip, python-flask"$RESET""
 	apt-get install python3-pip python-flask -y
+	echo -e ""$GREEN"Installing Werkzeug, cachelib"$RESET""
 	pip3 install Werkzeug cachelib
+	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, configparser"$RESET""
 	pip3 install flask flask-bootstrap flask-login configparser
+	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
 	pip3 install gunicorn psutil
+	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
+	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	pip3 install "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
 	then
 		#This is ALL for Paramiko (SSH uploads):
 		export DEBIAN_FRONTEND=noninteractive
+		echo -e ""$GREEN"Installing libffi-dev, libssl-dev, python-dev"$RESET""
 		apt-get install libffi-dev libssl-dev python-dev -y
+		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
 		apt install krb5-config krb5-user -y
+		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
+		echo -e ""$GREEN"Installing bcrypt, pynacl, cryptography, gssapi, paramiko"$RESET""
 		pip3 install bcrypt pynacl cryptography gssapi paramiko
 	fi
 
 	if [ $installDropbox -eq 1 ];
 	then
+		echo -e ""$GREEN"Installing dropbox"$RESET""
 		pip3 install dropbox
 	fi
 	
 	if [ $installGoogle -eq 1 ];
 	then
+		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
 	fi
 	
+	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev -y
+	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
+	echo -e ""$GREEN"Installing gphoto"$RESET""
 	pip3 install -v gphoto2
+	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
+	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
+	echo -e ""$GREEN"Installing ExifReader"$RESET""
 	pip3 install ExifReader
 	
 	#Initial install steps for rawpy:
+	echo -e ""$GREEN"Installing imageio"$RESET""
 	pip3 install imageio
+	echo -e ""$GREEN"Installing git"$RESET""
 	apt install git -y
+	echo -e ""$GREEN"Installing cmake"$RESET""
 	apt-get install cmake -y
+	echo -e ""$GREEN"Installing libatlas-base-dev"$RESET""
 	apt-get install libatlas-base-dev -y
 	if [ -d "libraw" ];
 	then
 		rm -rf "libraw"
 	fi
+	echo -e ""$GREEN"Cloning libraw"$RESET""
 	git clone https://github.com/LibRaw/LibRaw.git libraw
 	if [ -d "libraw-cmake" ];
 	then
 		rm -rf "libraw-cmake"
 	fi
+	echo -e ""$GREEN"Cloning libraw-cmake"$RESET""
 	git clone https://github.com/LibRaw/LibRaw-cmake.git libraw-cmake
 	cd libraw
 	git checkout 0.20.0
@@ -150,18 +184,24 @@ install_apps ()
 	cmake .
 	sudo make install
 
+	echo -e ""$GREEN"Cloning rawpy"$RESET""
 	git clone https://github.com/letmaik/rawpy
 	cd rawpy
+	echo -e ""$GREEN"Installing install numpy, cython"$RESET""
 	pip3 install numpy cython
 	echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/99local.conf
 	ldconfig
 	pip3 install .
 	rm -r LibRaw-master -f
 	
+	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
+	echo -e ""$GREEN"Installing i2c-tools"$RESET""
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
+	echo -e ""$GREEN"Purging bluez"$RESET""
 	apt-get purge bluez -y
+	echo -e ""$GREEN"Autoremoving"$RESET""
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
@@ -169,7 +209,7 @@ install_apps ()
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
 	echo ''
-	echo 'Enabling i2c'
+	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo ' i2c-bcm2708 module already exists'
 	else
@@ -205,9 +245,8 @@ install_apps ()
 	
 	# Prepare for reboot/restart:
 	echo ''
-	echo "Exited install_apps OK."
+	echo -e ""$GREEN"Exited install_apps OK"$RESET""
 }
-
 
 install_website ()
 {
