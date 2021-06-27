@@ -133,6 +133,7 @@ install_apps ()
 	pip3 install imageio
 	apt install git -y
 	apt-get install cmake -y
+	apt-get install libatlas-base-dev -y
 	if [ -d "libraw" ];
 	then
 		rm -rf "libraw"
@@ -152,10 +153,10 @@ install_apps ()
 	git clone https://github.com/letmaik/rawpy
 	cd rawpy
 	pip3 install numpy cython
-	pip3 install .
-	rm -r LibRaw-master -f
 	echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/99local.conf
 	ldconfig
+	pip3 install .
+	rm -r LibRaw-master -f
 	
 	pip3 install smbus2
 	apt-get install i2c-tools -y
