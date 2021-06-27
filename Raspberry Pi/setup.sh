@@ -981,22 +981,22 @@ test_install ()
 	
 	case $ap_test in
 		(0)
-			echo 'PASS: The Pi is NOT an AP'
+			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
 			;;
 		(1)
-			echo 'FAIL: dnsmasq running alone. hostapd should also be running for the Pi to be an AP'
+			echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
 			;;
 		(2)
-			echo 'FAIL: hostapd running alone. dnsmasq should also be running for the Pi to be an AP'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be an AP"
 			;;
 		(3)
-			echo 'FAIL: hostapd & dnsmasq are installed, but hostapd.conf is missing'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd & dnsmasq are installed, but hostapd.conf is missing"
 			;;
 		(4)
-			echo 'FAIL: hostapd.conf is present but hostapd & dnsmasq are missing'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd.conf is present but hostapd & dnsmasq are missing"
 			;;
 		(7)
-			echo 'PASS: hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP'
+			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
 			;;
 	esac
 	echo ''
