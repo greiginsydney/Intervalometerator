@@ -1219,7 +1219,7 @@ def connectCamera():
         except gp.GPhoto2Error as e:
             app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
             if e.string == 'Unknown model':
-                if retries > 1:
+                if retries >= 1:
                     app.logger.debug('connectCamera waking the camera & going again')
                     writeString("WC") # Sends the WAKE command to the Arduino
                     time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
