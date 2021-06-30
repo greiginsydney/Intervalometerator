@@ -327,6 +327,7 @@ def main():
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
                 flash('No storage info available') # The memory card is missing or faulty
+                app.logger.debug('FATAL: Connected to camera OK but no camera storage info available')
             files = list_camera_files(camera)
             if not files:
                 fileCount = 0
