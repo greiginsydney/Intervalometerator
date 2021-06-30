@@ -1908,6 +1908,14 @@ def getShotsPerDay():
         app.logger.debug('getShotsPerDay exception: ' + str(e))
         return None
 
+    
+@app.route('/robots.txt')
+def norobots():
+    res = make_response("User-Agent: *\nDisallow: /\n")
+    res.status_code = 200
+    res.headers["Content-Type"] = "text/plain; charset=utf-8"
+    return res    
+    
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
