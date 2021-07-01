@@ -484,16 +484,17 @@ install_website ()
 	fi
 	rm cronTemp
 
-	#midnight time sync
+	#overnight time sync. Takes place at 0330 to catch any change to/from Daylight Saving Time
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q setTime.py "cronTemp";
+	if grep -F -q "30 3 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
 	then
-		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
+	    echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 0 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
-		crontab -u $SUDO_USER cronTemp #install new cron file
-		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
+	    sed -i "/setTime.py/d" cronTemp #delete any previous reference to setTime. 
+ 	    echo "30 3 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+	    crontab -u $SUDO_USER cronTemp #install new cron file
+	    echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
 
