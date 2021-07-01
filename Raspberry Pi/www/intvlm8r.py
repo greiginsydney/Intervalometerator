@@ -527,6 +527,9 @@ def thumbnails():
                 ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb') #Adds the '-thumb.JPG' suffix
                 if FileList[loop].endswith(RAWEXTENSIONS):
                     PreviewFileName = createDestFilename(FileList[loop], PI_PREVIEW_DIR, '-preview') #Switch to the /PREVIEW/ folder
+                    if not os.path.exists(PreviewFileName):
+                        PreviewFileName = ThumbFileName
+                        app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
                 else:
                     PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
                 PreviewFileName = PreviewFileName.replace('/home/pi/', '')
