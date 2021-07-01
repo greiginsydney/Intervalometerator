@@ -924,11 +924,16 @@ test_install ()
 	[ -f /etc/systemd/system/setTime.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/setTime.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/setTime.service not found"
 	[ -f /etc/systemd/system/redis.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/redis.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/redis.service not found"
 	[ -f /etc/systemd/system/celery.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/celery.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/celery.service not found"
-	grep -qcim1 "i2c-dev" /etc/modules && echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules" || echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
 	grep -q "i2c_arm_baudrate" /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
-	echo ''
-	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
-	i2cdetect -y 1
+	if grep -qcim1 "i2c-dev" /etc/modules;
+	then
+		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
+		echo ''
+		echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
+		i2cdetect -y 1
+	else
+		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
+	fi
 	echo ''
 	# Test for ap/noap mode:
 	ap_test=0
