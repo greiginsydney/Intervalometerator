@@ -374,15 +374,21 @@ def main():
             FileList.sort(key=lambda x: os.path.getmtime(x))
             piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1])).replace(microsecond=0)
             piLastImageFile = str(FileList[-1])
-            #This code replaces a RAW image on the main page with its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
+            #This code ensures if you're shooting RAW, the main page still shows a photo. It uses (in priority order):
+            # 1: its preview
+            # 2: its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
+            # 3: its thumbnail (yuk).
             if piLastImageFile.endswith(RAWEXTENSIONS):
                 piLastImageFileAsJpg = re.sub('|'.join(RAWEXTENSIONS), ".JPG", piLastImageFile)
-                if os.path.exists(piLastImageFileAsJpg):
+                piLastImageFilePreview = createDestFilename(piLastImageFile, PI_PREVIEW_DIR, '-preview')
+                if os.path.exists(piLastImageFilePreview):
+                    piLastImageFile = 'preview/' + piLastImageFilePreview.replace((PI_PREVIEW_DIR  + "/"), "")
+                elif os.path.exists(piLastImageFileAsJpg):
                     piLastImageFile = piLastImageFileAsJpg
-                    piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")      #Fix the path
+                    piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
                 else:
-                    piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "") #Fix the path
-                    piLastImageFile = piLastImageFile.replace((".JPG"), "-thumb.JPG")                     #Add the '-thumb' suffix
+                    piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
+                    piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
             else:
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
     except Exception as e:
