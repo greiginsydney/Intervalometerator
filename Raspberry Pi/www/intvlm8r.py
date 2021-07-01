@@ -89,6 +89,7 @@ gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
+PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
 
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
@@ -1387,7 +1388,10 @@ def files_to_copy(camera):
 
 
 def copy_files(camera, imageToCopy, deleteAfterCopy):
-    """ Straight from Jim's examples again """
+    """
+    Straight from Jim's examples again
+    The test for available HDD space is from examples/copy-data.py
+    """
     app.logger.debug('Copying files...')
     sourceFolderTree, imageFileName = os.path.split(imageToCopy)
     dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
@@ -1396,6 +1400,12 @@ def copy_files(camera, imageToCopy, deleteAfterCopy):
     try:
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
+        file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
+        data = memoryview(file_data)
+        _, piDiskFree = getDiskSpace()
+        if piDiskFree - len(data) <= PI_SPACE_RESERVED:
+            app.logger.info('Insufficient disk space')
+            return -1 #Abort
         copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
         if (copyOK >= gp.GP_OK):
             if (deleteAfterCopy == True):
