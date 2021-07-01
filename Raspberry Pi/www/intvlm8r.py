@@ -1759,7 +1759,7 @@ def copyNow(self):
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         while len(filesToCopy) > 0:
             try:
-                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
+                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info('About to copy file: ' + str(thisFile))
                 copyResult = copy_files(camera, thisFile, deleteAfterCopy)
