@@ -524,8 +524,14 @@ def thumbnails():
                     thumbTimeStamp = exifData.split("|")[0]
                     thumbInfo = exifData.split("|")[1]
                 #Build the list for the page:
-                ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb')
-                ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
+                ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb') #Adds the '-thumb.JPG' suffix
+                if FileList[loop].endswith(RAWEXTENSIONS):
+                    PreviewFileName = createDestFilename(FileList[loop], PI_PREVIEW_DIR, '-preview') #Switch to the /PREVIEW/ folder
+                else:
+                    PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
+                PreviewFileName = PreviewFileName.replace('/home/pi/', '')
+                ThumbFileName = ThumbFileName.replace('/home/pi/', '')
+                ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
     except Exception as e:
