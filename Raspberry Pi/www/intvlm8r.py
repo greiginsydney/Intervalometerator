@@ -32,7 +32,7 @@ import json
 import logging
 import os                       # Hostname
 import psutil
-import re                       # RegEx. Used in Copy Files & createThumbFilename
+import re                       # RegEx. Used in Copy Files & createDestFilename
 from smbus2 import SMBus        # For I2C
 import struct
 import subprocess
@@ -518,7 +518,7 @@ def thumbnails():
                     thumbTimeStamp = exifData.split("|")[0]
                     thumbInfo = exifData.split("|")[1]
                 #Build the list for the page:
-                ThumbFileName = createThumbFilename(FileList[loop]) #Adds the '-thumb.JPG' suffix
+                ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb')
                 ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
@@ -1437,19 +1437,17 @@ def CreateDestPath(folder, NewDestDir):
     return dest
 
 
-def createThumbFilename(imageFullFilename):
+def createDestFilename(imageFullFilename, targetFolder, suffix):
     """
-    Called by 'makeThumb' and also /thumbnails
+    Called by 'makeThumb', /main and /thumbnails
     Manipulates the path and filename of every image:
-    - Changes the root path from the PI_PHOTO_DIR to the PI_THUMBS_DIR
-    - Adds the '-thumb.JPG' suffix
+    - Changes its source path to the targetFolder directory
+    - And adds the nominated suffix
     """
     sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
-    dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
+    dest = CreateDestPath(sourceFolderTree, targetFolder)
     dest = os.path.join(dest, imageFileName)
-    dest = re.sub('.JPG', '-thumb.JPG', dest, flags=re.IGNORECASE)
-    dest = re.sub('.CR2', '-thumb.JPG', dest, flags=re.IGNORECASE) # Canon raw
-    dest = re.sub('.NEF', '-thumb.JPG', dest, flags=re.IGNORECASE) # Nikon raw
+    dest = os.path.splitext(dest)[0] + suffix + '.JPG'
     return dest
 
 
