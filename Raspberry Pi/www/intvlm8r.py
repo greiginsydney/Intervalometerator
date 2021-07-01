@@ -375,8 +375,7 @@ def main():
             piLastImageFile = str(FileList[-1])
             #This code replaces a RAW image on the main page with its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
             if piLastImageFile.endswith(RAWEXTENSIONS):
-                piLastImageFileAsJpg = piLastImageFile.replace(".CR2", ".JPG")
-                piLastImageFileAsJpg = piLastImageFileAsJpg.replace(".NEF", ".JPG")
+                piLastImageFileAsJpg = re.sub('|'.join(RAWEXTENSIONS), ".JPG", piLastImageFile)
                 if os.path.exists(piLastImageFileAsJpg):
                     piLastImageFile = piLastImageFileAsJpg
                     piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")      #Fix the path
