@@ -13,7 +13,7 @@
 # https://intvlm8r.com
 
 [Unit]
-Description=setTime.service. Runs once on boot to read the time from the Arduino and set the Pi's real-time clock
+Description=setTime.service. Runs on boot to get/set the real-time clock
 Requires=intvlm8r.service
 After=intvlm8r.service
 
