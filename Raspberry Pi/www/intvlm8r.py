@@ -1749,11 +1749,12 @@ def copyNow(self):
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         while len(filesToCopy) > 0:
             try:
-                thisImage += 1
                 self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info('About to copy file: ' + str(thisFile))
-                copy_files(camera, thisFile, deleteAfterCopy)
+                copyResult = copy_files(camera, thisFile, deleteAfterCopy)
+                if copyResult == 0:
+                    thisImage += 1
             except Exception as e:
                 app.logger.info('Unknown error in copyNow(): ' + str(e))
     try:
