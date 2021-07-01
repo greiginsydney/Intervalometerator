@@ -27,9 +27,18 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 
 
 # -----------------------------------
-# START FUNCTIONS
+# CONSTANTS
 # -----------------------------------
 
+GREEN="\033[38;5;10m"
+YELLOW="\033[38;5;11m"
+GREY="\033[38;5;60m"
+RESET="\033[0m"
+
+
+# -----------------------------------
+# START FUNCTIONS
+# -----------------------------------
 
 install_apps ()
 {
@@ -93,46 +102,69 @@ install_apps ()
 		esac
 	done
 
+	echo -e ""$GREEN"Installing subversion"$RESET""
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
+	echo -e ""$GREEN"Installing python3-pip, python-flask"$RESET""
 	apt-get install python3-pip python-flask -y
+	echo -e ""$GREEN"Installing Werkzeug, cachelib"$RESET""
 	pip3 install Werkzeug cachelib
+	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, configparser"$RESET""
 	pip3 install flask flask-bootstrap flask-login configparser
+	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
 	pip3 install gunicorn psutil
+	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
+	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	pip3 install "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
 	then
 		#This is ALL for Paramiko (SSH uploads):
 		export DEBIAN_FRONTEND=noninteractive
+		echo -e ""$GREEN"Installing libffi-dev, libssl-dev, python-dev"$RESET""
 		apt-get install libffi-dev libssl-dev python-dev -y
+		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
 		apt install krb5-config krb5-user -y
+		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
+		echo -e ""$GREEN"Installing bcrypt, pynacl, cryptography, gssapi, paramiko"$RESET""
 		pip3 install bcrypt pynacl cryptography gssapi paramiko
 	fi
 
 	if [ $installDropbox -eq 1 ];
 	then
+		echo -e ""$GREEN"Installing dropbox"$RESET""
 		pip3 install dropbox
 	fi
 	
 	if [ $installGoogle -eq 1 ];
 	then
+		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
 	fi
 	
+	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev -y
+	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
+	echo -e ""$GREEN"Installing gphoto"$RESET""
 	pip3 install -v gphoto2
+	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
+	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
+	echo -e ""$GREEN"Installing ExifReader"$RESET""
 	pip3 install ExifReader
 	
+	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
+	echo -e ""$GREEN"Installing i2c-tools"$RESET""
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
+	echo -e ""$GREEN"Purging bluez"$RESET""
 	apt-get purge bluez -y
+	echo -e ""$GREEN"Autoremoving"$RESET""
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
@@ -140,7 +172,7 @@ install_apps ()
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
 	echo ''
-	echo 'Enabling i2c'
+	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo ' i2c-bcm2708 module already exists'
 	else
@@ -176,9 +208,8 @@ install_apps ()
 	
 	# Prepare for reboot/restart:
 	echo ''
-	echo "Exited install_apps OK."
+	echo -e ""$GREEN"Exited install_apps OK"$RESET""
 }
-
 
 install_website ()
 {
@@ -503,13 +534,12 @@ install_website ()
 	chmod 644 /etc/systemd/system/setTime.service
 	echo "Enabling setTime.service"
 	systemctl enable setTime.service
-	
+
 	# If upgrading, reload all services as a precautionary measure:
 	if [ -f www/intvlm8r.old ];
 	then
 		systemctl daemon-reload
 	fi
-
 
 	# Step 101 - slows the I2C speed
 	if  grep -q "dtparam=i2c1=on" /boot/config.txt;
@@ -887,12 +917,15 @@ END
 test_install ()
 {
 	echo "TEST!"
-	[ -f /etc/nginx/sites-available/intvlm8r ] && echo "PASS: /etc/nginx/sites-available/intvlm8r" || echo "FAIL: /etc/nginx/sites-available/intvlm8r not found"
-	[ -f /etc/systemd/system/intvlm8r.service ] && echo "PASS: /etc/systemd/system/intvlm8r.service exists" || echo "FAIL: /etc/systemd/system/intvlm8r.service not found"
-	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
-	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
-	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
-	grep -q "i2c_arm_baudrate" /boot/config.txt && echo "PASS: i2c_arm_baudrate is present in /boot/config.txt" || echo "FAIL: i2c_arm_baudrate not present in /boot/config.txt"
+	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
+	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
+	[ -f /etc/systemd/system/cameraTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/cameraTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/cameraTransfer.service not found"
+	[ -f /etc/systemd/system/piTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/piTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/piTransfer.service not found"
+	[ -f /etc/systemd/system/setTime.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/setTime.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/setTime.service not found"
+	[ -f /etc/systemd/system/redis.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/redis.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/redis.service not found"
+	[ -f /etc/systemd/system/celery.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/celery.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/celery.service not found"
+	grep -qcim1 "i2c-dev" /etc/modules && echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules" || echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
+	grep -q "i2c_arm_baudrate" /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
 	echo ''
 	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
 	i2cdetect -y 1
@@ -911,22 +944,22 @@ test_install ()
 	
 	case $ap_test in
 		(0)
-			echo 'PASS: The Pi is NOT an AP'
+			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
 			;;
 		(1)
-			echo 'FAIL: dnsmasq running alone. hostapd should also be running for the Pi to be an AP'
+			echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
 			;;
 		(2)
-			echo 'FAIL: hostapd running alone. dnsmasq should also be running for the Pi to be an AP'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be an AP"
 			;;
 		(3)
-			echo 'FAIL: hostapd & dnsmasq are installed, but hostapd.conf is missing'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd & dnsmasq are installed, but hostapd.conf is missing"
 			;;
 		(4)
-			echo 'FAIL: hostapd.conf is present but hostapd & dnsmasq are missing'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd.conf is present but hostapd & dnsmasq are missing"
 			;;
 		(7)
-			echo 'PASS: hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP'
+			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
 			;;
 	esac
 	echo ''
