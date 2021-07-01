@@ -1474,7 +1474,19 @@ def makeThumb(imageFile):
             app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
-            app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
+            app.logger.info('We need to make a thumbnail of {0}'.format(imageFile)) #This logs to /var/log/celery/celery_worker.log
+            if imageFile.endswith(RAWEXTENSIONS):
+                #It's a RAW. See if we can extract a large-format JPG to use internally
+                previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
+                if not os.path.exists(previewfilename):
+                    try:
+                        with Image.open(imageFile) as preview:
+                            try:
+                                preview.save(previewfilename, "JPEG")
+                            except Exception as e:
+                                app.logger.info('makeThumb() preview save error: ' + str(e))
+                    except Exception as e:
+                        app.logger.info('makeThumb() preview open error: ' + str(e))
             try:
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
