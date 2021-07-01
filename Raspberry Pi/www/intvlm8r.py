@@ -1467,7 +1467,7 @@ def makeThumb(imageFile):
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
-        dest = createThumbFilename(imageFile)
+        dest = createDestFilename(imageFile, PI_THUMBS_DIR, '-thumb')
         app.logger.debug('Thumb dest = ' + dest)
         alreadyExists = False
         if dest in ThumbList:
