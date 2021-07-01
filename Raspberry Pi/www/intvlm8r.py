@@ -385,8 +385,9 @@ def main():
                     piLastImageFile = piLastImageFile.replace((".JPG"), "-thumb.JPG")                     #Add the '-thumb' suffix
             else:
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
-    except:
+    except Exception as e:
         flash('Error talking to the Pi')
+        app.logger.debug('Pi error: {0}'.format(str(e)))
         PI_PHOTO_COUNT = 0
     templateData['piLastImageFile'] = piLastImageFile
     templateData['piImageCount']    = PI_PHOTO_COUNT
@@ -1722,6 +1723,7 @@ def copyNow(self):
             app.logger.info('copyNow() trying to init the camera')
             camera.init(context)
             #The line above will throw an exception if we can't connect to the camera
+            app.logger.info('copyNow() camera initialised')
             break
         except gp.GPhoto2Error as e:
             app.logger.info("copyNow() wasn't able to connect to the camera: " + e.string)
@@ -1751,6 +1753,7 @@ def copyNow(self):
     except Exception as e:
         app.logger.info('copyNow() ended sad: ' + str(e))
     if thisImage == 0:
+        app.logger.info('copyNow() reported there were no new images to copy')
         statusMessage = "There were no new images to copy"
     else:
         statusMessage = 'Copied ' + str(thisImage) + ' images OK'
