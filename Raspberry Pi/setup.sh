@@ -504,9 +504,9 @@ install_website ()
 	# (Thank you SO: https://unix.stackexchange.com/a/78309)
 
 	#NTP
-	echo ""
 	if [ -f www/intvlm8r.old ];
 	then
+		echo ""
 		echo "intvlm8r.old found. Skipping the NTP prompt step."
 	else
 		timeSync1
@@ -903,7 +903,17 @@ END
 
 timeSync1 ()
 {
-	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
+	echo ''
+	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
+	if [ $NTP = "ActiveState=active" ];
+	then
+		echo "NTP is currently active. NTP is our master time source"
+	else
+		echo "NTP is not active. The Arduino is our master time source"
+	fi
+	echo ''
+	echo 'Does the Pi have network connectivity? '
+	read -p "If so, can we use NTP as our master time source? [Y/n]: " Response
 	echo ''
 	case $Response in
 		(y|Y|"")
