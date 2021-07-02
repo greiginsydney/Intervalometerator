@@ -907,12 +907,12 @@ timeSync1 ()
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
 	if [ $NTP = "ActiveState=active" ];
 	then
-		echo "NTP is currently active. NTP is our master time source"
+		echo "NTP is currently active. NTP is our master time source."
 	else
-		echo "NTP is not active. The Arduino is our master time source"
+		echo "NTP is not active. The Arduino is our master time source."
 	fi
 	echo ''
-	echo 'Does the Pi have network connectivity? '
+	echo 'Does the Pi have network connectivity?'
 	read -p "If so, can we use NTP as our master time source? [Y/n]: " Response
 	echo ''
 	case $Response in
