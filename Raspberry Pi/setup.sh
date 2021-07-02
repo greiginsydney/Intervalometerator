@@ -509,17 +509,7 @@ install_website ()
 	then
 		echo "intvlm8r.old found. Skipping the NTP prompt step."
 	else
-		read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
-		case $Response in
-			(y|Y|"")
-				systemctl enable systemd-timesyncd
-				systemctl start systemd-timesyncd
-				;;
-			(*)
-				systemctl disable systemd-timesyncd
-				systemctl stop systemd-timesyncd
-				;;
-		esac
+		timeSync1
 	fi
 	if [ -f setTime.service ];
 	then
@@ -530,10 +520,7 @@ install_website ()
 			mv -fv setTime.service /etc/systemd/system/setTime.service
 		fi
 	fi
-	echo ""
-	chmod 644 /etc/systemd/system/setTime.service
-	echo "Enabling setTime.service"
-	systemctl enable setTime.service
+	timeSync2
 
 	# If upgrading, reload all services as a precautionary measure:
 	if [ -f www/intvlm8r.old ];
@@ -914,6 +901,61 @@ END
 }
 
 
+timeSync1 ()
+{
+	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
+	echo ''
+	case $Response in
+		(y|Y|"")
+			echo "Enabling systemd-timesyncd"
+			systemctl enable systemd-timesyncd
+			echo "Starting systemd-timesyncd"
+			systemctl start systemd-timesyncd
+			;;
+		(*)
+			echo "Disabling systemd-timesyncd"
+			systemctl disable systemd-timesyncd
+			echo "Stopping systemd-timesyncd"
+			systemctl stop systemd-timesyncd
+			;;
+	esac
+}
+
+
+timeSync2 ()
+{
+	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
+	if [ $NTP = "ActiveState=active" ];
+	then
+		echo "NTP is active"
+		if  grep -q "Requires=intvlm8r.service time-sync.target" /etc/systemd/system/setTime.service;
+		then
+			echo ' Requires time-sync.target suffix is already present'
+		else
+			sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1 time-sync.target/g' /etc/systemd/system/setTime.service #Add REQUIRES time-sync.target
+			echo ' Added Requires time-sync.target suffix'
+		fi
+		sed -i '/Before=time-sync.target/d' /etc/systemd/system/setTime.service #Delete time-sync.target
+		echo ' Deleted Before=time-sync.target'
+	else
+		echo "NTP is not active"
+		sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1/g' /etc/systemd/system/setTime.service ##Delete REQUIRES time-sync.target
+		echo ' Deleted Requires time-sync.target suffix'
+		if  grep -q "Before=time-sync.target" /etc/systemd/system/setTime.service;
+		then
+			echo ' Before=time-sync.target is already present'
+		else
+			sed -i '/^Requires=intvlm8r.service.*/a Before=time-sync.target' /etc/systemd/system/setTime.service #Add Before
+			echo ' Added Before=time-sync.target'
+		fi
+	fi
+	echo ""
+	chmod 644 /etc/systemd/system/setTime.service
+	echo "Enabling setTime.service"
+	systemctl enable setTime.service
+}
+
+
 test_install ()
 {
 	echo "TEST!"
@@ -1053,11 +1095,15 @@ case "$1" in
 		unmake_ap
 		prompt_for_reboot
 		;;
+	("time")
+		timeSync1
+		timeSync2
+		;;
 	("test")
 		test_install
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test' or 'time' after the script name\n"
 		exit 1
 		;;
 	(*)
