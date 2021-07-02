@@ -1798,6 +1798,7 @@ def copyNow(self):
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
+    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation'})
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -1825,6 +1826,7 @@ def newThumbs(self):
 
         if thumbsToCreate >= 1:
             for loop in range(-1, (-1 * (thumbsToCreate + 1)), -1):
+                self.update_state(state='PROGRESS', meta={'status': 'Creating thumbnail ' + str(thumbsCreated + 1) + ' of ' + str(thumbsToCreate)})
                 dest, alreadyExists = makeThumb(DifferenceList[loop]) #Create a thumb, and metadata for every image on the Pi
                 if (dest == None):
                     #Something went wrong
