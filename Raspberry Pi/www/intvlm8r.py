@@ -412,7 +412,7 @@ def main():
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
     
-    templateData['lastTrnLogFile'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'status')
+    templateData['lastTrnLogFile'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
@@ -866,7 +866,7 @@ def transfer():
         app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
 
-    templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'status')
+    templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
     
     rawWakePi = str(readString("5"))
     if rawWakePi != "Unknown":
