@@ -418,7 +418,7 @@ install_website ()
 		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
 		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
 		then 
-			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|'g /etc/systemd/system/redis.service
+			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|g' /etc/systemd/system/redis.service
 		else
 			#NO? OK, then just insert the new line:
 			sed -i --follow-symlinks "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
@@ -429,21 +429,21 @@ install_website ()
 	then
 		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "Type=notify"'
 	else
-		sed -i --follow-symlinks 's|^Type=.*|Type=notify|'g /etc/systemd/system/redis.service
+		sed -i --follow-symlinks 's|^Type=.*|Type=notify|g' /etc/systemd/system/redis.service
 	fi
 
 	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
 	then 
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
 	else
-		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/g' /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
 	then 
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "supervised systemd"'
 	else
-		sed -i 's/^#\?supervised .*/supervised systemd/'g /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^#\?supervised .*/supervised systemd/g' /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
 	
 	#Redis is just a *little* too chatty by default:
@@ -451,7 +451,7 @@ install_website ()
 	then
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "loglevel warning"'
 	else
-		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/'g /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/g' /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	#Camera Transfer - Cron Job
@@ -540,7 +540,7 @@ install_website ()
 	then
 		echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
 	else
-		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/'g /boot/config.txt
+		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt
 	fi
 	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
 	
