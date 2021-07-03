@@ -1004,6 +1004,64 @@ def thermalPOST():
     return res, 302
 
 
+@app.route("/monitoring")
+@login_required
+def monitoring():
+    """
+    Monitoring is where the heartbeating is setup
+    TY Christian David for the URL validation: https://stackoverflow.com/questions/8667070/javascript-regular-expression-to-validate-url
+    """
+    templateData = {
+        'hbUrl'  : '',
+        'hbFreq' : '',
+        'hbResult' : ''
+        }
+    templateData['hbUrl']  = getIni('Monitoring', 'heartbeatUrl', 'string', '')
+    templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', '')
+    
+    try:
+        with open(PI_HBRESULT_FILE, 'r') as f:
+            templateData['hbResult'] = f.readline()
+    except:
+        pass
+
+    return render_template('monitoring.html', **templateData)
+
+
+@app.route("/monitoring", methods = ['POST'])    # The monioring page's POST method
+@login_required
+def monitoringPOST():
+    """ This page is where changes to the Monitoring page are actioned """
+
+    if 'monHbNow' in request.form:
+        try:
+            app.logger.debug('mon initiating heartbeat now')
+            initiateHeartbeat()
+        except Exception as e:
+            app.logger.debug('mon exception: ' + str(e))
+
+    if 'monApply' in request.form:
+        if not os.path.exists(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        try:
+            config.read(iniFile)
+            if not config.has_section('Monitoring'):
+                config.add_section('Monitoring')
+            config.set('Monitoring', 'heartbeatfrequency', str(request.form.get('hbFreq')))
+            config.set('Monitoring', 'heartbeaturl', str(request.form.get('hbUrl')))
+            with open(iniFile, 'w') as config_file:
+                config.write(config_file)
+        except Exception as e:
+            app.logger.debug('mon INI file error writing: ' + str(e))
+            if 'Permission denied' in str(e):
+                flash('Permission denied writing to the ini file')
+            else:
+                flash('Error writing to the Ini file')
+
+    return redirect(url_for('monitoring'))
+
+
 @app.route("/system")
 @login_required
 def system():
