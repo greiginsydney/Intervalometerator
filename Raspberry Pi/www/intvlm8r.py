@@ -77,13 +77,15 @@ callback_obj = gp.check_result(gp.use_python_logging(mapping={
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
-PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
+PI_USER_HOME =  os.path.expanduser('~')
+PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
+PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
-PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
+PI_PREVIEW_DIR = os.path.join(PI_USER_HOME, 'preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
-PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
+PI_TRANSFER_DIR = os.path.join(PI_USER_HOME, 'www/static')
 PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
+PI_HBRESULT_FILE = os.path.join(PI_USER_HOME, 'hbresults.txt')
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 HOSTNAME = os.uname()[1]
@@ -532,8 +534,8 @@ def thumbnails():
                         app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
                 else:
                     PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
-                PreviewFileName = PreviewFileName.replace('/home/pi/', '')
-                ThumbFileName = ThumbFileName.replace('/home/pi/', '')
+                PreviewFileName = PreviewFileName.replace(PI_USER_HOME, '')
+                ThumbFileName = ThumbFileName.replace(PI_USER_HOME, '')
                 ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
