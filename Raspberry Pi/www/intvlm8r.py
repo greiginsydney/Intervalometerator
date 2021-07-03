@@ -880,10 +880,9 @@ def transferPOST():
 
     if 'tfrClear' in request.form:
         try:
-            piTransferLogfile = open(PI_TRANSFER_FILE, 'w')
-            nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
-            piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
-            piTransferLogfile.close()
+            with open(PI_TRANSFER_FILE, 'w') as piTransferLogfile:
+                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
         except Exception as e:
             app.logger.debug('Exception clearing piTransfer.log: ' + str(e))
 
