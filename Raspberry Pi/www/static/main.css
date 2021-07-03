@@ -269,6 +269,14 @@ input[type=radio] {
 	border-style: none;
 }
 
+.redborder {
+	border: 1px solid #FF0000;
+}
+
+.redborder:focus {
+	outline-color: #FF0000;
+}
+
 /* End: radio button */
 /* ---------------------------------------------------------*/
 /* Start: Menu */
