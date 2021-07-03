@@ -84,7 +84,6 @@ PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
 PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
 PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
-PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer page will link to when you click "View Log"
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 HOSTNAME = os.uname()[1]
@@ -291,7 +290,7 @@ def main():
         'daysFreeWarn'      : '0',
         'daysFreeAlarm'     : '0',
         'lastTrnResult'     : 'Unknown',
-        'lastTrnLogFile'    : PI_TRANSFER_LINK,
+        'lastTrnLogFile'    : '',
         'piLastImageFile'   : 'Unknown'
     }
 
@@ -413,6 +412,7 @@ def main():
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
     
+    templateData['lastTrnLogFile'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'status')
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
@@ -822,7 +822,7 @@ def transfer():
         'copyDay'               : '',
         'copyHour'              : '',
         'wakePiTime'            : '25',
-        'piTransferLogLink'     : PI_TRANSFER_LINK,
+        'piTransferLogLink'     : '',
         'hiddenTransferOptions' : hiddenTransferOptions
     }
     config = configparser.ConfigParser(
@@ -866,6 +866,8 @@ def transfer():
         app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
 
+    templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'status')
+    
     rawWakePi = str(readString("5"))
     if rawWakePi != "Unknown":
         templateData['wakePiTime']     = rawWakePi[0:2]
