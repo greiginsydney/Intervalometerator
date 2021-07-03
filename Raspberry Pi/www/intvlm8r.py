@@ -1062,6 +1062,44 @@ def monitoringPOST():
     return redirect(url_for('monitoring'))
 
 
+def initiateHeartbeat():
+    """
+    This fn pings the heartbeat URL and logs the result to the 'hbResult' file
+    """
+    Url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
+    if Url:
+        statusCode = None
+        try:
+            response = urlopen(Url, timeout = 1)
+            statusCode = response.getcode()
+            htmltext = response.read().decode('utf-8')
+            app.logger.debug('Status code = {0}'.format(str(statusCode)))
+            app.logger.debug('This is what I received:' + str(htmltext))
+        except URLError as e:
+            if hasattr(e, 'reason'):
+                app.logger.debug('initiateHeartbeat() URL error. Reason = ' + str(e.reason))
+            elif hasattr(e, 'code'):
+                app.logger.debug('initiateHeartbeat() URL error. Code = ' + str(e.code))
+            else:
+                app.logger.debug('initiateHeartbeat() Unknown URL error: ' + str(e))
+        except socket.timeout as e:
+            app.logger.debug('initiateHeartbeat() urlopen timed out : ' + str(e))
+        except Exception as e:
+            app.logger.debug('initiateHeartbeat() Unhandled web error: ' + str(e))
+        try:
+            with open(PI_HBRESULT_FILE, 'w') as resultFile:
+                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                if statusCode:
+                    resultFile.write('{0} ({1})'.format(nowtime, statusCode))
+                else:
+                    resultFile.write('{0} Error'.format(nowtime))
+        except Exception as e:
+            app.logger.debug('initiateHeartbeat() exception: ' + str(e))
+    else:
+        app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
+    return
+
+
 @app.route("/system")
 @login_required
 def system():
