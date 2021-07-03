@@ -245,7 +245,7 @@ install_website ()
 		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
 	fi
 	
-	chown -R pi:www-data /home/pi
+	chown -R $SUDO_USER:www-data ${HOME}
 
 	if [ -f www/intvlm8r.old ];
 	then
