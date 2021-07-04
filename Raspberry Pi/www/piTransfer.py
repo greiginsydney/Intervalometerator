@@ -291,8 +291,9 @@ def commenceDbx(token):
 
 
 def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
-    """Upload a file.
-    Return the request response, or None in case of error.
+    """
+    Upload a file.
+    Return the request response, or None in case of error
     """
     path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
     while '//' in path:
@@ -401,7 +402,9 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
 
 
 def commenceGoogle(remoteFolder):
-    """Create a Drive service."""
+    """
+    Create a Drive service
+    """
     auth_required = True
     #Have we got some credentials already?
     storage = Storage(GOOGLE_CREDENTIALS)
@@ -494,8 +497,10 @@ def commenceGoogle(remoteFolder):
 
 
 def getGoogleFolder(DRIVE, remoteFolder, parent=None):
+    """
+    Find and return the id of the remote folder
+    """
     log('Testing if folder \'%s\' exists.' % str(remoteFolder))
-    """Find and return the id of the remote folder """
     q = []
     q.append("title='%s'" % remoteFolder)
     if parent is not None:
@@ -571,8 +576,10 @@ def reauthGoogle():
 
 
 def uploadedOK(filename, filecount):
-    """ The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
-    Delete local file & metadata if required """
+    """
+    The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
+    Delete local file, thumb, preview & metadata if required
+    """
     log('Uploaded {0}'.format(filename))
     if deleteAfterTransfer:
         try:
@@ -598,7 +605,9 @@ def uploadedOK(filename, filecount):
 
 # TY SO: https://stackoverflow.com/questions/4710067/using-python-for-deleting-a-specific-line-in-a-file
 def deleteThumbsInfo(filepath):
-    """ Delete this file's metadata from PI_THUMBS_INFO_FILE """
+    """
+    Delete this file's metadata from PI_THUMBS_INFO_FILE
+    """
     try:
         filename = filepath.rsplit('/',1)[1]
         with open(PI_THUMBS_INFO_FILE, "r") as f:
