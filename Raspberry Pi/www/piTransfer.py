@@ -89,7 +89,7 @@ def main(argv):
 
     global deleteAfterTransfer  #Made global instead of passing this down from here to all the nested functions.
 
-    if not os.path.exists(INIFILE_NAME):
+    if not os.path.isfile(INIFILE_NAME):
         log("STATUS: Upload aborted. I've lost the INI file")
         return
     config = configparser.ConfigParser(
@@ -537,7 +537,7 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
 
 def reauthGoogle():
     log('Commencing Google re-auth')
-    if os.path.exists('client_secrets.json'):
+    if os.path.isfile('client_secrets.json'):
         try:
             storage = Storage(GOOGLE_CREDENTIALS)
             credentials = storage.get()
@@ -591,7 +591,7 @@ def uploadedOK(filename, filecount):
                     file2Delete = filename.replace( PI_PHOTO_DIR, folder)
                     file2Delete = os.path.splitext(file2Delete)[0] + suffix
                     log('Looking to delete {0}'.format(file2Delete))
-                    if os.path.exists(file2Delete):
+                    if os.path.isfile(file2Delete):
                         os.remove(file2Delete)
                 except Exception as e:
                     log('Error deleting file {0} : {1}'.format(file2Delete, str(e)))
