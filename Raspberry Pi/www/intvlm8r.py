@@ -413,7 +413,7 @@ def main():
         None
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
-    
+
     templateData['lastTrnLogFile'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
@@ -621,7 +621,7 @@ def camera():
             abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             if abilities.model in cameraPreviewBlocklist:
                 cameraData['blockPreview']  = 'True'
-                
+
             gp.check_result(gp.gp_camera_exit(camera))
             cameraData['cameraDate']    = cameraTimeAndDate
             cameraData['focusmode']     = readValue (config, 'focusmode')
@@ -652,7 +652,9 @@ def camera():
 @app.route("/camera", methods = ['POST'])    # The camera's POST method
 @login_required
 def cameraPOST():
-    """ This page is where you manage all the camera settings."""
+    """
+    This page is where you manage all the camera settings
+    """
     preview = None
     try:
         camera, context, config = connectCamera()
@@ -707,8 +709,9 @@ def cameraPOST():
 @app.route("/intervalometer")
 @login_required
 def intervalometer():
-    """ This page is where you manage all the interval settings for the Arduino."""
-
+    """
+    This page is where you manage all the interval settings for the Arduino
+    """
     templateData = {
         'piDoW'            : '',
         'piStartHour'      : '',
@@ -759,20 +762,22 @@ def intervalometer():
         templateData['piEndHour'] = ArdInterval[3:5]
         templateData['piInterval'] = ArdInterval[5:7]
         app.logger.debug('Decoded Interval = ' + ArdInterval[5:7])
-    
+
     _,piBytesFree = getDiskSpace()
     largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
     templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
-    
+
     return render_template('intervalometer.html', **templateData)
 
 
 @app.route("/intervalometer", methods = ['POST'])    # The intervalometer's POST method
 @login_required
 def intervalometerPOST():
-    """ This page is where you manage all the interval settings for the Arduino."""
+    """
+    This page is where you manage all the interval settings for the Arduino
+    """
     newInterval = ""
     shootDays = 0
     shootDaysList = request.form.getlist('shootDays')
@@ -802,8 +807,9 @@ def intervalometerPOST():
 @app.route("/transfer")
 @login_required
 def transfer():
-    """ This page is where you manage how the images make it from the camera to the real world."""
-
+    """
+    This page is where you manage how the images make it from the camera to the real world
+    """
     if not os.path.isfile(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
@@ -869,7 +875,7 @@ def transfer():
         flash('Error reading from the Ini file')
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
-    
+
     rawWakePi = str(readString("5"))
     if rawWakePi != "Unknown":
         templateData['wakePiTime']     = rawWakePi[0:2]
@@ -880,8 +886,9 @@ def transfer():
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
 @login_required
 def transferPOST():
-    """ This page is where you manage how the images make it from the camera to the real world."""
-
+    """
+    This page is where you manage how the images make it from the camera to the real world
+    """
     if 'tfrClear' in request.form:
         try:
             with open(PI_TRANSFER_FILE, 'w') as piTransferLogfile:
@@ -958,8 +965,9 @@ def copyNowCronJob():
 @app.route("/thermal")
 @login_required
 def thermal():
-    """ This page is where you monitor and manage the thermal settings & alarms."""
-
+    """
+    This page is where you monitor and manage the thermal settings & alarms
+    """
     templateData = {
         'thermalUnits'   : "Celsius",
         'arduinoTemp'    : 'Unknown',
@@ -988,7 +996,9 @@ def thermal():
 @app.route("/thermal", methods = ['POST'])    # The thermal page's POST method
 @login_required
 def thermalPOST():
-    """ This page is where we act on the Reset buttons for max/min temp."""
+    """
+    This page is where we act on the Reset buttons for max/min temp
+    """
     res = make_response("")
 
     if request.form.get('thermalUnits') == 'Celsius':
@@ -1021,7 +1031,7 @@ def monitoring():
         }
     templateData['hbUrl']  = getIni('Monitoring', 'heartbeatUrl', 'string', '')
     templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', '')
-    
+
     try:
         with open(PI_HBRESULT_FILE, 'r') as f:
             templateData['hbResult'] = f.readline()
@@ -1034,8 +1044,9 @@ def monitoring():
 @app.route("/monitoring", methods = ['POST'])    # The monioring page's POST method
 @login_required
 def monitoringPOST():
-    """ This page is where changes to the Monitoring page are actioned """
-
+    """
+    This page is where changes to the Monitoring page are actioned
+    """
     if 'monHbNow' in request.form:
         try:
             app.logger.debug('mon initiating heartbeat now')
@@ -1286,7 +1297,9 @@ def checkNTP(returnvalue):
 
 
 def setTime(newTime):
-    """ Takes the time passed from the user's PC and sets the Pi's real time clock """
+    """
+    Takes the time passed from the user's PC and sets the Pi's real time clock
+    """
     try:
         #convert it to a form the date command will accept: Incoming is "20181129215800" representing "2018 Nov 29 21:58:00"
         timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y%m%d%H%M%S')]
@@ -1340,7 +1353,9 @@ def connectCamera():
 
 
 def readValue ( camera, attribute ):
-    """ Reads a simple attribute in the camera and returns the value """
+    """
+    Reads a simple attribute in the camera and returns the value
+    """
     try:
         object = gp.check_result(gp.gp_widget_get_child_by_name(camera, attribute))
         value = gp.check_result(gp.gp_widget_get_value(object))
@@ -1441,7 +1456,9 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
 
 
 def list_camera_files(camera, path='/'):
-    """ Returns a list of all the image files on the camera """
+    """
+    Returns a list of all the image files on the camera
+    """
     result = []
     # get files
     for name, value in gp.check_result(
@@ -1476,7 +1493,9 @@ def list_Pi_Images(path):
 
 
 def get_camera_file_info(camera, path):
-    """ Returns the details of the specific image passed in """
+    """
+    Returns the details of the specific image passed in
+    """
     folder, name = os.path.split(path)
     return gp.check_result(
         gp.gp_camera_file_get_info(camera, folder, name))
@@ -1702,7 +1721,9 @@ def dedupeExifData():
 
 #TY SO: https://stackoverflow.com/a/30629776
 def convert_to_float(frac_str):
-    """ The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display """
+    """
+    The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display
+    """
     try:
         return float(frac_str)
     except ValueError:
@@ -1717,7 +1738,9 @@ def convert_to_float(frac_str):
 
 
 def getPreviewImage(camera, context, config):
-    """ Straight out of Jim's examples """
+    """
+    Straight out of Jim's examples
+    """
     OK, image_format = gp.gp_widget_get_child_by_name(config, 'imageformat')
     if OK >= gp.GP_OK:
         # get current setting
@@ -1752,7 +1775,9 @@ def getPreviewImage(camera, context, config):
 
 
 def getDiskSpace():
-    """ https://www.raspberrypi.org/forums/viewtopic.php?t=22180 """
+    """
+    https://www.raspberrypi.org/forums/viewtopic.php?t=22180
+    """
     try:
         disk = psutil.disk_usage('/')
         #disk_total = disk.total / 2**30     # GiB.
@@ -1765,7 +1790,9 @@ def getDiskSpace():
 
 
 def createConfigFile(iniFile):
-    """ Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/ """
+    """
+    Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/
+    """
     try:
         config = configparser.ConfigParser()
         config.add_section('Global')
@@ -1788,7 +1815,7 @@ def createConfigFile(iniFile):
 def getIni(keySection, keyName, keyType, defaultValue):
     """
     Reads a key from the INI file and returns its value.
-    If it doesn't exist, it's created with a default value, which is then returned.
+    If it doesn't exist, it's created with a default value, which is then returned
     """
     returnValue = defaultValue
     try:
@@ -1980,7 +2007,7 @@ def getCeleryTasks():
     """
     This executes before EVERY page load, feeding any active task ID into the
     ensuing response. Javascript in the footer of every page (in index.html)
-    will then query for status updates if a task ID is present.
+    will then query for status updates if a task ID is present
     """
     try:
         # Inspect all nodes.
@@ -2015,10 +2042,10 @@ def reformatSlashes(folder):
 
 
 def getLargestImageSize(path):
-    '''
+    """
     Finds the largest file on the /photos/ folder tree.
     Used to calculate the number of days' worth of storage left on the Pi
-    '''    
+    """
     max_size = 0
     try:
         for folder, subfolders, files in os.walk(path):
@@ -2034,11 +2061,11 @@ def getLargestImageSize(path):
         app.logger.debug('getLargestImageSize exception: ' + str(e))
         return None
 
-    
+
 def getShotsPerDay():
-    '''
+    """
     Used to calculate the number of days' worth of storage left on the Pi and camera
-    '''
+    """
     shotsPerDay = 0
     try:
         ArdInterval = str(readString("3"))
@@ -2059,14 +2086,14 @@ def getShotsPerDay():
         app.logger.debug('getShotsPerDay exception: ' + str(e))
         return None
 
-    
+
 @app.route('/robots.txt')
 def norobots():
     res = make_response("User-Agent: *\nDisallow: /\n")
     res.status_code = 200
     res.headers["Content-Type"] = "text/plain; charset=utf-8"
-    return res    
-    
+    return res
+
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
