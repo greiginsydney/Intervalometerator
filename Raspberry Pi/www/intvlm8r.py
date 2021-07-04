@@ -21,7 +21,9 @@
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
 from PIL import Image           # For the camera page preview button
-from urllib.parse import urlparse, urljoin
+from urllib.error import URLError  # Heartbeat
+from urllib.parse import urlparse, urljoin # Login
+from urllib.request import urlopen # Heartbeat
 import calendar
 import configparser             # For the ini file (used by the Transfer page)
 import exifreader               # For thumbnails
