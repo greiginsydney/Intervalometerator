@@ -576,15 +576,18 @@ def uploadedOK(filename, filecount):
         try:
             os.remove(filename)
             log('Deleted  {0}'.format(filename))
-            Thumbversion = filename.replace( PI_PHOTO_DIR, PI_THUMBS_DIR)
-            Thumbversion = Thumbversion.replace( '.JPG', '-thumb.JPG')
-            Thumbversion = Thumbversion.replace( '.CR2', '-thumb.JPG')
-            log('Looking to delete {0}'.format(Thumbversion))
-            if os.path.exists(Thumbversion):
-                os.remove(Thumbversion)
             deleteThumbsInfo(filename)
+            for folder,suffix in [(PI_THUMBS_DIR, '-thumb.JPG'), (PI_PREVIEW_DIR, '-preview.JPG')]:
+                try:
+                    file2Delete = filename.replace( PI_PHOTO_DIR, folder)
+                    file2Delete = os.path.splitext(file2Delete)[0] + suffix
+                    log('Looking to delete {0}'.format(file2Delete))
+                    if os.path.exists(file2Delete):
+                        os.remove(file2Delete)
+                except Exception as e:
+                    log('Error deleting file {0} : {1}'.format(file2Delete, str(e)))
         except Exception as e:
-            log('Error deleting file : ' + str(e))
+            log('Unknown error in uploadedOK: {0}'.format(str(e)))
     else:
         with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
             historyFile.write(filename + "\n")
