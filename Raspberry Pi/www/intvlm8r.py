@@ -1344,6 +1344,10 @@ def connectCamera():
                     else:
                         app.logger.debug('connectCamera going again without waking the camera')
                         time.sleep(0.5);
+                elif e.string == 'Could not claim the USB device':
+                    app.logger.debug('connectCamera could not claim the USB device. Exiting')
+                    #TODO: pass this back upstream to present to the user
+                    return None, None, None
             except Exception as e:
                 app.logger.debug('connectCamera error: ' + str(e))
             retries += 1
