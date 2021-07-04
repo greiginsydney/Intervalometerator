@@ -318,7 +318,7 @@ install_website ()
 	if [ $SUDO_USER != "pi" ];
 	then
 		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
-		declare -a ServiceFiles=("celery" "celery.conf" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service")
+		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service")
 		for val in "${ServiceFiles[@]}";
 		do
 			if [ -f $val ];
@@ -327,6 +327,8 @@ install_website ()
 				sed -i "s|User=pi|User=$SUDO_USER|g" $val
 			fi
 		done
+		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
+		sed -i "s| pi | $SUDO_USER |g" celery.conf
 	fi
 	
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
