@@ -41,7 +41,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy">Copy now</button>
+					<button type="button" name="copy" id="copy" onclick="postUrl('/trnCopyNow')">Copy now</button>
 				</div>
 			</td>
 		</tr>
@@ -184,7 +184,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="tfrTrNow" id="tfrTrNow">Transfer now</button>
+					<button type="button" name="tfrTrNow" id="tfrTrNow" onclick="postUrl('/trnTrNow')">Transfer now</button>
 				</div>
 				<div class="alignright">
 					<button type="submit" name="tfrApply" id="apply">Apply</button>
@@ -264,7 +264,6 @@ else
 
 // Run when the form first loads:
 lightButtons(); 
-
 
 function newSelected(id)
 {
@@ -353,10 +352,10 @@ function openInNewTab(url) {
   win.focus();
 }
 
-function copyNow() {
+function postUrl(url) {
 	// send ajax POST request to start background job
 	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', '/trnCopyNow', true);
+	xmlhttp.open('POST', url, true);
 	xmlhttp.onload = function()
 	{
 		if (this.status >= 200 && this.status < 400)
