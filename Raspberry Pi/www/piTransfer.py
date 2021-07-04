@@ -55,16 +55,18 @@ except:
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_PHOTO_DIR         = os.path.expanduser('/home/pi/photos')
-PI_THUMBS_DIR        = os.path.expanduser('/home/pi/thumbs')
+PI_USER_HOME =  os.path.expanduser("~")
+PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
+PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE  = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
+PI_PREVIEW_DIR = os.path.join(PI_USER_HOME, 'preview')
 UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, 'uploadedOK.txt')
-INIFILE_DIR          = os.path.expanduser('/home/pi/www')
+INIFILE_DIR          = os.path.join(PI_USER_HOME, 'www')
 INIFILE_NAME         = os.path.join(INIFILE_DIR, 'intvlm8r.ini')
-LOGFILE_DIR          = os.path.expanduser('/home/pi/www/static')
+LOGFILE_DIR          = os.path.join(PI_USER_HOME, 'www/static')
 LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
-KNOWN_HOSTS_FILE     = os.path.expanduser('~/.ssh/known_hosts')
-GOOGLE_CREDENTIALS   = os.path.join('/home/pi/www', 'Google_credentials.txt')
+KNOWN_HOSTS_FILE     = os.path.join(PI_USER_HOME, '.ssh/known_hosts')
+GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
 
 # Paramiko client configuration
 sftpPort = 22
