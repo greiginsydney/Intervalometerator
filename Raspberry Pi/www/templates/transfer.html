@@ -169,7 +169,7 @@
 			<td class="noborder" id="transferHourMsg"></td>
 		</tr>
 		<tr>
-			<td >
+			<td>
 				<div class="alignleft">
 					<button type="button" name="view" id="view" onClick="openInNewTab('{{ piTransferLogLink }}');">View log</button>
 				</div>
@@ -183,6 +183,9 @@
 	<table class="noborder">
 		<tr>
 			<td class="noborder">
+				<div class="alignleft">
+					<button type="button" name="btnTransfer" id="btnTransfer" onclick="transferNow()">Transfer now</button>
+				</div>
 				<div class="alignright">
 					<button type="submit" name="tfrApply" id="apply">Apply</button>
 				</div>
@@ -224,6 +227,7 @@ var showHideCopyHour = document.getElementById("showHideCopyHour");
 var showHideTrnHour = document.getElementById("showHideTrnHour");
 var showHideCopyHrMsg = document.getElementById("showHideCopyHrMsg");
 var showHideTrnHrMsg = document.getElementById("showHideTrnHrMsg");
+var showHideTrnButton = document.getElementById("btnTransfer");
 
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
 var showHideTrnMethod = document.getElementById("showHideTrnMethod");
@@ -244,6 +248,7 @@ showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" ==
 showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+showHideTrnButton.style.display = (copyDay.value == "Off") ? "none":"";
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -291,6 +296,7 @@ function newSelected(id)
 		showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+		showHideTrnButton.style.display  = (copyDay.value == "Off") ? "none":"";
 		showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 		if (copyDay.value == "Daily")
 		{
