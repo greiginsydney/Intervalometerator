@@ -590,9 +590,9 @@ def uploadedOK(filename, filecount):
                 try:
                     file2Delete = filename.replace( PI_PHOTO_DIR, folder)
                     file2Delete = os.path.splitext(file2Delete)[0] + suffix
-                    log('Looking to delete {0}'.format(file2Delete))
                     if os.path.isfile(file2Delete):
                         os.remove(file2Delete)
+                        log('Deleted  {0}'.format(file2Delete))
                 except Exception as e:
                     log('Error deleting file {0} : {1}'.format(file2Delete, str(e)))
         except Exception as e:
