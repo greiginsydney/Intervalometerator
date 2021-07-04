@@ -315,6 +315,20 @@ install_website ()
 		echo 'Skipped: a Secret Key already exists.'
 	fi
 
+	if [ $SUDO_USER != "pi" ];
+	then
+		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
+		declare -a ServiceFiles=("celery" "celery.conf" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service")
+		for val in "${ServiceFiles[@]}";
+		do
+			if [ -f $val ];
+			then
+				sed -i "s|/pi/|/$SUDO_USER/|g" $val
+				sed -i "s|User=pi|User=$SUDO_USER|g" $val
+			fi
+		done
+	fi
+	
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
