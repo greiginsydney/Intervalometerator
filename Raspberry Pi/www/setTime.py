@@ -29,7 +29,7 @@ import re
 import subprocess
 import sys
 
-LOGFILE_PATH = os.path.expanduser('/home/pi')
+LOGFILE_PATH = os.path.expanduser('~')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
 
 htmltext = ''
