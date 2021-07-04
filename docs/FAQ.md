@@ -8,6 +8,7 @@
 - [Can I copy/transfer images more than once per day?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-copytransfer-images-more-than-once-per-day)
 - [Can I pause the shooting schedule during the day (e.g. at lunchtime)?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-pause-the-shooting-schedule-during-the-day-eg-at-lunchtime)
 - [Does the intvlm8r support Daylight Saving Time?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#does-the-intvlm8r-support-daylight-saving-time)
+- [Can I install the intvlm8r under another user, not 'pi'?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-install-the-intvlm8r-under-another-user-not-pi)
 
 <br>
 
@@ -160,6 +161,20 @@ If the Pi is set to always run, a cron job that fires every day at midnight will
 2021/06/14 00:00:02 This is what I received: <p>Set Arduino datetime to 20210614000002</p>
 2021/06/14 00:00:02 New Arduino time is 20210614000002
 ```
+
+## Can I install the intvlm8r under another user, not 'pi'?
+
+Yes. Just create your new user (with `sudo adduser newusername`) before you start the install process.
+
+By default a new user can't `sudo` things without needing to provide their password, which breaks the setTime script. To address this, run `sudo visudo` and add this line to the *bottom* of the file:
+
+```
+newusername  ALL=(ALL) NOPASSWD:ALL
+```
+
+This lets 'newusername' execute ALL commands without needing to constantly re-type their password. I'd like to be able to tighten it up, but haven't been able to find the right command/syntax for the script to be albe to run correctly - and it's not for a lack of trying.
+
+
 <br>
 <br>
 
