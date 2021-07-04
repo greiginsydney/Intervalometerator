@@ -31,9 +31,9 @@ import time
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-LOGFILE_PATH = os.path.expanduser('/home/pi')
+LOGFILE_PATH = os.path.expanduser('~')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'cameraTransfer.log')
-INIFILE_PATH = os.path.expanduser('/home/pi')
+INIFILE_PATH = os.path.expanduser('~')
 INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
 
 htmltext = ''
