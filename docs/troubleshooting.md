@@ -230,10 +230,11 @@ The start of the line is the frequency at which the event fires, followed by the
 
 ### Check the syslog
 
-The success or otherwise of the tasks can be confirmed by reviewing the syslog file at /var/log/syslog:
+The success or otherwise of the tasks can be confirmed by reviewing the syslog file at `/var/log/syslog`:
 
 ```text
-sudo nano /var/log/syslog
+cat /var/log/syslog | grep 'piTransfer.py'
+cat /var/log/syslog | grep 'cameraTransfer.py'
 ```
 
 If there are any errors in the two Transfer scripts, these will be captured in the syslog. The time and date are down the left hand side, with the most recent events at the bottom of the file.
