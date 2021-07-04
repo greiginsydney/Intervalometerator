@@ -382,9 +382,9 @@ def main():
             if piLastImageFile.endswith(RAWEXTENSIONS):
                 piLastImageFileAsJpg = re.sub('|'.join(RAWEXTENSIONS), ".JPG", piLastImageFile)
                 piLastImageFilePreview = createDestFilename(piLastImageFile, PI_PREVIEW_DIR, '-preview')
-                if os.path.exists(piLastImageFilePreview):
+                if os.path.isfile(piLastImageFilePreview):
                     piLastImageFile = 'preview/' + piLastImageFilePreview.replace((PI_PREVIEW_DIR  + "/"), "")
-                elif os.path.exists(piLastImageFileAsJpg):
+                elif os.path.isfile(piLastImageFileAsJpg):
                     piLastImageFile = piLastImageFileAsJpg
                     piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
                 else:
@@ -504,7 +504,7 @@ def thumbnails():
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
             #Read all the thumb exifData ready to create the page:
             ThumbsInfo = {}
-            if os.path.exists(PI_THUMBS_INFO_FILE):
+            if os.path.isfile(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if ' = ' in line:
@@ -529,7 +529,7 @@ def thumbnails():
                 ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb') #Adds the '-thumb.JPG' suffix
                 if FileList[loop].endswith(RAWEXTENSIONS):
                     PreviewFileName = createDestFilename(FileList[loop], PI_PREVIEW_DIR, '-preview') #Switch to the /PREVIEW/ folder
-                    if not os.path.exists(PreviewFileName):
+                    if not os.path.isfile(PreviewFileName):
                         PreviewFileName = ThumbFileName
                         app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
                 else:
@@ -804,7 +804,7 @@ def intervalometerPOST():
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
 
-    if not os.path.exists(iniFile):
+    if not os.path.isfile(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
     templateData = {
@@ -891,7 +891,7 @@ def transferPOST():
             app.logger.debug('Exception clearing piTransfer.log: ' + str(e))
 
     if 'tfrApply' in request.form:
-        if not os.path.exists(iniFile):
+        if not os.path.isfile(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         try:
@@ -1044,7 +1044,7 @@ def monitoringPOST():
             app.logger.debug('mon exception: ' + str(e))
 
     if 'monApply' in request.form:
-        if not os.path.exists(iniFile):
+        if not os.path.isfile(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         try:
@@ -1194,7 +1194,7 @@ def systemPOST():
             if newName != None:
                 cache.set('locationName', newName, timeout = 0)
                 app.logger.debug('New loc set as ' + newName)
-                if not os.path.exists(iniFile):
+                if not os.path.isfile(iniFile):
                     createConfigFile(iniFile)
                 config = configparser.ConfigParser()
                 config.read(iniFile)
@@ -1212,7 +1212,7 @@ def systemPOST():
             newCount = str(request.form.get('thumbsCount'))
             if newCount != None:
                 app.logger.debug('New thumbs count set as ' + newCount)
-                if not os.path.exists(iniFile):
+                if not os.path.isfile(iniFile):
                     createConfigFile(iniFile)
                 config = configparser.ConfigParser()
                 config.read(iniFile)
@@ -1580,7 +1580,7 @@ def makeThumb(imageFile):
             if imageFile.endswith(RAWEXTENSIONS):
                 #It's a RAW. See if we can extract a large-format JPG to use internally
                 previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
-                if not os.path.exists(previewfilename):
+                if not os.path.isfile(previewfilename):
                     try:
                         with Image.open(imageFile) as preview:
                             try:
@@ -1618,7 +1618,7 @@ def getExifData(imageFilePath, imageFileName):
                 timeOriginal = dateTimeOriginal[1]
             except Exception as e:
                 app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
-            if os.path.exists(PI_THUMBS_INFO_FILE):
+            if os.path.isfile(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if ('{0} = {1} {2}|'.format(imageFileName, dateOriginal, timeOriginal)) in line:
@@ -1678,7 +1678,7 @@ def getExifData(imageFilePath, imageFileName):
 def dedupeExifData():
     lines = 0
     ThumbsInfo = {}
-    if os.path.exists(PI_THUMBS_INFO_FILE):
+    if os.path.isfile(PI_THUMBS_INFO_FILE):
         with open(PI_THUMBS_INFO_FILE, 'rt') as f:
             for line in f:
                 if ' = ' in line:
@@ -1745,7 +1745,7 @@ def getPreviewImage(camera, context, config):
     app.logger.debug(type(data), len(data))
     app.logger.debug(data[:10].tolist())
     fileName = os.path.join(PI_PREVIEW_DIR, PI_PREVIEW_FILE)
-    if os.path.exists(fileName):
+    if os.path.isfile(fileName):
         os.remove(fileName)
     Image.open(io.BytesIO(file_data)).save(fileName, "JPEG")
     return 0
@@ -1792,7 +1792,7 @@ def getIni(keySection, keyName, keyType, defaultValue):
     """
     returnValue = defaultValue
     try:
-        if not os.path.exists(iniFile):
+        if not os.path.isfile(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         config.read(iniFile)
