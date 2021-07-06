@@ -13,7 +13,7 @@
 # https://intvlm8r.com
 
 [Unit]
-Description=setTime.service. Runs on boot to get/set the real-time clock
+Description=setTime.service. Runs on boot and at 3:30am to get/set the real-time clock
 Requires=intvlm8r.service
 After=intvlm8r.service
 
