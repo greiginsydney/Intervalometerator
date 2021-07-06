@@ -256,7 +256,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
                 previousFilePath = remoteFolderTree[0]
                 numFilesOK = uploadedOK(needupload, numFilesOK)
             except Exception as e:
-                log('Error uploading ' + str(e))
+                log('Error uploading {0} via FTP: {1}'.format(needupload,str(e)))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     try:
         ftp.quit()
@@ -284,7 +284,7 @@ def commenceDbx(token):
             path,filename = os.path.split(shortPath)
             result = dbx_upload(dbx, needupload, path, '', filename)
             if result == None:
-                log('Error uploading ' + needupload)
+                log('Error uploading {0} via DBX'.format(needupload))
             else:
                 numFilesOK = uploadedOK(needupload, numFilesOK)
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
@@ -389,7 +389,7 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
                 previousFilePath = remoteFolderTree[0]
                 numFilesOK = uploadedOK(needupload, numFilesOK)
             except Exception as e:
-                log('Error uploading via SFTP: ' + str(e))
+                log('Error uploading {0} via SFTP: {1}'.format(needupload,str(e)))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     try:
         sftp.close()
@@ -484,7 +484,7 @@ def commenceGoogle(remoteFolder):
                     log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
                 errorMsg = str(e)
-                log('Exception uploading ''%s'' to Google: %s' % (needupload,errorMsg))
+                log('Error uploading {0} via Google: {1}'.format(needupload,errorMsg))
                 if 'returned' in errorMsg:
                     errorReason = errorMsg.split('"')[1]
                     log('STATUS: Google error: %s' % (errorReason))
