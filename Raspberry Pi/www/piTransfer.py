@@ -571,7 +571,7 @@ def reauthGoogle():
 def uploadedOK(filename, filecount):
     """ The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
     Delete local file & metadata if required """
-    log('Uploaded {0}'.format(filename))
+    log('Uploaded  {0}'.format(filename))
     if deleteAfterTransfer:
         try:
             os.remove(filename)
