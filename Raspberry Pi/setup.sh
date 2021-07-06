@@ -227,7 +227,10 @@ install_website ()
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
-	touch photos/uploadedOK.txt
+	if [ ! -f photos/uploadedOK.txt ];
+	then
+		echo "/home/$SUDO_USER/photos/default_image.JPG" > photos/uploadedOK.txt #So we don't try to upload the default_image
+	fi
 	touch ${HOME}/setTime.log # Created here so it has correct ownership
 
 	if [ -f default_image.JPG ];
