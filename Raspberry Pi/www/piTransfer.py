@@ -584,7 +584,7 @@ def uploadedOK(filename, filecount):
     if deleteAfterTransfer:
         try:
             os.remove(filename)
-            log('Deleted  {0}'.format(filename))
+            log('Deleted   {0}'.format(filename))
             deleteThumbsInfo(filename)
             for folder,suffix in [(PI_THUMBS_DIR, '-thumb.JPG'), (PI_PREVIEW_DIR, '-preview.JPG')]:
                 try:
@@ -592,7 +592,7 @@ def uploadedOK(filename, filecount):
                     file2Delete = os.path.splitext(file2Delete)[0] + suffix
                     if os.path.isfile(file2Delete):
                         os.remove(file2Delete)
-                        log('Deleted  {0}'.format(file2Delete))
+                        log('Deleted   {0}'.format(file2Delete))
                 except Exception as e:
                     log('Error deleting file {0} : {1}'.format(file2Delete, str(e)))
         except Exception as e:
