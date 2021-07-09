@@ -585,6 +585,12 @@ dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 dtoverlay=gpio-poweroff,gpiopin=27,active_low
 END
 	fi
+	
+	if [ -f www/intvlm8r.old ];
+	then
+		mv -fv www/intvlm8r.old www/intvlm8r.bak
+	fi
+	
 	# Prepare for reboot/restart:
 	echo "Exited install_website OK."
 }
