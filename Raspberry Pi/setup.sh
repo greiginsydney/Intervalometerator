@@ -174,31 +174,31 @@ install_apps ()
 	echo ''
 	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
-		echo ' i2c-bcm2708 module already exists'
+		echo 'i2c-bcm2708 module already exists'
 	else
 		echo ' adding i2c-bcm2708 to /etc/modules/'
 		echo 'i2c-bcm2708' >> /etc/modules
 	fi
 	if grep -q 'i2c-dev' /etc/modules; then
-		echo ' i2c-dev module already exists'
+		echo 'i2c-dev module already exists'
 	else
-		echo ' adding i2c-dev to /etc/modules/'
+		echo 'adding i2c-dev to /etc/modules/'
 		echo 'i2c-dev' >> /etc/modules
 	fi
 	if grep -q 'dtparam=i2c1=on' /boot/config.txt; then
-		echo ' i2c1 parameter already set'
+		echo 'i2c1 parameter already set'
 	else
-		echo ' setting dtparam=i2c1=on in /boot/config.txt'
+		echo 'setting dtparam=i2c1=on in /boot/config.txt'
 		echo 'dtparam=i2c1=on' >> /boot/config.txt
 	fi
 	if grep -q 'dtparam=i2c_arm=on' /boot/config.txt; then
-		echo ' i2c_arm parameter already set'
+		echo 'i2c_arm parameter already set'
 	else
-		echo ' setting dtparam=i2c_arm=on in /boot/config.txt'
+		echo 'setting dtparam=i2c_arm=on in /boot/config.txt'
 		echo 'dtparam=i2c_arm=on' >> /boot/config.txt
 	fi
 	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
-		echo ' removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
+		echo 'removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 	else
