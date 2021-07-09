@@ -36,9 +36,9 @@ SSH or SCP to the Pi and check out the error log at `/home/pi/www/gunicorn.error
 
 ### 502 - Bad Gateway
 
-In a working (established) system, this indicates the Pi is too busy to present a web-page. You're most likely to encounter this for the first minute or two after the Pi starts, as it's copying images from the camera. It's also commonplace to receive this if you clicked "Transfer Now" from the Transfer Settings page and there were a lot of images to copy across. Wait a little while and refresh the page in your browser.
+In a working (established) system, this indicates the Pi is too busy to present a web-page. You're most likely to encounter this for the first minute or two after the Pi starts, as the various components load. Wait a minute and refresh the web-page.
 
-If you're seeing this as a result of a build step, or you're working on the code, it's usually a bug. SSH or SCP to the Pi and check out the error log at `/home/pi/www/gunicorn.error`. Scroll to the bottom and it will usually identify the offending line number and issue that's stopping it presenting the page.
+If you're seeing this as a result of a build step, or you're working on the code, it's usually a sign of a bug. SSH or SCP to the Pi and check out the error log at `/home/pi/www/gunicorn.error`. Scroll to the bottom and it will usually identify the offending line number and issue that's stopping it presenting the page.
 
 ### 504 - Gateway Time-out
 
@@ -186,6 +186,20 @@ Still crook?
 ## Transfer Errors 
 
 "Transfer errors" are those that result in images not being transferred from the camera to the Pi, or from the Pi to your "off-Pi" destination (i.e. FTP, SFTP, Dropbox).
+
+### Remote.it
+
+Remote.it allows you to communicate with the Raspberry Pi via a 4G/5G Wifi "dongle". The remote-it service running on the Pi effectively builds a VPN tunnel to the remote.it servers, from which you can then login and access the Pi down the tunnel.
+
+The [default installation of remote.it](https://support.remote.it/hc/en-us/articles/360047542051-Installing-remoteit-on-a-Raspberry-Pi-running-Raspbian-or-Raspberry-Pi-OS) breaks Celery, which handles the transfer of images from the camera, and the uploads from the Pi to the outside world.
+
+The fix is to edit edit `/opt/remoteit-headless/scripts/remoteit-headless.service` and change the "after" line to add celery, like this:
+
+```python
+After=network.target rc-local.service celery.service
+```
+
+This just tells remote.it not to start until Celery is up. [(Reference: Issue #79)](https://github.com/greiginsydney/Intervalometerator/issues/79).
 
 ### Check the cron jobs
 

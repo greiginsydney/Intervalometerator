@@ -27,9 +27,18 @@ trap 'echo "\"${last_command}\"" command failed with exit code $?.' ERR
 
 
 # -----------------------------------
-# START FUNCTIONS
+# CONSTANTS
 # -----------------------------------
 
+GREEN="\033[38;5;10m"
+YELLOW="\033[38;5;11m"
+GREY="\033[38;5;60m"
+RESET="\033[0m"
+
+
+# -----------------------------------
+# START FUNCTIONS
+# -----------------------------------
 
 install_apps ()
 {
@@ -93,46 +102,69 @@ install_apps ()
 		esac
 	done
 
+	echo -e ""$GREEN"Installing subversion"$RESET""
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
+	echo -e ""$GREEN"Installing python3-pip, python-flask"$RESET""
 	apt-get install python3-pip python-flask -y
+	echo -e ""$GREEN"Installing Werkzeug, cachelib"$RESET""
 	pip3 install Werkzeug cachelib
+	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, configparser"$RESET""
 	pip3 install flask flask-bootstrap flask-login configparser
+	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
 	pip3 install gunicorn psutil
-	sudo apt install redis-server -y
+	echo -e ""$GREEN"Installing redis-server"$RESET""
+	apt install redis-server -y
+	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	pip3 install "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
 	then
 		#This is ALL for Paramiko (SSH uploads):
 		export DEBIAN_FRONTEND=noninteractive
+		echo -e ""$GREEN"Installing libffi-dev, libssl-dev, python-dev"$RESET""
 		apt-get install libffi-dev libssl-dev python-dev -y
+		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
 		apt install krb5-config krb5-user -y
+		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
+		echo -e ""$GREEN"Installing bcrypt, pynacl, cryptography, gssapi, paramiko"$RESET""
 		pip3 install bcrypt pynacl cryptography gssapi paramiko
 	fi
 
 	if [ $installDropbox -eq 1 ];
 	then
+		echo -e ""$GREEN"Installing dropbox"$RESET""
 		pip3 install dropbox
 	fi
 	
 	if [ $installGoogle -eq 1 ];
 	then
+		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
 	fi
 	
+	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev -y
+	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
+	echo -e ""$GREEN"Installing gphoto"$RESET""
 	pip3 install -v gphoto2
+	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
+	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
+	echo -e ""$GREEN"Installing ExifReader"$RESET""
 	pip3 install ExifReader
 	
+	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
+	echo -e ""$GREEN"Installing i2c-tools"$RESET""
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
+	echo -e ""$GREEN"Purging bluez"$RESET""
 	apt-get purge bluez -y
+	echo -e ""$GREEN"Autoremoving"$RESET""
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
@@ -140,7 +172,7 @@ install_apps ()
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
 	echo ''
-	echo 'Enabling i2c'
+	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo ' i2c-bcm2708 module already exists'
 	else
@@ -176,9 +208,8 @@ install_apps ()
 	
 	# Prepare for reboot/restart:
 	echo ''
-	echo "Exited install_apps OK."
+	echo -e ""$GREEN"Exited install_apps OK"$RESET""
 }
-
 
 install_website ()
 {
@@ -197,6 +228,7 @@ install_website ()
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	touch photos/uploadedOK.txt
+	touch ${HOME}/setTime.log # Created here so it has correct ownership
 
 	if [ -f default_image.JPG ];
 	then
@@ -435,7 +467,6 @@ install_website ()
 	else
 		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
-		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 		echo "Success: 'cameraTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
@@ -449,56 +480,53 @@ install_website ()
 	else
 		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
-		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 		echo "Success: 'piTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
 
-	#midnight time sync
+	#overnight time sync. Takes place at 0330 to catch any change to/from Daylight Saving Time
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q setTime.py "cronTemp";
+	if grep -F -q "30 3 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
 	then
-		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
+	    echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 0 * * * /usr/bin/python3 ${HOME}/www/setTime.py midnight 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
-		crontab -u $SUDO_USER cronTemp #install new cron file
-		sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
-		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
+	    sed -i "/setTime.py/d" cronTemp #delete any previous reference to setTime. 
+ 	    echo "30 3 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+	    crontab -u $SUDO_USER cronTemp #install new cron file
+	    echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
+
+	sed -i 's+#cron.* /var/log/cron.log+cron.* /var/log/cron.log+g' /etc/rsyslog.conf #Un-comments the logging line
 
 	setcap CAP_SYS_TIME+ep /bin/date #Allows the Pi user (actually ALL users) to issue date without needing to be root.
 	# (Thank you SO: https://unix.stackexchange.com/a/78309)
 
 	#NTP
-	echo ""
-	read -p "NTP Step. Does the Pi have network connectivity? [Y/n]: " Response
-	case $Response in
-		(y|Y|"")
-			sed -i 's/ setTime.service//g' /etc/systemd/system/cameraTransfer.service #Result is "After=intvlm8r.service"
-			sed -i 's/ setTime.service//g' /etc/systemd/system/piTransfer.service
-			
-			;;
-		(*)
-			if [ -f setTime.service ];
-			then
-				if cmp -s setTime.service /etc/systemd/system/setTime.service;
-				then
-					echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
-				else
-					mv -fv setTime.service /etc/systemd/system/setTime.service
-				fi
-			fi
-			chmod 644 /etc/systemd/system/setTime.service
-			echo "Enabling setTime.service"
-			systemctl enable setTime.service
-			systemctl disable systemd-timesyncd
-			systemctl stop systemd-timesyncd
-			;;
-	esac
-	echo ""
+	if [ -f www/intvlm8r.old ];
+	then
+		echo ""
+		echo "intvlm8r.old found. Skipping the NTP prompt step."
+	else
+		timeSync1
+	fi
+	if [ -f setTime.service ];
+	then
+		if cmp -s setTime.service /etc/systemd/system/setTime.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
+		else
+			mv -fv setTime.service /etc/systemd/system/setTime.service
+		fi
+	fi
+	timeSync2
 
+	# If upgrading, reload all services as a precautionary measure:
+	if [ -f www/intvlm8r.old ];
+	then
+		systemctl daemon-reload
+	fi
 
 	# Step 101 - slows the I2C speed
 	if  grep -q "dtparam=i2c1=on" /boot/config.txt;
@@ -873,18 +901,91 @@ END
 }
 
 
+timeSync1 ()
+{
+	echo ''
+	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
+	if [ $NTP = "ActiveState=active" ];
+	then
+		echo "NTP is currently active. NTP is our master time source."
+	else
+		echo "NTP is not active. The Arduino is our master time source."
+	fi
+	echo ''
+	echo 'Does the Pi have network connectivity?'
+	read -p "If so, can we use NTP as our master time source? [Y/n]: " Response
+	echo ''
+	case $Response in
+		(y|Y|"")
+			echo "Enabling systemd-timesyncd"
+			systemctl enable systemd-timesyncd
+			echo "Starting systemd-timesyncd"
+			systemctl start systemd-timesyncd
+			;;
+		(*)
+			echo "Disabling systemd-timesyncd"
+			systemctl disable systemd-timesyncd
+			echo "Stopping systemd-timesyncd"
+			systemctl stop systemd-timesyncd
+			;;
+	esac
+}
+
+
+timeSync2 ()
+{
+	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
+	if [ $NTP = "ActiveState=active" ];
+	then
+		echo "NTP is active"
+		if  grep -q "Requires=intvlm8r.service time-sync.target" /etc/systemd/system/setTime.service;
+		then
+			echo ' Requires time-sync.target suffix is already present'
+		else
+			sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1 time-sync.target/g' /etc/systemd/system/setTime.service #Add REQUIRES time-sync.target
+			echo ' Added Requires time-sync.target suffix'
+		fi
+		sed -i '/Before=time-sync.target/d' /etc/systemd/system/setTime.service #Delete time-sync.target
+		echo ' Deleted Before=time-sync.target'
+	else
+		echo "NTP is not active"
+		sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1/g' /etc/systemd/system/setTime.service ##Delete REQUIRES time-sync.target
+		echo ' Deleted Requires time-sync.target suffix'
+		if  grep -q "Before=time-sync.target" /etc/systemd/system/setTime.service;
+		then
+			echo ' Before=time-sync.target is already present'
+		else
+			sed -i '/^Requires=intvlm8r.service.*/a Before=time-sync.target' /etc/systemd/system/setTime.service #Add Before
+			echo ' Added Before=time-sync.target'
+		fi
+	fi
+	echo ""
+	chmod 644 /etc/systemd/system/setTime.service
+	echo "Enabling setTime.service"
+	systemctl enable setTime.service
+}
+
+
 test_install ()
 {
 	echo "TEST!"
-	[ -f /etc/nginx/sites-available/intvlm8r ] && echo "PASS: /etc/nginx/sites-available/intvlm8r" || echo "FAIL: /etc/nginx/sites-available/intvlm8r not found"
-	[ -f /etc/systemd/system/intvlm8r.service ] && echo "PASS: /etc/systemd/system/intvlm8r.service exists" || echo "FAIL: /etc/systemd/system/intvlm8r.service not found"
-	[ -f /etc/systemd/system/cameraTransfer.service ] && echo "PASS: /etc/systemd/system/cameraTransfer.service exists" || echo "FAIL: /etc/systemd/system/cameraTransfer.service not found"
-	[ -f /etc/systemd/system/piTransfer.service ] && echo "PASS: /etc/systemd/system/piTransfer.service exists" || echo "FAIL: /etc/systemd/system/piTransfer.service not found"
-	grep -qcim1 "i2c-dev" /etc/modules && echo "PASS: i2c-dev installed in /etc/modules" || echo "FAIL: i2c-dev not installed in /etc/modules"
-	grep -q "i2c_arm_baudrate" /boot/config.txt && echo "PASS: i2c_arm_baudrate is present in /boot/config.txt" || echo "FAIL: i2c_arm_baudrate not present in /boot/config.txt"
-	echo ''
-	echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
-	i2cdetect -y 1
+	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
+	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
+	[ -f /etc/systemd/system/cameraTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/cameraTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/cameraTransfer.service not found"
+	[ -f /etc/systemd/system/piTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/piTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/piTransfer.service not found"
+	[ -f /etc/systemd/system/setTime.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/setTime.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/setTime.service not found"
+	[ -f /etc/systemd/system/redis.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/redis.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/redis.service not found"
+	[ -f /etc/systemd/system/celery.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/celery.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/celery.service not found"
+	grep -q "i2c_arm_baudrate" /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
+	if grep -qcim1 "i2c-dev" /etc/modules;
+	then
+		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
+		echo ''
+		echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
+		i2cdetect -y 1
+	else
+		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
+	fi
 	echo ''
 	# Test for ap/noap mode:
 	ap_test=0
@@ -900,28 +1001,54 @@ test_install ()
 	
 	case $ap_test in
 		(0)
-			echo 'PASS: The Pi is NOT an AP'
+			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
 			;;
 		(1)
-			echo 'FAIL: dnsmasq running alone. hostapd should also be running for the Pi to be an AP'
+			echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
 			;;
 		(2)
-			echo 'FAIL: hostapd running alone. dnsmasq should also be running for the Pi to be an AP'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be an AP"
 			;;
 		(3)
-			echo 'FAIL: hostapd & dnsmasq are installed, but hostapd.conf is missing'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd & dnsmasq are installed, but hostapd.conf is missing"
 			;;
 		(4)
-			echo 'FAIL: hostapd.conf is present but hostapd & dnsmasq are missing'
+			echo -e ""$YELLOW"FAIL:"$RESET" hostapd.conf is present but hostapd & dnsmasq are missing"
 			;;
 		(7)
-			echo 'PASS: hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP'
+			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
 			;;
 	esac
 	echo ''
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
+	
+	systemctl is-active --quiet nginx    && echo -e ""$GREEN"PASS:"$RESET" nginx    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" nginx    service is dead"
+	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
+	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
+	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
+
+	echo ""
+
+	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
+	oneShotList="setTime cameraTransfer piTransfer"
+	for service in $oneShotList; do
+		status=$(systemctl show $service)
+		if [[ $status =~ $matchRegex ]] ;
+		then
+			serviceName=${BASH_REMATCH[1]}
+			serviceLoadState=${BASH_REMATCH[2]}
+			serviceActiveState=${BASH_REMATCH[3]}
+			serviceSubState=${BASH_REMATCH[4]}
+		fi
+		echo -e "Service = $serviceName"
+
+		[ $serviceLoadState == "loaded" ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+		[ $serviceActiveState == "inactive" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+		[ $serviceSubState != "failed" ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
+		echo ""
+	done
 }
 
 
@@ -978,11 +1105,15 @@ case "$1" in
 		unmake_ap
 		prompt_for_reboot
 		;;
+	("time")
+		timeSync1
+		timeSync2
+		;;
 	("test")
 		test_install
 		;;
 	("")
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap' or 'test' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test' or 'time' after the script name\n"
 		exit 1
 		;;
 	(*)

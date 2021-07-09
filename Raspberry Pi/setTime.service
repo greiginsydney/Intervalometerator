@@ -1,10 +1,10 @@
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along with this program.  If not, see 
+# You should have received a copy of the GNU General Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # This script is part of the Intervalometerator project, a time-lapse camera controller for DSLRs:
@@ -13,19 +13,20 @@
 # https://intvlm8r.com
 
 [Unit]
-Description=Runs once on boot to read the time from the Arduino and set the Pi's real-time clock
+Description=setTime.service. Runs on boot and at 3:30am to get/set the real-time clock
 Requires=intvlm8r.service
 After=intvlm8r.service
 
 [Service]
 #This means we don't run until the dust has settled and everything else - like Gunicorn - has started:
-Type=oneshot 
-User=root
+Type=oneshot
+User=pi
 Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
 ExecStartPre=/bin/sleep 30
-ExecStart=/usr/bin/python3 /home/pi/www/setTime.py
+ExecStart=sudo /usr/bin/python3 /home/pi/www/setTime.py
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

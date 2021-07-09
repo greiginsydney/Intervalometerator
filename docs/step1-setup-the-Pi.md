@@ -157,10 +157,17 @@ Change the website's password  : password
 38. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
 
 ```txt
-NTP Step. Does the Pi have network connectivity? [Y/n]:
+NTP is currently active. NTP is our master time source.
+
+Does the Pi have network connectivity?
+If so, can we use NTP as our master time source? [Y/n]:
 ```
 
-If you respond 'n' to the prompt, the script will move the repo's "setTime.service" file to /etc/systemd/system/. This will in turn cause the provided "setTime.py" script to be run when-ever the Pi boots, reading the real time from the Arduino and then using this to set the Pi's own internal clock.
+If you respond 'n' to the prompt, the script will disable the Pi's internal NTP Client. The provided "setTime.py" script will run when-ever the Pi boots, reading the real time from the Arduino and using this to set the Pi's own internal clock.
+
+If you respond 'Y', the Pi shall query an NTP source at boot and also at 3:30am each day, updating the Arduino with the correct time. (The overnight update only applies if the Pi is set to always run, and captures any changes that might have been made due to Daylight Saving Time ahead of the next day's shooting).
+
+>You can change this at any time by running `sudo ./setup.sh time`.
 
 39. If all goes well, you'll be presented with a prompt to reboot:
 ```txt

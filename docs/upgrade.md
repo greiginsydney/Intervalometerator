@@ -33,7 +33,7 @@ cp ~/www/intvlm8r.py ~/www/intvlm8r.old
 
 During the setup.sh 'web' step (Step 35) the script checks for the presence of intvlm8r.old. If this file is found (indicating this is an upgrade) it will extract its Secret Key and web logins, copying them into the fresh intvlm8r.py file just downloaded from GitHub.
 
-Start the upgrade process from Step 21 in [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md).
+Start the upgrade process from Step 21 in [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md#remote-config-via-ssh).
 
 When from Step 30 you download the repo, the files are all dropped in /home/pi, and then the setup script moves them to their correct locations, overwriting any existing files in the process.
 

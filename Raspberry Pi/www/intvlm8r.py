@@ -32,7 +32,7 @@ import json
 import logging
 import os                       # Hostname
 import psutil
-import re                       # RegEx. Used in Copy Files & createThumbFilename
+import re                       # RegEx. Used in Copy Files & createDestFilename
 from smbus2 import SMBus        # For I2C
 import struct
 import subprocess
@@ -88,6 +88,8 @@ PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer p
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 HOSTNAME = os.uname()[1]
+RAWEXTENSIONS = ('.CR2', '.NEF')
+PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
 
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
@@ -276,16 +278,18 @@ def main():
         'arduinoTime'       : '',
         'arduinoLastShot'   : 'Unknown',
         'arduinoNextShot'   : 'Unknown',
-        'cameraModel'       : '',
-        'cameraLens'        : 'Unknown',
         'cameraBattery'     : 'Unknown',
         'fileCount'         : 'Unknown',
         'lastImage'         : 'Unknown',
         'availableShots'    : 'Unknown',
+        'cameraDaysFree'    : 'Unknown',
         'piInterval'        : '',
         'piImageCount'      : 'Unknown',
         'piLastImage'       : 'Unknown',
         'piSpaceFree'       : 'Unknown',
+        'piDaysFree'        : 'Unknown',
+        'daysFreeWarn'      : '0',
+        'daysFreeAlarm'     : '0',
         'lastTrnResult'     : 'Unknown',
         'lastTrnLogFile'    : PI_TRANSFER_LINK,
         'piLastImageFile'   : 'Unknown'
@@ -324,7 +328,7 @@ def main():
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
                 flash('No storage info available') # The memory card is missing or faulty
-            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+                app.logger.debug('FATAL: Connected to camera OK but no camera storage info available')
             files = list_camera_files(camera)
             if not files:
                 fileCount = 0
@@ -334,17 +338,6 @@ def main():
                 info = get_camera_file_info(camera, files[-1]) #Get the last file
                 lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
             gp.check_result(gp.gp_camera_exit(camera))
-            templateData['cameraModel']              = abilities.model
-            templateData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
-            if (templateData['cameraLens'] == 'Unknown'):
-                #Try to build this from focal length:
-                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
-                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
-                if (focalMin == focalMax):
-                    templateData['cameraLens'] = focalMin
-                else:
-                    focalMin = focalMin.replace(" mm", "")
-                    templateData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
             templateData['fileCount']                = fileCount
             templateData['lastImage']                = lastImage
             templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
@@ -380,14 +373,46 @@ def main():
         if PI_PHOTO_COUNT >= 1:
             FileList.sort(key=lambda x: os.path.getmtime(x))
             piLastImage = datetime.utcfromtimestamp(os.path.getmtime(FileList[-1])).replace(microsecond=0)
-            piLastImageFile = str(FileList[-1]).replace((PI_PHOTO_DIR  + "/"), "")
-    except:
+            piLastImageFile = str(FileList[-1])
+            #This code ensures if you're shooting RAW, the main page still shows a photo. It uses (in priority order):
+            # 1: its preview
+            # 2: its .JPG twin - if one exists. (You're shooting in RAW+JPG mode)
+            # 3: its thumbnail (yuk).
+            if piLastImageFile.endswith(RAWEXTENSIONS):
+                piLastImageFileAsJpg = re.sub('|'.join(RAWEXTENSIONS), ".JPG", piLastImageFile)
+                piLastImageFilePreview = createDestFilename(piLastImageFile, PI_PREVIEW_DIR, '-preview')
+                if os.path.exists(piLastImageFilePreview):
+                    piLastImageFile = 'preview/' + piLastImageFilePreview.replace((PI_PREVIEW_DIR  + "/"), "")
+                elif os.path.exists(piLastImageFileAsJpg):
+                    piLastImageFile = piLastImageFileAsJpg
+                    piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
+                else:
+                    piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
+                    piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
+            else:
+                piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
+    except Exception as e:
         flash('Error talking to the Pi')
+        app.logger.debug('Pi error: {0}'.format(str(e)))
         PI_PHOTO_COUNT = 0
+    templateData['piLastImageFile'] = piLastImageFile
     templateData['piImageCount']    = PI_PHOTO_COUNT
     templateData['piLastImage']     = piLastImage
-    templateData['piSpaceFree']     = getDiskSpace()
-    templateData['piLastImageFile'] = piLastImageFile
+    templateData['piSpaceFree'],piBytesFree = getDiskSpace()
+    largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
+    shotsPerDay = getShotsPerDay()
+    #Python rounds up, which I don't want. This "- 0.5" is also to align with the same result calculated by Javascript on the /intervalometer page.
+    try:
+        templateData['piDaysFree'] = str(round(((piBytesFree / largestImageSize) / shotsPerDay) - 0.5))
+    except:
+        None
+    try:
+        templateData['cameraDaysFree'] = round((int(templateData['availableShots']) / shotsPerDay) - 0.5)
+    except:
+        None
+    templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
+    templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
+    
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
@@ -402,8 +427,8 @@ def main():
 @app.route("/getTime")
 def getTime():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
-    the cron job/script and will only execute if the calling IP is itself/localhost.
+    This 'page' is only one of three called without the "@login_required" decorator. It's only called by
+    the cron job/ setTime.py script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
@@ -411,6 +436,23 @@ def getTime():
     arduinoDate = getArduinoDate()
     arduinoTime = getArduinoTime()
     res = make_response('<div id="dateTime">' + arduinoDate + ' ' + arduinoTime + '</div>')
+    return res, 200
+
+
+@app.route("/setArduinoDateTime")
+def setArduinoDateTime():
+    """
+    This 'page' is only one of three called without the "@login_required" decorator. It's only called by
+    the cron job/ setTime.py script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+
+    newTime = datetime.now().strftime('%Y%m%d%H%M%S') #20190613235900
+    writeString("ST=" + newTime) # Send the new time and date to the Arduino
+    app.logger.debug('setArduinoDateTime to {0}'.format(newTime))
+    res = make_response('<p>Set Arduino datetime to ' + newTime + '</p>')
     return res, 200
 
 
@@ -482,8 +524,17 @@ def thumbnails():
                     thumbTimeStamp = exifData.split("|")[0]
                     thumbInfo = exifData.split("|")[1]
                 #Build the list for the page:
-                ThumbFileName = createThumbFilename(FileList[loop]) #Adds the '-thumb.JPG' suffix
-                ThumbFiles.append({'Name': (str(ThumbFileName).replace((PI_THUMBS_DIR  + "/"), "")), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
+                ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb') #Adds the '-thumb.JPG' suffix
+                if FileList[loop].endswith(RAWEXTENSIONS):
+                    PreviewFileName = createDestFilename(FileList[loop], PI_PREVIEW_DIR, '-preview') #Switch to the /PREVIEW/ folder
+                    if not os.path.exists(PreviewFileName):
+                        PreviewFileName = ThumbFileName
+                        app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
+                else:
+                    PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
+                PreviewFileName = PreviewFileName.replace('/home/pi/', '')
+                ThumbFileName = ThumbFileName.replace('/home/pi/', '')
+                ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
     except Exception as e:
@@ -495,6 +546,8 @@ def thumbnails():
 @login_required
 def camera():
     cameraData = {
+        'cameraModel'   : '',
+        'cameraLens'    : 'Unknown',
         'cameraDate'    : '',
         'focusmode'     : '',
         'exposuremode'  : '',
@@ -529,6 +582,18 @@ def camera():
     try:
         camera, context, config = connectCamera()
         if camera:
+            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            cameraData['cameraModel']              = abilities.model
+            cameraData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            if (cameraData['cameraLens'] == 'Unknown'):
+                #Try to build this from focal length:
+                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
+                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+                if (focalMin == focalMax):
+                    cameraData['cameraLens'] = focalMin
+                else:
+                    focalMin = focalMin.replace(" mm", "")
+                    cameraData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
             cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
             cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
@@ -643,11 +708,14 @@ def intervalometer():
     """ This page is where you manage all the interval settings for the Arduino."""
 
     templateData = {
-        'piDoW' : '',
-        'piStartHour' : '',
-        'piEndHour' : '',
-        'piInterval' : '',
-        'availableShots': 'Unknown'
+        'piDoW'            : '',
+        'piStartHour'      : '',
+        'piEndHour'        : '',
+        'piInterval'       : '',
+        'availableShots'   : 'Unknown',
+        'piAvailableShots' : 'Unknown',
+        'daysFreeWarn'     : '0',
+        'daysFreeAlarm'    : '0'
     }
     app.logger.debug('This is a GET to Intervalometer')
 
@@ -689,7 +757,13 @@ def intervalometer():
         templateData['piEndHour'] = ArdInterval[3:5]
         templateData['piInterval'] = ArdInterval[5:7]
         app.logger.debug('Decoded Interval = ' + ArdInterval[5:7])
-
+    
+    _,piBytesFree = getDiskSpace()
+    largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
+    templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
+    templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
+    templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
+    
     return render_template('intervalometer.html', **templateData)
 
 
@@ -727,13 +801,6 @@ def intervalometerPOST():
 @login_required
 def transfer():
     """ This page is where you manage how the images make it from the camera to the real world."""
-
-    # Commented-out 4Oct2020, NLR(?)
-    # args = request.args.to_dict()
-    # if args.get('copyNow'):
-        # app.logger.debug('Detected GET to /transfer/copyNow - calling task')
-        # task = copyNow.apply_async()
-        # return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
     if not os.path.exists(iniFile):
         createConfigFile(iniFile)
@@ -868,8 +935,8 @@ def transferPOST():
 @app.route("/copyNow")
 def copyNowCronJob():
     """
-    This 'page' is only one of two called without the "@login_required" decorator. It's only called by
-    the cron job/script and will only execute if the calling IP is itself/localhost.
+    This 'page' is only one of three called without the "@login_required" decorator. It's only called by
+    the cron job/cameraTransfer.py script and will only execute if the calling IP is itself/localhost.
     """
     sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     if sourceIp != "127.0.0.1":
@@ -995,7 +1062,7 @@ def system():
     try:
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
-        templateData['piSpaceFree'] = getDiskSpace()
+        templateData['piSpaceFree'],_ = getDiskSpace()
     except:
         pass
 
@@ -1139,33 +1206,38 @@ def setTime(newTime):
 def connectCamera():
     app.logger.debug('connectCamera entered')
     retries = 0
-    while True:
-        app.logger.debug('connectCamera retries = {0}'.format (retries))
-        if retries > 3:
-            app.logger.debug('connectCamera returning None')
-            return None, None, None
-        try:
-            camera = gp.Camera()
-            context = gp.gp_context_new()
-            camera.init(context)
-            config = camera.get_config(context)
-            app.logger.debug('connectCamera has made a connection to the camera. Exiting')
-            break
-        except gp.GPhoto2Error as e:
-            app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
-            if e.string == 'Unknown model':
-                if retries > 1:
-                    app.logger.debug('connectCamera waking the camera & going again')
-                    writeString("WC") # Sends the WAKE command to the Arduino
-                    time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
-                else:
-                    app.logger.debug('connectCamera going again without waking the camera')
-                    time.sleep(0.5);
-        except Exception as e:
-            app.logger.debug('connectCamera error: ' + str(e))
-        retries += 1
-    app.logger.debug('connectCamera returning 3 values')
-    return camera, context, config
+    try:
+        camera = gp.Camera()
+        context = gp.gp_context_new()
+        while True:
+            app.logger.debug('connectCamera retries = {0}'.format (retries))
+            if retries >= 3:
+                app.logger.debug('connectCamera returning None')
+                gp.check_result(gp.gp_camera_exit(camera))
+                return None, None, None
+            try:
+                camera.init(context)
+                config = camera.get_config(context)
+                app.logger.debug('connectCamera has made a connection to the camera. Exiting')
+                break
+            except gp.GPhoto2Error as e:
+                app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
+                if e.string == 'Unknown model':
+                    if retries >= 1:
+                        app.logger.debug('connectCamera waking the camera & going again')
+                        writeString("WC") # Sends the WAKE command to the Arduino
+                        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+                    else:
+                        app.logger.debug('connectCamera going again without waking the camera')
+                        time.sleep(0.5);
+            except Exception as e:
+                app.logger.debug('connectCamera error: ' + str(e))
+            retries += 1
+        app.logger.debug('connectCamera returning 3 values')
+        return camera, context, config
+    except Exception as e:
+        app.logger.debug('connectCamera outer error: ' + str(e))
+        return None, None, None
 
 
 def readValue ( camera, attribute ):
@@ -1331,7 +1403,10 @@ def files_to_copy(camera):
 
 
 def copy_files(camera, imageToCopy, deleteAfterCopy):
-    """ Straight from Jim's examples again """
+    """
+    Straight from Jim's examples again
+    The test for available HDD space is from examples/copy-data.py
+    """
     app.logger.debug('Copying files...')
     sourceFolderTree, imageFileName = os.path.split(imageToCopy)
     dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
@@ -1340,6 +1415,12 @@ def copy_files(camera, imageToCopy, deleteAfterCopy):
     try:
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
+        file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
+        data = memoryview(file_data)
+        _, piDiskFree = getDiskSpace()
+        if piDiskFree - len(data) <= PI_SPACE_RESERVED:
+            app.logger.info('Insufficient disk space')
+            return -1 #Abort
         copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
         if (copyOK >= gp.GP_OK):
             if (deleteAfterCopy == True):
@@ -1371,19 +1452,17 @@ def CreateDestPath(folder, NewDestDir):
     return dest
 
 
-def createThumbFilename(imageFullFilename):
+def createDestFilename(imageFullFilename, targetFolder, suffix):
     """
-    Called by 'makeThumb' and also /thumbnails
+    Called by 'makeThumb', /main and /thumbnails
     Manipulates the path and filename of every image:
-    - Changes the root path from the PI_PHOTO_DIR to the PI_THUMBS_DIR
-    - Adds the '-thumb.JPG' suffix
+    - Changes its source path to the targetFolder directory
+    - And adds the nominated suffix
     """
     sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
-    dest = CreateDestPath(sourceFolderTree, PI_THUMBS_DIR)
+    dest = CreateDestPath(sourceFolderTree, targetFolder)
     dest = os.path.join(dest, imageFileName)
-    dest = re.sub('.JPG', '-thumb.JPG', dest, flags=re.IGNORECASE)
-    dest = re.sub('.CR2', '-thumb.JPG', dest, flags=re.IGNORECASE) # Canon raw
-    dest = re.sub('.NEF', '-thumb.JPG', dest, flags=re.IGNORECASE) # Nikon raw
+    dest = os.path.splitext(dest)[0] + suffix + '.JPG'
     return dest
 
 
@@ -1391,14 +1470,26 @@ def makeThumb(imageFile):
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
-        dest = createThumbFilename(imageFile)
+        dest = createDestFilename(imageFile, PI_THUMBS_DIR, '-thumb')
         app.logger.debug('Thumb dest = ' + dest)
         alreadyExists = False
         if dest in ThumbList:
             app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
-            app.logger.info('We need to make a thumbnail.') #This logs to /var/log/celery/celery_worker.log
+            app.logger.info('We need to make a thumbnail of {0}'.format(imageFile)) #This logs to /var/log/celery/celery_worker.log
+            if imageFile.endswith(RAWEXTENSIONS):
+                #It's a RAW. See if we can extract a large-format JPG to use internally
+                previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
+                if not os.path.exists(previewfilename):
+                    try:
+                        with Image.open(imageFile) as preview:
+                            try:
+                                preview.save(previewfilename, "JPEG")
+                            except Exception as e:
+                                app.logger.info('makeThumb() preview save error: ' + str(e))
+                    except Exception as e:
+                        app.logger.info('makeThumb() preview open error: ' + str(e))
             try:
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
@@ -1565,12 +1656,13 @@ def getDiskSpace():
     """ https://www.raspberrypi.org/forums/viewtopic.php?t=22180 """
     try:
         disk = psutil.disk_usage('/')
-        disk_total = disk.total / 2**30     # GiB.
-        disk_used = disk.used / 2**30
-        disk_free = str(round(disk.free / 2**30,2)) + ' GB'
+        #disk_total = disk.total / 2**30     # GiB.
+        #disk_used = disk.used / 2**30
+        disk_free_bytes = disk.free
+        disk_free_str = str(round(disk_free_bytes / 2**30,2)) + ' GB'
     except:
-        disk_free = "Unknown"
-    return disk_free
+        return "Unknown",None
+    return disk_free_str,disk_free_bytes
 
 
 def createConfigFile(iniFile):
@@ -1665,6 +1757,7 @@ def copyNow(self):
             app.logger.info('copyNow() trying to init the camera')
             camera.init(context)
             #The line above will throw an exception if we can't connect to the camera
+            app.logger.info('copyNow() camera initialised')
             break
         except gp.GPhoto2Error as e:
             app.logger.info("copyNow() wasn't able to connect to the camera: " + e.string)
@@ -1677,23 +1770,25 @@ def copyNow(self):
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
         numberToCopy = len(filesToCopy)
-        app.logger.info('copyNow(self) has been tasked with copying ' + str(numberToCopy) + ' images')
+        app.logger.info('copyNow() has been tasked with copying ' + str(numberToCopy) + ' images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         while len(filesToCopy) > 0:
             try:
-                thisImage += 1
-                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage) + ' of ' + str(numberToCopy)})
+                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info('About to copy file: ' + str(thisFile))
-                copy_files(camera, thisFile, deleteAfterCopy)
+                copyResult = copy_files(camera, thisFile, deleteAfterCopy)
+                if copyResult == 0:
+                    thisImage += 1
             except Exception as e:
-                app.logger.info('Unknown error in copyNow(self): ' + str(e))
+                app.logger.info('Unknown error in copyNow(): ' + str(e))
     try:
         gp.check_result(gp.gp_camera_exit(camera))
         app.logger.info('copyNow() ended happily')
     except Exception as e:
         app.logger.info('copyNow() ended sad: ' + str(e))
     if thisImage == 0:
+        app.logger.info('copyNow() reported there were no new images to copy')
         statusMessage = "There were no new images to copy"
     else:
         statusMessage = 'Copied ' + str(thisImage) + ' images OK'
@@ -1703,32 +1798,46 @@ def copyNow(self):
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
+    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation'})
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
-        PI_PHOTO_COUNT = len(FileList)
-        PI_THUMB_COUNT = len(ThumbList)
-        if PI_PHOTO_COUNT - PI_THUMB_COUNT <= 0:
-            thumbsToCreate = 'Unknown'
-            app.logger.info('Thumbs to create = ' + thumbsToCreate)
-        else:
-            thumbsToCreate = str(PI_PHOTO_COUNT - PI_THUMB_COUNT)
+
+        DifferenceList = []
+        for image in FileList:
+            newImageThumb = os.path.splitext(image)[0] + '-thumb.JPG'
+            newImageThumb = newImageThumb.replace(PI_PHOTO_DIR,PI_THUMBS_DIR)
+            if newImageThumb not in ThumbList:
+                #Check for and remove any dupes.
+                if image.endswith(RAWEXTENSIONS):
+                    if re.sub('|'.join(RAWEXTENSIONS), '.JPG', image) in DifferenceList:
+                        DifferenceList.remove(re.sub('|'.join(RAWEXTENSIONS), '.JPG', image)) # A raw trumps a JPG.
+                elif image.endswith('.JPG'):
+                    discarded = False
+                    for RAW in RAWEXTENSIONS:
+                        if image.replace('.JPG', RAW) in DifferenceList:
+                            #Discard a JPG if there's already a RAW of the same name in the list
+                            discarded = True #You can't 'continue' out of nested loops in Python
+                    if discarded: continue
+                DifferenceList.append(image)
+        thumbsToCreate = len(DifferenceList)
         thumbsCreated = 0
-        app.logger.info('Thumbs to create = ' + thumbsToCreate)
-        if PI_PHOTO_COUNT >= 1:
-            #Read the thumb files themselves:
-            for loop in range(-1, (-1 * (PI_PHOTO_COUNT + 1)), -1):
-                dest, alreadyExists = makeThumb(FileList[loop]) #Create a thumb, and metadata for every image on the Pi
+        app.logger.info('Thumbs to create = ' + str(thumbsToCreate))
+
+        if thumbsToCreate >= 1:
+            for loop in range(-1, (-1 * (thumbsToCreate + 1)), -1):
+                self.update_state(state='PROGRESS', meta={'status': 'Creating thumbnail ' + str(thumbsCreated + 1) + ' of ' + str(thumbsToCreate)})
+                dest, alreadyExists = makeThumb(DifferenceList[loop]) #Create a thumb, and metadata for every image on the Pi
                 if (dest == None):
                     #Something went wrong
-                    app.logger.debug('A thumb was not created for {0}'.format(FileList[loop]))
+                    app.logger.info('A thumb was not created for {0}'.format(DifferenceList[loop]))
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + thumbsToCreate})
-                    app.logger.info('Thumb  of {0} is {1}'.format(FileList[loop], dest))
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate)})
+                    app.logger.info('Thumb  of {0} is {1}'.format(DifferenceList[loop], dest))
                 else:
-                    app.logger.debug('Thumb for ' + dest + ' already exists')
+                    app.logger.info('Thumb for ' + dest + ' already exists')
         else:
             app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
     except Exception as e:
@@ -1805,6 +1914,60 @@ def reformatSlashes(folder):
         folder = folder.replace('//', '/')
     return folder
 
+
+def getLargestImageSize(path):
+    '''
+    Finds the largest file on the /photos/ folder tree.
+    Used to calculate the number of days' worth of storage left on the Pi
+    '''    
+    max_size = 0
+    try:
+        for folder, subfolders, files in os.walk(path):
+            # checking the size of each file
+            for file in files:
+                size = os.stat(os.path.join( folder, file  )).st_size
+                # updating maximum size
+                if size > max_size:
+                    max_size = size
+        app.logger.debug('getLargestImageSize returned: ' + str(max_size))
+        return max_size
+    except Exception as e:
+        app.logger.debug('getLargestImageSize exception: ' + str(e))
+        return None
+
+    
+def getShotsPerDay():
+    '''
+    Used to calculate the number of days' worth of storage left on the Pi and camera
+    '''
+    shotsPerDay = 0
+    try:
+        ArdInterval = str(readString("3"))
+        #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
+        if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
+            startHour = int(ArdInterval[1:3])
+            endHour   = int(ArdInterval[3:5])
+            interval  = int(ArdInterval[5:7])
+            if endHour >= startHour:
+                shotsPerDay = (endHour - startHour) * (60 / interval)
+            else:
+                shotsPerDay = ((endHour + 24) - startHour) * (60 / interval) #Future: when I finally code overnight shot handling
+            app.logger.debug('getShotsPerDay returned: ' + str(shotsPerDay))
+            return shotsPerDay
+        else:
+            return None
+    except Exception as e:
+        app.logger.debug('getShotsPerDay exception: ' + str(e))
+        return None
+
+    
+@app.route('/robots.txt')
+def norobots():
+    res = make_response("User-Agent: *\nDisallow: /\n")
+    res.status_code = 200
+    res.headers["Content-Type"] = "text/plain; charset=utf-8"
+    return res    
+    
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":

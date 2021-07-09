@@ -36,4 +36,8 @@ server {
         include proxy_params;
         proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
     }
+    location /setArduinoDateTime {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
 }

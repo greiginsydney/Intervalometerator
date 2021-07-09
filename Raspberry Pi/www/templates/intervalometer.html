@@ -69,10 +69,16 @@
 				<div class="alignright" id="shotsperday"></div>
 			</td>
 		</tr>
-		<tr>
+		<tr id="cameraDaysRow">
 			<td>
-				<div class="alignleft">Est days in camera:</div>
-				<div class="alignright" id="shotsincamera"></div>
+				<div class="alignleft">Days in camera:</div>
+				<div class="alignright" id="daysincamera"></div>
+			</td>
+		</tr>
+		<tr id="piDaysRow">
+			<td>
+				<div class="alignleft">Days in Pi:</div>
+				<div class="alignright" id="daysinpi"></div>
 			</td>
 		</tr>
 	</table>
@@ -154,11 +160,16 @@ function calculateShots()
 		}
 		document.getElementById("shotsperday").innerHTML = result;
 		calculateCameraDays(result);
+		calculatePiDays(result);
+		checkThresholds("cameraDaysRow", "daysincamera");
+		checkThresholds("piDaysRow", "daysinpi");
 	}
 	else
 	{
 		document.getElementById("shotsperday").innerHTML = "Unknown";
-		document.getElementById("shotsincamera").innerHTML = "Unknown";
+		document.getElementById("daysincamera").innerHTML = "Unknown";
+		document.getElementById("daysinpi").innerHTML = "Unknown";
+		document.getElementById("daysinpi").className = "";
 	}
 }
 
@@ -170,16 +181,55 @@ function calculateCameraDays(shotsperday)
 		var result = ~~(availableShots / shotsperday); 
 		if (result == result)
 		{
-			document.getElementById("shotsincamera").innerHTML = result;
+			document.getElementById("daysincamera").innerHTML = result;
 		}
 		else
 		{
-			document.getElementById("shotsincamera").innerHTML = "Unknown";
+			document.getElementById("daysincamera").innerHTML = "Unknown";
 		}
 	}
 	else
 	{
-		document.getElementById("shotsincamera").innerHTML = "{{ availableShots }}";
+		document.getElementById("daysincamera").innerHTML = "{{ availableShots }}";
+	}
+}
+
+function calculatePiDays(shotsperday)
+{
+	var piAvailableShots = "{{ piAvailableShots }}";
+	if (piAvailableShots != "Unknown" && piAvailableShots != "Not available")
+	{
+		var result = ~~(piAvailableShots / shotsperday); 
+		if (result == result)
+		{
+			document.getElementById("daysinpi").innerHTML = result;
+		}
+		else
+		{
+			document.getElementById("daysinpi").innerHTML = "Unknown";
+		}
+	}
+	else
+	{
+		document.getElementById("daysinpi").innerHTML = "{{ piAvailableShots }}";
+	}
+}
+
+function checkThresholds(thisRow, thisValue)
+{
+	var rowId = document.getElementById(thisRow);
+	var rowValue = document.getElementById(thisValue)
+	if (rowValue.innerHTML < {{ daysFreeAlarm }})
+	{
+		rowId.className = "red";
+	}
+	else if (rowValue.innerHTML < {{ daysFreeWarn }} )
+	{
+		rowId.className = "orange";
+	}
+	else
+	{
+		rowId.className = "";
 	}
 }
 
