@@ -330,7 +330,7 @@ install_website ()
 				sed -i "s|User=pi|User=$SUDO_USER|g" $val
 			fi
 		done
-		sed -i "s| pi | $SUDO_USER |g" celery.conf
+		if [ -f celery.conf ]; then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
 		sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery
 		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
 	fi
