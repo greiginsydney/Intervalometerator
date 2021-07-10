@@ -330,9 +330,9 @@ install_website ()
 				sed -i "s|User=pi|User=$SUDO_USER|g" $val
 			fi
 		done
-		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
 		sed -i "s| pi | $SUDO_USER |g" celery.conf
 		sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery
+		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
 	fi
 	
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
