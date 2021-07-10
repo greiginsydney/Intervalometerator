@@ -333,6 +333,18 @@ install_website ()
 		if [ -f celery.conf ]; then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
 		sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery
 		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
+		if [ /etc/udev/rules.d/99-com.rules ];
+		then
+			if grep -q 'SUBSYSTEMS=="usb", ENV{DEVTYPE}=="usb_device", GROUP="www-data", MODE="0666"' /etc/udev/rules.d/99-com.rules;
+			then
+				echo 'Skipped: USB allow for group www-data already exists in /etc/udev/rules.d/99-com.rules'
+			else
+				sed -i '1s/^/SUBSYSTEMS=="usb", ENV{DEVTYPE}=="usb_device", GROUP="www-data", MODE="0666"\n\n/' /etc/udev/rules.d/99-com.rules
+				echo 'Added: USB allow for group www-data in /etc/udev/rules.d/99-com.rules'
+				#udevadm control --reload # (Not needed as we're going to reboot)
+				#udevadm trigger
+			fi
+		fi
 	fi
 	
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
