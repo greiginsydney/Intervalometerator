@@ -1086,13 +1086,16 @@ test_install ()
 			serviceActiveState=${BASH_REMATCH[3]}
 			serviceSubState=${BASH_REMATCH[4]}
 		fi
+		echo ""
 		echo -e "Service = $serviceName"
 
 		[ $serviceLoadState == "loaded" ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
 		[ $serviceActiveState == "inactive" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
 		[ $serviceSubState != "failed" ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
-		echo ""
 	done
+	
+	timeTest
+	echo ""
 }
 
 
