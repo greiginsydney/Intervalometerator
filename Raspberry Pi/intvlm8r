@@ -40,4 +40,8 @@ server {
         include proxy_params;
         proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
     }
+    location /heartbeat {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
 }
