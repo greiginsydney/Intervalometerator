@@ -23,6 +23,7 @@ from urllib.error import URLError
 import configparser # for the ini file
 import logging
 import os
+import socket
 
 
 # ////////////////////////////////
