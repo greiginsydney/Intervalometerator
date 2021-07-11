@@ -1084,11 +1084,12 @@ def initiateHeartbeat():
     """
     Url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
     if Url:
+        htmltext = None
         statusCode = None
         try:
-            response = urlopen(Url, timeout = 1)
-            statusCode = response.getcode()
-            htmltext = response.read().decode('utf-8')
+            with urlopen(Url) as response:
+                htmltext = response.read()
+                statusCode = response.getcode()
             app.logger.debug('Status code = {0}'.format(str(statusCode)))
             app.logger.debug('This is what I received:' + str(htmltext))
         except URLError as e:
