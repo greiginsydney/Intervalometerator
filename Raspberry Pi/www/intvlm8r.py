@@ -1043,7 +1043,7 @@ def monitoring():
     return render_template('monitoring.html', **templateData)
 
 
-@app.route("/monitoring", methods = ['POST'])    # The monioring page's POST method
+@app.route("/monitoring", methods = ['POST'])    # The monitoring page's POST method
 @login_required
 def monitoringPOST():
     """
@@ -1196,7 +1196,7 @@ def system():
     return render_template('system.html', **templateData)
 
 
-@app.route("/system", methods = ['POST'])    # The camera's POST method
+@app.route("/system", methods = ['POST'])    # The system page's POST method
 @login_required
 def systemPOST():
 
