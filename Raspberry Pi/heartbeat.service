@@ -20,11 +20,11 @@ After=intvlm8r.service
 
 [Service]
 Type=simple
-User=greig
+User=pi
 Group=www-data
-WorkingDirectory=/home/greig/www
-Environment="PATH=/home/greig/www"
-ExecStart=/usr/bin/python3 /home/greig/www/heartbeat.py
+WorkingDirectory=/home/pi/www
+Environment="PATH=/home/pi/www"
+ExecStart=/usr/bin/python3 /home/pi/www/heartbeat.py
 StandardError=journal
 
 [Install]
