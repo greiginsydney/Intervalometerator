@@ -36,6 +36,7 @@ import os                       # Hostname
 import psutil
 import re                       # RegEx. Used in Copy Files & createDestFilename
 from smbus2 import SMBus        # For I2C
+import socket                   # Heartbeating error trap
 import struct
 import subprocess
 import sys
