@@ -1054,7 +1054,7 @@ def monitoringPOST():
             app.logger.debug('mon initiating heartbeat now')
             initiateHeartbeat()
         except Exception as e:
-            app.logger.debug('mon exception: ' + str(e))
+            app.logger.debug('mon exception initiating heartbeat: ' + str(e))
 
     if 'monApply' in request.form:
         if not os.path.isfile(iniFile):
@@ -1078,6 +1078,22 @@ def monitoringPOST():
     return redirect(url_for('monitoring'))
 
 
+@app.route("/heartbeat")
+def heartbeatCronJob():
+    """
+    This 'page' does not have the "@login_required" decorator. It's only called by
+    the systemd service / heartbeat.py script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+
+    statusCode = initiateHeartbeat()
+    
+    res = make_response('OK')
+    return res, statusCode
+
+
 def initiateHeartbeat():
     """
     This fn pings the heartbeat URL and logs the result to the 'hbResult' file
@@ -1091,7 +1107,7 @@ def initiateHeartbeat():
                 htmltext = response.read()
                 statusCode = response.getcode()
             app.logger.debug('Status code = {0}'.format(str(statusCode)))
-            app.logger.debug('This is what I received:' + str(htmltext))
+            app.logger.debug('This is what I received: ' + str(htmltext))
         except URLError as e:
             if hasattr(e, 'reason'):
                 app.logger.debug('initiateHeartbeat() URL error. Reason = ' + str(e.reason))
