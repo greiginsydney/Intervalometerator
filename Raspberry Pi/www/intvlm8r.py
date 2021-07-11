@@ -1121,7 +1121,7 @@ def initiateHeartbeat():
             app.logger.debug('initiateHeartbeat() Unhandled web error: ' + str(e))
         try:
             with open(PI_HBRESULT_FILE, 'w') as resultFile:
-                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M') #2021/07/11 13:05
                 if statusCode:
                     resultFile.write('{0} ({1})'.format(nowtime, statusCode))
                 else:
