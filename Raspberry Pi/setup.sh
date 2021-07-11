@@ -486,6 +486,34 @@ install_website ()
 		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/g' /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
 	fi
 
+	#Heartbeat
+	if [ -f heartbeat.service ];
+	then
+		if cmp -s heartbeat.service /etc/systemd/system/heartbeat.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/heartbeat.service' already exists & the new version is unchanged" 
+		else
+			mv -fv heartbeat.service /etc/systemd/system/heartbeat.service
+		fi
+	fi
+	chmod 644 /etc/systemd/system/heartbeat.service
+	echo "Enabling heartbeat.service"
+	systemctl enable heartbeat.service
+
+	if [ -f heartbeat.timer ];
+	then
+		if cmp -s heartbeat.timer /etc/systemd/system/heartbeat.timer;
+		then
+			echo "Skipped: the file '/etc/systemd/system/heartbeat.timer' already exists & the new version is unchanged" 
+		else
+			mv -fv heartbeat.timer /etc/systemd/system/heartbeat.timer
+		fi
+	fi
+	chmod 644 /etc/systemd/system/heartbeat.timer
+	echo "Enabling heartbeat.timer"
+	systemctl enable heartbeat.timer
+
+
 	#Camera Transfer - Cron Job
 
 	#Thank you SO:
