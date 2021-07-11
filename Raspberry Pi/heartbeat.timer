@@ -20,6 +20,8 @@ RefuseManualStop=no   # Allow manual stops
 
 [Timer]
 OnCalendar=*:0/5	#Every 5 minutes
+AccuracySec=10
+RandomizedDelaySec=10
 Persistent=true		#Run on boot
 Unit=heartbeat.service
 
