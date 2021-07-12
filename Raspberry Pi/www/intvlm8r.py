@@ -2051,6 +2051,26 @@ def getCeleryTasks():
     except Exception as e:
         app.logger.debug('getCeleryTasks exception: ' + str(e))
 
+        
+@app.route("/iniview")
+@login_required
+def iniview():
+    """
+    Displays the content of the ini file
+    """
+    iniEntries = []
+    try:
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+        for section_name in config.sections():
+            iniEntries.append({'section': str(section_name), 'key': '', 'value': '' })
+            for name, value in config.items(section_name):
+                iniEntries.append({'section': str(section_name), 'key': name, 'value': value })
+    except Exception as e:
+        app.logger.debug('iniview error: ' + str(e))
+        flash('INI error')
+    return render_template('iniview.html', iniEntries = iniEntries)
+
 
 def reformatSlashes(folder):
     """
