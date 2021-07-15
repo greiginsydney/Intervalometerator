@@ -55,5 +55,30 @@ Heartbeating will automatically commence the next time the minute is divisible b
 
 ## Setup "Dead Man’s Snitch"
 
+1. Browse to [https://deadmanssnitch.com/](https://deadmanssnitch.com/)
+2. Click the "SIGN UP" button in the top right corner & create yourself an account. Once you've done that you'll be automatically taken through the steps to setup your "plan" and create your first Snitch.
+3. On the page "Choose a plan for your new Case", scroll to the bottom and click the button to select the "NO FRILLS FREE PLAN", or lash out with one of the paid options.
+4. On the page "New Snitch", give it a name and select the Interval. (Note in this example of the free plan, some of the advanced options are greyed out):
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/125729615-697d65d8-965d-431f-b759-8bae4222d8a0.png" width="80%">
+</p>
+
+5. Click SAVE.
+
+6. You're done! It's that simple!!
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/125729700-48c43ae9-32c9-4f49-86b8-dae9047ed364.png" width="80%">
+</p>
+
+7. Copy "Your Unique Snitch URL" and paste it into the URL field on the intvlm8r. Don't worry about losing it, you can always return to Dead Man's Snitch and retrieve it.
+
+8. Before you get distracted, don't forget to respond to the confirmation e-mail in your inbox:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/125730218-fad365d5-e5b3-40dc-975a-e97f3bb7a6d8.png" width="80%">
+</p>
+
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
