@@ -18,12 +18,10 @@
 
 
 from datetime import datetime
-from urllib.request import urlopen
-from urllib.error import URLError
 import configparser # for the ini file
 import logging
 import os
-import socket
+import requests
 
 
 # ////////////////////////////////
@@ -34,7 +32,6 @@ PI_USER_HOME     = os.path.expanduser("~")
 INIFILE_DIR      = os.path.join(PI_USER_HOME, 'www')
 INIFILE_NAME     = os.path.join(INIFILE_DIR, 'intvlm8r.ini')
 LOGFILE_NAME     = os.path.join(PI_USER_HOME, 'heartbeat.log')
-PI_HBRESULT_FILE = os.path.join(PI_USER_HOME, 'hbresults.txt')
 INTERNAL_HB_URL  = "http://localhost:8080/heartbeat"
 
 
@@ -72,39 +69,31 @@ def main():
         print('not yet Heartbeat oclock')
 
 
-def initiateHeartbeat(Url):
+def initiateHeartbeat(url):
     """
-    This fn pings the heartbeat URL and logs the result to the 'hbResult' file
+    This fn pings the heartbeat URL and logs the result to the LOGFILE_NAME file
     """
+    response = None
     statusCode = None
     if Url:
         htmltext = None
         try:
-            with urlopen(Url) as response:
-                htmltext = response.read()
-                statusCode = response.getcode()
+            response = requests.get(url, timeout=10)
+            response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+            htmltext = response.text
+            statusCode = response.status_code
             log('Status code = {0}'.format(str(statusCode)))
             log('This is what I received: ' + str(htmltext))
-        except URLError as e:
-            if hasattr(e, 'reason'):
-                log('initiateHeartbeat() URL error. Reason = ' + str(e.reason))
-            elif hasattr(e, 'code'):
-                log('initiateHeartbeat() URL error. Code = ' + str(e.code))
-            else:
-                log('initiateHeartbeat() Unknown URL error: ' + str(e))
-        except socket.timeout as e:
-            log('initiateHeartbeat() urlopen timed out : ' + str(e))
+        except requests.exceptions.Timeout as e:
+            log('initiateHeartbeat() Timeout error: ' + str(e))
+        except requests.exceptions.ConnectionError as e:
+            log('initiateHeartbeat() ConnectionError: ' + str(e))
+        except requests.exceptions.HTTPError as e:
+            log('initiateHeartbeat() HTTPError: ' + str(e))
+        except requests.exceptions.TooManyRedirects as e:
+            log('initiateHeartbeat() TooManyRedirects error: ' + str(e))
         except Exception as e:
             log('initiateHeartbeat() Unhandled web error: ' + str(e))
-        try:
-            with open(PI_HBRESULT_FILE, 'w') as resultFile:
-                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
-                if statusCode:
-                    resultFile.write('{0} ({1})'.format(nowtime, statusCode))
-                else:
-                    resultFile.write('{0} Error'.format(nowtime))
-        except Exception as e:
-            log('initiateHeartbeat() exception: ' + str(e))
     else:
         log('initiateHeartbeat() exited. No heartbeatUrl')
         print('no url')
