@@ -74,7 +74,7 @@ def initiateHeartbeat(url):
     This fn pings the heartbeat URL and logs the result to the LOGFILE_NAME file
     """
     response = None
-    statusCode = None
+    statusCode = 0
     if Url:
         htmltext = None
         try:
