@@ -1118,7 +1118,7 @@ def initiateHeartbeat():
             briefErrMsg = 'Conn. error'
         except requests.exceptions.HTTPError as e:
             app.logger.debug('initiateHeartbeat() HTTPError: ' + str(e))
-            briefErrMsg = 'HTTP error {0}'.format(statusCode)
+            briefErrMsg = 'HTTP error {0}'.format(e.response.status_code)
         except requests.exceptions.TooManyRedirects as e:
             app.logger.debug('initiateHeartbeat() TooManyRedirects error: ' + str(e))
             briefErrMsg = 'Redir error'
