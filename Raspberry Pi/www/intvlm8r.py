@@ -1101,7 +1101,7 @@ def initiateHeartbeat():
     url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
     if url:
         response   = None
-        statusCode = None
+        statusCode = 0
         htmltext   = None
         try:
             response = requests.get(url, timeout=10)
