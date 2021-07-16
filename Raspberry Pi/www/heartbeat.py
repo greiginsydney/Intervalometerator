@@ -80,7 +80,7 @@ def initiateHeartbeat(url):
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
-            htmltext = response.text
+            htmltext = response.text.rstrip()
             statusCode = response.status_code
             log('Status code = {0}'.format(str(statusCode)))
             log('This is what I received: ' + str(htmltext))
