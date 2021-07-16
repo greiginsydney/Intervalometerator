@@ -673,6 +673,11 @@ chg_web_login ()
 		done
 		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
 		matchPassword="[\']+"
+		if [[ $oldPassword == "password" ]]; # we'll change this to a random 8-char default:
+		then
+			oldPassword=$(shuf -zer -n4 {a..z} | tr -d '\0' )
+			oldPassword+=$(shuf -zer -n4 {0..9} | tr -d '\0')
+		fi
 		while true; do
 			read -e -r -i "$oldPassword" -p "Change the website's password  : " password
 			if [ -z "$password" ];
