@@ -1088,7 +1088,12 @@ def heartbeatCronJob():
     if sourceIp != "127.0.0.1":
         abort(403)
 
-    statusCode = initiateHeartbeat()
+    #Make two attempts at heartbeating:
+    for i in range(2):
+        statusCode = initiateHeartbeat()
+        if int(statusCode / 100) == 2:
+            #It's a success message, in the 2xx range.
+            break
     
     res = make_response('OK')
     return res, statusCode
