@@ -1,0 +1,15 @@
+#Global settings:
+
+    weekly
+    missingok
+    rotate 3
+    size=500k
+    compress
+    delaycompress
+    dateext
+    notifempty
+    create 0644 pi www-data
+
+/home/pi/*.log {}
+/home/pi/www/gunicorn.error {}
+/var/log/celery/*.log {}
