@@ -321,7 +321,7 @@ install_website ()
 	if [ $SUDO_USER != "pi" ];
 	then
 		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
-		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "intvlm8r.logrotate" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
 		for val in "${ServiceFiles[@]}";
 		do
 			if [ -f $val ];
@@ -330,8 +330,9 @@ install_website ()
 				sed -i "s|User=pi|User=$SUDO_USER|g" $val
 			fi
 		done
-		if [ -f celery.conf ]; then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
-		sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery
+		if [ -f celery.conf ]; 		then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
+		if [ -f celery ]; 		then sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery; fi
+		if [ -f intvlm8r.logrotate ]; 	then sed -i "s| pi | $SUDO_USER |g" intvlm8r.logrotate; fi
 		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
 		if [ /etc/udev/rules.d/99-com.rules ];
 		then
@@ -379,6 +380,16 @@ install_website ()
 	systemctl start intvlm8r
 	echo "Enabling intvlm8r"
 	systemctl enable intvlm8r
+
+	if [ -f intvlm8r.logrotate ];
+	then
+		if cmp -s intvlm8r.logrotate /etc/logrotate.d/intvlm8r.logrotate;
+		then
+			echo "Skipped: the file '/etc/logrotate.d/intvlm8r.logrotate' already exists & the new version is unchanged"
+		else
+			mv -fv intvlm8r.service /etc/logrotate.d/intvlm8r.logrotate
+		fi
+	fi
 
 	#Camera Transfer
 	if [ -f cameraTransfer.service ];
