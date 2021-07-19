@@ -387,7 +387,7 @@ install_website ()
 		then
 			echo "Skipped: the file '/etc/logrotate.d/intvlm8r.logrotate' already exists & the new version is unchanged"
 		else
-			mv -fv intvlm8r.service /etc/logrotate.d/intvlm8r.logrotate
+			mv -fv intvlm8r.logrotate /etc/logrotate.d/intvlm8r.logrotate
 		fi
 	fi
 
