@@ -15,14 +15,14 @@
 
 [Unit]
 Description=heartbeat.timer. Wakes the heartbeat script every 5 minutes
-RefuseManualStart=no  # Allow manual starts
-RefuseManualStop=no   # Allow manual stops
+RefuseManualStart=no
+RefuseManualStop=no
 
 [Timer]
-OnCalendar=*:0/5	#Every 5 minutes
+OnCalendar=*:0/5
 AccuracySec=10
 RandomizedDelaySec=10
-Persistent=true		#Run on boot
+Persistent=true
 Unit=heartbeat.service
 
 [Install]
