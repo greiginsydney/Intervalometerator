@@ -1120,7 +1120,7 @@ test_install ()
 	echo ""
 
 	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
-	oneShotList="setTime cameraTransfer piTransfer"
+	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
 	for service in $oneShotList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
