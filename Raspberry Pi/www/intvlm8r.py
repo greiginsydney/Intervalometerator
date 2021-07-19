@@ -1106,12 +1106,14 @@ def heartbeatCronJob():
     chain(*tasks).apply_async()
     
     #Make two attempts at heartbeating:
-    # for i in range(2):
-        # statusCode = initiateHeartbeat()
-        # if int(statusCode / 100) == 2:
-            # #It's a success message, in the 2xx range.
-            # break
-    res = make_response('OK')
+    for i in range(2):
+        task = chain(*tasks).apply_async()
+        result = task.wait(timeout=20, interval=1)
+        app.logger.debug('heartbeatCronJob {0}/2 reported result = {1}'.format(str(i),str(result)))
+        if int(result['statusCode']) / 100 == 2:
+            #It's a success message, in the 2xx range.
+            break
+    res = make_response('OK') # We return OK to the calling script regardless, confirmating that intvlm8r.py responded.
     return res, 200
 
 
