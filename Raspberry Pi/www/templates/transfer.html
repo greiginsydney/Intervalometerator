@@ -352,25 +352,5 @@ function openInNewTab(url) {
   win.focus();
 }
 
-function postUrl(url) {
-	// send ajax POST request to start background job
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', url, true);
-	xmlhttp.onload = function()
-	{
-		if (this.status >= 200 && this.status < 400)
-		{
-			//We received a positive response. Job underway. Reload this page.
-			location.href = location.href;
-		}
-		//else
-		//{
-			// We reached our target server, but it returned an error
-			//alert('Nope, that failed');
-		//}
-	};
-	xmlhttp.send();
-}
-
 </script>
 {% endblock %}
