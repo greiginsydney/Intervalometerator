@@ -1049,13 +1049,6 @@ def monitoringPOST():
     """
     This page is where changes to the Monitoring page are actioned
     """
-    if 'monHbNow' in request.form:
-        try:
-            app.logger.debug('mon initiating heartbeat now')
-            initiateHeartbeat()
-        except Exception as e:
-            app.logger.debug('mon exception initiating heartbeat: ' + str(e))
-
     if 'monApply' in request.form:
         if not os.path.isfile(iniFile):
             createConfigFile(iniFile)
@@ -1076,6 +1069,25 @@ def monitoringPOST():
                 flash('Error writing to the Ini file')
 
     return redirect(url_for('monitoring'))
+
+
+@app.route('/monHbNow', methods=['POST'])
+@login_required
+def monHbNow():
+    """
+    This page is called in the background by the 'Heartbeat now' button on the Remote Monitoring page
+    It kicks off the background task, and returns the taskID so its progress can be followed
+    """
+    app.logger.debug('monHbNow() entered')
+    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+
+    tasks = [
+        initiateHeartbeat.si()
+    ]
+    task = chain(*tasks).apply_async()
+
+    app.logger.debug('monHbNow returned with task_id= ' + str(task.id))
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
 @app.route("/heartbeat")
