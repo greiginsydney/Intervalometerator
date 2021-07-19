@@ -111,6 +111,10 @@
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
+						if ((data['status']).toLowerCase().includes("heartbeat"))
+						{
+							window.location.reload(false); //Reload the (Monitoring) page to update the Result field
+						}
 					}
 					else
 					{
