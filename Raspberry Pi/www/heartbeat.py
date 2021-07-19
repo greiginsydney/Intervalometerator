@@ -97,7 +97,6 @@ def initiateHeartbeat(url):
             log('initiateHeartbeat() Unhandled web error: ' + str(e))
     else:
         log('initiateHeartbeat() exited. No heartbeatUrl')
-        print('no url')
     return statusCode
 
 
