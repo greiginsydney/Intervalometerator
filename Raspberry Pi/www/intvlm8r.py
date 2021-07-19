@@ -1100,22 +1100,29 @@ def heartbeatCronJob():
     if sourceIp != "127.0.0.1":
         abort(403)
 
-    #Make two attempts at heartbeating:
-    for i in range(2):
-        statusCode = initiateHeartbeat()
-        if int(statusCode / 100) == 2:
-            #It's a success message, in the 2xx range.
-            break
+    tasks = [
+        initiateHeartbeat.si()
+    ]
+    chain(*tasks).apply_async()
     
+    #Make two attempts at heartbeating:
+    # for i in range(2):
+        # statusCode = initiateHeartbeat()
+        # if int(statusCode / 100) == 2:
+            # #It's a success message, in the 2xx range.
+            # break
     res = make_response('OK')
-    return res, statusCode
+    return res, 200
 
 
-def initiateHeartbeat():
+@celery.task(time_limit=60, bind=True)
+def initiateHeartbeat(self):
     """
     This fn pings the heartbeat URL and logs the result to the 'hbResult' file
     """
+    self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat'})
     url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
+    resultText = "Error"
     if url:
         response   = None
         statusCode = 0
@@ -1147,13 +1154,15 @@ def initiateHeartbeat():
                 nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
                 if statusCode:
                     resultFile.write('{0} ({1})'.format(nowtime, statusCode))
+                    statusMessage = 'Heartbeat reported success ({0})'.format(str(statusCode))
                 else:
                     resultFile.write('{0} ({1})'.format(nowtime, briefErrMsg))
+                    statusMessage = 'Heartbeat reported failure: ({0})'.format(briefErrMsg)
         except Exception as e:
             app.logger.debug('initiateHeartbeat() resultfile exception: ' + str(e))
     else:
         app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
-    return statusCode
+    return {'status': statusMessage}
 
 
 @app.route("/system")
