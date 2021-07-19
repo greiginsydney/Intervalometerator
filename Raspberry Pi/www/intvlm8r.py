@@ -1124,9 +1124,9 @@ def initiateHeartbeat(self):
     url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
     resultText = 'Error'
     statusMessage = 'Unknown error'
+    statusCode = 0
     if url:
         response   = None
-        statusCode = 0
         htmltext   = None
         try:
             response = requests.get(url, timeout=10)
@@ -1164,7 +1164,7 @@ def initiateHeartbeat(self):
     else:
         app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
         statusMessage = 'Error: no heartbeat url'
-    return {'status': statusMessage}
+    return {'status': statusMessage, 'statusCode': statusCode}
 
 
 @app.route("/system")
