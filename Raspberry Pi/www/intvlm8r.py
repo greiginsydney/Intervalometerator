@@ -1122,7 +1122,8 @@ def initiateHeartbeat(self):
     """
     self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat'})
     url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
-    resultText = "Error"
+    resultText = 'Error'
+    statusMessage = 'Unknown error'
     if url:
         response   = None
         statusCode = 0
@@ -1162,6 +1163,7 @@ def initiateHeartbeat(self):
             app.logger.debug('initiateHeartbeat() resultfile exception: ' + str(e))
     else:
         app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
+        statusMessage = 'Error: no heartbeat url'
     return {'status': statusMessage}
 
 
