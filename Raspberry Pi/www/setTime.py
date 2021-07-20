@@ -20,12 +20,11 @@
 # It runs BEFORE the cameraTransfer.py script.
 
 
-from urllib.request import urlopen
-from urllib.error import URLError
 from datetime import datetime
 import logging
 import os
 import re
+import requests
 import subprocess
 import sys
 
@@ -63,11 +62,16 @@ def main(argv):
 def setPiDateTime():
     retryCount = 0
     while True:
+        response = None
+        statusCode = 0
+        htmltext = None
         try:
-            response = urlopen('http://localhost:8080/getTime')
-            log('Response code = ' + str(response.getcode()))
-            htmltext = response.read().decode('utf-8')
-            log('This is what I received:' + str(htmltext))
+            response = requests.get('http://localhost:8080/getTime', timeout=10)
+            response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+            htmltext = response.text.rstrip()
+            statusCode = response.status_code
+            log('Status code = {0}'.format(str(statusCode)))
+            log('This is what I received: ' + str(htmltext))
             tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
             if tempTime != None:
                 newTime = tempTime.group(1)
@@ -76,11 +80,14 @@ def setPiDateTime():
                     break
             else:
                 log('Failed to detect the time')
-        except URLError as e:
-            if hasattr(e, 'reason'):
-                log('URL error. Reason = ' + str(e.reason))
-            elif hasattr(e, 'code'):
-                log('URL error. Code = ' + str(e.code))
+        except requests.exceptions.Timeout as e:
+            log('Timeout error: ' + str(e))
+        except requests.exceptions.ConnectionError as e:
+            log('ConnectionError: ' + str(e))
+        except requests.exceptions.HTTPError as e:
+            log('HTTPError: ' + str(e))
+        except requests.exceptions.TooManyRedirects as e:
+            log('TooManyRedirects error: ' + str(e))
         except Exception as e:
             log('Unhandled web error: ' + str(e))
         retryCount += 1
@@ -107,10 +114,15 @@ def setPiDateTime():
 def setArduinoDateTime():
     retryCount = 0
     while True:
+        response = None
+        statusCode = 0
+        htmltext = None
         try:
-            response = urlopen('http://localhost:8080/setArduinoDateTime')
-            log('Response code = ' + str(response.getcode()))
-            htmltext = response.read().decode('utf-8')
+            response = requests.get('http://localhost:8080/setArduinoDateTime', timeout=10)
+            response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+            htmltext = response.text.rstrip()
+            statusCode = response.status_code
+            log('Status code = {0}'.format(str(statusCode)))
             log('This is what I received: ' + str(htmltext))
             responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
             if responseText != None:
@@ -119,11 +131,14 @@ def setArduinoDateTime():
                 break
             else:
                 log('Failed to set the time')
-        except URLError as e:
-            if hasattr(e, 'reason'):
-                log('URL error. Reason = ' + str(e.reason))
-            elif hasattr(e, 'code'):
-                log('URL error. Code = ' + str(e.code))
+        except requests.exceptions.Timeout as e:
+            log('Timeout error: ' + str(e))
+        except requests.exceptions.ConnectionError as e:
+            log('ConnectionError: ' + str(e))
+        except requests.exceptions.HTTPError as e:
+            log('HTTPError: ' + str(e))
+        except requests.exceptions.TooManyRedirects as e:
+            log('TooManyRedirects error: ' + str(e))
         except Exception as e:
             log('Unhandled web error: ' + str(e))
         retryCount += 1
