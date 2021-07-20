@@ -36,7 +36,7 @@ INTERNAL_HB_URL  = "http://localhost:8080/heartbeat"
 
 
 def main():
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     if not os.path.isfile(INIFILE_NAME):
         log("STATUS: Heartbeat aborted. I've lost the INI file")
         return
