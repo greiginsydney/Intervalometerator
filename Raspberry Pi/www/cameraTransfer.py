@@ -18,12 +18,11 @@
 # This script is executed every time the Pi boots, causing it to trigger a sync with the camera.
 # A pre-req task is that the Arduino has woken the camera, which we assume has taken place by the time the script runs.
 
-from urllib.request import urlopen
-from urllib.error import URLError
 import configparser # for the ini file
 import datetime
 import logging
 import os
+import requests
 import sys
 import time
 
@@ -82,19 +81,25 @@ def main(argv):
     else:
         log('Not OK to copy today (%s).' % now.strftime("%A"))
         return
-        
+
+    response = None
+    statusCode = 0
+    htmltext = None
     try:
-        response = urlopen('http://localhost:8080/copyNow')
-        log('Response code = ' + str(response.getcode()))
-        htmltext = response.read().decode('utf-8')
+        response = requests.get('http://localhost:8080/copyNow', timeout=10)
+        response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+        htmltext = response.text.rstrip()
+        statusCode = response.status_code
+        log('Status code = {0}'.format(str(statusCode)))
         log('This is what I received: ' + str(htmltext))
-    except URLError as e:
-        if hasattr(e, 'reason'):
-            log('URL error. Reason = ' + str(e.reason))
-        elif hasattr(e, 'code'):
-            log('URL error. Code = ' + str(e.code))
-        else:
-            log('Unknown URL error: ' + str(e))
+    except requests.exceptions.Timeout as e:
+        log('Timeout error: ' + str(e))
+    except requests.exceptions.ConnectionError as e:
+        log('ConnectionError: ' + str(e))
+    except requests.exceptions.HTTPError as e:
+        log('HTTPError: ' + str(e))
+    except requests.exceptions.TooManyRedirects as e:
+        log('TooManyRedirects error: ' + str(e))
     except Exception as e:
         log('Unhandled web error: ' + str(e))
 
