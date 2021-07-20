@@ -62,34 +62,15 @@ def main(argv):
 def setPiDateTime():
     retryCount = 0
     while True:
-        response = None
-        statusCode = 0
-        htmltext = None
-        try:
-            response = requests.get('http://localhost:8080/getTime', timeout=10)
-            response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
-            htmltext = response.text.rstrip()
-            statusCode = response.status_code
-            log('Status code = {0}'.format(str(statusCode)))
-            log('This is what I received: ' + str(htmltext))
-            tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
-            if tempTime != None:
-                newTime = tempTime.group(1)
-                log('New time is ' + newTime)
-                if 'Unknown' not in newTime:
-                    break
-            else:
-                log('Failed to detect the time')
-        except requests.exceptions.Timeout as e:
-            log('Timeout error: ' + str(e))
-        except requests.exceptions.ConnectionError as e:
-            log('ConnectionError: ' + str(e))
-        except requests.exceptions.HTTPError as e:
-            log('HTTPError: ' + str(e))
-        except requests.exceptions.TooManyRedirects as e:
-            log('TooManyRedirects error: ' + str(e))
-        except Exception as e:
-            log('Unhandled web error: ' + str(e))
+        htmltext, statusCode = newWebRequest('http://localhost:8080/getTime')
+        tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
+        if tempTime != None:
+            newTime = tempTime.group(1)
+            log('New time is ' + newTime)
+            if 'Unknown' not in newTime:
+                break
+        else:
+            log('Failed to detect the time')
         retryCount += 1
         if retryCount == 3:
             break
@@ -114,37 +95,43 @@ def setPiDateTime():
 def setArduinoDateTime():
     retryCount = 0
     while True:
-        response = None
-        statusCode = 0
-        htmltext = None
-        try:
-            response = requests.get('http://localhost:8080/setArduinoDateTime', timeout=10)
-            response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
-            htmltext = response.text.rstrip()
-            statusCode = response.status_code
-            log('Status code = {0}'.format(str(statusCode)))
-            log('This is what I received: ' + str(htmltext))
-            responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
-            if responseText != None:
-                newTime = responseText.group(1)
-                log('New Arduino time is ' + newTime)
-                break
-            else:
-                log('Failed to set the time')
-        except requests.exceptions.Timeout as e:
-            log('Timeout error: ' + str(e))
-        except requests.exceptions.ConnectionError as e:
-            log('ConnectionError: ' + str(e))
-        except requests.exceptions.HTTPError as e:
-            log('HTTPError: ' + str(e))
-        except requests.exceptions.TooManyRedirects as e:
-            log('TooManyRedirects error: ' + str(e))
-        except Exception as e:
-            log('Unhandled web error: ' + str(e))
+        htmltext, statusCode = newWebRequest('http://localhost:8080/setArduinoDateTime')
+        responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
+        if responseText != None:
+            newTime = responseText.group(1)
+            log('New Arduino time is ' + newTime)
+            break
+        else:
+            log('Failed to set the time')
         retryCount += 1
         if retryCount == 3:
             break
         log('RETRYING')
+
+
+def newWebRequest(url):
+    response = None
+    statusCode = 0
+    htmltext = None
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+        htmltext = response.text.rstrip()
+        statusCode = response.status_code
+        log('Status code = {0}'.format(str(statusCode)))
+        log('This is what I received: ' + str(htmltext))
+    except requests.exceptions.Timeout as e:
+        log('Timeout error: ' + str(e))
+    except requests.exceptions.ConnectionError as e:
+        log('ConnectionError: ' + str(e))
+    except requests.exceptions.HTTPError as e:
+        log('HTTPError: ' + str(e))
+        statusCode = e.response.status_code
+    except requests.exceptions.TooManyRedirects as e:
+        log('TooManyRedirects error: ' + str(e))
+    except Exception as e:
+        log('Unhandled web error: ' + str(e))
+    return htmltext, statusCode
 
 
 def log(message):
