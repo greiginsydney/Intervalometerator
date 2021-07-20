@@ -76,7 +76,7 @@ def initiateHeartbeat(url):
     """
     response = None
     statusCode = 0
-    if Url:
+    if url:
         htmltext = None
         try:
             response = requests.get(url, timeout=10)
