@@ -536,8 +536,8 @@ def thumbnails():
                         app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
                 else:
                     PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
-                PreviewFileName = PreviewFileName.replace(PI_USER_HOME, '')
-                ThumbFileName = ThumbFileName.replace(PI_USER_HOME, '')
+                PreviewFileName = PreviewFileName.replace(PI_USER_HOME + '/', '')
+                ThumbFileName = ThumbFileName.replace(PI_USER_HOME + '/', '')
                 ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
