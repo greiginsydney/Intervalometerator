@@ -30,7 +30,11 @@ import time
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-LOGFILE_PATH = os.path.expanduser('~')
+sudo_username = os.getenv("SUDO_USER")
+if sudo_username:
+    LOGFILE_PATH = os.path.expanduser('~' + sudo_username + '/')
+else:
+    LOGFILE_PATH = os.path.expanduser('~')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'cameraTransfer.log')
 INIFILE_PATH = os.path.expanduser('~')
 INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
