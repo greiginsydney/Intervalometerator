@@ -62,7 +62,7 @@ def main(argv):
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'
-        log('INI file error:' + str(e))
+        log('INI file error: ' + str(e))
 
     log('')
     now = datetime.datetime.now()
