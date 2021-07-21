@@ -12,9 +12,6 @@
 # https://greiginsydney.com/intvlm8r
 # https://intvlm8r.com
 #
-#
-# Thank you https://docs.python.org/2/howto/urllib2.html
-#
 # This script is executed every time the Pi boots. It reads the Arduino's time and sets same in the Pi (as the 
 #  Pi's time is volatile - it's lost every time it powers-off).
 # It runs BEFORE the cameraTransfer.py script.
