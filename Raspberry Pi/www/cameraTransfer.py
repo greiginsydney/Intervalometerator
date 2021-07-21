@@ -12,9 +12,6 @@
 # https://greiginsydney.com/intvlm8r
 # https://intvlm8r.com
 
-
-# Thank you https://docs.python.org/2/howto/urllib2.html
-#
 # This script is executed every time the Pi boots, causing it to trigger a sync with the camera.
 # A pre-req task is that the Arduino has woken the camera, which we assume has taken place by the time the script runs.
 
