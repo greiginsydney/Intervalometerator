@@ -28,7 +28,11 @@ import requests
 import subprocess
 import sys
 
-LOGFILE_PATH = os.path.expanduser('~')
+sudo_username = os.getenv("SUDO_USER")
+if sudo_username:
+    LOGFILE_PATH = os.path.expanduser('~' + sudo_username + '/')
+else:
+    LOGFILE_PATH = os.path.expanduser('~')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
 
 htmltext = ''
