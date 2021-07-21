@@ -55,7 +55,12 @@ except:
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_USER_HOME =  os.path.expanduser("~")
+sudo_username = os.getenv("SUDO_USER")
+if sudo_username:
+    PI_USER_HOME = os.path.expanduser('~' + sudo_username + '/')
+else:
+    PI_USER_HOME = os.path.expanduser('~')
+
 PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
 PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE  = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
