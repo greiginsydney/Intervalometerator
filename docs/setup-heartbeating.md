@@ -5,6 +5,8 @@
 - [Overview](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 - [Setup Heartbeating](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 - [Setup "Dead Man’s Snitch"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-dead-mans-snitch)
+- [Add PagerDuty](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#add-pagerduty)
+- [Integrate with PagerDuty](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#integrate-with-pagerduty)
 
 <hr />
 
@@ -79,6 +81,62 @@ Heartbeating will automatically commence the next time the minute is divisible b
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125730218-fad365d5-e5b3-40dc-975a-e97f3bb7a6d8.png" width="80%">
 </p>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+<hr/>
+
+## Add PagerDuty
+
+Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, however if you're not always in front of an e-mail client you might want something more immediate, like an SMS. If you have multiple intvlm8rs and several people on staff, you might be looking for some rostering and escalation, and here's where PagerDuty can come in.
+
+1. Browse to [https://www.pagerduty.com/](https://www.pagerduty.com/)
+2. Click the "GET STARTED" button in the top right corner to create yourself an account.
+3. Enter your e-mail address and click GET STARTED!
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/126600261-dba8eea1-2a9e-4bf3-abd4-9a395452bf2f.png" width="40%">
+</p>
+
+4. Your subdomain here will become "subdomain.pagerduty.com", so I suggest you use your company name for that. Critical here is the US/EU question. I think it should be renamed, as it seems to be a question focussed on the GDPR requirements of customers in EU countries. If that's not you, PagerDuty recommend you go with the "US" option:
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/126600550-923d64f0-f7f7-4976-926d-31d45fa2a5f8.png" width="40%">
+</p>
+
+5. As the text outlines here, each "service" in PagerDuty will be an intvlm8r:
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/126600722-4caa4528-7377-499c-8343-50d9f685945c.png" width="60%">
+</p>
+
+6. Now, add the Dead Man's Snitch integration. You'll find that by searching on the "All" tab:
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/126601155-0b7ba93a-222a-4cc5-b299-b9e6d24c91d1.png" width="60%">
+</p><p align="center">[NB: I've edited this screen-grab to remove some white-space]</p>
+
+7. By default the "How do you want to be notified" box will only let you enter a +1 country code for phone and SMS notifications, but fear not, for the rest of the world we're just a support ticket away from having access. If you're outside the US/CA, just click "Skip step" and continue.
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/126602212-48cf0ebf-5d38-46e6-8531-0eeab3bcd5a2.png" width="60%">
+</p>
+
+8. You're done - that's the basics covered. There's lots of really helpful information on how to REALLY make PagerDuty work for you, starting with the "Onboarding Guide".
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/126602569-c1e1da8d-f278-4966-92f6-234f462af3ae.png" width="60%">
+</p>
+
+9. Resources:
+- [Getting Started checklist](https://pagerduty.influitive.com/forum/t/the-onboarding-checklist/1522)
+- [http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/](http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/)
+- [https://community.pagerduty.com](https://community.pagerduty.com)
+
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+<hr/>
+
+## Integrate with PagerDuty
+
+TODO
+<p align="center">
+<img src="" width="80%">
+</p>
+
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
