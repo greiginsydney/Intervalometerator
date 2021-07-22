@@ -65,14 +65,17 @@ def setPiDateTime():
     retryCount = 0
     while True:
         htmltext, statusCode = newWebRequest('http://localhost:8080/getTime')
-        tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
-        if tempTime != None:
-            newTime = tempTime.group(1)
-            log('New time is ' + newTime)
-            if 'Unknown' not in newTime:
-                break
+        if htmltext != None:
+            tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
+            if tempTime != None:
+                newTime = tempTime.group(1)
+                log('New time is ' + newTime)
+                if 'Unknown' not in newTime:
+                    break
+            else:
+                log('Failed to detect the time')
         else:
-            log('Failed to detect the time')
+            log('htmltext is null/None')
         retryCount += 1
         if retryCount == 3:
             break
@@ -98,13 +101,16 @@ def setArduinoDateTime():
     retryCount = 0
     while True:
         htmltext, statusCode = newWebRequest('http://localhost:8080/setArduinoDateTime')
-        responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
-        if responseText != None:
-            newTime = responseText.group(1)
-            log('New Arduino time is ' + newTime)
-            break
+        if htmltext != None:
+            responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
+            if responseText != None:
+                newTime = responseText.group(1)
+                log('New Arduino time is ' + newTime)
+                break
+            else:
+                log('Failed to set the time')
         else:
-            log('Failed to set the time')
+            log('htmltext is null/None')
         retryCount += 1
         if retryCount == 3:
             break
