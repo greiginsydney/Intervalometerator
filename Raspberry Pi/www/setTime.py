@@ -63,7 +63,7 @@ def main(argv):
 
 def setPiDateTime():
     retryCount = 0
-    while True:
+    for i in range(3):
         htmltext, statusCode = newWebRequest('http://localhost:8080/getTime')
         if htmltext != None:
             tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
@@ -76,9 +76,6 @@ def setPiDateTime():
                 log('Failed to detect the time')
         else:
             log('htmltext is null/None')
-        retryCount += 1
-        if retryCount == 3:
-            break
         log('RETRYING')
 
     try:
@@ -99,7 +96,7 @@ def setPiDateTime():
 
 def setArduinoDateTime():
     retryCount = 0
-    while True:
+    for i in range(3):
         htmltext, statusCode = newWebRequest('http://localhost:8080/setArduinoDateTime')
         if htmltext != None:
             responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
@@ -111,9 +108,6 @@ def setArduinoDateTime():
                 log('Failed to set the time')
         else:
             log('htmltext is null/None')
-        retryCount += 1
-        if retryCount == 3:
-            break
         log('RETRYING')
 
 
