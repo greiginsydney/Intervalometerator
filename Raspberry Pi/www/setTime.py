@@ -52,6 +52,7 @@ def main(argv):
             else:
                 log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. Updating the Pi with time from the Arduino')
                 setPiDateTime()
+                return
         if stderrdata:
             stderrdata = stderrdata.strip()
             log('systemd-timesyncd error = ' + str(stderrdata) + '. setTime.py aborting')
