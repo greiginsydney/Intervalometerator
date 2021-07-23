@@ -1116,7 +1116,13 @@ test_install ()
 	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
 	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
-
+	
+	if systemctl --all --type service | grep -Fq remoteit-headless ;
+	then
+		systemctl is-active --quiet remoteit-headless && echo -e ""$GREEN"PASS:"$RESET" remoteit service is running" || echo -e ""$YELLOW"FAIL:"$RESET" remoteit    service is dead"
+	else
+		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
+	fi
 	echo ""
 
 	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
