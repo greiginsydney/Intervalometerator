@@ -63,6 +63,7 @@ def main(argv):
 
 def setPiDateTime():
     retryCount = 0
+    newTime = 'Unknown'
     for i in range(3):
         htmltext, statusCode = newWebRequest('http://localhost:8080/getTime')
         if htmltext != None:
