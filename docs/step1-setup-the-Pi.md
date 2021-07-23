@@ -147,11 +147,11 @@ mkdir: created directory 'thumbs'
 'intvlm8r' -> '/etc/nginx/sites-available/intvlm8r'
 ```
 
-37. You will be asked to provide a username and password for the web interface. Accept the defaults if you like, but preferably come up with your own. (You should DEFINITELY change these if the intvlm8r is connected to the Internet or a network where anyone else might find it.)
+37. You will be asked to provide a username and password for the web interface. The default login name is 'admin', and the script generates a random 8-character password of four letters and four numbers. Accept the defaults if you like, but preferably come up with your own. (You should DEFINITELY change these for longer, more complicated ones if the intvlm8r is connected to the Internet or a network where anyone else might find it.)
 
 ```txt
 Change the website's login name: admin
-Change the website's password  : password
+Change the website's password  : abcd1234
 ```
 
 38. If your Pi will have no network connectivity once it's deployed, it will need its real time clock set each time it boots (as the clock is volatile - it's not battery-backed). 
