@@ -117,7 +117,7 @@ def newWebRequest(url):
     statusCode = 0
     htmltext = None
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=30)
         response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
         htmltext = response.text.rstrip()
         statusCode = response.status_code
