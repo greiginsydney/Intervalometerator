@@ -87,7 +87,7 @@ def main(argv):
     statusCode = 0
     htmltext = None
     try:
-        response = requests.get('http://localhost:8080/copyNow', timeout=10)
+        response = requests.get('http://localhost:8080/copyNow', timeout=30)
         response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
         htmltext = response.text.rstrip()
         statusCode = response.status_code
