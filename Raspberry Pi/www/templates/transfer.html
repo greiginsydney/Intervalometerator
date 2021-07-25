@@ -56,7 +56,7 @@
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
-					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive'] %}
+					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive', 'rsync'] %}
 						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %} {% if method != 'FTP' and method in hiddenTransferOptions %} DISABLED{% endif %} >{{ method }}</option>"
 					{% endfor %}
 					</select>
@@ -140,6 +140,27 @@
 		</tr>
 	</table>
 
+	<table id="rsync">
+		<tr>
+			<td>
+				<div class="alignleft">Username:</div>
+				<div class="alignright"><input type="text" name="rsyncUsername" id="rsyncUsername" value="{{ rsyncUsername }}" placeholder="" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Host:</div>
+				<div class="alignright"><input type="text" name="rsyncHost" id="rsyncHost" value="{{ rsyncHost }}" placeholder="" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Remote folder:</div>
+				<div class="alignright"><input type="text" name="rsyncRemoteFolder" id="rsyncRemoteFolder" value="{{ rsyncRemoteFolder }}" placeholder="" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+	</table>
+
 	<table id="transfer">
 		<tr>
 			<td>
@@ -198,22 +219,26 @@
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
-SelectionBits["tfrMethod"]          =     1;
-SelectionBits["ftpServer"]          =     2;
-SelectionBits["ftpUser"]            =     4;
-SelectionBits["ftpPassword"]        =     8;
-SelectionBits["ftpRemoteFolder"]    =    16;
-SelectionBits["sftpServer"]         =    32;
-SelectionBits["sftpUser"]           =    64;
-SelectionBits["sftpPassword"]       =   128;
-SelectionBits["sftpRemoteFolder"]   =   256;
-SelectionBits["dbx_token"]          =   512;
-SelectionBits["sftpRemoteFolder"]   =  1024;
-SelectionBits["transferDay"]        =  2048;
-SelectionBits["transferHour"]       =  4096;
-SelectionBits["copyDay"]            =  8192;
-SelectionBits["copyHour"]           = 16384;
-SelectionBits["googleRemoteFolder"] = 32768;
+SelectionBits["tfrMethod"]          =      1;
+SelectionBits["ftpServer"]          =      2;
+SelectionBits["ftpUser"]            =      4;
+SelectionBits["ftpPassword"]        =      8;
+SelectionBits["ftpRemoteFolder"]    =     16;
+SelectionBits["sftpServer"]         =     32;
+SelectionBits["sftpUser"]           =     64;
+SelectionBits["sftpPassword"]       =    128;
+SelectionBits["sftpRemoteFolder"]   =    256;
+SelectionBits["dbx_token"]          =    512;
+SelectionBits["sftpRemoteFolder"]   =   1024;
+SelectionBits["transferDay"]        =   2048;
+SelectionBits["transferHour"]       =   4096;
+SelectionBits["copyDay"]            =   8192;
+SelectionBits["copyHour"]           =  16384;
+SelectionBits["googleRemoteFolder"] =  32768;
+SelectionBits["rsyncUsername"]      =  65536;
+SelectionBits["rsyncHost"]          = 131072;
+SelectionBits["rsyncRemoteFolder"]  = 262144;
+
 
 var method = document.getElementById("tfrMethod");
 var copyDay = document.getElementById("copyDay");
@@ -228,6 +253,8 @@ var showHideTrnMethod = document.getElementById("showHideTrnMethod");
 var ftp = document.getElementById("ftp");
 var sftp = document.getElementById("sftp");
 var dbx = document.getElementById("dbx");
+var google = document.getElementById("google");
+var rsync = document.getElementById("rsync");
 var transfer = document.getElementById("transfer");
 
 // This drives the default display on load:
@@ -235,6 +262,7 @@ ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"
 sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
 dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
 google.style.display = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+rsync.style.display = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
@@ -275,6 +303,7 @@ function newSelected(id)
 		sftp.style.display              = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
 		dbx.style.display               = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
 		google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		rsync.style.display             = (method.value != "rsync"        || copyDay.value == "Off") ? "none":"";
 		transfer.style.display          = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 		showHideTrnButton.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 	}
