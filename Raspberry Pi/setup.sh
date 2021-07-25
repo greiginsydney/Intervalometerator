@@ -66,6 +66,13 @@ install_apps ()
 		else
 			installGoogle=0
 		fi
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("sysrsync"))';
+		then
+			installRsync=1
+		else
+			installRsync=0
+		fi
+		
 		echo "====== Select Upload/Transfer options ======="
 		echo "An 'X' indicates the option is already installed"
 	else
@@ -76,6 +83,7 @@ install_apps ()
 		installSftp=1
 		installDropbox=1
 		installGoogle=1
+		installRsync=1
 	fi
 	while true; do
 		echo ""
@@ -83,8 +91,9 @@ install_apps ()
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
 		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
+		echo "4. [$([[ installRsync   -eq 1 ]] && echo ''X'' || echo '' '')] rsync"
 		echo ""
-		echo "Press 1, 2 or 3 to toggle the selection."
+		echo "Press 1, 2, 3 or 4 to toggle the selection."
 		read -p "Press return on its own to continue with the install " response
 		case "$response" in
 			(1)
@@ -95,6 +104,9 @@ install_apps ()
 				;;
 			(3)
 				installGoogle=$((1-installGoogle))
+				;;
+			(4)
+				installRsync=$((1-installRsync))
 				;;
 			("")
 				break
@@ -141,6 +153,12 @@ install_apps ()
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
+	fi
+	
+	if [ $installRsync -eq 1 ];
+	then
+		echo -e ""$GREEN"Installing sysrsync"$RESET""
+		pip3 install sysrsync
 	fi
 	
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev"$RESET""
