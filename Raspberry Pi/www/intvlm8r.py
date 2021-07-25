@@ -936,8 +936,8 @@ def transferPOST():
                 googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
                 config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'rsync'):
-                config.set('Transfer', 'rsyncUsername', rsyncUsername or '')
-                config.set('Transfer', 'rsyncHost', rsyncHost or '')
+                config.set('Transfer', 'rsyncUsername', str(request.form.get('rsyncUsername') or ''))
+                config.set('Transfer', 'rsyncHost', str(request.form.get('rsyncHost') or ''))
                 rsyncRemoteFolder = reformatSlashes(str(request.form.get('rsyncRemoteFolder')))
                 config.set('Transfer', 'rsyncRemoteFolder', rsyncRemoteFolder or '')
             if (request.form.get('tfrMethod') != 'Off'):
