@@ -117,10 +117,11 @@ hiddenTransferOptions = ''
 hiddenTransferDict = {
   "paramiko": "SFTP",
   "dropbox": "Dropbox",
-  "google": "Google Drive"
+  "google": "Google Drive",
+  "sysrsync": "rsync"
 }
 # TY SO: https://stackoverflow.com/a/41815890
-for package_name in ('paramiko', 'dropbox', 'google'):
+for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
     spec = importlib.util.find_spec(package_name)
     if spec is None:
         app.logger.debug(package_name + ' is not installed')
@@ -827,6 +828,9 @@ def transfer():
         'sftpRemoteFolder'      : '',
         'googleRemoteFolder'    : '',
         'dbx_token'             : '',
+        'rsyncUsername'         : '',
+        'rsyncHost'             : '',
+        'rsyncRemoteFolder'     : '',
         'transferDay'           : '',
         'transferHour'          : '',
         'copyDay'               : '',
@@ -848,6 +852,9 @@ def transfer():
         'sftpRemoteFolder'   : '',
         'googleRemoteFolder' : '',
         'dbx_token'          : '',
+        'rsyncUsername'      : '',
+        'rsyncHost'          : '',
+        'rsyncRemoteFolder'  : '',
         'transferDay'        : '',
         'transferHour'       : '',
         'copyDay'            : 'Off',
@@ -868,6 +875,9 @@ def transfer():
         templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
         templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
         templateData['dbx_token']          = config.get('Transfer', 'dbx_token')
+        templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
+        templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
+        templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
         templateData['transferDay']        = config.get('Transfer', 'transferDay')
         templateData['transferHour']       = config.get('Transfer', 'transferHour')
         templateData['copyDay']            = config.get('Copy', 'copyDay')
@@ -925,6 +935,11 @@ def transferPOST():
             elif (request.form.get('tfrMethod') == 'Google Drive'):
                 googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
                 config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
+            elif (request.form.get('tfrMethod') == 'rsync'):
+                config.set('Transfer', 'rsyncUsername', rsyncUsername or '')
+                config.set('Transfer', 'rsyncHost', rsyncHost or '')
+                rsyncRemoteFolder = reformatSlashes(str(request.form.get('rsyncRemoteFolder')))
+                config.set('Transfer', 'rsyncRemoteFolder', rsyncRemoteFolder or '')
             if (request.form.get('tfrMethod') != 'Off'):
                 config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
                 config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
