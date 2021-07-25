@@ -63,8 +63,9 @@ var hbUrl = document.getElementById("hbUrl");
 var showHideHeartbeatUrl = document.getElementById("showHideHbUrl");
 
 // This drives the default display on load:
-showHideHeartbeatUrl.style.display = (hbFreq.value == "Off") ? "none":"";
-
+showHideHeartbeatUrl.style.display    = (hbFreq.value == "Off") ? "none":"";
+showHideHeartbeatResult.style.display = (hbFreq.value == "Off") ? "none":"";
+	
 // Run when the form first loads:
 lightButtons(); 
 
