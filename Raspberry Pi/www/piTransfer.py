@@ -48,6 +48,7 @@ try:
     from oauth2client import client
     from oauth2client.file import Storage
     from googleapiclient.http import MediaFileUpload
+    import sysrsync
 except:
     pass
 
@@ -110,6 +111,9 @@ def main(argv):
         'sftpRemoteFolder'  : '',
         'googleRemoteFolder': '',
         'dbx_token'         : '',
+        'rsyncUsername'     : '',
+        'rsyncHost'         : '',
+        'rsyncRemoteFolder' : '',
         'transferDay'       : '',
         'transferHour'      : '',
         'deleteAfterTransfer': False
@@ -127,6 +131,9 @@ def main(argv):
         sftpRemoteFolder    = config.get('Transfer', 'sftpRemoteFolder')
         googleRemoteFolder  = config.get('Transfer', 'googleRemoteFolder')
         dbx_token           = config.get('Transfer', 'dbx_token')
+        rsyncUsername       = config.get('Transfer', 'rsyncUsername')
+        rsyncHost           = config.get('Transfer', 'rsyncHost')
+        rsyncRemoteFolder   = config.get('Transfer', 'rsyncRemoteFolder')
         transferDay         = config.get('Transfer', 'transferDay')
         transferHour        = config.get('Transfer', 'transferHour')
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
@@ -172,6 +179,12 @@ def main(argv):
         while '//' in googleRemoteFolder:
             googleRemoteFolder = googleRemoteFolder.replace('//', '/')
         commenceGoogle(googleRemoteFolder)
+    elif (tfrMethod == 'rsync'):
+        while '\\' in rsyncRemoteFolder:
+            rsyncRemoteFolder = rsyncRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+        while '//' in rsyncRemoteFolder:
+            rsyncRemoteFolder = rsyncRemoteFolder.replace('//', '/')
+        commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder)
 
 
 def list_New_Images(imagesPath, previouslyUploadedFile):
@@ -578,6 +591,16 @@ def reauthGoogle():
         print ('')
         log('STATUS: Google upload failed: client_secrets.json file is missing')
     return 1
+
+
+def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
+    """
+    (r)syncs the Pi's photos/ folder with a remote location
+    """
+    log('Commencing rsync')
+    
+    log('STATUS: rsync upload completed')
+    return
 
 
 def uploadedOK(filename, filecount):
