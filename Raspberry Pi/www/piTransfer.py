@@ -43,12 +43,15 @@ try:
 except:
     pass
 try:
+    import sysrsync
+except:
+    pass
+try:
     import httplib2
     from apiclient import discovery
     from oauth2client import client
     from oauth2client.file import Storage
     from googleapiclient.http import MediaFileUpload
-    import sysrsync
 except:
     pass
 
