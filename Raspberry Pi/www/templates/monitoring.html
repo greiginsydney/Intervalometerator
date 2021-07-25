@@ -139,7 +139,7 @@ function lightButtons()
 		}
 	}
 	// The 'heartbeat now' button can be lit even when Apply is not:
-	if (hbFreq.value != "Off" && (hbUrl.defaultValue == hbUrl.value))
+	if (hbFreq.value != "Off" && (hbUrl.defaultValue == hbUrl.value) && (validateUrl(hbUrl.value)))
 	{
 		document.getElementById("hbnow").disabled  = false;
 	}
