@@ -964,6 +964,46 @@ def copyNowCronJob():
     return res, 200
 
 
+@app.route('/trnTrNow', methods=['POST'])
+@login_required
+def trnTransferNow():
+    """
+    This page is called in the background by the 'Transfer now' button on the Transfer page.
+    It kicks off the background task, but we don't get any feedback of its progress (TODO)
+    """
+    app.logger.debug('trnTransferNow() entered')
+    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+
+    tasks = [
+        transferNow.si()
+    ]
+    task = chain(*tasks).apply_async()
+
+    app.logger.debug('trnTransferNow() returned with task_id= ' + str(task.id))
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
+
+
+@celery.task(time_limit=1800, bind=True)
+def transferNow(self):
+    app.logger.info('TransferNow() entered') #This logs to /var/log/celery/celery_worker.log
+    self.update_state(state='PROGRESS', meta={'status': 'Initiated image transfer'})
+    try:
+        cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            app.logger.info('transferNow error = ' + str(stdoutdata))
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.info('transferNow error = ' + str(stderrdata))
+    except Exception as e:
+        app.logger.info('Unhandled transferNow error: ' + str(e))
+    
+    statusMessage = "transferNow completed. Click 'View log' for details"
+    return {'status': statusMessage}
+
+
 @app.route("/thermal")
 @login_required
 def thermal():
