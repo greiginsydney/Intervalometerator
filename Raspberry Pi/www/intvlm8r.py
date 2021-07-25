@@ -1072,7 +1072,7 @@ def monitoring():
         'hbResult' : ''
         }
     templateData['hbUrl']  = getIni('Monitoring', 'heartbeatUrl', 'string', '')
-    templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', '')
+    templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', 'Off')
 
     try:
         with open(PI_HBRESULT_FILE, 'r') as f:
