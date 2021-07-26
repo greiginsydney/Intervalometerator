@@ -1904,18 +1904,32 @@ def getIni(keySection, keyName, keyType, defaultValue):
     except configparser.Error as e:
         app.logger.info('getIni() reports key error: ' + str(e))
         #Looks like the flag doesn't exist. Let's add it
-        try:
-            if not config.has_section(keySection):
-                config.add_section(keySection)
-            config.set(keySection, keyName, defaultValue)
-            with open(iniFile, 'w') as config_file:
-                config.write(config_file)
-            app.logger.debug('Added {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
-        except Exception as e:
-            app.logger.debug('Exception thrown trying to add {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
+        setIni(keySection, keyName, defaultValue)
     except Exception as e:
         app.logger.info('Unhandled error in getIni(): ' + str(e))
     return returnValue
+
+
+def setIni(keySection, keyName, newValue):
+    """
+    Update an existing INI file key value, or add a new one
+    """
+    try:
+        if not os.path.isfile(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+    except Exception as e:
+        app.logger.info('Unhandled error in setIni(): ' + str(e))
+    try:
+        if not config.has_section(keySection):
+            config.add_section(keySection)
+        config.set(keySection, keyName, newValue)
+        with open(iniFile, 'w') as config_file:
+            config.write(config_file)
+        app.logger.debug('Added key {0}/{1} with a value of {2}'.format(keySection, keyName, newValue))
+    except Exception as e:
+        app.logger.debug('Exception thrown trying to add key {0}/{1} with a value of {2}'.format(keySection, keyName, newValue))
 
 
 @app.route('/trnCopyNow', methods=['POST'])
