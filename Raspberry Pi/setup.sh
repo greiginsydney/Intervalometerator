@@ -118,10 +118,10 @@ install_apps ()
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	echo -e ""$GREEN"Installing python3-pip, python-flask"$RESET""
 	apt-get install python3-pip python-flask -y
-	echo -e ""$GREEN"Installing Werkzeug, cachelib"$RESET""
-	pip3 install Werkzeug cachelib
-	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, configparser"$RESET""
-	pip3 install flask flask-bootstrap flask-login configparser
+	echo -e ""$GREEN"Installing Werkzeug"$RESET""
+	pip3 install Werkzeug
+	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
+	pip3 install flask flask-bootstrap flask-login Flask_Caching configparser
 	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
 	pip3 install gunicorn psutil
 	echo -e ""$GREEN"Installing redis-server"$RESET""
