@@ -1275,35 +1275,18 @@ def systemPOST():
             if newName != None:
                 cache.set('locationName', newName, timeout = 0)
                 app.logger.debug('New loc set as ' + newName)
-                if not os.path.isfile(iniFile):
-                    createConfigFile(iniFile)
-                config = configparser.ConfigParser()
-                config.read(iniFile)
-                if not config.has_section('Global'):
-                    config.add_section('Global')
-                config.set('Global', 'locationName', newName)
-                with open(iniFile, 'w') as config_file:
-                    config.write(config_file)
+                setIni('Global', 'locationName', newName)
         except:
             app.logger.debug('Location set error')
-            #pass
 
     if 'submitThumbsCount' in request.form:
         try:
             newCount = str(request.form.get('thumbsCount'))
             if newCount != None:
                 app.logger.debug('New thumbs count set as ' + newCount)
-                if not os.path.isfile(iniFile):
-                    createConfigFile(iniFile)
-                config = configparser.ConfigParser()
-                config.read(iniFile)
-                if not config.has_section('Global'):
-                    config.add_section('Global')
-                config.set('Global', 'thumbsCount', newCount)
-                with open(iniFile, 'w') as config_file:
-                    config.write(config_file)
-        except:
-            app.logger.debug('New Thumbs set error')
+                setIni('Global', 'thumbsCount', newCount)
+        except Exception as e:
+            app.logger.debug('New Thumbs set error: ' + str(e))
 
     if 'wakePi' in request.form:
         app.logger.debug('Yes we got the WAKE PI button & values ' + str(request.form.get('wakePiTime')) + ', ' + str(request.form.get('wakePiDuration')) )
