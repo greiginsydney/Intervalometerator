@@ -43,9 +43,6 @@ import time
 
 import gphoto2 as gp
 
-from cachelib import SimpleCache
-cache = SimpleCache()
-
 from werkzeug.security import check_password_hash
 
 from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
@@ -63,6 +60,8 @@ app.jinja_env.trim_blocks = True
 
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
 celery.conf.update(app.config)
+
+cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
 
 login_manager = LoginManager()
 login_manager.init_app(app)
