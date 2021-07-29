@@ -82,12 +82,13 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 <img src="https://user-images.githubusercontent.com/11004787/125730218-fad365d5-e5b3-40dc-975a-e97f3bb7a6d8.png" width="80%">
 </p>
 <br>
+
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
 
 ## Add PagerDuty
 
-Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, however if you're not always in front of an e-mail client you might want something more immediate, like an SMS. If you have multiple intvlm8rs and several people on staff, you might be looking for some rostering and escalation, and here's where the power of PagerDuty can come in.
+Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, however if you're not always in front of an e-mail client you might want something more immediate, like an SMS. If you have multiple intvlm8rs and several people on staff you might be looking for some rostering and escalation, and here's where the power of PagerDuty can be employed.
 
 Pre-req's:
 - you need a [Dead Man's Snitch plan](https://deadmanssnitch.com/plans) that supports "Integrations" for this.
@@ -181,7 +182,7 @@ You need to be on [the 'Medium' plan](https://deadmanssnitch.com/plans) or highe
 
 48. Despite what I said in Step 46, I found in my testing I wanted ONE extra bit of functionality: Pager Duty was letting me know when the intvlm8r was FAILING to report in, but was deathly silent when it came good, and that was some comforting news I was wanting to see on my phone. Never fear - Qisthy and the team at Pager Duty support had the answer for me.
 
-49. From your Pager Duty desktop, select People, your user name, the Notification Rules tab, and under "When a high-urgency incident assigned to me changes...", click the "+ Add Notification Rule" button and add as many notifications as you wish. I'm already receiving an e-mail from Dead Man's Snitch when the intvlm8r starts reporting in again, so I only added an SMS here:
+49. From your Pager Duty desktop, select People, your user name, the Notification Rules tab, and under "When a high-urgency incident assigned to me changes...", click the "+ Add Notification Rule" button and add as many notifications as you wish. I'm already receiving an e-mail from Dead Man's Snitch when the intvlm8r starts reporting in again - and thus my PagerDuty incident is 'resolved' - so I only needed to add an SMS here:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/127469779-7f4a0b89-e5b1-4558-9560-dcd9c1e4d0b0.png" width="80%">
