@@ -13,3 +13,7 @@
 /home/pi/*.log {}
 /home/pi/www/gunicorn.error {}
 /var/log/celery/*.log {}
+/home/pi/heartbeat.log
+{
+    size=100k
+}
