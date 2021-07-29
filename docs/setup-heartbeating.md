@@ -5,8 +5,8 @@
 - [Overview](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 - [Setup Heartbeating](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 - [Setup "Dead Man’s Snitch"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-dead-mans-snitch)
-- [Add PagerDuty](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#add-pagerduty)
-- [Integrate with PagerDuty](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#integrate-with-pagerduty)
+- [Add "PagerDuty"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#add-pagerduty)
+- [Integrate Dead Man's Snitch with PagerDuty](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#integrate-dead-mans-snitch-with-pagerduty)
 
 <hr />
 
@@ -26,7 +26,6 @@ To minimise log bloat (as it executes every five minutes) heartbeat.py logs only
 
 The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch".)
 <br/>
-<hr />
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
@@ -51,6 +50,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 </p>
 
 4. Heartbeating will automatically commence the next time the minute is divisible by the selected frequency value, and always at the top of the hour.
+<br>
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
@@ -81,13 +81,19 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125730218-fad365d5-e5b3-40dc-975a-e97f3bb7a6d8.png" width="80%">
 </p>
-
+<br>
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
 
 ## Add PagerDuty
 
-Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, however if you're not always in front of an e-mail client you might want something more immediate, like an SMS. If you have multiple intvlm8rs and several people on staff, you might be looking for some rostering and escalation, and here's where PagerDuty can come in.
+Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, however if you're not always in front of an e-mail client you might want something more immediate, like an SMS. If you have multiple intvlm8rs and several people on staff, you might be looking for some rostering and escalation, and here's where the power of PagerDuty can come in.
+
+Pre-req's:
+- you need a [Dead Man's Snitch plan](https://deadmanssnitch.com/plans) that supports "Integrations" for this.
+- the [Professional plan](https://www.pagerduty.com/pricing/) at Pager Duty is the first to offer SMS notifications.
+
+<br>
 
 21. Browse to [https://www.pagerduty.com/](https://www.pagerduty.com/)
 22. Click the "GET STARTED" button in the top right corner to create yourself an account.
@@ -111,7 +117,8 @@ Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, ho
 <img src="https://user-images.githubusercontent.com/11004787/126601155-0b7ba93a-222a-4cc5-b299-b9e6d24c91d1.png" width="60%">
 </p><p align="center">[NB: I've edited this screen-grab to remove some white-space]</p>
 
-27. By default the "How do you want to be notified" box will only let you enter a +1 country code for phone and SMS notifications, but fear not, for the rest of the world we're just a support ticket away from having access. If you're outside the US/CA, just click "Skip step" and continue.
+27. By default the "How do you want to be notified" box will only let you enter a +1 country code for phone and SMS notifications, but fear not, for the rest of the world we're just a support ticket away from having access. If you're outside the US/CA/etc, click the "submit a ticket" link. That will launch a fresh browser tab: follow your nose there and return to this tab, click "Skip step" and continue.
+
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126602212-48cf0ebf-5d38-46e6-8531-0eeab3bcd5a2.png" width="60%">
 </p>
@@ -123,20 +130,63 @@ Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, ho
 
 29. Resources:
 - [Getting Started checklist](https://pagerduty.influitive.com/forum/t/the-onboarding-checklist/1522)
-- [http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/](http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/)
+- [http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/](http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/) - see the next section for a walk-through
 - [https://community.pagerduty.com](https://community.pagerduty.com)
 
+30. If you had to create a support ticket for SMS access, check back in a day or so, as they _don't_ send an e-mail when they've enabled you. Browse to People / Users / select your name and then "+ Add SMS Number" on the "Contact Information" tab. That's it.
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/127473246-c09e5c8d-837a-46d7-bc81-0746cb7141d3.png" width="80%">
+</p>
+<br>
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
 
-## Integrate with PagerDuty
+## Integrate Dead Man's Snitch with PagerDuty
 
-TODO
+You need to be on [the 'Medium' plan](https://deadmanssnitch.com/plans) or higher at Dead Man's Snitch for this.
+
+41. Login to [https://deadmanssnitch.com/](https://deadmanssnitch.com/).
+42. Select the Integrations tab:
+
 <p align="center">
-<img src="" width="80%">
+<img src="https://user-images.githubusercontent.com/11004787/127466604-657dd286-6a5e-4f1c-acb4-649fe33233df.png" width="80%">
 </p>
 
+43. Click the "+ ADD" button next to Pager Duty. This will open a fresh page to a PagerDuty URL and prompt you to sign in with your PD credentials:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/127467043-77b0383e-21cd-4f34-b3dd-e1929651315e.png" width="40%">
+</p>
+
+44. Select your Pager Duty service and click the Connect button:
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/127467349-08cc3ffc-97bf-40ec-9746-708a0273d68d.png" width="40%">
+</p>
+
+45. That's it! It couldn't be much easier. You'll then be returned to the Dead Man's Snitch page confirming your new integration is active:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/127467512-525f45b3-880c-4327-aa6e-11ca11bdf6e7.png" width="80%">
+</p>
+
+46. You don't need to make any more in-depth changes because you only have one Snitch and one Service at Pager Duty, so they're linked by default. Obviously if you have an existing or more comprehensive setup of either, you might need to make some tweaks, but that's beyond the scope of this intro article.
+
+47. With the above setup, here's an SMS that Pager Duty sent me, alerting me that my intvlm8r had failed to report in:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/127468428-07a6ab82-25f4-4b55-b77d-b1e06b27c310.png" width="40%">
+</p>
+
+48. Despite what I said in Step 46, I found in my testing I wanted ONE extra bit of functionality: Pager Duty was letting me know when the intvlm8r was FAILING to report in, but was deathly silent when it came good, and that was some comforting news I was wanting to see on my phone. Never fear - Qisthy and the team at Pager Duty support had the answer for me.
+
+49. From your Pager Duty desktop, select People, your user name, the Notification Rules tab, and under "When a high-urgency incident assigned to me changes...", click the "+ Add Notification Rule" button and add as many notifications as you wish. I'm already receiving an e-mail from Dead Man's Snitch when the intvlm8r starts reporting in again, so I only added an SMS here:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/127469779-7f4a0b89-e5b1-4558-9560-dcd9c1e4d0b0.png" width="80%">
+</p>
+<br>
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
