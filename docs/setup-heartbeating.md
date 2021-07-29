@@ -12,7 +12,7 @@
 
 ## Overview
 
-The intvlm8r can be set to send a periodic "check in" message (a heartbeat) to a remote web address. The remote service then generates an alert when a regularly-scheduled poll/heartbeat has been missed.
+The intvlm8r can be set to send a periodic "check in" message - a heartbeat - to a remote web address. The remote service then generates an alert when a regularly-scheduled poll/heartbeat has been missed.
 
 Any web address can be used for this: the onus is on the receiving service to identify the intvlm8r (typically through the use of a dedicated URL), log the heartbeats and determine when a heartbeat has been missed.
 
@@ -22,9 +22,9 @@ The regular heartbeating process exercises multiple components of the intvlm8r a
 
 After each heartbeat is generated, the received web result is checked. If a "success" [status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) wasn't received the intvlm8r will attempt a second heartbeat. 
 
-To minimise log bloat (as it executes every five minutes) heartbeat.py logs only its last execution attempt to `heartbeat.log`. The intvlm8r logs the success/failure of heartbeat attempts to `gunicorn.error`, and the last result is stored in `hbresults.txt`, which is then shown on the /monitoring page.
+As heartbeat.py executes every five minutes, `intvlm8r.logrotate` constrains the space consumed by `heartbeat.log` to prevent log bloat. The intvlm8r logs the success/failure of heartbeat attempts to `gunicorn.error`, and the last result is stored in `hbresults.txt`, which is then shown on the /monitoring page.
 
-The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch".)
+The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch" or "PagerDuty", introduced later on this page.)
 <br/>
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
