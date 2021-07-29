@@ -33,50 +33,50 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 
 ## Setup Heartbeating
 
-Heartbeating is enabled from the new `Remote monitoring` option on the hamburger menu:
+1. Heartbeating is enabled from the new `Remote monitoring` option on the hamburger menu:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125580526-8d235030-c38f-4517-9d25-a0037d760b89.png" width="40%">
 </p>
 
-The `Apply` and `Heartbeat now` buttons are interlocked. If you make a change on this page the Apply button will be enabled, prompting you to save the change. Only once a change has been saved will the `Heartbeat now` button be enabled.
+2. The `Apply` and `Heartbeat now` buttons are interlocked. If you make a change on this page the Apply button will be enabled, prompting you to save the change. Only once a change has been saved will the `Heartbeat now` button be enabled.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125580029-c95dea9d-07b1-4d8c-a50f-dd199ffdf504.png" width="50%">
 </p>
 
-The heartbeat URL is checked for validity as you type. Invalid URLs will be shown with a red border around the field, and the buttons will be disabled:
+3. The heartbeat URL is checked for validity as you type. Invalid URLs will be shown with a red border around the field, and the buttons will be disabled:
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125581105-274363a2-889d-4a26-8dc0-16ef9d8657e2.png" width="50%">
 </p>
 
-Heartbeating will automatically commence the next time the minute is divisible by the selected frequency value, and always at the top of the hour.
+4. Heartbeating will automatically commence the next time the minute is divisible by the selected frequency value, and always at the top of the hour.
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 <hr/>
 
 ## Setup "Dead Man’s Snitch"
 
-1. Browse to [https://deadmanssnitch.com/](https://deadmanssnitch.com/)
-2. Click the "SIGN UP" button in the top right corner & create yourself an account. Once you've done that you'll be automatically taken through the steps to setup your "plan" and create your first Snitch.
-3. On the page "Choose a plan for your new Case", scroll to the bottom and click the button to select the "NO FRILLS FREE PLAN", or lash out with one of the paid options.
-4. On the page "New Snitch", give it a name and select the Interval. (Note in this example of the free plan, some of the advanced options are greyed out):
+11. Browse to [https://deadmanssnitch.com/](https://deadmanssnitch.com/)
+12. Click the "SIGN UP" button in the top right corner & create yourself an account. Once you've done that you'll be automatically taken through the steps to setup your "plan" and create your first Snitch.
+13. On the page "Choose a plan for your new Case", scroll to the bottom and click the button to select the "NO FRILLS FREE PLAN", or lash out with one of the paid options.
+14. On the page "New Snitch", give it a name and select the Interval. (Note in this example of the free plan, some of the advanced options are greyed out):
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125729615-697d65d8-965d-431f-b759-8bae4222d8a0.png" width="80%">
 </p>
 
-5. Click SAVE.
+15. Click SAVE.
 
-6. You're done! It's that simple!!
+16. You're done! It's that simple!!
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125729700-48c43ae9-32c9-4f49-86b8-dae9047ed364.png" width="80%">
 </p>
 
-7. Copy "Your Unique Snitch URL" and paste it into the URL field on the intvlm8r. Don't worry about losing it, you can always return to Dead Man's Snitch and retrieve it.
+17. Copy "Your Unique Snitch URL" and paste it into the URL field on the intvlm8r. Don't worry about losing it, you can always return to Dead Man's Snitch and retrieve it.
 
-8. Before you get distracted, don't forget to respond to the confirmation e-mail in your inbox:
+18. Before you get distracted, don't forget to respond to the confirmation e-mail in your inbox:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/125730218-fad365d5-e5b3-40dc-975a-e97f3bb7a6d8.png" width="80%">
@@ -89,39 +89,39 @@ Heartbeating will automatically commence the next time the minute is divisible b
 
 Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, however if you're not always in front of an e-mail client you might want something more immediate, like an SMS. If you have multiple intvlm8rs and several people on staff, you might be looking for some rostering and escalation, and here's where PagerDuty can come in.
 
-1. Browse to [https://www.pagerduty.com/](https://www.pagerduty.com/)
-2. Click the "GET STARTED" button in the top right corner to create yourself an account.
-3. Enter your e-mail address and click GET STARTED!
+21. Browse to [https://www.pagerduty.com/](https://www.pagerduty.com/)
+22. Click the "GET STARTED" button in the top right corner to create yourself an account.
+23. Enter your e-mail address and click GET STARTED!
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126600261-dba8eea1-2a9e-4bf3-abd4-9a395452bf2f.png" width="40%">
 </p>
 
-4. Your subdomain here will become "subdomain.pagerduty.com", so I suggest you use your company name for that. Critical here is the US/EU question. I think it should be renamed, as it seems to be a question focussed on the GDPR requirements of customers in EU countries. If that's not you, PagerDuty recommend you go with the "US" option:
+24. Your subdomain here will become "subdomain.pagerduty.com", so I suggest you use your company name for that. Critical here is the US/EU question. I think it should be renamed, as it seems to be a question focussed on the GDPR requirements of customers in EU countries. If that's not you, PagerDuty recommend you go with the "US" option:
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126600550-923d64f0-f7f7-4976-926d-31d45fa2a5f8.png" width="40%">
 </p>
 
-5. As the text outlines here, each "service" in PagerDuty will be an intvlm8r:
+25. As the text outlines here, each "service" in PagerDuty will be an intvlm8r:
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126600722-4caa4528-7377-499c-8343-50d9f685945c.png" width="60%">
 </p>
 
-6. Now, add the Dead Man's Snitch integration. You'll find that by searching on the "All" tab:
+26. Now, add the Dead Man's Snitch integration. You'll find that by searching on the "All" tab:
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126601155-0b7ba93a-222a-4cc5-b299-b9e6d24c91d1.png" width="60%">
 </p><p align="center">[NB: I've edited this screen-grab to remove some white-space]</p>
 
-7. By default the "How do you want to be notified" box will only let you enter a +1 country code for phone and SMS notifications, but fear not, for the rest of the world we're just a support ticket away from having access. If you're outside the US/CA, just click "Skip step" and continue.
+27. By default the "How do you want to be notified" box will only let you enter a +1 country code for phone and SMS notifications, but fear not, for the rest of the world we're just a support ticket away from having access. If you're outside the US/CA, just click "Skip step" and continue.
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126602212-48cf0ebf-5d38-46e6-8531-0eeab3bcd5a2.png" width="60%">
 </p>
 
-8. You're done - that's the basics covered. There's lots of really helpful information on how to REALLY make PagerDuty work for you, starting with the "Onboarding Guide".
+28. You're done - that's the basics covered. There's lots of really helpful information on how to REALLY make PagerDuty work for you, starting with the "Onboarding Guide".
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/126602569-c1e1da8d-f278-4966-92f6-234f462af3ae.png" width="60%">
 </p>
 
-9. Resources:
+29. Resources:
 - [Getting Started checklist](https://pagerduty.influitive.com/forum/t/the-onboarding-checklist/1522)
 - [http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/](http://www.pagerduty.com/docs/guides/dead-mans-snitch-integration-guide/)
 - [https://community.pagerduty.com](https://community.pagerduty.com)
