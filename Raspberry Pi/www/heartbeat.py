@@ -66,8 +66,7 @@ def main():
         #(The point being we won't send a HB probe if the *intvlm8r* script isn't running OK)
         initiateHeartbeat(INTERNAL_HB_URL)
     else:
-        #print('not yet Heartbeat oclock')
-        pass
+        log("Not yet Heartbeat o'clock")
 
 
 def initiateHeartbeat(url):
