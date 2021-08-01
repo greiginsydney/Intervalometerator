@@ -601,8 +601,38 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
     (r)syncs the Pi's photos/ folder with a remote location
     """
     log('Commencing rsync')
-    
-    log('STATUS: rsync upload completed')
+    newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No files to upload')
+    else:
+        numFilesOK = 0
+        localPath  = os.path.join(PI_PHOTO_DIR, 'DCIM')
+        try:
+            #Upload/dir-sync happens here
+            destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
+            log('localPath            = {0}'.format(localPath))
+            log('destination           = {0}'.format(destination))
+            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', localPath, destination]
+            result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+            (stdoutdata, stderrdata) = result.communicate()
+            if stdoutdata:
+                stdoutdata = stdoutdata.strip()
+                log('rsync stdoutdata = ' + str(stdoutdata) + '.')
+            if stderrdata:
+                stderrdata = stderrdata.strip()
+                log('rsync stderrdata = ' + str(stderrdata) + '.')
+            # wait until process is really terminated
+            exitcode = result.wait()
+            if exitcode==0:
+                #numFilesOK = uploadedOK(needupload, numFilesOK)
+                log('rsync exited cleanly')
+            else:
+                log('rsync exited with a non-zero exitcode')
+            #numFilesOK = uploadedOK(needupload, numFilesOK)
+        except Exception as e:
+            log('Error uploading via rsync: {1}'.format(str(e)))
+        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     return
 
 
