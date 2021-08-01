@@ -610,6 +610,10 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
         localPath  = os.path.join(PI_PHOTO_DIR, 'DCIM')
         try:
             #Upload/dir-sync happens here
+            if not rsyncRemoteFolder.startswith('/'):
+                rsyncRemoteFolder = '/' + rsyncRemoteFolder
+            if not rsyncRemoteFolder.endswith('/'):
+                rsyncRemoteFolder += '/'
             destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
             log('localPath            = {0}'.format(localPath))
             log('destination           = {0}'.format(destination))
