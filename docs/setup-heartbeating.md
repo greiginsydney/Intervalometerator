@@ -2,7 +2,7 @@
 
 # Heartbeating
 
-- [Overview](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+- [Overview](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#overview)
 - [Setup Heartbeating](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
 - [Setup "Dead Man’s Snitch"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-dead-mans-snitch)
 - [Add "PagerDuty"](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#add-pagerduty)
@@ -27,7 +27,7 @@ As heartbeat.py executes every five minutes, `intvlm8r.logrotate` constrains the
 The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch" or "PagerDuty", introduced later on this page.)
 <br/>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
 <hr/>
 
 ## Setup Heartbeating
@@ -83,7 +83,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 </p>
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
 <hr/>
 
 ## Add PagerDuty
@@ -141,7 +141,7 @@ Pre-req's:
 </p>
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
 <hr/>
 
 ## Integrate Dead Man's Snitch with PagerDuty
@@ -189,5 +189,5 @@ You need to be on [the 'Medium' plan](https://deadmanssnitch.com/plans) or highe
 </p>
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
 <hr/>
