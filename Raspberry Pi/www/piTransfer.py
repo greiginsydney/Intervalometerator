@@ -615,25 +615,26 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             if not rsyncRemoteFolder.endswith('/'):
                 rsyncRemoteFolder += '/'
             destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
-            log('localPath            = {0}'.format(localPath))
-            log('destination           = {0}'.format(destination))
             cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', localPath, destination]
             result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
                 stdoutdata = stdoutdata.strip()
-                log('rsync stdoutdata = ' + str(stdoutdata) + '.')
+                #log('rsync stdoutdata = ' + str(stdoutdata) + '.')
             if stderrdata:
                 stderrdata = stderrdata.strip()
-                log('rsync stderrdata = ' + str(stderrdata) + '.')
+                log("rsync err'd with stderrdata = " + str(stderrdata))
             # wait until process is really terminated
             exitcode = result.wait()
-            if exitcode==0:
-                #numFilesOK = uploadedOK(needupload, numFilesOK)
+            if exitcode == 0:
                 log('rsync exited cleanly')
+                uploadedList = stdoutdata.splitlines()
+                for uploadedFile in uploadedList:
+                    if 'IMG' in uploadedFile:
+                        uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
+                        numFilesOK = uploadedOK(uploadedFile, numFilesOK)
             else:
                 log('rsync exited with a non-zero exitcode')
-            #numFilesOK = uploadedOK(needupload, numFilesOK)
         except Exception as e:
             log('Error uploading via rsync: {1}'.format(str(e)))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
