@@ -106,7 +106,6 @@ input, select, date, time, text {
 	width: 200px;
 }
 
-
 input[type=radio] {
 	opacity: 0;
 	position: absolute;
@@ -116,6 +115,18 @@ input[type=radio] {
 .grey-out{
 	opacity: 0.6;
 	filter: alpha(opacity = 60); /* MSIE */
+}
+
+.noborder {
+	border-style: none;
+}
+
+.redborder {
+	border: 1px solid #FF0000;
+}
+
+.redborder:focus {
+	outline-color: #FF0000;
 }
 
 /* Tooltip container */
@@ -265,10 +276,6 @@ input[type=radio] {
 }
 
 
-.noborder {
-	border-style: none;
-}
-
 /* End: radio button */
 /* ---------------------------------------------------------*/
 /* Start: Menu */
@@ -287,7 +294,7 @@ input[type=radio] {
 
 .overlay-content {
 	position: relative;
-	top: 25%;
+	top: 20%;
 	width: 100%;
 	text-align: center;
 	margin-top: 0px;

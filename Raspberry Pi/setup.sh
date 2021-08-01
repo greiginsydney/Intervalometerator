@@ -154,8 +154,8 @@ install_apps ()
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
-	echo -e ""$GREEN"Installing ExifReader"$RESET""
-	pip3 install ExifReader
+	echo -e ""$GREEN"Installing ExifReader requests"$RESET""
+	pip3 install ExifReader requests
 	
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
@@ -174,31 +174,31 @@ install_apps ()
 	echo ''
 	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
-		echo ' i2c-bcm2708 module already exists'
+		echo 'i2c-bcm2708 module already exists'
 	else
 		echo ' adding i2c-bcm2708 to /etc/modules/'
 		echo 'i2c-bcm2708' >> /etc/modules
 	fi
 	if grep -q 'i2c-dev' /etc/modules; then
-		echo ' i2c-dev module already exists'
+		echo 'i2c-dev module already exists'
 	else
-		echo ' adding i2c-dev to /etc/modules/'
+		echo 'adding i2c-dev to /etc/modules/'
 		echo 'i2c-dev' >> /etc/modules
 	fi
 	if grep -q 'dtparam=i2c1=on' /boot/config.txt; then
-		echo ' i2c1 parameter already set'
+		echo 'i2c1 parameter already set'
 	else
-		echo ' setting dtparam=i2c1=on in /boot/config.txt'
+		echo 'setting dtparam=i2c1=on in /boot/config.txt'
 		echo 'dtparam=i2c1=on' >> /boot/config.txt
 	fi
 	if grep -q 'dtparam=i2c_arm=on' /boot/config.txt; then
-		echo ' i2c_arm parameter already set'
+		echo 'i2c_arm parameter already set'
 	else
-		echo ' setting dtparam=i2c_arm=on in /boot/config.txt'
+		echo 'setting dtparam=i2c_arm=on in /boot/config.txt'
 		echo 'dtparam=i2c_arm=on' >> /boot/config.txt
 	fi
 	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
-		echo ' removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
+		echo 'removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 	else
@@ -227,7 +227,10 @@ install_website ()
 	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
-	touch photos/uploadedOK.txt
+	if [ ! -f photos/uploadedOK.txt ];
+	then
+		echo "/home/$SUDO_USER/photos/default_image.JPG" > photos/uploadedOK.txt #So we don't try to upload the default_image
+	fi
 	touch ${HOME}/setTime.log # Created here so it has correct ownership
 
 	if [ -f default_image.JPG ];
@@ -245,7 +248,7 @@ install_website ()
 		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
 	fi
 	
-	chown -R pi:www-data /home/pi
+	chown -R $SUDO_USER:www-data ${HOME}
 
 	if [ -f www/intvlm8r.old ];
 	then
@@ -315,6 +318,36 @@ install_website ()
 		echo 'Skipped: a Secret Key already exists.'
 	fi
 
+	if [ $SUDO_USER != "pi" ];
+	then
+		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
+		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "intvlm8r.logrotate" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+		for val in "${ServiceFiles[@]}";
+		do
+			if [ -f $val ];
+			then
+				sed -i "s|/pi/|/$SUDO_USER/|g" $val
+				sed -i "s|User=pi|User=$SUDO_USER|g" $val
+			fi
+		done
+		if [ -f celery.conf ]; 		then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
+		if [ -f celery ]; 		then sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery; fi
+		if [ -f intvlm8r.logrotate ]; 	then sed -i "s| pi | $SUDO_USER |g" intvlm8r.logrotate; fi
+		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
+		if [ /etc/udev/rules.d/99-com.rules ];
+		then
+			if grep -q 'SUBSYSTEMS=="usb", ENV{DEVTYPE}=="usb_device", GROUP="www-data", MODE="0666"' /etc/udev/rules.d/99-com.rules;
+			then
+				echo 'Skipped: USB allow for group www-data already exists in /etc/udev/rules.d/99-com.rules'
+			else
+				sed -i '1s/^/SUBSYSTEMS=="usb", ENV{DEVTYPE}=="usb_device", GROUP="www-data", MODE="0666"\n\n/' /etc/udev/rules.d/99-com.rules
+				echo 'Added: USB allow for group www-data in /etc/udev/rules.d/99-com.rules'
+				#udevadm control --reload # (Not needed as we're going to reboot)
+				#udevadm trigger
+			fi
+		fi
+	fi
+	
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
@@ -347,6 +380,16 @@ install_website ()
 	systemctl start intvlm8r
 	echo "Enabling intvlm8r"
 	systemctl enable intvlm8r
+
+	if [ -f intvlm8r.logrotate ];
+	then
+		if cmp -s intvlm8r.logrotate /etc/logrotate.d/intvlm8r.logrotate;
+		then
+			echo "Skipped: the file '/etc/logrotate.d/intvlm8r.logrotate' already exists & the new version is unchanged"
+		else
+			mv -fv intvlm8r.logrotate /etc/logrotate.d/intvlm8r.logrotate
+		fi
+	fi
 
 	#Camera Transfer
 	if [ -f cameraTransfer.service ];
@@ -418,7 +461,7 @@ install_website ()
 		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
 		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
 		then 
-			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|'g /etc/systemd/system/redis.service
+			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|g' /etc/systemd/system/redis.service
 		else
 			#NO? OK, then just insert the new line:
 			sed -i --follow-symlinks "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
@@ -429,21 +472,21 @@ install_website ()
 	then
 		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "Type=notify"'
 	else
-		sed -i --follow-symlinks 's|^Type=.*|Type=notify|'g /etc/systemd/system/redis.service
+		sed -i --follow-symlinks 's|^Type=.*|Type=notify|g' /etc/systemd/system/redis.service
 	fi
 
 	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
 	then 
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
 	else
-		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/'g /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/g' /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
 	then 
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "supervised systemd"'
 	else
-		sed -i 's/^#\?supervised .*/supervised systemd/'g /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^#\?supervised .*/supervised systemd/g' /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
 	
 	#Redis is just a *little* too chatty by default:
@@ -451,8 +494,36 @@ install_website ()
 	then
 		echo 'Skipped: "/etc/redis/redis.conf" already contains "loglevel warning"'
 	else
-		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/'g /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
+		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/g' /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
 	fi
+
+	#Heartbeat
+	if [ -f heartbeat.service ];
+	then
+		if cmp -s heartbeat.service /etc/systemd/system/heartbeat.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/heartbeat.service' already exists & the new version is unchanged" 
+		else
+			mv -fv heartbeat.service /etc/systemd/system/heartbeat.service
+		fi
+	fi
+	chmod 644 /etc/systemd/system/heartbeat.service
+	echo "Enabling heartbeat.service"
+	systemctl enable heartbeat.service
+
+	if [ -f heartbeat.timer ];
+	then
+		if cmp -s heartbeat.timer /etc/systemd/system/heartbeat.timer;
+		then
+			echo "Skipped: the file '/etc/systemd/system/heartbeat.timer' already exists & the new version is unchanged" 
+		else
+			mv -fv heartbeat.timer /etc/systemd/system/heartbeat.timer
+		fi
+	fi
+	chmod 644 /etc/systemd/system/heartbeat.timer
+	echo "Enabling heartbeat.timer"
+	systemctl enable heartbeat.timer
+
 
 	#Camera Transfer - Cron Job
 
@@ -487,12 +558,12 @@ install_website ()
 	#overnight time sync. Takes place at 0330 to catch any change to/from Daylight Saving Time
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -F -q "30 3 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
+	if grep -F -q "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
 	then
 	    echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
 	    sed -i "/setTime.py/d" cronTemp #delete any previous reference to setTime. 
- 	    echo "30 3 * * * sudo /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+ 	    echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
 	    crontab -u $SUDO_USER cronTemp #install new cron file
 	    echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
@@ -509,6 +580,7 @@ install_website ()
 		echo ""
 		echo "intvlm8r.old found. Skipping the NTP prompt step."
 	else
+		timeTest
 		timeSync1
 	fi
 	if [ -f setTime.service ];
@@ -540,7 +612,7 @@ install_website ()
 	then
 		echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
 	else
-		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/'g /boot/config.txt
+		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt
 	fi
 	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
 	
@@ -566,6 +638,12 @@ dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 dtoverlay=gpio-poweroff,gpiopin=27,active_low
 END
 	fi
+	
+	if [ -f www/intvlm8r.old ];
+	then
+		mv -fv www/intvlm8r.old www/intvlm8r.bak
+	fi
+	
 	# Prepare for reboot/restart:
 	echo "Exited install_website OK."
 }
@@ -606,6 +684,11 @@ chg_web_login ()
 		done
 		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
 		matchPassword="[\']+"
+		if [[ $oldPassword == "password" ]]; # we'll change this to a random 8-char default:
+		then
+			oldPassword=$(shuf -zer -n4 {a..z} | tr -d '\0' )
+			oldPassword+=$(shuf -zer -n4 {0..9} | tr -d '\0')
+		fi
 		while true; do
 			read -e -r -i "$oldPassword" -p "Change the website's password  : " password
 			if [ -z "$password" ];
@@ -901,7 +984,7 @@ END
 }
 
 
-timeSync1 ()
+timeTest ()
 {
 	echo ''
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
@@ -911,6 +994,11 @@ timeSync1 ()
 	else
 		echo "NTP is not active. The Arduino is our master time source."
 	fi
+}
+
+
+timeSync1 ()
+{
 	echo ''
 	echo 'Does the Pi have network connectivity?'
 	read -p "If so, can we use NTP as our master time source? [Y/n]: " Response
@@ -1028,11 +1116,17 @@ test_install ()
 	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
 	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
-
+	
+	if systemctl --all --type service | grep -Fq remoteit-headless ;
+	then
+		systemctl is-active --quiet remoteit-headless && echo -e ""$GREEN"PASS:"$RESET" remoteit service is running" || echo -e ""$YELLOW"FAIL:"$RESET" remoteit    service is dead"
+	else
+		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
+	fi
 	echo ""
 
 	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
-	oneShotList="setTime cameraTransfer piTransfer"
+	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
 	for service in $oneShotList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
@@ -1042,13 +1136,21 @@ test_install ()
 			serviceActiveState=${BASH_REMATCH[3]}
 			serviceSubState=${BASH_REMATCH[4]}
 		fi
+		echo ""
 		echo -e "Service = $serviceName"
 
 		[ $serviceLoadState == "loaded" ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
-		[ $serviceActiveState == "inactive" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+		if [ $serviceName == "heartbeat" ] ;
+		then
+			[ $serviceActiveState == "active" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+		else
+			[ $serviceActiveState == "inactive" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+		fi
 		[ $serviceSubState != "failed" ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
-		echo ""
 	done
+	
+	timeTest
+	echo ""
 }
 
 
@@ -1106,6 +1208,7 @@ case "$1" in
 		prompt_for_reboot
 		;;
 	("time")
+		timeTest
 		timeSync1
 		timeSync2
 		;;

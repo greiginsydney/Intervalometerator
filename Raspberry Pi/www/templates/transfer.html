@@ -37,6 +37,16 @@
 		</tr>
 	</table>
 	
+	<table class="noborder">
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">
+					<button type="button" name="copy" id="copy" onclick="postUrl('/trnCopyNow')">Copy now</button>
+				</div>
+			</td>
+		</tr>
+	</table>
+	
 	<table>
 		<tr>
 			<th>Transfer Settings - from the Pi</th>
@@ -159,7 +169,7 @@
 			<td class="noborder" id="transferHourMsg"></td>
 		</tr>
 		<tr>
-			<td >
+			<td>
 				<div class="alignleft">
 					<button type="button" name="view" id="view" onClick="openInNewTab('{{ piTransferLogLink }}');">View log</button>
 				</div>
@@ -174,8 +184,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" onclick="copyNow()">Copy now</button>
-					<!-- <button type="button" name="copy" id="copy">Copy now</button> -->
+					<button type="button" name="tfrTrNow" id="tfrTrNow" onclick="postUrl('/trnTrNow')">Transfer now</button>
 				</div>
 				<div class="alignright">
 					<button type="submit" name="tfrApply" id="apply">Apply</button>
@@ -183,12 +192,6 @@
 			</td>
 		</tr>
 	</table>
-</form>
-
-<!-- Hidden form for the various "do something now" buttons, as you can't nest forms -->
-<form style="display: none">
-	<!-- <button type="submit" name="copyNow" id="copyNow" value="1">Copy Now</button> -->
-	<button type="submit" name="clear" id="clear" value="1">Clear log</button>
 </form>
 
 
@@ -218,6 +221,7 @@ var showHideCopyHour = document.getElementById("showHideCopyHour");
 var showHideTrnHour = document.getElementById("showHideTrnHour");
 var showHideCopyHrMsg = document.getElementById("showHideCopyHrMsg");
 var showHideTrnHrMsg = document.getElementById("showHideTrnHrMsg");
+var showHideTrnButton = document.getElementById("tfrTrNow");
 
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
 var showHideTrnMethod = document.getElementById("showHideTrnMethod");
@@ -238,6 +242,7 @@ showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" ==
 showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
+showHideTrnButton.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -260,23 +265,18 @@ else
 // Run when the form first loads:
 lightButtons(); 
 
-function tfrClear()
-{
-	document.getElementById("tfrClear").click();
-}
-
-
 function newSelected(id)
 {
 	var option = document.getElementById(id);
 	// Reveal/hide fields as appropriate:
 	if (id == "tfrMethod" || id == "copyDay")
 	{
-		ftp.style.display      = (method.value != "FTP"          || copyDay.value == "Off") ? "none":"";
-		sftp.style.display     = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
-		dbx.style.display      = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
-		google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
-		transfer.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
+		ftp.style.display               = (method.value != "FTP"          || copyDay.value == "Off") ? "none":"";
+		sftp.style.display              = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
+		dbx.style.display               = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
+		google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		transfer.style.display          = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
+		showHideTrnButton.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
 	{
@@ -350,26 +350,6 @@ function lightButtons()
 function openInNewTab(url) {
   var win = window.open(url, '_blank');
   win.focus();
-}
-
-function copyNow() {
-	// send ajax POST request to start background job
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', '/trnCopyNow', true);
-	xmlhttp.onload = function()
-	{
-		if (this.status >= 200 && this.status < 400)
-		{
-			//We received a positive response. Job underway. Reload this page.
-			location.href = location.href;
-		}
-		//else
-		//{
-			// We reached our target server, but it returned an error
-			//alert('Nope, that failed');
-		//}
-	};
-	xmlhttp.send();
 }
 
 </script>

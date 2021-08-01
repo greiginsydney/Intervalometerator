@@ -12,24 +12,24 @@
 # https://greiginsydney.com/intvlm8r
 # https://intvlm8r.com
 #
-#
-# Thank you https://docs.python.org/2/howto/urllib2.html
-#
 # This script is executed every time the Pi boots. It reads the Arduino's time and sets same in the Pi (as the 
 #  Pi's time is volatile - it's lost every time it powers-off).
 # It runs BEFORE the cameraTransfer.py script.
 
 
-from urllib.request import urlopen
-from urllib.error import URLError
 from datetime import datetime
 import logging
 import os
 import re
+import requests
 import subprocess
 import sys
 
-LOGFILE_PATH = os.path.expanduser('/home/pi')
+sudo_username = os.getenv("SUDO_USER")
+if sudo_username:
+    LOGFILE_PATH = os.path.expanduser('~' + sudo_username + '/')
+else:
+    LOGFILE_PATH = os.path.expanduser('~')
 LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'setTime.log')
 
 htmltext = ''
@@ -52,6 +52,7 @@ def main(argv):
             else:
                 log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. Updating the Pi with time from the Arduino')
                 setPiDateTime()
+                return
         if stderrdata:
             stderrdata = stderrdata.strip()
             log('systemd-timesyncd error = ' + str(stderrdata) + '. setTime.py aborting')
@@ -62,12 +63,10 @@ def main(argv):
 
 def setPiDateTime():
     retryCount = 0
-    while True:
-        try:
-            response = urlopen('http://localhost:8080/getTime')
-            log('Response code = ' + str(response.getcode()))
-            htmltext = response.read().decode('utf-8')
-            log('This is what I received:' + str(htmltext))
+    newTime = 'Unknown'
+    for i in range(3):
+        htmltext, statusCode = newWebRequest('http://localhost:8080/getTime')
+        if htmltext != None:
             tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
             if tempTime != None:
                 newTime = tempTime.group(1)
@@ -76,16 +75,8 @@ def setPiDateTime():
                     break
             else:
                 log('Failed to detect the time')
-        except URLError as e:
-            if hasattr(e, 'reason'):
-                log('URL error. Reason = ' + str(e.reason))
-            elif hasattr(e, 'code'):
-                log('URL error. Code = ' + str(e.code))
-        except Exception as e:
-            log('Unhandled web error: ' + str(e))
-        retryCount += 1
-        if retryCount == 3:
-            break
+        else:
+            log('htmltext is null/None')
         log('RETRYING')
 
     try:
@@ -106,12 +97,9 @@ def setPiDateTime():
 
 def setArduinoDateTime():
     retryCount = 0
-    while True:
-        try:
-            response = urlopen('http://localhost:8080/setArduinoDateTime')
-            log('Response code = ' + str(response.getcode()))
-            htmltext = response.read().decode('utf-8')
-            log('This is what I received: ' + str(htmltext))
+    for i in range(3):
+        htmltext, statusCode = newWebRequest('http://localhost:8080/setArduinoDateTime')
+        if htmltext != None:
             responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
             if responseText != None:
                 newTime = responseText.group(1)
@@ -119,17 +107,34 @@ def setArduinoDateTime():
                 break
             else:
                 log('Failed to set the time')
-        except URLError as e:
-            if hasattr(e, 'reason'):
-                log('URL error. Reason = ' + str(e.reason))
-            elif hasattr(e, 'code'):
-                log('URL error. Code = ' + str(e.code))
-        except Exception as e:
-            log('Unhandled web error: ' + str(e))
-        retryCount += 1
-        if retryCount == 3:
-            break
+        else:
+            log('htmltext is null/None')
         log('RETRYING')
+
+
+def newWebRequest(url):
+    response = None
+    statusCode = 0
+    htmltext = None
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+        htmltext = response.text.rstrip()
+        statusCode = response.status_code
+        log('Status code = {0}'.format(str(statusCode)))
+        log('This is what I received: ' + str(htmltext))
+    except requests.exceptions.Timeout as e:
+        log('Timeout error: ' + str(e))
+    except requests.exceptions.ConnectionError as e:
+        log('ConnectionError: ' + str(e))
+    except requests.exceptions.HTTPError as e:
+        log('HTTPError: ' + str(e))
+        statusCode = e.response.status_code
+    except requests.exceptions.TooManyRedirects as e:
+        log('TooManyRedirects error: ' + str(e))
+    except Exception as e:
+        log('Unhandled web error: ' + str(e))
+    return htmltext, statusCode
 
 
 def log(message):

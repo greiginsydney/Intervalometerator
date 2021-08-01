@@ -1,0 +1,19 @@
+#Global settings:
+
+    weekly
+    missingok
+    rotate 3
+    size=500k
+    compress
+    delaycompress
+    dateext
+    notifempty
+    copytruncate
+
+/home/pi/*.log {}
+/home/pi/www/gunicorn.error {}
+/var/log/celery/*.log {}
+/home/pi/heartbeat.log
+{
+    size=100k
+}

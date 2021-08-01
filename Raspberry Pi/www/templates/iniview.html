@@ -1,0 +1,18 @@
+{% extends "index.html" %}
+{% block content %}
+
+	<table>
+	{% for iniEntry in iniEntries %}
+		<tr>
+			{% if iniEntry['key'] == '' and iniEntry['value'] == '' %}
+			<th>{{ iniEntry['section'] }} </th>
+			{% else %}
+			<td>
+				<div class="alignleft">{{ iniEntry['key'] }}</div>
+				<div class="alignright">{{ iniEntry['value'] }}</div>
+			</td>
+			{% endif %}
+		</tr>
+	{% endfor %}
+	</table>
+{% endblock %}

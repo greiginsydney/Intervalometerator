@@ -55,16 +55,23 @@ except:
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_PHOTO_DIR         = os.path.expanduser('/home/pi/photos')
-PI_THUMBS_DIR        = os.path.expanduser('/home/pi/thumbs')
+sudo_username = os.getenv("SUDO_USER")
+if sudo_username:
+    PI_USER_HOME = os.path.expanduser('~' + sudo_username + '/')
+else:
+    PI_USER_HOME = os.path.expanduser('~')
+
+PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
+PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE  = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
+PI_PREVIEW_DIR = os.path.join(PI_USER_HOME, 'preview')
 UPLOADED_PHOTOS_LIST = os.path.join(PI_PHOTO_DIR, 'uploadedOK.txt')
-INIFILE_DIR          = os.path.expanduser('/home/pi/www')
+INIFILE_DIR          = os.path.join(PI_USER_HOME, 'www')
 INIFILE_NAME         = os.path.join(INIFILE_DIR, 'intvlm8r.ini')
-LOGFILE_DIR          = os.path.expanduser('/home/pi/www/static')
+LOGFILE_DIR          = os.path.join(PI_USER_HOME, 'www/static')
 LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
-KNOWN_HOSTS_FILE     = os.path.expanduser('~/.ssh/known_hosts')
-GOOGLE_CREDENTIALS   = os.path.join('/home/pi/www', 'Google_credentials.txt')
+KNOWN_HOSTS_FILE     = os.path.join(PI_USER_HOME, '.ssh/known_hosts')
+GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
 
 # Paramiko client configuration
 sftpPort = 22
@@ -87,7 +94,7 @@ def main(argv):
 
     global deleteAfterTransfer  #Made global instead of passing this down from here to all the nested functions.
 
-    if not os.path.exists(INIFILE_NAME):
+    if not os.path.isfile(INIFILE_NAME):
         log("STATUS: Upload aborted. I've lost the INI file")
         return
     config = configparser.ConfigParser(
@@ -254,7 +261,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
                 previousFilePath = remoteFolderTree[0]
                 numFilesOK = uploadedOK(needupload, numFilesOK)
             except Exception as e:
-                log('Error uploading ' + str(e))
+                log('Error uploading {0} via FTP: {1}'.format(needupload,str(e)))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     try:
         ftp.quit()
@@ -282,15 +289,16 @@ def commenceDbx(token):
             path,filename = os.path.split(shortPath)
             result = dbx_upload(dbx, needupload, path, '', filename)
             if result == None:
-                log('Error uploading ' + needupload)
+                log('Error uploading {0} via DBX'.format(needupload))
             else:
                 numFilesOK = uploadedOK(needupload, numFilesOK)
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
 
 
 def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
-    """Upload a file.
-    Return the request response, or None in case of error.
+    """
+    Upload a file.
+    Return the request response, or None in case of error
     """
     path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
     while '//' in path:
@@ -386,7 +394,7 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
                 previousFilePath = remoteFolderTree[0]
                 numFilesOK = uploadedOK(needupload, numFilesOK)
             except Exception as e:
-                log('Error uploading via SFTP: ' + str(e))
+                log('Error uploading {0} via SFTP: {1}'.format(needupload,str(e)))
         log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
     try:
         sftp.close()
@@ -399,7 +407,9 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
 
 
 def commenceGoogle(remoteFolder):
-    """Create a Drive service."""
+    """
+    Create a Drive service
+    """
     auth_required = True
     #Have we got some credentials already?
     storage = Storage(GOOGLE_CREDENTIALS)
@@ -479,7 +489,7 @@ def commenceGoogle(remoteFolder):
                     log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
             except Exception as e:
                 errorMsg = str(e)
-                log('Exception uploading ''%s'' to Google: %s' % (needupload,errorMsg))
+                log('Error uploading {0} via Google: {1}'.format(needupload,errorMsg))
                 if 'returned' in errorMsg:
                     errorReason = errorMsg.split('"')[1]
                     log('STATUS: Google error: %s' % (errorReason))
@@ -492,8 +502,10 @@ def commenceGoogle(remoteFolder):
 
 
 def getGoogleFolder(DRIVE, remoteFolder, parent=None):
+    """
+    Find and return the id of the remote folder
+    """
     log('Testing if folder \'%s\' exists.' % str(remoteFolder))
-    """Find and return the id of the remote folder """
     q = []
     q.append("title='%s'" % remoteFolder)
     if parent is not None:
@@ -530,7 +542,7 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
 
 def reauthGoogle():
     log('Commencing Google re-auth')
-    if os.path.exists('client_secrets.json'):
+    if os.path.isfile('client_secrets.json'):
         try:
             storage = Storage(GOOGLE_CREDENTIALS)
             credentials = storage.get()
@@ -569,22 +581,27 @@ def reauthGoogle():
 
 
 def uploadedOK(filename, filecount):
-    """ The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
-    Delete local file & metadata if required """
+    """
+    The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
+    Delete local file, thumb, preview & metadata if required
+    """
     log('Uploaded  {0}'.format(filename))
     if deleteAfterTransfer:
         try:
             os.remove(filename)
-            log('Deleted  {0}'.format(filename))
-            Thumbversion = filename.replace( PI_PHOTO_DIR, PI_THUMBS_DIR)
-            Thumbversion = Thumbversion.replace( '.JPG', '-thumb.JPG')
-            Thumbversion = Thumbversion.replace( '.CR2', '-thumb.JPG')
-            log('Looking to delete {0}'.format(Thumbversion))
-            if os.path.exists(Thumbversion):
-                os.remove(Thumbversion)
+            log('Deleted   {0}'.format(filename))
             deleteThumbsInfo(filename)
+            for folder,suffix in [(PI_THUMBS_DIR, '-thumb.JPG'), (PI_PREVIEW_DIR, '-preview.JPG')]:
+                try:
+                    file2Delete = filename.replace( PI_PHOTO_DIR, folder)
+                    file2Delete = os.path.splitext(file2Delete)[0] + suffix
+                    if os.path.isfile(file2Delete):
+                        os.remove(file2Delete)
+                        log('Deleted   {0}'.format(file2Delete))
+                except Exception as e:
+                    log('Error deleting file {0} : {1}'.format(file2Delete, str(e)))
         except Exception as e:
-            log('Error deleting file : ' + str(e))
+            log('Unknown error in uploadedOK: {0}'.format(str(e)))
     else:
         with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
             historyFile.write(filename + "\n")
@@ -593,7 +610,9 @@ def uploadedOK(filename, filecount):
 
 # TY SO: https://stackoverflow.com/questions/4710067/using-python-for-deleting-a-specific-line-in-a-file
 def deleteThumbsInfo(filepath):
-    """ Delete this file's metadata from PI_THUMBS_INFO_FILE """
+    """
+    Delete this file's metadata from PI_THUMBS_INFO_FILE
+    """
     try:
         filename = filepath.rsplit('/',1)[1]
         with open(PI_THUMBS_INFO_FILE, "r") as f:

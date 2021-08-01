@@ -1,0 +1,158 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div id="progress"></div>
+
+<form method="post" onsubmit="return userFeedback(this, event)">
+	<table>
+		<tr>
+			<th>Heartbeat</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Frequency (minutes):</div>
+				<div class="alignright">
+					<select name="hbFreq" id="hbFreq" onchange="newSelected(this.id)">
+					{% for frequency in ['Off', '5', '10', '15', '20', '30', '60'] %}
+						<option value="{{ frequency }}"{% if frequency == hbFreq %} SELECTED{% endif %}>{{ frequency }}</option>
+					{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr id="showHideHbUrl">
+			<td>
+				<div class="alignleft">URL:</div>
+				<div class="alignright">
+					<input type="text" name="hbUrl" id="hbUrl" value="{{ hbUrl }}" oninput="newText(this.id)">
+				</div>
+			</td>
+		</tr>
+		<tr id="showHideHeartbeatResult">
+			<td>
+				<div class="alignleft">Last result:</div>
+				<div class="alignright">{{ hbResult }}</div>
+			</td>
+		</tr>
+		
+	</table>
+
+	<table class="noborder">
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">
+					<button type="button" name="monHbNow" id="hbnow" onclick="postUrl('/monHbNow')">Heartbeat now</button>
+				</div>
+				<div class="alignright">
+					<button type="submit" name="monApply" id="apply">Apply</button>
+				</div>
+			</td>
+		</tr>
+	</table>
+</form>
+
+
+<script>
+var SelectionByte = 0;
+var SelectionBits = new Array();
+SelectionBits["hbFreq"]      =     1;
+SelectionBits["hbUrl"]       =     2;
+
+var hbFreq = document.getElementById("hbFreq");
+var hbUrl = document.getElementById("hbUrl");
+var showHideHeartbeatUrl = document.getElementById("showHideHbUrl");
+
+// This drives the default display on load:
+showHideHeartbeatUrl.style.display    = (hbFreq.value == "Off") ? "none":"";
+showHideHeartbeatResult.style.display = (hbFreq.value == "Off") ? "none":"";
+	
+// Run when the form first loads:
+lightButtons(); 
+
+function newSelected(id)
+{
+	var option = document.getElementById(id);
+	// Reveal/hide fields as appropriate:
+	if (id == "hbFreq" )
+	{
+		showHideHeartbeatUrl.style.display    = (hbFreq.value == "Off") ? "none":"";
+		showHideHeartbeatResult.style.display = (hbFreq.value == "Off") ? "none":"";
+	}
+	
+	if (!option.options[option.selectedIndex].defaultSelected)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	lightButtons();
+}
+
+function newText(id)
+{
+	var option = document.getElementById(id);
+
+	if (validateUrl(option.value))
+	{
+		option.classList.remove("redborder")
+		if (option.defaultValue != option.value)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		}
+	}
+	else
+	{
+		option.classList.add("redborder")
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	lightButtons();
+}
+
+function lightButtons()
+{
+	// This does the Apply button:
+	if (SelectionByte == 0)
+	{
+		document.getElementById("apply").disabled  = true;
+	}
+	else if (hbFreq.value == "Off")
+	{
+		document.getElementById("apply").disabled  = false;
+	}
+	else
+	{
+		if (hbUrl.value == "" || (!validateUrl(hbUrl.value)))
+		{
+			hbUrl.classList.add("redborder")
+			document.getElementById("apply").disabled  = true;
+		}
+		else
+		{
+			hbUrl.classList.remove("redborder")
+			document.getElementById("apply").disabled  = false;
+		}
+	}
+	// The 'heartbeat now' button can be lit even when Apply is not:
+	if (hbFreq.value != "Off" && (hbUrl.defaultValue == hbUrl.value) && (validateUrl(hbUrl.value)))
+	{
+		document.getElementById("hbnow").disabled  = false;
+	}
+	else
+	{
+		document.getElementById("hbnow").disabled  = true;
+	}
+}
+
+function validateUrl(value)
+{
+	return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(value);
+}
+
+</script>
+{% endblock %}

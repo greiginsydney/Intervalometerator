@@ -21,7 +21,7 @@
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
 from PIL import Image           # For the camera page preview button
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin # Login
 import calendar
 import configparser             # For the ini file (used by the Transfer page)
 import exifreader               # For thumbnails
@@ -33,7 +33,9 @@ import logging
 import os                       # Hostname
 import psutil
 import re                       # RegEx. Used in Copy Files & createDestFilename
+import requests                 # Heartbeat
 from smbus2 import SMBus        # For I2C
+import socket                   # Heartbeating error trap
 import struct
 import subprocess
 import sys
@@ -77,14 +79,15 @@ callback_obj = gp.check_result(gp.use_python_logging(mapping={
 # /////////// STATICS ////////////
 # ////////////////////////////////
 
-PI_PHOTO_DIR  = os.path.expanduser('/home/pi/photos')
-PI_THUMBS_DIR = os.path.expanduser('/home/pi/thumbs')
+PI_USER_HOME =  os.path.expanduser('~')
+PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
+PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
-PI_PREVIEW_DIR = os.path.expanduser('/home/pi/preview')
+PI_PREVIEW_DIR = os.path.join(PI_USER_HOME, 'preview')
 PI_PREVIEW_FILE = 'intvlm8r-preview.jpg'
-PI_TRANSFER_DIR = os.path.expanduser('/home/pi/www/static')
+PI_TRANSFER_DIR = os.path.join(PI_USER_HOME, 'www/static')
 PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
-PI_TRANSFER_LINK = 'static/piTransfer.log' #This is the file that the Transfer page will link to when you click "View Log"
+PI_HBRESULT_FILE = os.path.join(PI_USER_HOME, 'hbresults.txt')
 gunicorn_logger = logging.getLogger('gunicorn.error')
 REBOOT_SAFE_WORD = 'sayonara'
 HOSTNAME = os.uname()[1]
@@ -291,7 +294,7 @@ def main():
         'daysFreeWarn'      : '0',
         'daysFreeAlarm'     : '0',
         'lastTrnResult'     : 'Unknown',
-        'lastTrnLogFile'    : PI_TRANSFER_LINK,
+        'lastTrnLogFile'    : '',
         'piLastImageFile'   : 'Unknown'
     }
 
@@ -381,9 +384,9 @@ def main():
             if piLastImageFile.endswith(RAWEXTENSIONS):
                 piLastImageFileAsJpg = re.sub('|'.join(RAWEXTENSIONS), ".JPG", piLastImageFile)
                 piLastImageFilePreview = createDestFilename(piLastImageFile, PI_PREVIEW_DIR, '-preview')
-                if os.path.exists(piLastImageFilePreview):
+                if os.path.isfile(piLastImageFilePreview):
                     piLastImageFile = 'preview/' + piLastImageFilePreview.replace((PI_PREVIEW_DIR  + "/"), "")
-                elif os.path.exists(piLastImageFileAsJpg):
+                elif os.path.isfile(piLastImageFileAsJpg):
                     piLastImageFile = piLastImageFileAsJpg
                     piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
                 else:
@@ -412,7 +415,8 @@ def main():
         None
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
-    
+
+    templateData['lastTrnLogFile'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
     try:
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
@@ -502,7 +506,7 @@ def thumbnails():
             ThumbnailCount = min(ThumbsToShow,PI_PHOTO_COUNT) # The lesser of these two values
             #Read all the thumb exifData ready to create the page:
             ThumbsInfo = {}
-            if os.path.exists(PI_THUMBS_INFO_FILE):
+            if os.path.isfile(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if ' = ' in line:
@@ -527,13 +531,13 @@ def thumbnails():
                 ThumbFileName = createDestFilename(FileList[loop], PI_THUMBS_DIR, '-thumb') #Adds the '-thumb.JPG' suffix
                 if FileList[loop].endswith(RAWEXTENSIONS):
                     PreviewFileName = createDestFilename(FileList[loop], PI_PREVIEW_DIR, '-preview') #Switch to the /PREVIEW/ folder
-                    if not os.path.exists(PreviewFileName):
+                    if not os.path.isfile(PreviewFileName):
                         PreviewFileName = ThumbFileName
                         app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
                 else:
                     PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
-                PreviewFileName = PreviewFileName.replace('/home/pi/', '')
-                ThumbFileName = ThumbFileName.replace('/home/pi/', '')
+                PreviewFileName = PreviewFileName.replace(PI_USER_HOME + '/', '')
+                ThumbFileName = ThumbFileName.replace(PI_USER_HOME + '/', '')
                 ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
@@ -619,7 +623,7 @@ def camera():
             abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             if abilities.model in cameraPreviewBlocklist:
                 cameraData['blockPreview']  = 'True'
-                
+
             gp.check_result(gp.gp_camera_exit(camera))
             cameraData['cameraDate']    = cameraTimeAndDate
             cameraData['focusmode']     = readValue (config, 'focusmode')
@@ -650,7 +654,9 @@ def camera():
 @app.route("/camera", methods = ['POST'])    # The camera's POST method
 @login_required
 def cameraPOST():
-    """ This page is where you manage all the camera settings."""
+    """
+    This page is where you manage all the camera settings
+    """
     preview = None
     try:
         camera, context, config = connectCamera()
@@ -705,8 +711,9 @@ def cameraPOST():
 @app.route("/intervalometer")
 @login_required
 def intervalometer():
-    """ This page is where you manage all the interval settings for the Arduino."""
-
+    """
+    This page is where you manage all the interval settings for the Arduino
+    """
     templateData = {
         'piDoW'            : '',
         'piStartHour'      : '',
@@ -757,20 +764,22 @@ def intervalometer():
         templateData['piEndHour'] = ArdInterval[3:5]
         templateData['piInterval'] = ArdInterval[5:7]
         app.logger.debug('Decoded Interval = ' + ArdInterval[5:7])
-    
+
     _,piBytesFree = getDiskSpace()
     largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
     templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
-    
+
     return render_template('intervalometer.html', **templateData)
 
 
 @app.route("/intervalometer", methods = ['POST'])    # The intervalometer's POST method
 @login_required
 def intervalometerPOST():
-    """ This page is where you manage all the interval settings for the Arduino."""
+    """
+    This page is where you manage all the interval settings for the Arduino
+    """
     newInterval = ""
     shootDays = 0
     shootDaysList = request.form.getlist('shootDays')
@@ -800,9 +809,10 @@ def intervalometerPOST():
 @app.route("/transfer")
 @login_required
 def transfer():
-    """ This page is where you manage how the images make it from the camera to the real world."""
-
-    if not os.path.exists(iniFile):
+    """
+    This page is where you manage how the images make it from the camera to the real world
+    """
+    if not os.path.isfile(iniFile):
         createConfigFile(iniFile)
     # Initialise the dictionary:
     templateData = {
@@ -822,7 +832,7 @@ def transfer():
         'copyDay'               : '',
         'copyHour'              : '',
         'wakePiTime'            : '25',
-        'piTransferLogLink'     : PI_TRANSFER_LINK,
+        'piTransferLogLink'     : '',
         'hiddenTransferOptions' : hiddenTransferOptions
     }
     config = configparser.ConfigParser(
@@ -866,6 +876,8 @@ def transfer():
         app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
 
+    templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
+
     rawWakePi = str(readString("5"))
     if rawWakePi != "Unknown":
         templateData['wakePiTime']     = rawWakePi[0:2]
@@ -876,19 +888,19 @@ def transfer():
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
 @login_required
 def transferPOST():
-    """ This page is where you manage how the images make it from the camera to the real world."""
-
+    """
+    This page is where you manage how the images make it from the camera to the real world
+    """
     if 'tfrClear' in request.form:
         try:
-            piTransferLogfile = open(PI_TRANSFER_FILE, 'w')
-            nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
-            piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
-            piTransferLogfile.close()
+            with open(PI_TRANSFER_FILE, 'w') as piTransferLogfile:
+                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
         except Exception as e:
             app.logger.debug('Exception clearing piTransfer.log: ' + str(e))
 
     if 'tfrApply' in request.form:
-        if not os.path.exists(iniFile):
+        if not os.path.isfile(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         try:
@@ -952,11 +964,52 @@ def copyNowCronJob():
     return res, 200
 
 
+@app.route('/trnTrNow', methods=['POST'])
+@login_required
+def trnTransferNow():
+    """
+    This page is called in the background by the 'Transfer now' button on the Transfer page.
+    It kicks off the background task, but we don't get any feedback of its progress (TODO)
+    """
+    app.logger.debug('trnTransferNow() entered')
+    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+
+    tasks = [
+        transferNow.si()
+    ]
+    task = chain(*tasks).apply_async()
+
+    app.logger.debug('trnTransferNow() returned with task_id= ' + str(task.id))
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
+
+
+@celery.task(time_limit=1800, bind=True)
+def transferNow(self):
+    app.logger.info('TransferNow() entered') #This logs to /var/log/celery/celery_worker.log
+    self.update_state(state='PROGRESS', meta={'status': 'Initiated image transfer'})
+    try:
+        cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            stdoutdata = stdoutdata.strip()
+            app.logger.info('transferNow error = ' + str(stdoutdata))
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.info('transferNow error = ' + str(stderrdata))
+    except Exception as e:
+        app.logger.info('Unhandled transferNow error: ' + str(e))
+    
+    statusMessage = "transferNow completed. Click 'View log' for details"
+    return {'status': statusMessage}
+
+
 @app.route("/thermal")
 @login_required
 def thermal():
-    """ This page is where you monitor and manage the thermal settings & alarms."""
-
+    """
+    This page is where you monitor and manage the thermal settings & alarms
+    """
     templateData = {
         'thermalUnits'   : "Celsius",
         'arduinoTemp'    : 'Unknown',
@@ -985,7 +1038,9 @@ def thermal():
 @app.route("/thermal", methods = ['POST'])    # The thermal page's POST method
 @login_required
 def thermalPOST():
-    """ This page is where we act on the Reset buttons for max/min temp."""
+    """
+    This page is where we act on the Reset buttons for max/min temp
+    """
     res = make_response("")
 
     if request.form.get('thermalUnits') == 'Celsius':
@@ -1002,6 +1057,156 @@ def thermalPOST():
 
     res.headers['location'] = url_for('thermal')
     return res, 302
+
+
+@app.route("/monitoring")
+@login_required
+def monitoring():
+    """
+    Monitoring is where the heartbeating is setup
+    TY Christian David for the URL validation: https://stackoverflow.com/questions/8667070/javascript-regular-expression-to-validate-url
+    """
+    templateData = {
+        'hbUrl'  : '',
+        'hbFreq' : '',
+        'hbResult' : ''
+        }
+    templateData['hbUrl']  = getIni('Monitoring', 'heartbeatUrl', 'string', '')
+    templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', 'Off')
+
+    try:
+        with open(PI_HBRESULT_FILE, 'r') as f:
+            templateData['hbResult'] = f.readline()
+    except:
+        pass
+
+    return render_template('monitoring.html', **templateData)
+
+
+@app.route("/monitoring", methods = ['POST'])    # The monitoring page's POST method
+@login_required
+def monitoringPOST():
+    """
+    This page is where changes to the Monitoring page are actioned
+    """
+    if 'monApply' in request.form:
+        if not os.path.isfile(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        try:
+            config.read(iniFile)
+            if not config.has_section('Monitoring'):
+                config.add_section('Monitoring')
+            config.set('Monitoring', 'heartbeatfrequency', str(request.form.get('hbFreq')))
+            config.set('Monitoring', 'heartbeaturl', str(request.form.get('hbUrl')))
+            with open(iniFile, 'w') as config_file:
+                config.write(config_file)
+        except Exception as e:
+            app.logger.debug('mon INI file error writing: ' + str(e))
+            if 'Permission denied' in str(e):
+                flash('Permission denied writing to the ini file')
+            else:
+                flash('Error writing to the Ini file')
+
+    return redirect(url_for('monitoring'))
+
+
+@app.route('/monHbNow', methods=['POST'])
+@login_required
+def monHbNow():
+    """
+    This page is called in the background by the 'Heartbeat now' button on the Remote Monitoring page
+    It kicks off the background task, and returns the taskID so its progress can be followed
+    """
+    app.logger.debug('monHbNow() entered')
+    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+
+    tasks = [
+        initiateHeartbeat.si()
+    ]
+    task = chain(*tasks).apply_async()
+
+    app.logger.debug('monHbNow returned with task_id= ' + str(task.id))
+    return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
+
+
+@app.route("/heartbeat")
+def heartbeatCronJob():
+    """
+    This 'page' does not have the "@login_required" decorator. It's only called by
+    the systemd service / heartbeat.py script and will only execute if the calling IP is itself/localhost.
+    """
+    sourceIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    if sourceIp != "127.0.0.1":
+        abort(403)
+
+    tasks = [
+        initiateHeartbeat.si()
+    ]
+    chain(*tasks).apply_async()
+    
+    #Make two attempts at heartbeating:
+    for i in range(2):
+        task = chain(*tasks).apply_async()
+        result = task.wait(timeout=20, interval=1)
+        app.logger.debug('heartbeatCronJob {0}/2 reported result = {1}'.format(str(i + 1),str(result)))
+        if int(result['statusCode']) // 100 == 2:
+            #It's a success message, in the 2xx range.
+            break
+    res = make_response('OK') # We return OK to the calling script regardless, confirmating that intvlm8r.py responded.
+    return res, 200
+
+
+@celery.task(time_limit=60, bind=True)
+def initiateHeartbeat(self):
+    """
+    This fn pings the heartbeat URL and logs the result to the 'hbResult' file
+    """
+    self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat'})
+    url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
+    resultText = 'Error'
+    statusMessage = 'Unknown error'
+    statusCode = 0
+    if url:
+        response   = None
+        htmltext   = None
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
+            htmltext = response.text.rstrip()
+            statusCode = response.status_code
+            app.logger.debug('Status code = {0}'.format(str(statusCode)))
+            app.logger.debug('This is what I received: ' + str(htmltext))
+        except requests.exceptions.Timeout as e:
+            app.logger.debug('initiateHeartbeat() Timeout error: ' + str(e))
+            briefErrMsg = 'Timeout error'
+        except requests.exceptions.ConnectionError as e:
+            app.logger.debug('initiateHeartbeat() ConnectionError: ' + str(e))
+            briefErrMsg = 'Conn. error'
+        except requests.exceptions.HTTPError as e:
+            app.logger.debug('initiateHeartbeat() HTTPError: ' + str(e))
+            briefErrMsg = 'HTTP error {0}'.format(e.response.status_code)
+        except requests.exceptions.TooManyRedirects as e:
+            app.logger.debug('initiateHeartbeat() TooManyRedirects error: ' + str(e))
+            briefErrMsg = 'Redir error'
+        except Exception as e:
+            app.logger.debug('initiateHeartbeat() Unhandled web error: ' + str(e))
+            briefErrMsg = 'Unknown error'
+        try:
+            with open(PI_HBRESULT_FILE, 'w') as resultFile:
+                nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                if statusCode:
+                    resultFile.write('{0} ({1})'.format(nowtime, statusCode))
+                    statusMessage = 'Heartbeat reported success ({0})'.format(str(statusCode))
+                else:
+                    resultFile.write('{0} ({1})'.format(nowtime, briefErrMsg))
+                    statusMessage = 'Heartbeat reported failure: ({0})'.format(briefErrMsg)
+        except Exception as e:
+            app.logger.debug('initiateHeartbeat() resultfile exception: ' + str(e))
+    else:
+        app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
+        statusMessage = 'Error: no heartbeat url'
+    return {'status': statusMessage, 'statusCode': statusCode}
 
 
 @app.route("/system")
@@ -1083,7 +1288,7 @@ def system():
     return render_template('system.html', **templateData)
 
 
-@app.route("/system", methods = ['POST'])    # The camera's POST method
+@app.route("/system", methods = ['POST'])    # The system page's POST method
 @login_required
 def systemPOST():
 
@@ -1095,7 +1300,7 @@ def systemPOST():
             if newName != None:
                 cache.set('locationName', newName, timeout = 0)
                 app.logger.debug('New loc set as ' + newName)
-                if not os.path.exists(iniFile):
+                if not os.path.isfile(iniFile):
                     createConfigFile(iniFile)
                 config = configparser.ConfigParser()
                 config.read(iniFile)
@@ -1113,7 +1318,7 @@ def systemPOST():
             newCount = str(request.form.get('thumbsCount'))
             if newCount != None:
                 app.logger.debug('New thumbs count set as ' + newCount)
-                if not os.path.exists(iniFile):
+                if not os.path.isfile(iniFile):
                     createConfigFile(iniFile)
                 config = configparser.ConfigParser()
                 config.read(iniFile)
@@ -1187,7 +1392,9 @@ def checkNTP(returnvalue):
 
 
 def setTime(newTime):
-    """ Takes the time passed from the user's PC and sets the Pi's real time clock """
+    """
+    Takes the time passed from the user's PC and sets the Pi's real time clock
+    """
     try:
         #convert it to a form the date command will accept: Incoming is "20181129215800" representing "2018 Nov 29 21:58:00"
         timeCommand = ['/bin/date', '--set=%s' % datetime.strptime(newTime,'%Y%m%d%H%M%S')]
@@ -1230,6 +1437,10 @@ def connectCamera():
                     else:
                         app.logger.debug('connectCamera going again without waking the camera')
                         time.sleep(0.5);
+                elif e.string == 'Could not claim the USB device':
+                    app.logger.debug('connectCamera could not claim the USB device. Exiting')
+                    #TODO: pass this back upstream to present to the user
+                    return None, None, None
             except Exception as e:
                 app.logger.debug('connectCamera error: ' + str(e))
             retries += 1
@@ -1241,7 +1452,9 @@ def connectCamera():
 
 
 def readValue ( camera, attribute ):
-    """ Reads a simple attribute in the camera and returns the value """
+    """
+    Reads a simple attribute in the camera and returns the value
+    """
     try:
         object = gp.check_result(gp.gp_widget_get_child_by_name(camera, attribute))
         value = gp.check_result(gp.gp_widget_get_value(object))
@@ -1342,7 +1555,9 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
 
 
 def list_camera_files(camera, path='/'):
-    """ Returns a list of all the image files on the camera """
+    """
+    Returns a list of all the image files on the camera
+    """
     result = []
     # get files
     for name, value in gp.check_result(
@@ -1377,7 +1592,9 @@ def list_Pi_Images(path):
 
 
 def get_camera_file_info(camera, path):
-    """ Returns the details of the specific image passed in """
+    """
+    Returns the details of the specific image passed in
+    """
     folder, name = os.path.split(path)
     return gp.check_result(
         gp.gp_camera_file_get_info(camera, folder, name))
@@ -1481,7 +1698,7 @@ def makeThumb(imageFile):
             if imageFile.endswith(RAWEXTENSIONS):
                 #It's a RAW. See if we can extract a large-format JPG to use internally
                 previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
-                if not os.path.exists(previewfilename):
+                if not os.path.isfile(previewfilename):
                     try:
                         with Image.open(imageFile) as preview:
                             try:
@@ -1519,7 +1736,7 @@ def getExifData(imageFilePath, imageFileName):
                 timeOriginal = dateTimeOriginal[1]
             except Exception as e:
                 app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
-            if os.path.exists(PI_THUMBS_INFO_FILE):
+            if os.path.isfile(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if ('{0} = {1} {2}|'.format(imageFileName, dateOriginal, timeOriginal)) in line:
@@ -1579,7 +1796,7 @@ def getExifData(imageFilePath, imageFileName):
 def dedupeExifData():
     lines = 0
     ThumbsInfo = {}
-    if os.path.exists(PI_THUMBS_INFO_FILE):
+    if os.path.isfile(PI_THUMBS_INFO_FILE):
         with open(PI_THUMBS_INFO_FILE, 'rt') as f:
             for line in f:
                 if ' = ' in line:
@@ -1603,7 +1820,9 @@ def dedupeExifData():
 
 #TY SO: https://stackoverflow.com/a/30629776
 def convert_to_float(frac_str):
-    """ The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display """
+    """
+    The EXIF exposure time and f-number data is a string representation of a fraction. This converts it to a float for display
+    """
     try:
         return float(frac_str)
     except ValueError:
@@ -1618,7 +1837,9 @@ def convert_to_float(frac_str):
 
 
 def getPreviewImage(camera, context, config):
-    """ Straight out of Jim's examples """
+    """
+    Straight out of Jim's examples
+    """
     OK, image_format = gp.gp_widget_get_child_by_name(config, 'imageformat')
     if OK >= gp.GP_OK:
         # get current setting
@@ -1646,14 +1867,16 @@ def getPreviewImage(camera, context, config):
     app.logger.debug(type(data), len(data))
     app.logger.debug(data[:10].tolist())
     fileName = os.path.join(PI_PREVIEW_DIR, PI_PREVIEW_FILE)
-    if os.path.exists(fileName):
+    if os.path.isfile(fileName):
         os.remove(fileName)
     Image.open(io.BytesIO(file_data)).save(fileName, "JPEG")
     return 0
 
 
 def getDiskSpace():
-    """ https://www.raspberrypi.org/forums/viewtopic.php?t=22180 """
+    """
+    https://www.raspberrypi.org/forums/viewtopic.php?t=22180
+    """
     try:
         disk = psutil.disk_usage('/')
         #disk_total = disk.total / 2**30     # GiB.
@@ -1666,7 +1889,9 @@ def getDiskSpace():
 
 
 def createConfigFile(iniFile):
-    """ Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/ """
+    """
+    Thank you https://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/
+    """
     try:
         config = configparser.ConfigParser()
         config.add_section('Global')
@@ -1689,11 +1914,11 @@ def createConfigFile(iniFile):
 def getIni(keySection, keyName, keyType, defaultValue):
     """
     Reads a key from the INI file and returns its value.
-    If it doesn't exist, it's created with a default value, which is then returned.
+    If it doesn't exist, it's created with a default value, which is then returned
     """
     returnValue = defaultValue
     try:
-        if not os.path.exists(iniFile):
+        if not os.path.isfile(iniFile):
             createConfigFile(iniFile)
         config = configparser.ConfigParser()
         config.read(iniFile)
@@ -1881,7 +2106,7 @@ def getCeleryTasks():
     """
     This executes before EVERY page load, feeding any active task ID into the
     ensuing response. Javascript in the footer of every page (in index.html)
-    will then query for status updates if a task ID is present.
+    will then query for status updates if a task ID is present
     """
     try:
         # Inspect all nodes.
@@ -1901,6 +2126,26 @@ def getCeleryTasks():
     except Exception as e:
         app.logger.debug('getCeleryTasks exception: ' + str(e))
 
+        
+@app.route("/iniview")
+@login_required
+def iniview():
+    """
+    Displays the content of the ini file
+    """
+    iniEntries = []
+    try:
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+        for section_name in config.sections():
+            iniEntries.append({'section': str(section_name), 'key': '', 'value': '' })
+            for name, value in config.items(section_name):
+                iniEntries.append({'section': str(section_name), 'key': name, 'value': value })
+    except Exception as e:
+        app.logger.debug('iniview error: ' + str(e))
+        flash('INI error')
+    return render_template('iniview.html', iniEntries = iniEntries)
+
 
 def reformatSlashes(folder):
     """
@@ -1916,10 +2161,10 @@ def reformatSlashes(folder):
 
 
 def getLargestImageSize(path):
-    '''
+    """
     Finds the largest file on the /photos/ folder tree.
     Used to calculate the number of days' worth of storage left on the Pi
-    '''    
+    """
     max_size = 0
     try:
         for folder, subfolders, files in os.walk(path):
@@ -1935,11 +2180,11 @@ def getLargestImageSize(path):
         app.logger.debug('getLargestImageSize exception: ' + str(e))
         return None
 
-    
+
 def getShotsPerDay():
-    '''
+    """
     Used to calculate the number of days' worth of storage left on the Pi and camera
-    '''
+    """
     shotsPerDay = 0
     try:
         ArdInterval = str(readString("3"))
@@ -1960,14 +2205,14 @@ def getShotsPerDay():
         app.logger.debug('getShotsPerDay exception: ' + str(e))
         return None
 
-    
+
 @app.route('/robots.txt')
 def norobots():
     res = make_response("User-Agent: *\nDisallow: /\n")
     res.status_code = 200
     res.headers["Content-Type"] = "text/plain; charset=utf-8"
-    return res    
-    
+    return res
+
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":

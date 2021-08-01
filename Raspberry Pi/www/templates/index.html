@@ -36,6 +36,7 @@
 			<a href="{{ url_for ('intervalometer') }}">Intervalometer Settings</a>
 			<a href="{{ url_for ('transfer') }}">Transfer Settings</a>
 			<a href="{{ url_for ('thermal') }}">Thermal Settings</a>
+			<a href="{{ url_for ('monitoring') }}">Remote monitoring</a>
 			<a href="{{ url_for ('system') }}">System Maintenance</a>
 		{% if current_user.is_anonymous %}
 			<a href="{{ url_for('login') }}">Login</a>
@@ -110,6 +111,14 @@
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
+						if ((data['status']).toLowerCase().includes("heartbeat"))
+						{
+							window.location.reload(false); //Reload the (Monitoring) page to update the Result field
+						}
+						else if ((data['status']).toLowerCase().includes("thumbnail images OK"))
+						{
+							window.location.reload(false); //Reload the (Thumbnails) page to update the Result field
+						}
 					}
 					else
 					{
@@ -136,6 +145,27 @@
 		}
 	}
 	
+	function postUrl(url)
+	{
+		// send ajax POST request to start background job
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open('POST', url, true);
+		xmlhttp.onload = function()
+		{
+			if (this.status >= 200 && this.status < 400)
+			{
+				//We received a positive response. Job underway. Reload this page.
+				location.href = location.href;
+			}
+			//else
+			//{
+				// We reached our target server, but it returned an error
+				//alert('Nope, that failed');
+			//}
+		};
+		xmlhttp.send();
+	}
+		
 	function userFeedback(form, event)
 	{
 		var progressTable = document.getElementById("progress");
@@ -160,6 +190,10 @@
 		else if (submitButton.value == "Reboot")
 		{
 			col[0].innerHTML = 'Reboot requested';
+		}
+		else if (submitButton.value == "hbnow")
+		{
+			col[0].innerHTML = 'Initiating heartbeat';
 		}
 		else
 		{
