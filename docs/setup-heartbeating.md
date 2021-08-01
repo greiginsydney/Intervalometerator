@@ -52,7 +52,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 4. Once a change has been applied, heartbeating automatically commences at the appropriate frequency.
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
 <hr/>
 
 ## Setup "Dead Man’s Snitch"
