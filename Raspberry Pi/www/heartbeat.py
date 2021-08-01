@@ -60,13 +60,19 @@ def main():
         log('Heartbeat aborted. hbUrl=None')
         return
     now = datetime.now().minute
-    if (now + 60) % int(hbFreq) == 0:
+    hbNow = False
+    if hbFreq == '60':
+        if now == 30: hbNow = True
+    elif hbFreq == '30':
+        if (now == 15 or now == 45): hbNow = True
+    elif (now + 60) % int(hbFreq) == 0: hbNow = True
+    if hbNow == True:
         #The above code validates we're MEANT to be sending a heartbeat now.
         #The below calls the main intvlm8r script and gets *it* to initiate the heartbeat to the monitoring URL
         #(The point being we won't send a HB probe if the *intvlm8r* script isn't running OK)
         initiateHeartbeat(INTERNAL_HB_URL)
     else:
-        log("Not yet Heartbeat o'clock")
+        log("Not yet Heartbeat o'clock. hbFreq={0}".format(hbFreq))
 
 
 def initiateHeartbeat(url):
