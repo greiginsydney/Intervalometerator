@@ -630,8 +630,8 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                 log('rsync exited cleanly')
                 uploadedList = stdoutdata.splitlines()
                 for uploadedFile in uploadedList:
-                    if 'IMG' in uploadedFile:
-                        uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
+                    uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
+                    if os.path.isfile(uploadedFile):
                         numFilesOK = uploadedOK(uploadedFile, numFilesOK)
             else:
                 log('rsync exited with a non-zero exitcode')
