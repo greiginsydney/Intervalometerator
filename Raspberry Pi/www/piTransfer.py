@@ -637,7 +637,7 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                 log('rsync exited with a non-zero exitcode')
         except Exception as e:
             log('Error uploading via rsync: {1}'.format(str(e)))
-        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+        log('STATUS: %d files uploaded OK' % (numFilesOK))
     return
 
 
