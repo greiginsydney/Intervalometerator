@@ -33,6 +33,58 @@
 		<tr id="showHideCopyHrMsg">
 			<td class="noborder" id="copyHourMsg"></td>
 		</tr>
+		
+		<tr id="showHideRenameCbx">
+			<td class="noborder" >
+				<div class="alignleft">Rename on copy:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="renameOnCopy" name="renameOnCopy" {% if renameOnCopy == 'on' %}CHECKED {% endif %}onchange="updateRename(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder" >Create a new filename using these formatting values, where the values are those from the time the image created:</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%Y = 4-digit year</div>
+				<div class="alignright">%m = month (01-12)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%b = short month name ('Jan')</div>
+				<div class="alignright">%d = day of month (01-31)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%a = short weekday name ('Mon')</div>
+				<div class="alignright">%H = hour (00-23)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%M = minute (00-59)</div>
+				<div class="alignright">%S = second (00-59)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignright">
+					<input name="renameString" id="renameString" type="text" value="" placeholder="ThisIntvlm8r-%F-%Y%m%D-%H%M" oninput="renameString();newText(this.id)">
+				</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">IMG_001.JPG</div>
+				<div class="alignright" id="exampleString">example goes here</div>
+			</td>
+		</tr>
 	</table>
 	
 	<table class="noborder">
@@ -236,6 +288,8 @@ SelectionBits["googleRemoteFolder"] =   32768;
 SelectionBits["rsyncUsername"]      =   65536;
 SelectionBits["rsyncHost"]          =  131072;
 SelectionBits["rsyncRemoteFolder"]  =  262144;
+SelectionBits["renameOnCopy"]       =  524288;
+SelectionBits["renameString"]       = 1048576;
 
 
 var method             = document.getElementById("tfrMethod");
@@ -245,7 +299,7 @@ var showHideTrnHour    = document.getElementById("showHideTrnHour");
 var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
 var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
 var showHideTrnButton  = document.getElementById("tfrTrNow");
-
+var renameOnCopy       = document.getElementById("renameOnCopy");
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
 var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
 var ftp                = document.getElementById("ftp");
@@ -265,6 +319,7 @@ transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "no
 showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideRenameCbx.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
@@ -289,7 +344,8 @@ else
 }
 
 // Run when the form first loads:
-lightButtons(); 
+lightButtons();
+showHideRename();
 
 function newSelected(id)
 {
@@ -310,6 +366,7 @@ function newSelected(id)
 		showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideRenameCbx.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
 		showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
@@ -344,6 +401,7 @@ function newSelected(id)
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
 	}
 	lightButtons();
+	showHideRename();
 }
 
 function newText(id)
@@ -377,6 +435,37 @@ function lightButtons()
 function openInNewTab(url) {
   var win = window.open(url, '_blank');
   win.focus();
+}
+
+function updateRename(id)
+{
+	var option = document.getElementById(id);
+	if (option.checked == true)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	showHideRename()
+	lightButtons();
+}
+
+function showHideRename()
+{
+	var showHide = (renameOnCopy.checked == false || copyDay.value == "Off") ? "none":"";
+	rows = document.getElementsByName("showHideRename")
+	for (i = 0; i < rows.length; i++)
+	{
+		rows[i].style.display = showHide;
+	}
+}
+
+function renameString()
+{
+	<!-- Does two things: validates the input is acceptable, and updates the example text field -->
+
 }
 
 </script>
