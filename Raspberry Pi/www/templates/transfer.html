@@ -46,7 +46,7 @@
 			</td>
 		</tr>
 		<tr name="showHideRename">
-			<td class="noborder" >Create a new filename using these formatting values, where the values are those from the time the image created:</td>
+			<td class="noborder" >Create a new filename using these format strings:</td>
 		</tr>
 		<tr name="showHideRename">
 			<td class="noborder">
@@ -56,13 +56,13 @@
 		</tr>
 		<tr name="showHideRename">
 			<td class="noborder">
-				<div class="alignleft">%b = short month name ('Jan')</div>
+				<div class="alignleft">%b = short month ('Jan')</div>
 				<div class="alignright">%d = day of month (01-31)</div>
 			</td>
 		</tr>
 		<tr name="showHideRename">
 			<td class="noborder">
-				<div class="alignleft">%a = short weekday name ('Mon')</div>
+				<div class="alignleft">%a = short weekday ('Mon')</div>
 				<div class="alignright">%H = hour (00-23)</div>
 			</td>
 		</tr>
@@ -74,15 +74,16 @@
 		</tr>
 		<tr name="showHideRename">
 			<td class="noborder">
+				<div class="alignleft">%F = original filename</div>
 				<div class="alignright">
-					<input name="renameString" id="renameString" type="text" value="" placeholder="ThisIntvlm8r-%F-%Y%m%D-%H%M" oninput="renameString();newText(this.id)">
+					<input name="renameString" id="renameString" type="text" value={{ renameString }} placeholder="ThisIntvlm8r-%F-%Y%m%D-%H%M" oninput="updateExample();newText(this.id)">
 				</div>
 			</td>
 		</tr>
 		<tr name="showHideRename">
 			<td class="noborder">
-				<div class="alignleft">IMG_001.JPG</div>
-				<div class="alignright" id="exampleString">example goes here</div>
+				<div class="alignleft" id="originalFileName"></div>
+				<div class="alignright" id="exampleString"></div>
 			</td>
 		</tr>
 	</table>
@@ -308,6 +309,24 @@ var dbx                = document.getElementById("dbx");
 var google             = document.getElementById("google");
 var rsync              = document.getElementById("rsync");
 var transfer           = document.getElementById("transfer");
+var exampleString      = document.getElementById("exampleString");
+var renameString       = document.getElementById("renameString");
+
+//initialise constants for the file rename calc's:
+var short_month = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+var short_day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var today = new Date();
+var pcY = today.getFullYear()
+var pcm = ('0' + (today.getMonth()+1)).slice(-2)
+var pcb = short_month[today.getMonth()]
+var pcd = ('0' + (today.getDate())).slice(-2)
+var pca = short_day[today.getDay()]
+var pcH = ('0' + (today.getHours())).slice(-2)
+var pcM = ('0' + (today.getMinutes())).slice(-2)
+var pcS = ('0' + (today.getSeconds())).slice(-2)
+var pcF = 'IMG_001.JPG'
+
+document.getElementById("originalFileName").innerHTML = pcF
 
 // This drives the default display on load:
 ftp.style.display      = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
@@ -346,6 +365,7 @@ else
 // Run when the form first loads:
 lightButtons();
 showHideRename();
+updateExample();
 
 function newSelected(id)
 {
@@ -462,10 +482,37 @@ function showHideRename()
 	}
 }
 
-function renameString()
+function updateExample()
 {
 	<!-- Does two things: validates the input is acceptable, and updates the example text field -->
-
+	var tempString = renameString.value;
+	var fileName = pcF.split('.')[0];
+	var fileExt  = pcF.split('.')[1];
+	
+	//Strip any commas or spaces and update the field:
+	tempString = tempString.replace(' ','')
+	tempString = tempString.replace(',','')
+	renameString.value = tempString;
+	
+	//Substitute values and update the example
+	if (tempString === '')
+	{
+		tempString = pcF;
+	}
+	else
+	{
+		tempString = tempString.replace(/%F/g, pcF);
+		tempString = tempString.replace(/%Y/g, pcY);
+		tempString = tempString.replace(/%m/g, pcm);
+		tempString = tempString.replace(/%b/g, pcb);
+		tempString = tempString.replace(/%d/g, pcd);
+		tempString = tempString.replace(/%a/g, pca);
+		tempString = tempString.replace(/%H/g, pcH);
+		tempString = tempString.replace(/%M/g, pcM);
+		tempString = tempString.replace(/%S/g, pcS);
+		tempString += '.' + fileExt;
+	}
+	exampleString.innerHTML = tempString;
 }
 
 </script>
