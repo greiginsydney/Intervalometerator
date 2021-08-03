@@ -217,58 +217,58 @@
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
-SelectionBits["tfrMethod"]          =      1;
-SelectionBits["ftpServer"]          =      2;
-SelectionBits["ftpUser"]            =      4;
-SelectionBits["ftpPassword"]        =      8;
-SelectionBits["ftpRemoteFolder"]    =     16;
-SelectionBits["sftpServer"]         =     32;
-SelectionBits["sftpUser"]           =     64;
-SelectionBits["sftpPassword"]       =    128;
-SelectionBits["sftpRemoteFolder"]   =    256;
-SelectionBits["dbx_token"]          =    512;
-SelectionBits["sftpRemoteFolder"]   =   1024;
-SelectionBits["transferDay"]        =   2048;
-SelectionBits["transferHour"]       =   4096;
-SelectionBits["copyDay"]            =   8192;
-SelectionBits["copyHour"]           =  16384;
-SelectionBits["googleRemoteFolder"] =  32768;
-SelectionBits["rsyncUsername"]      =  65536;
-SelectionBits["rsyncHost"]          = 131072;
-SelectionBits["rsyncRemoteFolder"]  = 262144;
+SelectionBits["tfrMethod"]          =       1;
+SelectionBits["ftpServer"]          =       2;
+SelectionBits["ftpUser"]            =       4;
+SelectionBits["ftpPassword"]        =       8;
+SelectionBits["ftpRemoteFolder"]    =      16;
+SelectionBits["sftpServer"]         =      32;
+SelectionBits["sftpUser"]           =      64;
+SelectionBits["sftpPassword"]       =     128;
+SelectionBits["sftpRemoteFolder"]   =     256;
+SelectionBits["dbx_token"]          =     512;
+SelectionBits["sftpRemoteFolder"]   =    1024;
+SelectionBits["transferDay"]        =    2048;
+SelectionBits["transferHour"]       =    4096;
+SelectionBits["copyDay"]            =    8192;
+SelectionBits["copyHour"]           =   16384;
+SelectionBits["googleRemoteFolder"] =   32768;
+SelectionBits["rsyncUsername"]      =   65536;
+SelectionBits["rsyncHost"]          =  131072;
+SelectionBits["rsyncRemoteFolder"]  =  262144;
 
 
-var method = document.getElementById("tfrMethod");
-var copyDay = document.getElementById("copyDay");
-var showHideCopyHour = document.getElementById("showHideCopyHour");
-var showHideTrnHour = document.getElementById("showHideTrnHour");
-var showHideCopyHrMsg = document.getElementById("showHideCopyHrMsg");
-var showHideTrnHrMsg = document.getElementById("showHideTrnHrMsg");
-var showHideTrnButton = document.getElementById("tfrTrNow");
+var method             = document.getElementById("tfrMethod");
+var copyDay            = document.getElementById("copyDay");
+var showHideCopyHour   = document.getElementById("showHideCopyHour");
+var showHideTrnHour    = document.getElementById("showHideTrnHour");
+var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
+var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
+var showHideTrnButton  = document.getElementById("tfrTrNow");
 
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
-var showHideTrnMethod = document.getElementById("showHideTrnMethod");
-var ftp = document.getElementById("ftp");
-var sftp = document.getElementById("sftp");
-var dbx = document.getElementById("dbx");
-var google = document.getElementById("google");
-var rsync = document.getElementById("rsync");
-var transfer = document.getElementById("transfer");
+var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
+var ftp                = document.getElementById("ftp");
+var sftp               = document.getElementById("sftp");
+var dbx                = document.getElementById("dbx");
+var google             = document.getElementById("google");
+var rsync              = document.getElementById("rsync");
+var transfer           = document.getElementById("transfer");
 
 // This drives the default display on load:
-ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
-sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
-dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
-google.style.display = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
-rsync.style.display = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
+ftp.style.display      = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
+sftp.style.display     = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
+dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
-showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-showHideTrnButton.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideTrnButton.style.display  = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
