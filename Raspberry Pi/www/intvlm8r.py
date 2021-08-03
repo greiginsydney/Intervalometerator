@@ -836,7 +836,9 @@ def transfer():
         'copyHour'              : '',
         'wakePiTime'            : '25',
         'piTransferLogLink'     : '',
-        'hiddenTransferOptions' : hiddenTransferOptions
+        'hiddenTransferOptions' : hiddenTransferOptions,
+        'renameOnCopy'          : 'Off',
+        'renameString'          : '' 
     }
     config = configparser.ConfigParser(
         {
@@ -858,7 +860,9 @@ def transfer():
         'transferHour'       : '',
         'copyDay'            : 'Off',
         'copyHour'           : '',
-        'wakePiTime'         : '25'
+        'wakePiTime'         : '25',
+        'renameOnCopy'       : 'Off',
+        'renameString'       : ''
         })
     try:
         config.read(iniFile)
@@ -881,6 +885,8 @@ def transfer():
         templateData['transferHour']       = config.get('Transfer', 'transferHour')
         templateData['copyDay']            = config.get('Copy', 'copyDay')
         templateData['copyHour']           = config.get('Copy', 'copyHour')
+        templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
+        templateData['renameString']       = config.get('Copy', 'renameString')
     except Exception as e:
         app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
@@ -946,6 +952,8 @@ def transferPOST():
                 config.add_section('Copy')
             config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
             config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
+            config.set('Copy', 'renameOnCopy', str(request.form.get('renameOnCopy') or 'Off'))
+            config.set('Copy', 'renameString', str(request.form.get('renameString') or ''))
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
