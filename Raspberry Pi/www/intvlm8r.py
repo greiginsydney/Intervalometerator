@@ -1667,6 +1667,65 @@ def createDestFilename(imageFullFilename, targetFolder, suffix):
     return dest
 
 
+def renameFile(imageFullFilename, renameString, deleteAfterCopy):
+    try:
+        imageFolderTree, originalFileName = os.path.split(imageFullFilename)
+        fileName, fileExt = os.path.splitext(originalFileName)
+        dateStamp = datetime.fromtimestamp(os.path.getmtime(imageFullFilename))
+        #Populate the variables from the file's dateStamp:
+        pcF = fileName                               #Filename
+        pcY = dateStamp.strftime('%Y')               #Year (20xx)
+        pcm = dateStamp.strftime('%m').rjust(2, '0') #Month (01-12)
+        pcb = dateStamp.strftime('%b')               #Short month ('Jan')
+        pcd = dateStamp.strftime('%d').rjust(2, '0') #Day (01-31)
+        pca = dateStamp.strftime('%a')               #Short day ('Mon')
+        pcH = dateStamp.strftime('%H').rjust(2, '0') #Hour (00-23)
+        pcM = dateStamp.strftime('%M').rjust(2, '0') #Min (00-59)
+        pcS = dateStamp.strftime('%S').rjust(2, '0') #Sec (00-59)
+        #Substitute the values
+        renameString = renameString.replace('%F',pcF)
+        renameString = renameString.replace('%Y',pcY)
+        renameString = renameString.replace('%m',pcm)
+        renameString = renameString.replace('%b',pcb)
+        renameString = renameString.replace('%d',pcd)
+        renameString = renameString.replace('%a',pca)
+        renameString = renameString.replace('%H',pcH)
+        renameString = renameString.replace('%M',pcM)
+        renameString = renameString.replace('%S',pcS)
+        app.logger.info('reconstituted renameString = {0}'.format(renameString))
+        #Rebuild the string
+        renamedFile = os.path.join(imageFolderTree, renameString) + fileExt
+        app.logger.info('renamedFile = {0}'.format(renamedFile))
+        try:
+            suffix = 1
+            safetyNet = False
+            while True:
+                if os.path.isfile(renamedFile):
+                    #The new name already exists. Loop with a new suffix until it doesn't
+                    renamedFile = os.path.join(imageFolderTree, renameString) + '-' + str(suffix) + fileExt
+                    if suffix >= 1000:
+                        #This is a safety net.
+                        #You MIGHT be deliberately doing this (say, sequentially numbering all the files in a given year-month-day-hour), but...
+                        # if we get to 1000 I'm going to abort, otherwise we risk looping here forever.
+                        app.logger.info('renameFile() safety net fired renaming file {0} to {1}'.format(imageFullFilename, renameString))
+                        safetyNet = True
+                        break
+                else:
+                    break
+            if not safetyNet == True:
+                app.logger.info('renameFile() about to rename file {0} to {1}'.format(imageFullFilename, renameString))
+                os.rename(imageFullFilename,renamedFile)
+                if (deleteAfterCopy == False):
+                    pass
+                    #Add to the rename file here
+        except Exception as e:
+            app.logger.info('renameFile() error  renaming file {0} to {1}'.format(imageFullFilename, renameString))
+            app.logger.info('renameFile() error : {0}'.format(str(e)))
+    except Exception as e:
+        app.logger.info('renameFile() unhandled error: {0}'.format(str(e)))
+    return
+
+
 def makeThumb(imageFile):
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
