@@ -1718,8 +1718,12 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
                 app.logger.info('renameFile() about to rename file {0} to {1}'.format(imageFullFilename, renameString))
                 os.rename(imageFullFilename,renamedFile)
                 if (deleteAfterCopy == False):
-                    pass
                     #Add to the rename file here
+                    try:
+                        with open(PI_PHOTO_RENAME_FILE, "a") as f:
+                            f.write('{0}{1} {2}\r\n'.format(fileName, fileExt, renamedFile))
+                    except Exception as e:
+                        app.logger.info('renameFile() error writing to PI_PHOTO_RENAME_FILE: ' + str(e))
         except Exception as e:
             app.logger.info('renameFile() error  renaming file {0} to {1}'.format(imageFullFilename, renameString))
             app.logger.info('renameFile() error : {0}'.format(str(e)))
