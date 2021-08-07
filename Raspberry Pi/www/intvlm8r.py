@@ -80,6 +80,7 @@ callback_obj = gp.check_result(gp.use_python_logging(mapping={
 
 PI_USER_HOME =  os.path.expanduser('~')
 PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
+PI_PHOTO_RENAME_FILE = os.path.join(PI_PHOTO_DIR, 'piPhotoRename.txt')
 PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
 PI_PREVIEW_DIR = os.path.join(PI_USER_HOME, 'preview')
@@ -1565,12 +1566,28 @@ def get_camera_file_info(camera, path):
         gp.gp_camera_file_get_info(camera, folder, name))
 
 
+def get_renamed_files(renameFile):
+    """
+    Read the contents of the renamed_Files file and return the original filenames as a list
+    """
+    original_filenames = []
+    if os.path.isfile(renameFile):
+        with open(renameFile, 'rt') as f:
+            for line in f:
+                if ' ' in line:
+                    original_filenames.append(line.split(' ')[0])
+    else:
+        app.logger.info('get_renamed_files() reports there\'s no renameFile')
+    return original_filenames
+
+
 def files_to_copy(camera):
     newFilesList = []
     if not os.path.isdir(PI_PHOTO_DIR):
         os.makedirs(PI_PHOTO_DIR)
     computer_files = list_Pi_Images(PI_PHOTO_DIR)
     camera_files = list_camera_files(camera)
+    renamed_files = get_renamed_files(PI_PHOTO_RENAME_FILE)
     if not camera_files:
         app.logger.debug('No files found')
         return
@@ -1579,6 +1596,8 @@ def files_to_copy(camera):
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
+            continue
+        if dest in renamed_files:
             continue
         newFilesList.append(path)
     return newFilesList
