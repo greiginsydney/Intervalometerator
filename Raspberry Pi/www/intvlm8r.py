@@ -1603,7 +1603,7 @@ def files_to_copy(camera):
     return newFilesList
 
 
-def copy_files(camera, imageToCopy, deleteAfterCopy):
+def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString):
     """
     Straight from Jim's examples again
     The test for available HDD space is from examples/copy-data.py
@@ -1627,6 +1627,8 @@ def copy_files(camera, imageToCopy, deleteAfterCopy):
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
                 app.logger.info('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+            if (renameOnCopy == True):
+                renameFile(dest, renameString, deleteAfterCopy)
     except Exception as e:
         app.logger.info('Exception in copy_files: ' + str(e))
     return 0
@@ -2054,12 +2056,18 @@ def copyNow(self):
         numberToCopy = len(filesToCopy)
         app.logger.info('copyNow() has been tasked with copying ' + str(numberToCopy) + ' images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
+        renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
+        if (renameOnCopy == True):
+            renameString = getIni('Copy', 'renameString', 'string', None)
+            if not renameString:
+                app.logger.info('copyNow() error reading renameString from inifile')
+                renameOnCopy == False
         while len(filesToCopy) > 0:
             try:
                 self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info('About to copy file: ' + str(thisFile))
-                copyResult = copy_files(camera, thisFile, deleteAfterCopy)
+                copyResult = copy_files(camera, thisFile, deleteAfterCopy, renameOnCopy, renameString)
                 if copyResult == 0:
                     thisImage += 1
             except Exception as e:
