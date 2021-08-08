@@ -16,7 +16,7 @@ The intvlm8r can be set to send a periodic "check in" message (a heartbeat) to a
 
 Any web address can be used for this: the onus is on the receiving service to identify the intvlm8r (typically through the use of a dedicated URL), log the heartbeats and determine when a heartbeat has been missed.
 
-When enabled, the intvlm8r will send a heartbeat when the Pi is started or rebooted, and then a regular shedule, with options of 5, 10, 15, 20, 30 or 60 minutes. The user can also manually trigger a heartbeat from the /monitoring page, which is typically only used when setting up or debugging this feature.
+When enabled, the intvlm8r will send a heartbeat on a regular shedule, with options of 5, 10, 15, 20, 30 or 60 minutes. The user can also manually trigger a heartbeat from the /monitoring page, which is typically only used when setting up or debugging this feature. If the Pi is not always on, a heartbeat interval will need to be chosen that falls within the daily run time before a heartbeat will take place.
 
 The regular heartbeating process exercises multiple components of the intvlm8r as a way of ensuring that the failure of a critical component will result in the failure of the hearteat. A timer service triggers the execution of `heartbeat.py` every five minutes. This script runs, querying `intvlm8r.ini` to determine if it's time to initiate a heartbeat (and that a valid URL has been set). If a heartbeat is due, it generates an internal web call to the /heartbeat page. In responding to this request, the intvlm8r then passes the request to Celery to make the web call to the heartbeat url. Should any of these components be in a failed state, the heartbeat will not be sent and the monitoring service will trigger an alarm.
 
