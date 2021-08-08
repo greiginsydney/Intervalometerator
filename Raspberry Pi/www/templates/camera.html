@@ -171,9 +171,10 @@
 <table class="noborder">
 	<tr>
 		<td class="noborder">
-		<div class="alignleft{% if blockPreview == 'True' %} tooltip{% endif %}">
-			<button name="CamSubmit" id="CamPreview" type="submit" value="preview"{% if blockPreview == 'True' %} disabled{% endif %}>Preview</button>
+		<div class="alignleft{% if blockPreview == 'True' or 'RAW' in imgfmtselected or 'NEF' in imgfmtselected%} tooltip{% endif %}">
+			<button name="CamSubmit" id="CamPreview" type="submit" value="preview">Preview</button>
 			<!-- See "capture preview" in focus-gui.py -->
+{% if ("RAW" in imgfmtselected or "NEF" in imgfmtselected)  %}		<span class="tooltiptext">You cannot Preview when shooting RAW</span>{% endif %}
 {% if blockPreview == "True" %}			<span class="tooltiptext">This camera does not support Preview</span>{% endif %}
 		</div>
 		<div class="alignright">
@@ -222,7 +223,11 @@ function lightButtons()
 	{
 		if (SelectionByte == 0)
 		{
-			if ("{{blockPreview}}" != "True")
+			if ("{{blockPreview}}" == "True" || "{{imgfmtselected}}".includes("RAW") || "{{imgfmtselected}}".includes("NEF"))
+			{
+				document.getElementById("CamPreview").disabled = true;
+			}
+			else
 			{
 				document.getElementById("CamPreview").disabled = false;
 			}
