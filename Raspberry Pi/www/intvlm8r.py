@@ -1597,7 +1597,7 @@ def files_to_copy(camera):
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
-        if dest in renamed_files:
+        if imageFileName in renamed_files:
             continue
         newFilesList.append(path)
     return newFilesList
