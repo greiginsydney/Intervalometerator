@@ -1377,18 +1377,13 @@ def setTime(newTime):
         app.logger.debug('setTime unhandled time error: ' + str(e))
 
 
-def connectCamera():
+def connectCamera(retries):
     app.logger.debug('connectCamera entered')
-    retries = 0
     try:
         camera = gp.Camera()
         context = gp.gp_context_new()
         while True:
             app.logger.debug('connectCamera retries = {0}'.format (retries))
-            if retries >= 3:
-                app.logger.debug('connectCamera returning None')
-                gp.check_result(gp.gp_camera_exit(camera))
-                return None, None, None
             try:
                 camera.init(context)
                 config = camera.get_config(context)
@@ -1397,13 +1392,11 @@ def connectCamera():
             except gp.GPhoto2Error as e:
                 app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
                 if e.string == 'Unknown model':
-                    if retries >= 1:
+                    if retries % 2 == 0:
                         app.logger.debug('connectCamera waking the camera & going again')
                         writeString("WC") # Sends the WAKE command to the Arduino
-                        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
                     else:
                         app.logger.debug('connectCamera going again without waking the camera')
-                        time.sleep(0.5);
                 elif e.string == 'Could not claim the USB device':
                     app.logger.debug('connectCamera could not claim the USB device. Exiting')
                     #TODO: pass this back upstream to present to the user
@@ -1411,6 +1404,14 @@ def connectCamera():
                     return None, None, None
             except Exception as e:
                 app.logger.debug('connectCamera error: ' + str(e))
+            if retries >= 4:
+                app.logger.debug('connectCamera returning None')
+                gp.check_result(gp.gp_camera_exit(camera))
+                return None, None, None
+            if retries % 2 == 0:
+                time.sleep(1.5);    # Pause after waking
+            else:
+                time.sleep(0.5);  # Brief pause before looping
             retries += 1
         app.logger.debug('connectCamera returning 3 values')
         return camera, context, config
