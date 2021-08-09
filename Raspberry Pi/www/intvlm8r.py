@@ -309,6 +309,8 @@ def main():
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
 
+    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+        
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
 
@@ -328,7 +330,8 @@ def main():
 
     # Camera comms:
     try:
-        camera, context, config = connectCamera()
+        if not config:
+            camera, context, config = connectCamera(1)
         if camera:
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
@@ -586,7 +589,7 @@ def camera():
         return redirect(url_for('camera'))
 
     try:
-        camera, context, config = connectCamera()
+        camera, context, config = connectCamera(1)
         if camera:
             abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             cameraData['cameraModel']              = abilities.model
@@ -661,7 +664,7 @@ def cameraPOST():
     """
     preview = None
     try:
-        camera, context, config = connectCamera()
+        camera, context, config = connectCamera(1)
         if camera:
             if request.form['CamSubmit'] == 'apply':
                 app.logger.debug('-- Camera Apply selected')
@@ -697,13 +700,13 @@ def cameraPOST():
                     node = config.get_child_by_name('exposurecompensation')
                     node.set_value(str(request.form.get('exp')))
                 camera.set_config(config, context)
-                gp.check_result(gp.gp_camera_exit(camera))
 
             if request.form['CamSubmit'] == 'preview':
                 app.logger.debug('-- Camera Preview selected')
                 getPreviewImage(camera, context, config)
-                gp.check_result(gp.gp_camera_exit(camera))
                 preview = 1
+
+            gp.check_result(gp.gp_camera_exit(camera))
     except Exception as e:
         app.logger.debug('Unknown camera POST error: ' + str(e))
 
@@ -730,7 +733,7 @@ def intervalometer():
 
     # Camera comms:
     try:
-        camera, context, config = connectCamera()
+        camera, context, config = connectCamera(1)
         if camera:
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
@@ -1217,6 +1220,8 @@ def system():
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
+    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1262,7 +1267,8 @@ def system():
         pass
 
     try:
-        camera, context, config = connectCamera()
+        if not config:
+            camera, context, config = connectCamera(1)
         if camera:
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
             gp.check_result(gp.gp_camera_exit(camera))
@@ -1316,7 +1322,7 @@ def systemPOST():
         if request.form.get('setCameraTime'):
             app.logger.debug('Checked: setCameraTime')
             try:
-                camera, context, config = connectCamera()
+                camera, context, config = connectCamera(1)
                 if camera:
                     if setCameraTimeAndDate(camera, config, newTime):
                         # apply the changed config
