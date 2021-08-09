@@ -47,6 +47,7 @@ from werkzeug.security import check_password_hash
 
 from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
+from flask_caching import Cache
 from celery import Celery, chain
 from celery.app.control import Inspect
 
