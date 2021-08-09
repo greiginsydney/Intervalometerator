@@ -1406,6 +1406,7 @@ def connectCamera():
                 elif e.string == 'Could not claim the USB device':
                     app.logger.debug('connectCamera could not claim the USB device. Exiting')
                     #TODO: pass this back upstream to present to the user
+                    gp.check_result(gp.gp_camera_exit(camera))
                     return None, None, None
             except Exception as e:
                 app.logger.debug('connectCamera error: ' + str(e))
