@@ -1609,7 +1609,7 @@ def files_to_copy(camera):
         if imageFileName in renamed_files:
             continue
         newFilesList.append(path)
-    newFilesList.sort(key=lambda x: os.path.getmtime(x))
+    newFilesList.sort()
     return newFilesList
 
 
