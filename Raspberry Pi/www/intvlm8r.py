@@ -1722,6 +1722,7 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
                         app.logger.info('renameFile() safety net fired renaming file {0} to {1}'.format(imageFullFilename, renameString))
                         safetyNet = True
                         break
+                    suffix += 1 #Increment the suffix and loop.
                 else:
                     break
             if not safetyNet == True:
