@@ -449,12 +449,22 @@ function lightButtons()
 	{
 		document.getElementById("apply").disabled  = false;
 	}
+	
+	if ((SelectionByte && SelectionBits["renameOnCopy"] != 0) || (SelectionByte && SelectionBits["renameString"] != 0))
+	{
+		// The "renameOnCopy" values have changed. Prevent a copy until they Apply the changes
+		document.getElementById("copy").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("copy").disabled  = false;
+	}
 }
 
 //https://stackoverflow.com/questions/4907843/open-a-url-in-a-new-tab-and-not-a-new-window-using-javascript
 function openInNewTab(url) {
-  var win = window.open(url, '_blank');
-  win.focus();
+	var win = window.open(url, '_blank');
+	win.focus();
 }
 
 function updateRename(id)
@@ -468,7 +478,7 @@ function updateRename(id)
 	{
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
 	}
-	showHideRename()
+	showHideRename();
 	lightButtons();
 }
 
