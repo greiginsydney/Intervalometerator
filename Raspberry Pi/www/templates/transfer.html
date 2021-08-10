@@ -449,7 +449,7 @@ function lightButtons()
 		document.getElementById("apply").disabled  = false;
 	}
 	
-	if ((SelectionByte && SelectionBits["renameOnCopy"] != 0) || (SelectionByte && SelectionBits["renameString"] != 0))
+	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
 	{
 		// The "renameOnCopy" values have changed. Prevent a copy until they Apply the changes
 		document.getElementById("copy").disabled  = true;
@@ -469,7 +469,7 @@ function openInNewTab(url) {
 function updateRename(id)
 {
 	var option = document.getElementById(id);
-	if (option.checked == true)
+	if (option.defaultChecked != option.checked)
 	{
 		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
 	}
