@@ -270,6 +270,7 @@
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
+//Don't change these without updating the 'Transfer now' interlocking in lightButtons():
 SelectionBits["tfrMethod"]          =       1;
 SelectionBits["ftpServer"]          =       2;
 SelectionBits["ftpUser"]            =       4;
@@ -440,6 +441,7 @@ function newText(id)
 
 function lightButtons()
 {
+	//'Apply' button:
 	if (SelectionByte == 0)
 	{
 		document.getElementById("apply").disabled  = true;
@@ -449,14 +451,24 @@ function lightButtons()
 		document.getElementById("apply").disabled  = false;
 	}
 	
+	//'Copy now' button:
 	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
 	{
-		// The "renameOnCopy" values have changed. Prevent a copy until they Apply the changes
 		document.getElementById("copy").disabled  = true;
 	}
 	else
 	{
 		document.getElementById("copy").disabled  = false;
+	}
+	
+	//'Transfer now' button:
+	if (((SelectionByte & 65535) != 0) || ((SelectionByte & 65535) != 0))
+	{
+		document.getElementById("tfrTrNow").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("tfrTrNow").disabled  = false;
 	}
 }
 
