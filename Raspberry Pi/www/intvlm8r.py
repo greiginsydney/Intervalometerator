@@ -958,7 +958,7 @@ def transferPOST():
             config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
             config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
             config.set('Copy', 'renameOnCopy', str(request.form.get('renameOnCopy') or 'Off'))
-            config.set('Copy', 'renameString', str(request.form.get('renameString') or ''))
+            config.set('Copy', 'renameString', str(request.form.get('renameString').replace('%','%%') or ''))
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
