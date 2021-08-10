@@ -8,7 +8,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft">Location name:</div>
+				<div class="alignleft"><label for="newName">Location name:</label></div>
 				<div class="alignright">
 					<input name="newName" id="newName" type="text" value="{{ locationName }}" oninput="newText(this.id)">
 				</div>
@@ -28,7 +28,7 @@
 			<td class="noborder">
 				<div class="alignleft">Thumbnail count:</div>
 				<div class="alignright">
-					<select name="thumbsCount" id="thumbsCount" onchange="newThumbsCount(this.id)">
+					<select name="thumbsCount" id="thumbsCount" title="How many thumbnails to show" onchange="newThumbsCount(this.id)">
 						{% for count in ['24','48','96','144'] %}
 							<option value="{{count}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{count}}</option>
 						{% endfor %}
@@ -84,7 +84,7 @@
 			<td class="noborder">
 				<div class="alignleft">Pi on at (hour):</div>
 				<div class="alignright">
-					<select name="wakePiTime" id="wakePiTime" onchange="newSelected(this.id)">
+					<select name="wakePiTime" id="wakePiTime" title="The hour of the day at which the Pi turns on" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['25', '00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							<option value="{{ hour }}"{{ ' SELECTED' if hour == wakePiTime }}>{{ 'Always On' if hour == '25' else hour }}</option>
@@ -97,7 +97,7 @@
 			<td class="noborder">
 				<div class="alignleft">Pi on for (minutes):</div>
 				<div class="alignright">
-					<select name="wakePiDuration" id="wakePiDuration" onchange="newSelected(this.id)">
+					<select name="wakePiDuration" id="wakePiDuration" title="How long the Pi will run for each day" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for window in ['05','10','15','20','30','60'] %}
 							<option value="{{window}}"{{ ' SELECTED' if window == wakePiDuration }}>{{window}}</option>"
@@ -142,7 +142,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft">Set Arduino date/time:</div>
+				<div class="alignleft"><label for="setArduinoTime">Set Arduino date/time:</label></div>
 				<div class="alignright">
 					<label class="loginChkbox">
 						<input type="checkbox" id="setArduinoTime" name="setArduinoTime" onchange="newSetTimeSelected(this.id)"/>
@@ -154,7 +154,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft{% if piNtp == True %} grey-out tooltip{% endif %}">
-					Set Pi date/time:
+					<label for="setPiTime">Set Pi date/time:</label>
 					{% if piNtp == True %}<span class="tooltiptext">The Pi is sync'd to NTP</span>{% endif %}
 				</div>
 				<div class="alignright">
@@ -167,7 +167,7 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft">Set camera date/time:</div>
+				<div class="alignleft"><label for="setCameraTime">Set camera date/time:</label></div>
 				<div class="alignright">
 					<label class="loginChkbox">
 						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"/>
@@ -188,7 +188,7 @@
 	<table>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft">Reboot Arduino?</div>
+				<div class="alignleft"><label for="rebootString">Reboot Arduino?</label></div>
 				<div class="alignright">(Enter "{{rebootSafeWord}}")</div>
 				<div class="alignright">
 					<input name="rebootString" id="rebootString" type="text" value="" oninput="newRebootText(this.id)">
