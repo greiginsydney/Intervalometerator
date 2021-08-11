@@ -72,6 +72,10 @@ a {
 	float: right;
 }
 
+.centre-text {
+	text-align: center;
+}
+
 button{
 	width: 8em;
 	height: 2.5em;
