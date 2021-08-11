@@ -10,7 +10,7 @@
 			<td>
 			<div class="alignleft">Shoot day of week:</div>
 			<div class="alignright">
-				<select multiple name="shootDays" id="shootDays" onchange="newDaySelected()">
+				<select multiple name="shootDays" id="shootDays" title="Select one or more days to shoot" onchange="newDaySelected()">
 					{% if piDoW == "" %}
 						<option disabled selected value style="display:none"> -- choose -- </option>
 					{% endif %}
@@ -25,7 +25,7 @@
 			<td>
 				<div class="alignleft">Daily start hour:</div>
 				<div class="alignright">
-					<select name="startHour" id="startHour" onchange="newSelected(this.id)">
+					<select name="startHour" id="startHour" title="Select the start hour each day" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							<option value="{{hour}}"{% if hour == piStartHour %} SELECTED{% endif %}>{{hour}}</option>
@@ -38,7 +38,7 @@
 			<td>
 				<div class="alignleft">Daily end hour:</div>
 				<div class="alignright">
-					<select name="endHour" id="endHour" onchange="newSelected(this.id)">
+					<select name="endHour" id="endHour" title="Select the end hour each day" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for hour in ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24'] %}
 							<option value="{{hour}}"{% if hour == piEndHour %} SELECTED{% endif %}>{{hour}}</option>
@@ -51,7 +51,7 @@
 			<td>
 				<div class="alignleft">Interval (minutes):</div>
 				<div class="alignright">
-					<select name="interval" id="interval" onchange="newSelected(this.id)">
+					<select name="interval" id="interval" title="Select the interval between shots" onchange="newSelected(this.id)">
 						<option disabled selected value style="display:none"> -- choose -- </option>
 						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
 							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}}</option>
