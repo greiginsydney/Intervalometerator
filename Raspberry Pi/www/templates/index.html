@@ -11,18 +11,18 @@
 <body>
 <header>
 <div class="container">
-<table class="noborder">
+<table class="top-header noborder">
 	<tr>
-		<td width="15%" class="noborder"></td>
-		<td class="noborder"><h1>Intervalometerator</h1></td>
-		<td width="15%" style="text-align:right; font-size:2em;cursor:pointer" onclick="openNav()" class="noborder">&#9776;</td>
+		<td width="15%" ></td>
+		<td ><h1>Intervalometerator</h1></td>
+		<td width="15%" class="hamburger" onclick="openNav()">&#9776;</td>
 	</tr>
 	<tr>
-		<td width="15%" class="noborder"></td>
+		<td width="15%" ></td>
 		{% if current_user.is_authenticated %}
-			<td class="noborder"><h2>{{ locationName }}</h2></td>
+			<td ><h2>{{ locationName }}</h2></td>
 		{% else %}
-			<td class="noborder"><h2>&nbsp;</h2></td>
+			<td ><h2>&nbsp;</h2></td>
 		{% endif %}
 	</td>
 </table>
