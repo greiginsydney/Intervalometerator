@@ -280,6 +280,24 @@ input[type=radio] {
 /* ---------------------------------------------------------*/
 /* Start: Menu */
 
+.top-header td {
+	border-style: none;
+}
+
+.hamburger {
+	text-align: right;
+	font-size: 2em;
+	cursor: pointer;
+	border-style: none;
+}
+
+.menu {
+	overflow: hidden;
+	background-color: #ffffff;
+	top: 0;
+	width: 100%;
+}
+
 .overlay {
 	height: 0%;
 	width: 100%;
@@ -317,13 +335,6 @@ input[type=radio] {
 	font-size: 2em;
 }
 
-
-.menu {
-	overflow: hidden;
-	background-color: #ffffff;
-	top: 0;
-	width: 100%;
-}
 
 /* End: Menu */
 /* ----------------------------------------------------------------------------------*/
