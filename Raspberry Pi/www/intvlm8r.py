@@ -45,7 +45,7 @@ import gphoto2 as gp
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g, send_from_directory
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 from flask_caching import Cache
 from celery import Celery, chain
@@ -2284,6 +2284,12 @@ def getShotsPerDay():
     except Exception as e:
         app.logger.debug('getShotsPerDay exception: ' + str(e))
         return None
+
+    
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+        'favicon.ico',mimetype='image/x-icon')
 
 
 @app.route('/robots.txt')
