@@ -19,8 +19,25 @@ server {
     listen 80 default_server;
     server_name intvlm8r intvlm8r.yourdomainname.com;
 
+    location ~* \.(css|jpg|jpeg|cr2|nef)$ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options "nosniff";
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
+
+    location ~* \.ico$ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header Content-Type "image/x-icon";
+        add_header X-Content-Type-Options "nosniff";
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
+
     location / {
         include proxy_params;
+        add_header Cache-Control "public, no-cache";
+        add_header X-Content-Type-Options "nosniff";
         proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
     }
 }
