@@ -383,6 +383,14 @@ install_website ()
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
 	rm -f /etc/nginx/sites-enabled/default
 
+	# Suppress server details in HTML headers:
+	if grep -q "^\s*server_tokens off;$" /etc/nginx/nginx.conf;
+	then 
+		echo 'Skipped: "/etc/nginx/nginx.conf" already contains "server_tokens off"'
+	else
+		sed -i -E 's/^(\s*)#\s*(server_tokens off;)/\1\2/g' /etc/nginx/nginx.conf #Match on "<whitepace>#<whitepace>server_tokens off" and remove the "#"
+	fi
+
 	echo ''
 
 	#intvlm8r
