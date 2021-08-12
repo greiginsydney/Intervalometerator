@@ -76,14 +76,14 @@ a {
 	text-align: center;
 }
 
-button{
+button {
 	width: 8em;
 	height: 2.5em;
 	font-size: 1em;
 	border-radius: 5px;
 }
 
-.resetbutton{
+.resetbutton {
 	width: 4em;
 	height: 1.5em;
 	font-size: 1em;
@@ -91,7 +91,7 @@ button{
 	margin: 0px 4px 0px 4px;
 }
 
-.hwbutton{
+.hwbutton {
 	width: 80%;
 	display: block;
 	margin: 0 auto;
@@ -116,9 +116,13 @@ input[type=radio] {
 	cursor: pointer;
 }
 
-.grey-out{
+.grey-out {
 	opacity: 0.6;
 	filter: alpha(opacity = 60); /* MSIE */
+}
+
+.hidden {
+	display: none;
 }
 
 .noborder {
