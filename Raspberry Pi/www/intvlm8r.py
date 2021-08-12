@@ -1203,7 +1203,7 @@ def system():
     templateData = {
         'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
-        'arduinoTime'    : 'Unknown',
+        'arduinoTime'    : '',
         'piDateTime'     : 'Unknown',
         'piNtp'          : '',
         'piHostname'     : 'Unknown',
