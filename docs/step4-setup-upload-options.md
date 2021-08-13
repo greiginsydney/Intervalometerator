@@ -5,6 +5,7 @@ The intvlm8r provides four methods to automatically upload images off the Raspbe
 - [SFTP](#ftp--sftp)
 - [Dropbox](#dropbox)
 - [Google Drive](#google-drive)
+- [rsync](#rsync)
 
 <br/>
 <hr />
@@ -15,6 +16,8 @@ There's no special config required to upload to an (S)FTP site. All you need to 
 
 > Be aware that the upload credentials are saved as plain text - unencrypted - in the invtlm8r's .ini file.
 
+<br>
+[Top](#setup-upload-options)
 <hr />
 
 ## Dropbox
@@ -70,6 +73,8 @@ NB: This process was last confirmed accurate on September 12th, 2019.
 <img src="https://user-images.githubusercontent.com/11004787/64750110-46ea2100-d55b-11e9-89e4-6ffe30ce95cc.jpg" width="40%">
 </p>
 
+<br>
+[Top](#setup-upload-options)
 <hr />
 
 ## Google Drive
@@ -275,13 +280,68 @@ python3 piTransfer.py copyNow
 
 37. Hopefully it's all working OK. If the images don't materialise in your Google Drive, check out the transfer error log at ```/home/pi/www/static/piTransfer.log```.
 
-<hr />
+<br>
 
 References:
 - [Google Drive API - Python Quickstart](https://developers.google.com/drive/api/v3/quickstart/python)
 - [Using the G Suite APIs](https://codelabs.developers.google.com/codelabs/gsuite-apis-intro/#0)
 
 <br>
+[Top](#setup-upload-options)
+<hr />
+
+## rsync
+ 
+[rsync](https://en.wikipedia.org/wiki/Rsync) is a Linux utility that lets you synchronise folders between two systems. Once you have rsync setup, the intvlm8r starts a session to your rsync host and the images and folders all synchronise. The sync takes place over ssh so it's secure, and it's compressed, minimising network use.
+ 
+At the completion of a successful rsync 'sync', the remote host provides a list of the files that were synchronised. The count of files is reported to the intvlm8r's status line, and if you have [DeleteAfterTransfer](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#my-camera-andor-pi-are-running-low-on-storage-how-can-i-delete-old-images) enabled, the local files are deleted.
+
+To setup rsync over ssh you first need to create a local rsa key pair and copy them to the remote host:
+ 
+1. SSH to the Raspberry Pi & login.
+ 
+2. `ssh-keygen` and just hit ENTER in response to all the questions.
+
+The output will look something like this:
+
+ ```bash
+pi@BlackPCB:~ $ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/pi/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/pi/.ssh/id_rsa.
+Your public key has been saved in /home/pi/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:lKFoMgmO8EabcdEF123456789+c pi@BlackPCB
+The key's randomart image is:
++---[RSA 2048]----+
+|oo+o+*..=o++     |
+|+=o=+ooOOoo .    |
+|o.B.*.o.=+.o     |
+| . =oo.oo .      |
+|    oO0oS.       |
+|   +.oo.+        |
+|     OooO        |
+|                 |
+|                 |
++----[SHA256]-----+
+pi@BlackPCB:~ 
+```
+ 
+3. As you can see in the above, the key has been saved in /home/pi/.ssh/ as id_rsa. This command will copy it to the remote server:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10 -f
+```
+ 
+(Don't forget to change the username from 'rsyncuser', and the IP address to those of your rsync login and host.)
+ 
+4. You're done! Now enter some details on the /transfer page and you should be good to go.
+ 
+<br>
+[Top](#setup-upload-options)
+<hr >
 
 ## Next steps are:
 - [PCB Assembly](/docs/step5-pcb-assembly.md)
