@@ -17,6 +17,7 @@ There's no special config required to upload to an (S)FTP site. All you need to 
 > Be aware that the upload credentials are saved as plain text - unencrypted - in the invtlm8r's .ini file.
 
 <br>
+
 [Top](#setup-upload-options)
 <hr />
 
@@ -74,6 +75,7 @@ NB: This process was last confirmed accurate on September 12th, 2019.
 </p>
 
 <br>
+
 [Top](#setup-upload-options)
 <hr />
 
@@ -287,6 +289,7 @@ References:
 - [Using the G Suite APIs](https://codelabs.developers.google.com/codelabs/gsuite-apis-intro/#0)
 
 <br>
+ 
 [Top](#setup-upload-options)
 <hr />
 
@@ -340,6 +343,7 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10 -f
 4. You're done! Now enter some details on the /transfer page and you should be good to go.
  
 <br>
+ 
 [Top](#setup-upload-options)
 <hr >
 
