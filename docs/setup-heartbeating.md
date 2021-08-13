@@ -26,9 +26,8 @@ To minimise log bloat (as it executes every five minutes) heartbeat.py logs only
 
 The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch".)
 <br/>
-<hr />
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Setup Heartbeating
@@ -52,7 +51,7 @@ The heartbeat URL is checked for validity as you type. Invalid URLs will be show
 
 Heartbeating will automatically commence the next time the minute is divisible by the selected frequency value, and always at the top of the hour.
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Setup "Dead Man’s Snitch"
@@ -82,7 +81,7 @@ Heartbeating will automatically commence the next time the minute is divisible b
 <img src="https://user-images.githubusercontent.com/11004787/125730218-fad365d5-e5b3-40dc-975a-e97f3bb7a6d8.png" width="80%">
 </p>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Add PagerDuty
@@ -127,7 +126,7 @@ Dead Man's Snitch will send you an e-mail if the intvlm8r fails to report in, ho
 - [https://community.pagerduty.com](https://community.pagerduty.com)
 
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Integrate with PagerDuty
@@ -138,5 +137,5 @@ TODO
 </p>
 
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#setup-heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
