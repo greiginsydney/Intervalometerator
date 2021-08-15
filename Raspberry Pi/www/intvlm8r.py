@@ -2072,11 +2072,10 @@ def copyNow(self):
         app.logger.info('copyNow() has been tasked with copying ' + str(numberToCopy) + ' images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
-        if (renameOnCopy == True):
-            renameString = getIni('Copy', 'renameString', 'string', None)
-            if not renameString:
-                app.logger.info('copyNow() error reading renameString from inifile')
-                renameOnCopy == False
+        renameString = getIni('Copy', 'renameString', 'string', None)
+        if not renameString:
+            app.logger.info('copyNow() reports renameString is blank/empty. Forcing renameOnCopy = False')
+            renameOnCopy = False
         while len(filesToCopy) > 0:
             try:
                 self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
