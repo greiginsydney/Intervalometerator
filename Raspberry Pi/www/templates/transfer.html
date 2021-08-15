@@ -34,7 +34,7 @@
 			<td id="copyHourMsg" class="centre-text"></td>
 		</tr>
 		
-		<tr id="showHideRenameCbx">
+		<tr>
 			<td class="noborder" >
 				<div class="alignleft">Rename on copy:</div>
 				<div class="alignright">
@@ -338,7 +338,6 @@ transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "no
 showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideRenameCbx.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
@@ -386,7 +385,6 @@ function newSelected(id)
 		showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-		showHideRenameCbx.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
 		showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
@@ -495,7 +493,7 @@ function updateRename(id)
 
 function showHideRename()
 {
-	var showHide = (renameOnCopy.checked == false || copyDay.value == "Off") ? "none":"";
+	var showHide = (renameOnCopy.checked == false) ? "none":"";
 	rows = document.getElementsByName("showHideRename")
 	for (i = 0; i < rows.length; i++)
 	{
