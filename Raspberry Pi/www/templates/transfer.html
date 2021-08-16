@@ -533,5 +533,15 @@ function updateExample()
 	exampleString.innerHTML = tempString;
 }
 
+// TY Matt: https://bytes.com/topic/javascript/answers/151597-element-td-accessing-parent-tr-element
+function getParentTable(obj)
+{
+	while (obj!= null && obj.tagName!=null && obj.tagName.toLowerCase() != 'table')
+	{
+		obj=obj.parentNode;
+	}
+	return obj;
+}
+	
 </script>
 {% endblock %}
