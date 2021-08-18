@@ -76,7 +76,7 @@
 			<td class="noborder">
 				<div class="alignleft">%F = original filename</div>
 				<div class="alignright">
-					<input name="renameString" id="renameString" type="text" value="{{ renameString }}" placeholder="ThisIntvlm8r-%F-%Y%m%D-%H%M" oninput="updateExample();newText(this.id)">
+					<input name="renameString" id="renameString" type="text" value="{{ renameString }}" placeholder="ThisIntvlm8r-%F-%Y%m%D-%H%M" oninput="newText(this.id);updateExample()">
 				</div>
 			</td>
 		</tr>
@@ -292,6 +292,16 @@ SelectionBits["copyHour"]           =  131072;
 SelectionBits["renameOnCopy"]       =  262144;
 SelectionBits["renameString"]       =  524288;
 
+//These text fields can't be blank if their respective selection is active
+var MandatoryByte     = 0;
+var MandatoryMaskBits = new Array();
+MandatoryMaskBits["ftp"]            =       6;
+MandatoryMaskBits["sftp"]           =     224;
+MandatoryMaskBits["dbx"]            =     512;
+MandatoryMaskBits["google"]         =       0;
+MandatoryMaskBits["rsync"]          =    6144;
+MandatoryMaskBits["copy"]           =  524288;
+
 
 var method             = document.getElementById("tfrMethod");
 var copyDay            = document.getElementById("copyDay");
@@ -301,6 +311,7 @@ var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
 var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
 var showHideTrnButton  = document.getElementById("tfrTrNow");
 var renameOnCopy       = document.getElementById("renameOnCopy");
+var renameString       = document.getElementById("renameString");
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
 var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
 var ftp                = document.getElementById("ftp");
@@ -362,6 +373,7 @@ else
 }
 
 // Run when the form first loads:
+checkForBlanks();
 lightButtons();
 showHideRename();
 updateExample();
@@ -423,8 +435,10 @@ function newSelected(id)
 
 function newText(id)
 {
-	var option = document.getElementById(id);
+	var option  = document.getElementById(id);
+	var tableID = getParentTable(option);
 
+	//This detects if we've changed a value and thus the form needs to be saved:
 	if (option.defaultValue != option.value)
 	{
 		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
@@ -432,6 +446,18 @@ function newText(id)
 	else
 	{
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+
+	//This adds colour and sets a flag if this is one of the mandatory text fields & is blank:
+	if ((option.value == "") && ((MandatoryMaskBits[tableID.id] & SelectionBits[id]) != 0))
+	{
+		MandatoryByte |= SelectionBits[id];  // Or turns the bit on
+		option.classList.add("redborder")
+	}
+	else
+	{
+		MandatoryByte &= ~SelectionBits[id]; // AND the NOT turns it off
+		option.classList.remove("redborder")
 	}
 	lightButtons();
 }
@@ -467,6 +493,13 @@ function lightButtons()
 	{
 		document.getElementById("tfrTrNow").disabled  = false;
 	}
+	
+	//Disallow 'Apply' if mandatory text fields are empty:
+	if (((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0)
+		|| (renameOnCopy.checked == true && renameString.value == ""))
+	{
+		document.getElementById("apply").disabled  = true;
+	}
 }
 
 //https://stackoverflow.com/questions/4907843/open-a-url-in-a-new-tab-and-not-a-new-window-using-javascript
@@ -486,6 +519,15 @@ function updateRename(id)
 	{
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
 	}
+	
+	if (renameOnCopy.checked == true && renameString.value == "")
+	{
+		renameString.classList.add("redborder")
+	}
+	else
+	{
+		renameString.classList.remove("redborder")
+	}
 	showHideRename();
 	lightButtons();
 }
@@ -497,6 +539,24 @@ function showHideRename()
 	for (i = 0; i < rows.length; i++)
 	{
 		rows[i].style.display = showHide;
+	}
+}
+
+function checkForBlanks()
+{
+	var inputs = document.getElementsByTagName("input");
+	var tableID;
+	var thisInput;
+	for (i = 0; i < inputs.length; i++)
+	{
+		thisInput = inputs[i];
+		tableID = getParentTable(thisInput);
+		if (((thisInput.value == "") && ((MandatoryMaskBits[tableID.id] & SelectionBits[thisInput.id]) != 0))
+			|| ((thisInput.value == "") && (thisInput.id == 'renameString') && (renameOnCopy.checked == true)))
+		{
+			MandatoryByte |= SelectionBits[thisInput.id];  // Or turns the bit on
+			thisInput.classList.add("redborder")
+		}
 	}
 }
 
@@ -542,6 +602,6 @@ function getParentTable(obj)
 	}
 	return obj;
 }
-	
+
 </script>
 {% endblock %}
