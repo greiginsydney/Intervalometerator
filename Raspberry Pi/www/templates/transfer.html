@@ -92,7 +92,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" onclick="postUrl('/trnCopyNow')">Copy now</button>
+					<button type="button" name="copyNow" id="copyNow" onclick="postUrl('/trnCopyNow')">Copy now</button>
 				</div>
 			</td>
 		</tr>
@@ -464,7 +464,7 @@ function newText(id)
 
 function lightButtons()
 {
-	var copyButton = document.getElementById("copy");
+	var copyButton = document.getElementById("copyNow");
 	var applyButton = document.getElementById("apply");
 	
 	//'Apply' button:
@@ -476,7 +476,7 @@ function lightButtons()
 	{
 		applyButton.disabled  = false;
 	}
-	
+
 	//'Copy now' button:
 	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
 	{
@@ -484,9 +484,9 @@ function lightButtons()
 	}
 	else
 	{
-		applyButton.disabled  = false;
+		copyButton.disabled  = false;
 	}
-	
+
 	//'Transfer now' button:
 	if (((SelectionByte & 65535) != 0) || ((SelectionByte & 65535) != 0))
 	{
@@ -496,12 +496,17 @@ function lightButtons()
 	{
 		document.getElementById("tfrTrNow").disabled  = false;
 	}
-	
+
+	//Disallow 'Copy' and 'Apply' if renameString is empty.
 	//Disallow 'Apply' if mandatory text fields are empty:
-	if (((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0)
-		|| (renameOnCopy.checked == true && renameString.value == ""))
+	if (renameOnCopy.checked == true && renameString.value === "")
 	{
-		applyButton.disabled  = true;
+		copyButton.disabled  = true;
+		applyButton.disabled = true;
+	}
+	else if ((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0) 
+	{
+		applyButton.disabled = true;
 	}
 }
 
