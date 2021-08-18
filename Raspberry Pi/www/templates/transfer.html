@@ -464,24 +464,27 @@ function newText(id)
 
 function lightButtons()
 {
+	var copyButton = document.getElementById("copy");
+	var applyButton = document.getElementById("apply");
+	
 	//'Apply' button:
 	if (SelectionByte == 0)
 	{
-		document.getElementById("apply").disabled  = true;
+		applyButton.disabled  = true;
 	}
 	else
 	{
-		document.getElementById("apply").disabled  = false;
+		applyButton.disabled  = false;
 	}
 	
 	//'Copy now' button:
 	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
 	{
-		document.getElementById("copy").disabled  = true;
+		copyButton.disabled  = true;
 	}
 	else
 	{
-		document.getElementById("copy").disabled  = false;
+		applyButton.disabled  = false;
 	}
 	
 	//'Transfer now' button:
@@ -498,7 +501,7 @@ function lightButtons()
 	if (((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0)
 		|| (renameOnCopy.checked == true && renameString.value == ""))
 	{
-		document.getElementById("apply").disabled  = true;
+		applyButton.disabled  = true;
 	}
 }
 
