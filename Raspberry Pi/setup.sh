@@ -253,12 +253,12 @@ install_website ()
 
 	if [ -f default_image.JPG ];
 	then
-		mv -fv default_image.JPG ~/photos/default_image.JPG
+		mv -nv default_image.JPG ~/photos/default_image.JPG
 	fi
 
 	if [ -f default_image-thumb.JPG ];
 	then
-		mv -fv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
+		mv -nv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
 	fi
 	
 	if [ -f piThumbsInfo.txt ];
