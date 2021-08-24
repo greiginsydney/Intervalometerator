@@ -2143,7 +2143,7 @@ def newThumbs(self):
                 else:
                     app.logger.info('Thumb for ' + dest + ' already exists')
         else:
-            app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
+            app.logger.info('newThumbs() reports there are no thumbsToCreate.')
     except Exception as e:
         app.logger.info('newThumbs error: ' + str(e))
     dedupeExifData()
