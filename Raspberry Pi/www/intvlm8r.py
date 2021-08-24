@@ -1598,7 +1598,7 @@ def files_to_copy(camera):
     camera_files = list_camera_files(camera)
     renamed_files = get_renamed_files(PI_PHOTO_RENAME_FILE)
     if not camera_files:
-        app.logger.debug('No files found')
+        app.logger.debug('files_to_copy() reports no files found on the camera')
         return
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
