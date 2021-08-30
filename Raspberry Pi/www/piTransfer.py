@@ -625,6 +625,10 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             if stderrdata:
                 stderrdata = stderrdata.strip()
                 log("rsync err'd with stderrdata = " + str(stderrdata))
+                if 'Host key verification failed' in str(stderrdata):
+                    log('STATUS: rsync host key verification failed')
+                else:
+                    log('STATUS: rsync error')
             # wait until process is really terminated
             exitcode = result.wait()
             if exitcode == 0:
@@ -634,11 +638,13 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                     uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
                     if os.path.isfile(uploadedFile):
                         numFilesOK = uploadedOK(uploadedFile, numFilesOK)
+                log('STATUS: {0} files uploaded OK'.format(str(numFilesOK)))
             else:
                 log('rsync exited with a non-zero exitcode')
+                #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
         except Exception as e:
             log('Error uploading via rsync: {0}'.format(str(e)))
-        log('STATUS: %d files uploaded OK' % (numFilesOK))
+            log('STATUS: rsync error')
     return
 
 
