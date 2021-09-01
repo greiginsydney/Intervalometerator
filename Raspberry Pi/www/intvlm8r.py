@@ -1015,13 +1015,13 @@ def transferNow(self):
     app.logger.info('TransferNow() entered') #This logs to /var/log/celery/celery_worker.log
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to transfer images'})
     try:
+        errorMsg = 'out'
         cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
             app.logger.info('transferNow output text = ' + str(stdoutdata))
-            errorMsg = 'out'
         if stderrdata:
             stderrdata = stderrdata.strip()
             app.logger.info('transferNow error = ' + str(stderrdata))
