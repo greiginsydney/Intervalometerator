@@ -303,7 +303,7 @@ To setup rsync over ssh you first need to create a local rsa key pair and copy t
  
 1. SSH to the Raspberry Pi & login.
  
-2. `ssh-keygen` and if this will be the only intvlm8r uploading to your rsync host, just hit ENTER in response to all the questions. If there are others, customise the filename in response to the "Enter file" question.
+2. `ssh-keygen` and just hit ENTER in response to all the questions.
 
 The output will look something like this:
 
@@ -338,7 +338,7 @@ pi@BlackPCB:~
 ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10 -f
 ```
  
-(Don't forget to change the username from 'rsyncuser' and the IP address to those of your rsync login and host. Also, update the filename if you changed it from the default in step 2.)
+(Don't forget to change the username from 'rsyncuser' and the IP address to those of your rsync login and host.)
  
 4. Answer "yes" to the prompt, then provide the rsync user's password to authorise the transfer:
 
