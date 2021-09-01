@@ -1020,7 +1020,7 @@ def transferNow(self):
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
-            app.logger.info('transferNow error = ' + str(stdoutdata))
+            app.logger.info('transferNow output text = ' + str(stdoutdata))
         if stderrdata:
             stderrdata = stderrdata.strip()
             app.logger.info('transferNow error = ' + str(stderrdata))
