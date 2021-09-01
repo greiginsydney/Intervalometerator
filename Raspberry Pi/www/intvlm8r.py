@@ -1021,13 +1021,16 @@ def transferNow(self):
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
             app.logger.info('transferNow output text = ' + str(stdoutdata))
+            errorMsg = 'out'
         if stderrdata:
             stderrdata = stderrdata.strip()
             app.logger.info('transferNow error = ' + str(stderrdata))
+            errorMsg = ''
     except Exception as e:
         app.logger.info('Unhandled transferNow error: ' + str(e))
+        errorMsg = ' unexpected'
     
-    statusMessage = 'transferNow returned'
+    statusMessage = 'transferNow returned with{0} error'.format(errorMsg)
     return {'status': statusMessage}
 
 
