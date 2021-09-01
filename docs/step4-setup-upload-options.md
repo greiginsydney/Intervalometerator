@@ -343,7 +343,7 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10 -f
 4. Answer "yes" to the prompt, then provide the rsync user's password to authorise the transfer:
 
 ```bash
-pi@BlackPCB:~ $ ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10 -f
+pi@BlackPCB:~ $ ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/pi/.ssh/id_rsa.pub"
 The authenticity of host '10.10.10.10 (10.10.10.10)' can't be established.
 ECDSA key fingerprint is SHA256:lKFoMgmO8EabcdEF123456789+c.
