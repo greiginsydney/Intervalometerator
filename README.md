@@ -74,8 +74,7 @@ Should the backup battery in the DeadOn RTC fail while the intvlm8r is not power
 
 Check out these documents for more information:
 * [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions). This provides a detailed explanation of some of the design decisions and compromises.
-* [Shopping list](SHOPPINGLIST.md). All the items you need to make this.
-* Pre-built and pre-programmed PCBs are [available on eBay](https://www.ebay.com.au/itm/265085430681) if you're not one for soldering or programming micro-controllers.
+* [Shopping list](SHOPPINGLIST.md). All the items you need to make this. (Pre-built and pre-programmed PCBs are [available on eBay](https://www.ebay.com.au/itm/265085430681) if you're not one for soldering or programming micro-controllers.)
 * [Case assembly](docs/step8-case-assembly.md). A walk-through of preparing the Pelican case.
 * [PCB assembly](docs/step5-pcb-assembly.md). Putting the PCB together.
 
