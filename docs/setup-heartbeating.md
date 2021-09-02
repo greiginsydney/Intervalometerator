@@ -27,7 +27,7 @@ As heartbeat.py executes every five minutes, `intvlm8r.logrotate` constrains the
 The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch" or "PagerDuty", introduced later on this page.)
 <br/>
 
-[Top](#setup-heartbeating)
+[Top](#heartbeating)
 <hr/>
 
 ## Setup Heartbeating
@@ -52,7 +52,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 4. Once a change has been applied, heartbeating automatically commences at the appropriate frequency.
 <br>
 
-[Top](#setup-heartbeating)
+[Top](#heartbeating)
 <hr/>
 
 ## Setup "Dead Man’s Snitch"
@@ -83,7 +83,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 </p>
 <br>
 
-[Top](#setup-heartbeating)
+[Top](#heartbeating)
 <hr/>
 
 ## Add PagerDuty
@@ -141,7 +141,7 @@ Pre-req's:
 </p>
 <br>
 
-[Top](#setup-heartbeating)
+[Top](#heartbeating)
 
 <hr/>
 
@@ -190,5 +190,5 @@ You need to be on [the 'Medium' plan](https://deadmanssnitch.com/plans) or highe
 </p>
 <br>
 
-[Top](#setup-heartbeating)
+[Top](#heartbeating)
 <hr/>
