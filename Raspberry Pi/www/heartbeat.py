@@ -38,7 +38,7 @@ INTERNAL_HB_URL  = "http://localhost:8080/heartbeat"
 def main():
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     if not os.path.isfile(INIFILE_NAME):
-        log("STATUS: Heartbeat aborted. I've lost the INI file")
+        log("Heartbeat aborted. I've lost the INI file")
         return
     config = configparser.ConfigParser(
         {
@@ -60,14 +60,19 @@ def main():
         log('Heartbeat aborted. hbUrl=None')
         return
     now = datetime.now().minute
-    if (now + 60) % int(hbFreq) == 0:
+    hbNow = False
+    if hbFreq == '60':
+        if now == 30: hbNow = True
+    elif hbFreq == '30':
+        if (now == 15 or now == 45): hbNow = True
+    elif (now + 60) % int(hbFreq) == 0: hbNow = True
+    if hbNow == True:
         #The above code validates we're MEANT to be sending a heartbeat now.
         #The below calls the main intvlm8r script and gets *it* to initiate the heartbeat to the monitoring URL
         #(The point being we won't send a HB probe if the *intvlm8r* script isn't running OK)
         initiateHeartbeat(INTERNAL_HB_URL)
     else:
-        #print('not yet Heartbeat oclock')
-        pass
+        log("Not yet Heartbeat o'clock. hbFreq={0}".format(hbFreq))
 
 
 def initiateHeartbeat(url):
@@ -79,7 +84,7 @@ def initiateHeartbeat(url):
     if url:
         htmltext = None
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=20)
             response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
             htmltext = response.text.rstrip()
             statusCode = response.status_code

@@ -61,4 +61,8 @@ server {
         include proxy_params;
         proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
     }
+    location /trnTrNow {
+        include proxy_params;
+        proxy_pass http://unix:/home/pi/www/intvlm8r.sock;
+    }
 }

@@ -172,7 +172,7 @@ By default a new user can't `sudo` things without needing to provide their passw
 newusername  ALL=(ALL) NOPASSWD:ALL
 ```
 
-This lets 'newusername' execute ALL commands without needing to constantly re-type their password. I'd like to be able to tighten it up, but haven't been able to find the right command/syntax for the script to be albe to run correctly - and it's not for a lack of trying.
+This lets 'newusername' execute ALL commands without needing to constantly re-type their password. I'd like to be able to tighten it up, but haven't been able to find the right command/syntax for the script to be able to run correctly - and it's not for a lack of trying.
 
 
 <br>
