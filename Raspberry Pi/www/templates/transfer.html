@@ -1,10 +1,8 @@
 {% extends "index.html" %}
 {% block content %}
 
-<div id="progress"></div>
-
 <form method="post" onsubmit="return userFeedback(this, event)">
-	<table>
+	<table id='copy'>
 		<tr>
 			<th>Copy Settings - camera to Pi</th>
 		</tr>
@@ -12,7 +10,7 @@
 			<td>
 				<div class="alignleft">Copy day:</div>
 				<div class="alignright">
-					<select name="copyDay" id="copyDay" onchange="newSelected(this.id)">
+					<select name="copyDay" id="copyDay" title="The day of the week on which a copy takes place" onchange="newSelected(this.id)">
 					{% for day in ['Off', 'Daily', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						<option value="{{ day }}"{% if day == copyDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
@@ -24,7 +22,7 @@
 			<td>
 				<div class="alignleft">Copy hour:</div>
 				<div class="alignright">
-					<select name="copyHour" id="copyHour" onchange="newSelected(this.id)">
+					<select name="copyHour" id="copyHour" title="The hour of the day at which a copy takes place" onchange="newSelected(this.id)">
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							<option value="{{ hour }}"{% if hour == copyHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
@@ -33,7 +31,60 @@
 			</td>
 		</tr>
 		<tr id="showHideCopyHrMsg">
-			<td class="noborder" id="copyHourMsg"></td>
+			<td id="copyHourMsg" class="centre-text"></td>
+		</tr>
+		
+		<tr>
+			<td class="noborder" >
+				<div class="alignleft">Rename on copy:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="renameOnCopy" name="renameOnCopy" {% if renameOnCopy == 'on' %}CHECKED {% endif %}title="Check to rename images when they're copied from the camera" onchange="updateRename(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder" ><label for="renameString">Create a new filename using these format strings:</label></td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%Y = 4-digit year</div>
+				<div class="alignright">%m = month (01-12)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%b = short month ('Jan')</div>
+				<div class="alignright">%d = day of month (01-31)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%a = short weekday ('Mon')</div>
+				<div class="alignright">%H = hour (00-23)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%M = minute (00-59)</div>
+				<div class="alignright">%S = second (00-59)</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft">%F = original filename</div>
+				<div class="alignright">
+					<input name="renameString" id="renameString" type="text" value="{{ renameString }}" placeholder="ThisIntvlm8r-%F-%Y%m%D-%H%M" oninput="newText(this.id);updateExample()">
+				</div>
+			</td>
+		</tr>
+		<tr name="showHideRename">
+			<td class="noborder">
+				<div class="alignleft" id="originalFileName"></div>
+				<div class="alignright" id="exampleString"></div>
+			</td>
 		</tr>
 	</table>
 	
@@ -41,7 +92,7 @@
 		<tr>
 			<td class="noborder">
 				<div class="alignleft">
-					<button type="button" name="copy" id="copy" onclick="postUrl('/trnCopyNow')">Copy now</button>
+					<button type="button" name="copyNow" id="copyNow" onclick="postUrl('/trnCopyNow')">Copy now</button>
 				</div>
 			</td>
 		</tr>
@@ -55,8 +106,8 @@
 			<td>
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
-					<select name="tfrMethod" id="tfrMethod" onchange="newSelected(this.id)">
-					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive'] %}
+					<select name="tfrMethod" id="tfrMethod" title="Choose one of these transfer options" onchange="newSelected(this.id)">
+					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive', 'rsync'] %}
 						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %} {% if method != 'FTP' and method in hiddenTransferOptions %} DISABLED{% endif %} >{{ method }}</option>"
 					{% endfor %}
 					</select>
@@ -71,25 +122,25 @@
 	<table id="ftp">
 		<tr>
 			<td>
-				<div class="alignleft">FTP server URL:</div>
+				<div class="alignleft"><label for="ftpServer">FTP server URL:</label></div>
 				<div class="alignright"><input type="text" name="ftpServer" id="ftpServer" value="{{ ftpServer }}" placeholder="myFtpServer.com" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Username:</div>
+				<div class="alignleft"><label for="ftpUser">Username:</label></div>
 				<div class="alignright"><input type="text" name="ftpUser" id="ftpUser" value="{{ ftpUser }}" placeholder="ftpUsername" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Password:</div>
+				<div class="alignleft"><label for="ftpPassword">Password:</label></div>
 				<div class="alignright"><input type="password" name="ftpPassword" id="ftpPassword" value="{{ ftpPassword }}" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Remote folder:</div>
+				<div class="alignleft"><label for="ftpRemoteFolder">Remote folder:</label></div>
 				<div class="alignright"><input type="text" name="ftpRemoteFolder" id="ftpRemoteFolder" value="{{ ftpRemoteFolder }}" placeholder="e.g. /images/" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
@@ -98,25 +149,25 @@
 	<table id="sftp">
 		<tr>
 			<td>
-				<div class="alignleft">SFTP server URL:</div>
+				<div class="alignleft"><label for="sftpServer">SFTP server URL:</label></div>
 				<div class="alignright"><input type="text" name="sftpServer" id="sftpServer" value="{{ sftpServer }}" placeholder="mySftpServer.com" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Username:</div>
+				<div class="alignleft"><label for="sftpUser">Username:</label></div>
 				<div class="alignright"><input type="text" name="sftpUser" id="sftpUser" value="{{ sftpUser }}" placeholder="sftpUsername" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Password:</div>
+				<div class="alignleft"><label for="sftpPassword">Password:</label></div>
 				<div class="alignright"><input type="password" name="sftpPassword" id="sftpPassword" value="{{ sftpPassword }}" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Remote folder:</div>
+				<div class="alignleft"><label for="sftpRemoteFolder">Remote folder:</label></div>
 				<div class="alignright"><input type="text" name="sftpRemoteFolder" id="sftpRemoteFolder" value="{{ sftpRemoteFolder }}" placeholder="e.g. /images/" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
@@ -125,7 +176,7 @@
 	<table id="dbx">
 		<tr>
 			<td>
-				<div class="alignleft">Token:</div>
+				<div class="alignleft"><label for="dbx_token">Token:</label></div>
 				<div class="alignright"><input type="text" name="dbx_token" id="dbx_token" value="{{ dbx_token }}" placeholder="abcd1234-2345rtyu-etc" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
@@ -134,8 +185,29 @@
 	<table id="google">
 		<tr>
 			<td>
-				<div class="alignleft">Remote folder:</div>
+				<div class="alignleft"><label for="googleRemoteFolder">Remote folder:</label></div>
 				<div class="alignright"><input type="text" name="googleRemoteFolder" id="googleRemoteFolder" value="{{ googleRemoteFolder }}" placeholder="e.g. images" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+	</table>
+
+	<table id="rsync">
+		<tr>
+			<td>
+				<div class="alignleft"><label for="rsyncUsername">Username:</label></div>
+				<div class="alignright"><input type="text" name="rsyncUsername" id="rsyncUsername" value="{{ rsyncUsername }}" placeholder="rsyncUsername" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft"><label for="rsyncHost">Host:</label></div>
+				<div class="alignright"><input type="text" name="rsyncHost" id="rsyncHost" value="{{ rsyncHost }}" placeholder="myRsyncHost.com" oninput="newText(this.id)"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft"><label for="rsyncRemoteFolder">Remote folder:</label></div>
+				<div class="alignright"><input type="text" name="rsyncRemoteFolder" id="rsyncRemoteFolder" value="{{ rsyncRemoteFolder }}" placeholder="e.g. /images/" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 	</table>
@@ -145,7 +217,7 @@
 			<td>
 				<div class="alignleft">Transfer day:</div>
 				<div class="alignright">
-					<select name="transferDay" id="transferDay" onchange="newSelected(this.id)">
+					<select name="transferDay" id="transferDay" title="The day of the week on which a copy takes place" onchange="newSelected(this.id)">
 					{% for day in ['Daily','Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						<option value="{{ day }}"{% if day == transferDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
@@ -157,7 +229,7 @@
 			<td>
 				<div class="alignleft">Transfer hour:</div>
 				<div class="alignright">
-					<select name="transferHour" id="transferHour" onchange="newSelected(this.id)">
+					<select name="transferHour" id="transferHour" title="The hour of the day at which a transfer takes place" onchange="newSelected(this.id)">
 						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
 							<option value="{{ hour }}"{% if hour == transferHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
@@ -166,7 +238,7 @@
 			</td>
 		</tr>
 		<tr id="showHideTrnHrMsg">
-			<td class="noborder" id="transferHourMsg"></td>
+			<td class="centre-text" id="transferHourMsg"></td>
 		</tr>
 		<tr>
 			<td>
@@ -198,51 +270,89 @@
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
-SelectionBits["tfrMethod"]          =     1;
-SelectionBits["ftpServer"]          =     2;
-SelectionBits["ftpUser"]            =     4;
-SelectionBits["ftpPassword"]        =     8;
-SelectionBits["ftpRemoteFolder"]    =    16;
-SelectionBits["sftpServer"]         =    32;
-SelectionBits["sftpUser"]           =    64;
-SelectionBits["sftpPassword"]       =   128;
-SelectionBits["sftpRemoteFolder"]   =   256;
-SelectionBits["dbx_token"]          =   512;
-SelectionBits["sftpRemoteFolder"]   =  1024;
-SelectionBits["transferDay"]        =  2048;
-SelectionBits["transferHour"]       =  4096;
-SelectionBits["copyDay"]            =  8192;
-SelectionBits["copyHour"]           = 16384;
-SelectionBits["googleRemoteFolder"] = 32768;
+//Don't change these without updating the 'Transfer now' interlocking in lightButtons():
+SelectionBits["tfrMethod"]          =       1;
+SelectionBits["ftpServer"]          =       2;
+SelectionBits["ftpUser"]            =       4;
+SelectionBits["ftpPassword"]        =       8;
+SelectionBits["ftpRemoteFolder"]    =      16;
+SelectionBits["sftpServer"]         =      32;
+SelectionBits["sftpUser"]           =      64;
+SelectionBits["sftpPassword"]       =     128;
+SelectionBits["sftpRemoteFolder"]   =     256;
+SelectionBits["dbx_token"]          =     512;
+SelectionBits["googleRemoteFolder"] =    1024;
+SelectionBits["rsyncUsername"]      =    2048;
+SelectionBits["rsyncHost"]          =    4096;
+SelectionBits["rsyncRemoteFolder"]  =    8192;
+SelectionBits["transferDay"]        =   16384;
+SelectionBits["transferHour"]       =   32768;
+SelectionBits["copyDay"]            =   65536;
+SelectionBits["copyHour"]           =  131072;
+SelectionBits["renameOnCopy"]       =  262144;
+SelectionBits["renameString"]       =  524288;
 
-var method = document.getElementById("tfrMethod");
-var copyDay = document.getElementById("copyDay");
-var showHideCopyHour = document.getElementById("showHideCopyHour");
-var showHideTrnHour = document.getElementById("showHideTrnHour");
-var showHideCopyHrMsg = document.getElementById("showHideCopyHrMsg");
-var showHideTrnHrMsg = document.getElementById("showHideTrnHrMsg");
-var showHideTrnButton = document.getElementById("tfrTrNow");
+//These text fields can't be blank if their respective selection is active
+var MandatoryByte     = 0;
+var MandatoryMaskBits = new Array();
+MandatoryMaskBits["ftp"]            =       6;
+MandatoryMaskBits["sftp"]           =     224;
+MandatoryMaskBits["dbx"]            =     512;
+MandatoryMaskBits["google"]         =       0;
+MandatoryMaskBits["rsync"]          =    6144;
+MandatoryMaskBits["copy"]           =  524288;
 
+
+var method             = document.getElementById("tfrMethod");
+var copyDay            = document.getElementById("copyDay");
+var showHideCopyHour   = document.getElementById("showHideCopyHour");
+var showHideTrnHour    = document.getElementById("showHideTrnHour");
+var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
+var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
+var showHideTrnButton  = document.getElementById("tfrTrNow");
+var renameOnCopy       = document.getElementById("renameOnCopy");
+var renameString       = document.getElementById("renameString");
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
-var showHideTrnMethod = document.getElementById("showHideTrnMethod");
-var ftp = document.getElementById("ftp");
-var sftp = document.getElementById("sftp");
-var dbx = document.getElementById("dbx");
-var transfer = document.getElementById("transfer");
+var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
+var ftp                = document.getElementById("ftp");
+var sftp               = document.getElementById("sftp");
+var dbx                = document.getElementById("dbx");
+var google             = document.getElementById("google");
+var rsync              = document.getElementById("rsync");
+var transfer           = document.getElementById("transfer");
+var exampleString      = document.getElementById("exampleString");
+var renameString       = document.getElementById("renameString");
+
+//initialise constants for the file rename calc's:
+var short_month = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+var short_day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var today = new Date();
+var pcY = today.getFullYear()
+var pcm = ('0' + (today.getMonth()+1)).slice(-2)
+var pcb = short_month[today.getMonth()]
+var pcd = ('0' + (today.getDate())).slice(-2)
+var pca = short_day[today.getDay()]
+var pcH = ('0' + (today.getHours())).slice(-2)
+var pcM = ('0' + (today.getMinutes())).slice(-2)
+var pcS = ('0' + (today.getSeconds())).slice(-2)
+var pcF = 'IMG_001.JPG'
+
+document.getElementById("originalFileName").innerHTML = pcF
 
 // This drives the default display on load:
-ftp.style.display = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
-sftp.style.display = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
-dbx.style.display = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
-google.style.display = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+ftp.style.display      = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
+sftp.style.display     = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
+dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
+google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
-showHideCopyHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideTrnHour.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideCopyHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnHrMsg.style.display = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnMethod.style.display = (copyDay.value == "Off") ? "none":"";
+showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-showHideTrnButton.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideTrnButton.style.display  = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -263,7 +373,10 @@ else
 }
 
 // Run when the form first loads:
-lightButtons(); 
+checkForBlanks();
+lightButtons();
+showHideRename();
+updateExample();
 
 function newSelected(id)
 {
@@ -275,6 +388,7 @@ function newSelected(id)
 		sftp.style.display              = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
 		dbx.style.display               = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
 		google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		rsync.style.display             = (method.value != "rsync"        || copyDay.value == "Off") ? "none":"";
 		transfer.style.display          = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 		showHideTrnButton.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 	}
@@ -321,8 +435,10 @@ function newSelected(id)
 
 function newText(id)
 {
-	var option = document.getElementById(id);
+	var option  = document.getElementById(id);
+	var tableID = getParentTable(option);
 
+	//This detects if we've changed a value and thus the form needs to be saved:
 	if (option.defaultValue != option.value)
 	{
 		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
@@ -331,25 +447,168 @@ function newText(id)
 	{
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
 	}
+
+	//This adds colour and sets a flag if this is one of the mandatory text fields & is blank:
+	if ((option.value == "") && ((MandatoryMaskBits[tableID.id] & SelectionBits[id]) != 0))
+	{
+		MandatoryByte |= SelectionBits[id];  // Or turns the bit on
+		option.classList.add("redborder")
+	}
+	else
+	{
+		MandatoryByte &= ~SelectionBits[id]; // AND the NOT turns it off
+		option.classList.remove("redborder")
+	}
 	lightButtons();
 }
 
 function lightButtons()
 {
+	var copyButton = document.getElementById("copyNow");
+	var applyButton = document.getElementById("apply");
+	
+	//'Apply' button:
 	if (SelectionByte == 0)
 	{
-		document.getElementById("apply").disabled  = true;
+		applyButton.disabled  = true;
 	}
 	else
 	{
-		document.getElementById("apply").disabled  = false;
+		applyButton.disabled  = false;
+	}
+
+	//'Copy now' button:
+	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
+	{
+		copyButton.disabled  = true;
+	}
+	else
+	{
+		copyButton.disabled  = false;
+	}
+
+	//'Transfer now' button:
+	if (((SelectionByte & 65535) != 0) || ((SelectionByte & 65535) != 0))
+	{
+		document.getElementById("tfrTrNow").disabled  = true;
+	}
+	else
+	{
+		document.getElementById("tfrTrNow").disabled  = false;
+	}
+
+	//Disallow 'Copy' and 'Apply' if renameString is empty.
+	//Disallow 'Apply' if mandatory text fields are empty:
+	if (renameOnCopy.checked == true && renameString.value === "")
+	{
+		copyButton.disabled  = true;
+		applyButton.disabled = true;
+	}
+	else if ((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0) 
+	{
+		applyButton.disabled = true;
 	}
 }
 
 //https://stackoverflow.com/questions/4907843/open-a-url-in-a-new-tab-and-not-a-new-window-using-javascript
 function openInNewTab(url) {
-  var win = window.open(url, '_blank');
-  win.focus();
+	var win = window.open(url, '_blank');
+	win.focus();
+}
+
+function updateRename(id)
+{
+	var option = document.getElementById(id);
+	if (option.defaultChecked != option.checked)
+	{
+		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+	}
+	else
+	{
+		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+	}
+	
+	if (renameOnCopy.checked == true && renameString.value == "")
+	{
+		renameString.classList.add("redborder")
+	}
+	else
+	{
+		renameString.classList.remove("redborder")
+	}
+	showHideRename();
+	lightButtons();
+}
+
+function showHideRename()
+{
+	var showHide = (renameOnCopy.checked == false) ? "none":"";
+	rows = document.getElementsByName("showHideRename")
+	for (i = 0; i < rows.length; i++)
+	{
+		rows[i].style.display = showHide;
+	}
+}
+
+function checkForBlanks()
+{
+	var inputs = document.getElementsByTagName("input");
+	var tableID;
+	var thisInput;
+	for (i = 0; i < inputs.length; i++)
+	{
+		thisInput = inputs[i];
+		tableID = getParentTable(thisInput);
+		if (((thisInput.value == "") && ((MandatoryMaskBits[tableID.id] & SelectionBits[thisInput.id]) != 0))
+			|| ((thisInput.value == "") && (thisInput.id == 'renameString') && (renameOnCopy.checked == true)))
+		{
+			MandatoryByte |= SelectionBits[thisInput.id];  // Or turns the bit on
+			thisInput.classList.add("redborder")
+		}
+	}
+}
+
+function updateExample()
+{
+	<!-- Does two things: validates the input is acceptable, and updates the example text field -->
+	var tempString = renameString.value;
+	var fileName = pcF.split('.')[0];
+	var fileExt  = pcF.split('.')[1];
+	
+	//Strip any commas or spaces and update the field:
+	tempString = tempString.replace(' ','')
+	tempString = tempString.replace(',','')
+	renameString.value = tempString;
+	
+	//Substitute values and update the example
+	if (tempString === '')
+	{
+		tempString = pcF;
+	}
+	else
+	{
+		tempString = tempString.replace(/%F/g, fileName);
+		tempString = tempString.replace(/%Y/g, pcY);
+		tempString = tempString.replace(/%m/g, pcm);
+		tempString = tempString.replace(/%b/g, pcb);
+		tempString = tempString.replace(/%d/g, pcd);
+		tempString = tempString.replace(/%a/g, pca);
+		tempString = tempString.replace(/%H/g, pcH);
+		tempString = tempString.replace(/%M/g, pcM);
+		tempString = tempString.replace(/%S/g, pcS);
+		tempString += '.' + fileExt;
+	}
+	exampleString.innerHTML = tempString;
+}
+
+// TY Matt: https://bytes.com/topic/javascript/answers/151597-element-td-accessing-parent-tr-element
+function getParentTable(obj)
+{
+	while (obj!= null && obj.tagName!=null && obj.tagName.toLowerCase() != 'table')
+	{
+		obj=obj.parentNode;
+	}
+	return obj;
 }
 
 </script>

@@ -16,7 +16,7 @@ The intvlm8r can be set to send a periodic "check in" message - a heartbeat - to
 
 Any web address can be used for this: the onus is on the receiving service to identify the intvlm8r (typically through the use of a dedicated URL), log the heartbeats and determine when a heartbeat has been missed.
 
-When enabled, the intvlm8r will send a heartbeat when the Pi is started or rebooted, and then a regular shedule, with options of 5, 10, 15, 20, 30 or 60 minutes. When a frequency of 30 or 60 are selected the intvlm8r will heartbeat in the middle of the period, so with a frequency of 60 the intvlm8r will heartbeat at half-past the hour, and with a frequency of 30 it will heartbeat at a quarter-past and a quarter-to. The user can also manually trigger a heartbeat from the /monitoring page, which is typically only used when setting up or debugging this feature.
+When enabled, the intvlm8r will send a heartbeat on a regular shedule, with options of 5, 10, 15, 20, 30 or 60 minutes. The user can also manually trigger a heartbeat from the /monitoring page, which is typically only used when setting up or debugging this feature. If the Pi is not always on, a heartbeat interval will need to be chosen that falls within the daily run time before a heartbeat will take place.
 
 The regular heartbeating process exercises multiple components of the intvlm8r as a way of ensuring that the failure of a critical component will result in the failure of the hearteat. A timer service triggers the execution of `heartbeat.py` every five minutes. This script runs, querying `intvlm8r.ini` to determine if it's time to initiate a heartbeat (and that a valid URL has been set). If a heartbeat is due, it generates an internal web call to the /heartbeat page. In responding to this request, the intvlm8r then passes the request to Celery to make the web call to the heartbeat url. Should any of these components be in a failed state, the heartbeat will not be sent and the monitoring service will trigger an alarm.
 
@@ -27,7 +27,7 @@ As heartbeat.py executes every five minutes, `intvlm8r.logrotate` constrains the
 The heartbeating service shown in this example is "Dead Man's Snitch", however any equivalent service can be used. "Dead Man's Snitch" offers a free tier, as well as multiple paid options. (We have no commercial relationship with "Dead Man's Snitch" or "PagerDuty", introduced later on this page.)
 <br/>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Setup Heartbeating
@@ -52,7 +52,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 4. Once a change has been applied, heartbeating automatically commences at the appropriate frequency.
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Setup "Dead Man’s Snitch"
@@ -83,7 +83,7 @@ The heartbeating service shown in this example is "Dead Man's Snitch", however a
 </p>
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
+[Top](#setup-heartbeating)
 <hr/>
 
 ## Add PagerDuty
@@ -141,7 +141,8 @@ Pre-req's:
 </p>
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
+[Top](#setup-heartbeating)
+
 <hr/>
 
 ## Integrate Dead Man's Snitch with PagerDuty
@@ -189,5 +190,5 @@ You need to be on [the 'Medium' plan](https://deadmanssnitch.com/plans) or highe
 </p>
 <br>
 
-[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md#heartbeating)
+[Top](#setup-heartbeating)
 <hr/>

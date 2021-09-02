@@ -29,6 +29,7 @@ import logging
 import os
 import re    #RegEx
 import socket
+import subprocess
 import sys
 import time
 
@@ -40,6 +41,10 @@ except:
     pass
 try:
     import paramiko
+except:
+    pass
+try:
+    import sysrsync
 except:
     pass
 try:
@@ -110,6 +115,9 @@ def main(argv):
         'sftpRemoteFolder'  : '',
         'googleRemoteFolder': '',
         'dbx_token'         : '',
+        'rsyncUsername'     : '',
+        'rsyncHost'         : '',
+        'rsyncRemoteFolder' : '',
         'transferDay'       : '',
         'transferHour'      : '',
         'deleteAfterTransfer': False
@@ -127,6 +135,9 @@ def main(argv):
         sftpRemoteFolder    = config.get('Transfer', 'sftpRemoteFolder')
         googleRemoteFolder  = config.get('Transfer', 'googleRemoteFolder')
         dbx_token           = config.get('Transfer', 'dbx_token')
+        rsyncUsername       = config.get('Transfer', 'rsyncUsername')
+        rsyncHost           = config.get('Transfer', 'rsyncHost')
+        rsyncRemoteFolder   = config.get('Transfer', 'rsyncRemoteFolder')
         transferDay         = config.get('Transfer', 'transferDay')
         transferHour        = config.get('Transfer', 'transferHour')
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
@@ -172,6 +183,12 @@ def main(argv):
         while '//' in googleRemoteFolder:
             googleRemoteFolder = googleRemoteFolder.replace('//', '/')
         commenceGoogle(googleRemoteFolder)
+    elif (tfrMethod == 'rsync'):
+        while '\\' in rsyncRemoteFolder:
+            rsyncRemoteFolder = rsyncRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
+        while '//' in rsyncRemoteFolder:
+            rsyncRemoteFolder = rsyncRemoteFolder.replace('//', '/')
+        commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder)
 
 
 def list_New_Images(imagesPath, previouslyUploadedFile):
@@ -578,6 +595,57 @@ def reauthGoogle():
         print ('')
         log('STATUS: Google upload failed: client_secrets.json file is missing')
     return 1
+
+
+def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
+    """
+    (r)syncs the Pi's photos/ folder with a remote location
+    """
+    log('Commencing rsync')
+    newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
+    numNewFiles = len(newFiles)
+    if numNewFiles == 0:
+        log('STATUS: No files to upload')
+    else:
+        numFilesOK = 0
+        localPath  = os.path.join(PI_PHOTO_DIR, 'DCIM')
+        try:
+            #Upload/dir-sync happens here
+            if not rsyncRemoteFolder.startswith('/'):
+                rsyncRemoteFolder = '/' + rsyncRemoteFolder
+            if not rsyncRemoteFolder.endswith('/'):
+                rsyncRemoteFolder += '/'
+            destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
+            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', localPath, destination]
+            result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+            (stdoutdata, stderrdata) = result.communicate()
+            if stdoutdata:
+                stdoutdata = stdoutdata.strip()
+                #log('rsync stdoutdata = ' + str(stdoutdata) + '.')
+            if stderrdata:
+                stderrdata = stderrdata.strip()
+                log("rsync err'd with stderrdata = " + str(stderrdata))
+                if 'Host key verification failed' in str(stderrdata):
+                    log('STATUS: rsync host key verification failed')
+                else:
+                    log('STATUS: rsync error')
+            # wait until process is really terminated
+            exitcode = result.wait()
+            if exitcode == 0:
+                log('rsync exited cleanly')
+                uploadedList = stdoutdata.splitlines()
+                for uploadedFile in uploadedList:
+                    uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
+                    if os.path.isfile(uploadedFile):
+                        numFilesOK = uploadedOK(uploadedFile, numFilesOK)
+                log('STATUS: {0} files uploaded OK'.format(str(numFilesOK)))
+            else:
+                log('rsync exited with a non-zero exitcode')
+                #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
+        except Exception as e:
+            log('Error uploading via rsync: {0}'.format(str(e)))
+            log('STATUS: rsync error')
+    return
 
 
 def uploadedOK(filename, filecount):

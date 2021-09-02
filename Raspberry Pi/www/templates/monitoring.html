@@ -1,8 +1,6 @@
 {% extends "index.html" %}
 {% block content %}
 
-<div id="progress"></div>
-
 <form method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
@@ -10,7 +8,7 @@
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Frequency (minutes):</div>
+				<div class="alignleft"><label for="hbFreq">Frequency (minutes):</label></div>
 				<div class="alignright">
 					<select name="hbFreq" id="hbFreq" onchange="newSelected(this.id)">
 					{% for frequency in ['Off', '5', '10', '15', '20', '30', '60'] %}
@@ -22,7 +20,7 @@
 		</tr>
 		<tr id="showHideHbUrl">
 			<td>
-				<div class="alignleft">URL:</div>
+				<div class="alignleft"><label for="hbUrl">URL:</label></div>
 				<div class="alignright">
 					<input type="text" name="hbUrl" id="hbUrl" value="{{ hbUrl }}" oninput="newText(this.id)">
 				</div>

@@ -22,7 +22,7 @@ The Arduino's code ('sketch') is largely bespoke, whilst the Pi is totally relia
 ### Use your choice of DSLR
 With gPhoto and python-gphoto2 providing all the camera interfacing, the intent is that any camera compatible with these projects should be able to be used.
 
-In its initial published version the intvlm8r has been tested with Canon 6D, 60D & 600D cameras. The unit deployed in NZ contains the 600D - read why on the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions) page of the project's Wiki.
+The intvlm8r has been tested primarily with Canon cameras and also a limited level of Nikon support. The unit deployed in NZ contains the 600D - read why on the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions) page of the project's Wiki.
 
 gPhoto (running on the Pi) is only used for the camera management, with the Arduino handling the core role of waking the camera and taking the shot using the camera's manual shutter input.
 
@@ -30,19 +30,22 @@ gPhoto (running on the Pi) is only used for the camera management, with the Ardu
 
 ### Flexible interval settings
 
-From the web interface you select the days of the week to shoot, within what span of hours, and how many shots per hour. A typical building construction might shoot Monday through Friday, from 6am to 6pm, and take 4 shots an hour.
+From the web interface you select the days of the week to shoot, within what span of hours, and how many shots per hour. A typical building construction might shoot Monday through Friday, from 6am to 6pm, and take up to 60 shots an hour.
 
 ### Auto-upload of images
 
-At least once each day, the Raspberry Pi copies the images from the camera, and if enabled by the user then uploads all the images to a remote store. The store destination can be an FTP or SFTP server, Dropbox or Google Drive. (Obviously, your intvlm8r requires a suitable private network or internet connection for this.)
+At least once each day, the Raspberry Pi copies the images from the camera, and if enabled by the user then uploads all the images to a remote store. The store destination can be an FTP or SFTP server, Dropbox, Google Drive or rsync. (Obviously, your intvlm8r requires a suitable private network or internet connection for this.)
 
 ### Low-Cost
 Using commonly-available components, an intvlm8r controller with charger, battery, solar panel, waterproof <a href="https://www.pelican.com/us/en/" target="_blank">Pelican case</a> & mounts should see you with plenty of change from $AUD600 ($US440), a fraction of the cost of commercially-available equivalents. Add your DSLR and a lens and you're in business! See the [Shopping list](SHOPPINGLIST.md) for the specifics.
 
 ### Remote Management
-Assuming the installation has web connectivity, the setup can be monitored and tweaked remotely. From your web-browser you can confirm that the camera is firing, backup the photos to the Pi, take a test image and adjust the available camera settings.
+Assuming the installation has WiFi or an Internet connection, the setup can be monitored and tweaked remotely. From your web-browser you can confirm that the camera is firing, backup the photos to the Pi, take a test image and adjust the available camera settings.
 
 In an isolated setup, come within range and connect to the Pi Zero W's inbuilt WiFi Access Point for on-site management, without needing to crack the weatherproof seal on the Pelican case.
+
+## Heartbeating
+The intvlm8r can be set to send a regular 'heartbeat' message to a remote system to confirm its health. Should the heartbeats stop, an alarm can be raised. See the "[setup heartbeating](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/setup-heartbeating.md)" page for more information.
 
 ### Low-power
 The invtlm8r is designed for low-power operation. At rest the entire project consumes less than 1mA, enabling it to be powered by a common <a href="https://simple.wikipedia.org/wiki/Sealed_lead_acid_battery" target="_blank">sealed lead acid ("SLA")</a> battery and solar panel. Current consumption rises as the camera is woken to take a photo, and peaks when the Raspberry Pi is powered-on for management and file transfers.
@@ -72,6 +75,7 @@ Should the backup battery in the DeadOn RTC fail while the intvlm8r is not power
 Check out these documents for more information:
 * [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions). This provides a detailed explanation of some of the design decisions and compromises.
 * [Shopping list](SHOPPINGLIST.md). All the items you need to make this.
+* Pre-built and pre-programmed PCBs are [available on eBay](https://www.ebay.com.au/itm/265085430681) if you're not one for soldering or programming micro-controllers.
 * [Case assembly](docs/step8-case-assembly.md). A walk-through of preparing the Pelican case.
 * [PCB assembly](docs/step5-pcb-assembly.md). Putting the PCB together.
 
@@ -79,7 +83,7 @@ The Arduino's Sketch is in its own folder, and the Raspberry Pi's Python script 
 
 # Input welcome!
 
-Please contribute to the project! It's coded in the Arduino's flavour of C++, with the Pi in Python, HTML & CSS, and there are improvements to be made across the board. Check out [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
+Please contribute to the project! It's coded in the Arduino's flavour of C++, with the Pi in Python, JavaScript, HTML & CSS, and there are improvements to be made across the board. Check out [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
 
 \
 \

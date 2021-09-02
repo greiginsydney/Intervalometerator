@@ -43,13 +43,11 @@ import time
 
 import gphoto2 as gp
 
-from cachelib import SimpleCache
-cache = SimpleCache()
-
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g, send_from_directory
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
+from flask_caching import Cache
 from celery import Celery, chain
 from celery.app.control import Inspect
 
@@ -63,6 +61,8 @@ app.jinja_env.trim_blocks = True
 
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
 celery.conf.update(app.config)
+
+cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -81,6 +81,7 @@ callback_obj = gp.check_result(gp.use_python_logging(mapping={
 
 PI_USER_HOME =  os.path.expanduser('~')
 PI_PHOTO_DIR  = os.path.join(PI_USER_HOME, 'photos')
+PI_PHOTO_RENAME_FILE = os.path.join(PI_PHOTO_DIR, 'piPhotoRename.txt')
 PI_THUMBS_DIR = os.path.join(PI_USER_HOME, 'thumbs')
 PI_THUMBS_INFO_FILE = os.path.join(PI_THUMBS_DIR, 'piThumbsInfo.txt')
 PI_PREVIEW_DIR = os.path.join(PI_USER_HOME, 'preview')
@@ -117,10 +118,11 @@ hiddenTransferOptions = ''
 hiddenTransferDict = {
   "paramiko": "SFTP",
   "dropbox": "Dropbox",
-  "google": "Google Drive"
+  "google": "Google Drive",
+  "sysrsync": "rsync"
 }
 # TY SO: https://stackoverflow.com/a/41815890
-for package_name in ('paramiko', 'dropbox', 'google'):
+for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
     spec = importlib.util.find_spec(package_name)
     if spec is None:
         app.logger.debug(package_name + ' is not installed')
@@ -307,6 +309,8 @@ def main():
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
 
+    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+        
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
 
@@ -326,7 +330,8 @@ def main():
 
     # Camera comms:
     try:
-        camera, context, config = connectCamera()
+        if not config:
+            camera, context, config = connectCamera(1)
         if camera:
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
@@ -584,7 +589,7 @@ def camera():
         return redirect(url_for('camera'))
 
     try:
-        camera, context, config = connectCamera()
+        camera, context, config = connectCamera(1)
         if camera:
             abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             cameraData['cameraModel']              = abilities.model
@@ -659,7 +664,7 @@ def cameraPOST():
     """
     preview = None
     try:
-        camera, context, config = connectCamera()
+        camera, context, config = connectCamera(1)
         if camera:
             if request.form['CamSubmit'] == 'apply':
                 app.logger.debug('-- Camera Apply selected')
@@ -695,13 +700,13 @@ def cameraPOST():
                     node = config.get_child_by_name('exposurecompensation')
                     node.set_value(str(request.form.get('exp')))
                 camera.set_config(config, context)
-                gp.check_result(gp.gp_camera_exit(camera))
 
             if request.form['CamSubmit'] == 'preview':
                 app.logger.debug('-- Camera Preview selected')
                 getPreviewImage(camera, context, config)
-                gp.check_result(gp.gp_camera_exit(camera))
                 preview = 1
+
+            gp.check_result(gp.gp_camera_exit(camera))
     except Exception as e:
         app.logger.debug('Unknown camera POST error: ' + str(e))
 
@@ -728,7 +733,7 @@ def intervalometer():
 
     # Camera comms:
     try:
-        camera, context, config = connectCamera()
+        camera, context, config = connectCamera(1)
         if camera:
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
@@ -827,13 +832,18 @@ def transfer():
         'sftpRemoteFolder'      : '',
         'googleRemoteFolder'    : '',
         'dbx_token'             : '',
+        'rsyncUsername'         : '',
+        'rsyncHost'             : '',
+        'rsyncRemoteFolder'     : '',
         'transferDay'           : '',
         'transferHour'          : '',
         'copyDay'               : '',
         'copyHour'              : '',
         'wakePiTime'            : '25',
         'piTransferLogLink'     : '',
-        'hiddenTransferOptions' : hiddenTransferOptions
+        'hiddenTransferOptions' : hiddenTransferOptions,
+        'renameOnCopy'          : 'Off',
+        'renameString'          : '' 
     }
     config = configparser.ConfigParser(
         {
@@ -848,11 +858,16 @@ def transfer():
         'sftpRemoteFolder'   : '',
         'googleRemoteFolder' : '',
         'dbx_token'          : '',
+        'rsyncUsername'      : '',
+        'rsyncHost'          : '',
+        'rsyncRemoteFolder'  : '',
         'transferDay'        : '',
         'transferHour'       : '',
         'copyDay'            : 'Off',
         'copyHour'           : '',
-        'wakePiTime'         : '25'
+        'wakePiTime'         : '25',
+        'renameOnCopy'       : 'Off',
+        'renameString'       : ''
         })
     try:
         config.read(iniFile)
@@ -868,10 +883,15 @@ def transfer():
         templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
         templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
         templateData['dbx_token']          = config.get('Transfer', 'dbx_token')
+        templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
+        templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
+        templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
         templateData['transferDay']        = config.get('Transfer', 'transferDay')
         templateData['transferHour']       = config.get('Transfer', 'transferHour')
         templateData['copyDay']            = config.get('Copy', 'copyDay')
         templateData['copyHour']           = config.get('Copy', 'copyHour')
+        templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
+        templateData['renameString']       = config.get('Copy', 'renameString')
     except Exception as e:
         app.logger.debug('INI file error: ' + str(e))
         flash('Error reading from the Ini file')
@@ -925,6 +945,11 @@ def transferPOST():
             elif (request.form.get('tfrMethod') == 'Google Drive'):
                 googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
                 config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
+            elif (request.form.get('tfrMethod') == 'rsync'):
+                config.set('Transfer', 'rsyncUsername', str(request.form.get('rsyncUsername') or ''))
+                config.set('Transfer', 'rsyncHost', str(request.form.get('rsyncHost') or ''))
+                rsyncRemoteFolder = reformatSlashes(str(request.form.get('rsyncRemoteFolder')))
+                config.set('Transfer', 'rsyncRemoteFolder', rsyncRemoteFolder or '')
             if (request.form.get('tfrMethod') != 'Off'):
                 config.set('Transfer', 'transferDay', str(request.form.get('transferDay') or ''))
                 config.set('Transfer', 'transferHour', str(request.form.get('transferHour') or ''))
@@ -932,6 +957,8 @@ def transferPOST():
                 config.add_section('Copy')
             config.set('Copy', 'copyDay', str(request.form.get('copyDay') or ''))
             config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
+            config.set('Copy', 'renameOnCopy', str(request.form.get('renameOnCopy') or 'Off'))
+            config.set('Copy', 'renameString', str(request.form.get('renameString').replace('%','%%') or ''))
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
@@ -969,7 +996,7 @@ def copyNowCronJob():
 def trnTransferNow():
     """
     This page is called in the background by the 'Transfer now' button on the Transfer page.
-    It kicks off the background task, but we don't get any feedback of its progress (TODO)
+    It kicks off the background task, and returns the taskID so its progress can be followed
     """
     app.logger.debug('trnTransferNow() entered')
     app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
@@ -986,21 +1013,24 @@ def trnTransferNow():
 @celery.task(time_limit=1800, bind=True)
 def transferNow(self):
     app.logger.info('TransferNow() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Initiated image transfer'})
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to transfer images'})
     try:
+        errorMsg = 'out'
         cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
-            app.logger.info('transferNow error = ' + str(stdoutdata))
+            app.logger.info('transferNow output text = ' + str(stdoutdata))
         if stderrdata:
             stderrdata = stderrdata.strip()
             app.logger.info('transferNow error = ' + str(stderrdata))
+            errorMsg = ''
     except Exception as e:
         app.logger.info('Unhandled transferNow error: ' + str(e))
+        errorMsg = ' unexpected'
     
-    statusMessage = "transferNow completed. Click 'View log' for details"
+    statusMessage = 'transferNow returned with{0} error'.format(errorMsg)
     return {'status': statusMessage}
 
 
@@ -1216,7 +1246,7 @@ def system():
     templateData = {
         'piThumbCount'   : '24',
         'arduinoDate'    : 'Unknown',
-        'arduinoTime'    : 'Unknown',
+        'arduinoTime'    : '',
         'piDateTime'     : 'Unknown',
         'piNtp'          : '',
         'piHostname'     : 'Unknown',
@@ -1233,6 +1263,8 @@ def system():
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
+    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1278,7 +1310,8 @@ def system():
         pass
 
     try:
-        camera, context, config = connectCamera()
+        if not config:
+            camera, context, config = connectCamera(1)
         if camera:
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
             gp.check_result(gp.gp_camera_exit(camera))
@@ -1300,35 +1333,18 @@ def systemPOST():
             if newName != None:
                 cache.set('locationName', newName, timeout = 0)
                 app.logger.debug('New loc set as ' + newName)
-                if not os.path.isfile(iniFile):
-                    createConfigFile(iniFile)
-                config = configparser.ConfigParser()
-                config.read(iniFile)
-                if not config.has_section('Global'):
-                    config.add_section('Global')
-                config.set('Global', 'locationName', newName)
-                with open(iniFile, 'w') as config_file:
-                    config.write(config_file)
+                setIni('Global', 'locationName', newName)
         except:
             app.logger.debug('Location set error')
-            #pass
 
     if 'submitThumbsCount' in request.form:
         try:
             newCount = str(request.form.get('thumbsCount'))
             if newCount != None:
                 app.logger.debug('New thumbs count set as ' + newCount)
-                if not os.path.isfile(iniFile):
-                    createConfigFile(iniFile)
-                config = configparser.ConfigParser()
-                config.read(iniFile)
-                if not config.has_section('Global'):
-                    config.add_section('Global')
-                config.set('Global', 'thumbsCount', newCount)
-                with open(iniFile, 'w') as config_file:
-                    config.write(config_file)
-        except:
-            app.logger.debug('New Thumbs set error')
+                setIni('Global', 'thumbsCount', newCount)
+        except Exception as e:
+            app.logger.debug('New Thumbs set error: ' + str(e))
 
     if 'wakePi' in request.form:
         app.logger.debug('Yes we got the WAKE PI button & values ' + str(request.form.get('wakePiTime')) + ', ' + str(request.form.get('wakePiDuration')) )
@@ -1349,7 +1365,7 @@ def systemPOST():
         if request.form.get('setCameraTime'):
             app.logger.debug('Checked: setCameraTime')
             try:
-                camera, context, config = connectCamera()
+                camera, context, config = connectCamera(1)
                 if camera:
                     if setCameraTimeAndDate(camera, config, newTime):
                         # apply the changed config
@@ -1410,18 +1426,13 @@ def setTime(newTime):
         app.logger.debug('setTime unhandled time error: ' + str(e))
 
 
-def connectCamera():
+def connectCamera(retries):
     app.logger.debug('connectCamera entered')
-    retries = 0
     try:
         camera = gp.Camera()
         context = gp.gp_context_new()
         while True:
             app.logger.debug('connectCamera retries = {0}'.format (retries))
-            if retries >= 3:
-                app.logger.debug('connectCamera returning None')
-                gp.check_result(gp.gp_camera_exit(camera))
-                return None, None, None
             try:
                 camera.init(context)
                 config = camera.get_config(context)
@@ -1430,19 +1441,26 @@ def connectCamera():
             except gp.GPhoto2Error as e:
                 app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
                 if e.string == 'Unknown model':
-                    if retries >= 1:
+                    if retries % 2 == 0:
                         app.logger.debug('connectCamera waking the camera & going again')
                         writeString("WC") # Sends the WAKE command to the Arduino
-                        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
                     else:
                         app.logger.debug('connectCamera going again without waking the camera')
-                        time.sleep(0.5);
                 elif e.string == 'Could not claim the USB device':
                     app.logger.debug('connectCamera could not claim the USB device. Exiting')
                     #TODO: pass this back upstream to present to the user
+                    gp.check_result(gp.gp_camera_exit(camera))
                     return None, None, None
             except Exception as e:
                 app.logger.debug('connectCamera error: ' + str(e))
+            if retries >= 4:
+                app.logger.debug('connectCamera returning None')
+                gp.check_result(gp.gp_camera_exit(camera))
+                return None, None, None
+            if retries % 2 == 0:
+                time.sleep(1.5);    # Pause after waking
+            else:
+                time.sleep(0.5);  # Brief pause before looping
             retries += 1
         app.logger.debug('connectCamera returning 3 values')
         return camera, context, config
@@ -1600,14 +1618,30 @@ def get_camera_file_info(camera, path):
         gp.gp_camera_file_get_info(camera, folder, name))
 
 
+def get_renamed_files(renameFile):
+    """
+    Read the contents of the renamed_Files file and return the original filenames as a list
+    """
+    original_filenames = []
+    if os.path.isfile(renameFile):
+        with open(renameFile, 'rt') as f:
+            for line in f:
+                if ' ' in line:
+                    original_filenames.append(line.split(' ')[0])
+    else:
+        app.logger.info('get_renamed_files() reports there\'s no renameFile')
+    return original_filenames
+
+
 def files_to_copy(camera):
     newFilesList = []
     if not os.path.isdir(PI_PHOTO_DIR):
         os.makedirs(PI_PHOTO_DIR)
     computer_files = list_Pi_Images(PI_PHOTO_DIR)
     camera_files = list_camera_files(camera)
+    renamed_files = get_renamed_files(PI_PHOTO_RENAME_FILE)
     if not camera_files:
-        app.logger.debug('No files found')
+        app.logger.info('files_to_copy() reports no files found on the camera')
         return
     for path in camera_files:
         sourceFolderTree, imageFileName = os.path.split(path)
@@ -1615,11 +1649,14 @@ def files_to_copy(camera):
         dest = os.path.join(dest, imageFileName)
         if dest in computer_files:
             continue
+        if imageFileName in renamed_files:
+            continue
         newFilesList.append(path)
+    newFilesList.sort()
     return newFilesList
 
 
-def copy_files(camera, imageToCopy, deleteAfterCopy):
+def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString):
     """
     Straight from Jim's examples again
     The test for available HDD space is from examples/copy-data.py
@@ -1643,6 +1680,8 @@ def copy_files(camera, imageToCopy, deleteAfterCopy):
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
                 app.logger.info('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+            if (renameOnCopy == True):
+                renameFile(dest, renameString, deleteAfterCopy)
     except Exception as e:
         app.logger.info('Exception in copy_files: ' + str(e))
     return 0
@@ -1681,6 +1720,70 @@ def createDestFilename(imageFullFilename, targetFolder, suffix):
     dest = os.path.join(dest, imageFileName)
     dest = os.path.splitext(dest)[0] + suffix + '.JPG'
     return dest
+
+
+def renameFile(imageFullFilename, renameString, deleteAfterCopy):
+    try:
+        imageFolderTree, originalFileName = os.path.split(imageFullFilename)
+        fileName, fileExt = os.path.splitext(originalFileName)
+        dateStamp = datetime.fromtimestamp(os.path.getmtime(imageFullFilename))
+        #Populate the variables from the file's dateStamp:
+        pcF = fileName                               #Filename
+        pcY = dateStamp.strftime('%Y')               #Year (20xx)
+        pcm = dateStamp.strftime('%m').rjust(2, '0') #Month (01-12)
+        pcb = dateStamp.strftime('%b')               #Short month ('Jan')
+        pcd = dateStamp.strftime('%d').rjust(2, '0') #Day (01-31)
+        pca = dateStamp.strftime('%a')               #Short day ('Mon')
+        pcH = dateStamp.strftime('%H').rjust(2, '0') #Hour (00-23)
+        pcM = dateStamp.strftime('%M').rjust(2, '0') #Min (00-59)
+        pcS = dateStamp.strftime('%S').rjust(2, '0') #Sec (00-59)
+        #Substitute the values
+        renameString = renameString.replace('%F',pcF)
+        renameString = renameString.replace('%Y',pcY)
+        renameString = renameString.replace('%m',pcm)
+        renameString = renameString.replace('%b',pcb)
+        renameString = renameString.replace('%d',pcd)
+        renameString = renameString.replace('%a',pca)
+        renameString = renameString.replace('%H',pcH)
+        renameString = renameString.replace('%M',pcM)
+        renameString = renameString.replace('%S',pcS)
+        app.logger.info('reconstituted renameString = {0}'.format(renameString))
+        #Rebuild the string
+        renamedFile = os.path.join(imageFolderTree, renameString) + fileExt
+        app.logger.info('renamedFile = {0}'.format(renamedFile))
+        try:
+            suffix = 1
+            safetyNet = False
+            while True:
+                if os.path.isfile(renamedFile):
+                    #The new name already exists. Loop with a new suffix until it doesn't
+                    renamedFile = os.path.join(imageFolderTree, renameString) + '-' + str(suffix) + fileExt
+                    if suffix >= 1000:
+                        #This is a safety net.
+                        #You MIGHT be deliberately doing this (say, sequentially numbering all the files in a given year-month-day-hour), but...
+                        # if we get to 1000 I'm going to abort, otherwise we risk looping here forever.
+                        app.logger.info('renameFile() safety net fired renaming file {0} to {1}'.format(imageFullFilename, renameString))
+                        safetyNet = True
+                        break
+                    suffix += 1 #Increment the suffix and loop.
+                else:
+                    break
+            if not safetyNet == True:
+                app.logger.info('renameFile() about to rename file {0} to {1}'.format(imageFullFilename, renameString))
+                os.rename(imageFullFilename,renamedFile)
+                if (deleteAfterCopy == False):
+                    #Add to the rename file here
+                    try:
+                        with open(PI_PHOTO_RENAME_FILE, "a") as f:
+                            f.write('{0}{1} {2}\r\n'.format(fileName, fileExt, renamedFile))
+                    except Exception as e:
+                        app.logger.info('renameFile() error writing to PI_PHOTO_RENAME_FILE: ' + str(e))
+        except Exception as e:
+            app.logger.info('renameFile() error  renaming file {0} to {1}'.format(imageFullFilename, renameString))
+            app.logger.info('renameFile() error : {0}'.format(str(e)))
+    except Exception as e:
+        app.logger.info('renameFile() unhandled error: {0}'.format(str(e)))
+    return
 
 
 def makeThumb(imageFile):
@@ -1929,18 +2032,32 @@ def getIni(keySection, keyName, keyType, defaultValue):
     except configparser.Error as e:
         app.logger.info('getIni() reports key error: ' + str(e))
         #Looks like the flag doesn't exist. Let's add it
-        try:
-            if not config.has_section(keySection):
-                config.add_section(keySection)
-            config.set(keySection, keyName, defaultValue)
-            with open(iniFile, 'w') as config_file:
-                config.write(config_file)
-            app.logger.debug('Added {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
-        except Exception as e:
-            app.logger.debug('Exception thrown trying to add {0} key {1}/{2} with a value of {3}'.format(keyType, keySection, keyName, defaultValue))
+        setIni(keySection, keyName, defaultValue)
     except Exception as e:
         app.logger.info('Unhandled error in getIni(): ' + str(e))
     return returnValue
+
+
+def setIni(keySection, keyName, newValue):
+    """
+    Update an existing INI file key value, or add a new one
+    """
+    try:
+        if not os.path.isfile(iniFile):
+            createConfigFile(iniFile)
+        config = configparser.ConfigParser()
+        config.read(iniFile)
+    except Exception as e:
+        app.logger.info('Unhandled error in setIni(): ' + str(e))
+    try:
+        if not config.has_section(keySection):
+            config.add_section(keySection)
+        config.set(keySection, keyName, newValue)
+        with open(iniFile, 'w') as config_file:
+            config.write(config_file)
+        app.logger.debug('Added key {0}/{1} with a value of {2}'.format(keySection, keyName, newValue))
+    except Exception as e:
+        app.logger.debug('Exception thrown trying to add key {0}/{1} with a value of {2}'.format(keySection, keyName, newValue))
 
 
 @app.route('/trnCopyNow', methods=['POST'])
@@ -1997,12 +2114,17 @@ def copyNow(self):
         numberToCopy = len(filesToCopy)
         app.logger.info('copyNow() has been tasked with copying ' + str(numberToCopy) + ' images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
+        renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
+        renameString = getIni('Copy', 'renameString', 'string', None)
+        if not renameString:
+            app.logger.info('copyNow() reports renameString is blank/empty. Forcing renameOnCopy = False')
+            renameOnCopy = False
         while len(filesToCopy) > 0:
             try:
                 self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info('About to copy file: ' + str(thisFile))
-                copyResult = copy_files(camera, thisFile, deleteAfterCopy)
+                copyResult = copy_files(camera, thisFile, deleteAfterCopy, renameOnCopy, renameString)
                 if copyResult == 0:
                     thisImage += 1
             except Exception as e:
@@ -2064,7 +2186,7 @@ def newThumbs(self):
                 else:
                     app.logger.info('Thumb for ' + dest + ' already exists')
         else:
-            app.logger.info('There are no images on the Pi. Copy some from the Transfer page.')
+            app.logger.info('newThumbs() reports there are no thumbsToCreate.')
     except Exception as e:
         app.logger.info('newThumbs error: ' + str(e))
     dedupeExifData()

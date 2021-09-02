@@ -66,6 +66,13 @@ install_apps ()
 		else
 			installGoogle=0
 		fi
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("sysrsync"))';
+		then
+			installRsync=1
+		else
+			installRsync=0
+		fi
+		
 		echo "====== Select Upload/Transfer options ======="
 		echo "An 'X' indicates the option is already installed"
 	else
@@ -76,6 +83,7 @@ install_apps ()
 		installSftp=1
 		installDropbox=1
 		installGoogle=1
+		installRsync=1
 	fi
 	while true; do
 		echo ""
@@ -83,8 +91,9 @@ install_apps ()
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
 		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
+		echo "4. [$([[ installRsync   -eq 1 ]] && echo ''X'' || echo '' '')] rsync"
 		echo ""
-		echo "Press 1, 2 or 3 to toggle the selection."
+		echo "Press 1, 2, 3 or 4 to toggle the selection."
 		read -p "Press return on its own to continue with the install " response
 		case "$response" in
 			(1)
@@ -96,6 +105,9 @@ install_apps ()
 			(3)
 				installGoogle=$((1-installGoogle))
 				;;
+			(4)
+				installRsync=$((1-installRsync))
+				;;
 			("")
 				break
 				;;
@@ -106,10 +118,10 @@ install_apps ()
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	echo -e ""$GREEN"Installing python3-pip, python-flask"$RESET""
 	apt-get install python3-pip python-flask -y
-	echo -e ""$GREEN"Installing Werkzeug, cachelib"$RESET""
-	pip3 install Werkzeug cachelib
-	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, configparser"$RESET""
-	pip3 install flask flask-bootstrap flask-login configparser
+	echo -e ""$GREEN"Installing Werkzeug"$RESET""
+	pip3 install Werkzeug
+	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
+	pip3 install flask flask-bootstrap flask-login Flask_Caching configparser
 	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
 	pip3 install gunicorn psutil
 	echo -e ""$GREEN"Installing redis-server"$RESET""
@@ -141,6 +153,12 @@ install_apps ()
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
+	fi
+	
+	if [ $installRsync -eq 1 ];
+	then
+		echo -e ""$GREEN"Installing sysrsync"$RESET""
+		pip3 install sysrsync
 	fi
 	
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev"$RESET""
@@ -235,12 +253,12 @@ install_website ()
 
 	if [ -f default_image.JPG ];
 	then
-		mv -fv default_image.JPG ~/photos/default_image.JPG
+		mv -nv default_image.JPG ~/photos/default_image.JPG
 	fi
 
 	if [ -f default_image-thumb.JPG ];
 	then
-		mv -fv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
+		mv -nv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
 	fi
 	
 	if [ -f piThumbsInfo.txt ];
@@ -364,6 +382,14 @@ install_website ()
 
 	#Original Step 76 was here - edit sites-enabled/default - now obsolete
 	rm -f /etc/nginx/sites-enabled/default
+
+	# Suppress server details in HTML headers:
+	if grep -q "^\s*server_tokens off;$" /etc/nginx/nginx.conf;
+	then 
+		echo 'Skipped: "/etc/nginx/nginx.conf" already contains "server_tokens off"'
+	else
+		sed -i -E 's/^(\s*)#\s*(server_tokens off;)/\1\2/g' /etc/nginx/nginx.conf #Match on "<whitepace>#<whitepace>server_tokens off" and remove the "#"
+	fi
 
 	echo ''
 
