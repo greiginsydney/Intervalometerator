@@ -158,9 +158,10 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
-    //Serial.println("Values from RAM are start hour = " + String(StartHour));
-    //Serial.println("Values from RAM are end hour   = " + String(EndHour));
-    //Serial.println("Values from RAM are interval   = " + String(interval));
+    //Serial.println( "Values from RAM are: ");
+    //Serial.println( "  start hour = " + String(StartHour));
+    //Serial.println( "  end hour   = " + String(EndHour));
+    //Serial.println( "  interval   = " + String(interval));
   }
   else
   {
