@@ -375,7 +375,7 @@ void printTime()
   {
     now += (rtc.pm()) ? " PM" : " AM"; // Returns true if PM
   }
-  //Serial.print("Timestamp " + now + "\r\n");
+  //Serial.println("Timestamp " + now);
 }
 
 
@@ -403,7 +403,7 @@ void setTimeDate(String newTime)
 
   rtc.setTime(ss, minut, hh, dayOfWeek, dd, mm, yyyy);
 
-  //Serial.print("Day = " + String(dayOfWeek) + "\r\n");
+  //Serial.println("Day = " + String(dayOfWeek));
 
   SetAlarm2(HIGH);
 }
@@ -653,7 +653,7 @@ void receiveEvent(int howMany) {
   char tempTime[9];
   char tempDate[9];
   if (howMany == 0) return; //Probably not actually used in this implementation
-  //Serial.print(" Receive fired. " + String(howMany) + " bytes expected\r\n");
+  //Serial.println(" Receive fired. " + String(howMany) + " bytes expected");
 
   while (Wire.available())
   {
@@ -664,7 +664,7 @@ void receiveEvent(int howMany) {
       incoming += c;
     }
   }
-  //Serial.print("Incoming = >" + incoming + "<\r\n");
+  //Serial.println("Incoming = >" + incoming + "<");
   if (howMany == 1)
   {
     // These values require a response:
