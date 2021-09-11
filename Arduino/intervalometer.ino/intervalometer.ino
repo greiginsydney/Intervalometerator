@@ -110,8 +110,8 @@ void setup()
   // LEAVE ALL THE SERIAL LINES COMMENTED-OUT IN PRODUCTION.
   // They're left here for short-term debugging use ONLY
   //Serial.begin(9600);
-  //Serial.println("");
-  //Serial.println("Hello. I've just booted");
+  //Serial.println( F(""));
+  //Serial.println( F("Hello. I've just booted"));
   
   // initialize i2c as slave
   Wire.begin(SLAVE_ADDRESS);
@@ -144,13 +144,13 @@ void setup()
 
   uint8_t MemTest = rtc.readFromRegister(DS3234_REGISTER_CONTROL);
 
-  //Serial.println("SRAM said ");
+  //Serial.println( F("SRAM said "));
   //Serial.println(MemTest,BIN);
   //Test to see if this is a VIRGIN COLD start, or if the clock is running OK & we have values in the registers?
   // From cold the two alarms will NOT be set (1 in their respective bits)
   if (MemTest & 0x03 == 3)
   {
-    //Serial.println("HEALTHY");
+    //Serial.println( F("HEALTHY"));
     FlashLed(4); //Healthy boot
     interval       = EEPROM.read(MEMInterval);
     ShootDays      = EEPROM.read(MEMShootDays);
@@ -158,7 +158,7 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
-    //Serial.println( "Values from RAM are: ");
+    //Serial.println( F("Values from RAM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
     //Serial.println( "  end hour   = " + String(EndHour));
     //Serial.println( "  interval   = " + String(interval));
@@ -167,7 +167,7 @@ void setup()
   {
     // This is our first power-up from failure.
     // There's no info in the clock & because of this we can't trust the EEPROM values
-    //Serial.println("UNHEALTHY");
+    //Serial.println( F("UNHEALTHY"));
     FlashLed(8); //Unhealthy boot
     rtc.set24Hour(); // Force 24-hour mode to be sure (even though that's its default anyway)
     // Default to 12:00:01 pm, January 1, 2018:
@@ -214,7 +214,7 @@ void setup()
 void WakeCamera()
 {
   //printTime();
-  //Serial.println("Wake Camera\r\n");
+  //Serial.println(F("Wake Camera\r\n"));
 
   digitalWrite(WAKE_PIN, HIGH); // Wake the camera up
   DelaymS(400);
@@ -224,7 +224,7 @@ void WakeCamera()
 
 void TakePhoto()
 {
-  //Serial.println("Take Photo\r\n");
+  //Serial.println( F("Take Photo\r\n"));
   bitWrite(PORTD, LED_PIN, LOW); //Make sure the LED's off when we take a photo
   digitalWrite(WAKE_PIN, HIGH); // Wake the camera up
   DelaymS (800);
@@ -786,11 +786,11 @@ void loop()
   if (ALARM == true)
   {
     //bitWrite(PORTD, LED_PIN, ON); //DEBUG: Turn the LED on. Remove this line when in operation to minimise current drain.
-    //Serial.println(" - ALARM   fired");
+    //Serial.println( F(" - ALARM   fired"));
     printTime();
     if (rtc.alarm1())
     {
-      //Serial.println(" - ALARM 1 fired");
+      //Serial.println( F(" - ALARM 1 fired"));
       todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
       if (todayAsBits && ShootDays)
       {
@@ -801,13 +801,13 @@ void loop()
     DelaymS(100);
     if (rtc.alarm2())
     {
-      //Serial.println(" - ALARM 2 fired");
+      //Serial.println( F(" - ALARM 2 fired"));
       rtc.update();
       if  (rtc.minute() == 0) { UpdateTempMinMax(""); }  // Runs at the top of the hour, 24x7
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
         //Serial.println(" -           " + String(rtc.hour()) + ":" + String(rtc.minute()) + "       WAKING the Pi");
-        //Serial.println(" - WAKING the Pi via ALARM 2. WakePi set TRUE");
+        //Serial.println( F(" - WAKING the Pi via ALARM 2. WakePi set TRUE"));
         WakePi = true; //Actioned elsewhere in loop()
       }
       else if ((rtc.minute() == PiShutdownMinute))
@@ -816,7 +816,7 @@ void loop()
         if (WakePiHour != 25)
         {
           //Serial.println(" - ALARM 2 fired @ PiShutdownMinute " + String(rtc.hour()) + ":" + String(rtc.minute()) + ".");
-          //Serial.println(" - Initiated a Pi shutdown");
+          //Serial.println( F(" - Initiated a Pi shutdown"));
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
           PiShutdownMinute = 61;  // Reset to an invalid value.
         }
@@ -855,27 +855,27 @@ void loop()
   if (WakePi == true)
   {
     FlashLed(2);
-    //Serial.println(" - WAKE PI fired");
+    //Serial.println( F(" - WAKE PI fired"));
     LastRunningState = LOW; //This serves to extend the run timer if the Pi is already running when this fires.
                             // It's both a feature and also a safety-net to make sure the shutdown timer is set.
     digitalWrite(PI_SHUTDOWN, HIGH); // Make sure the shutdown pin is high before we turn it on
     digitalWrite(PI_POWER, HIGH); // Turn the Pi on.
-    //Serial.println("The Pi has just been powered on");
+    //Serial.println( F("The Pi has just been powered on"));
     WakePi = false; //We can reset the flag now.
     SLEEP = false;  //We won't sleep while the Pi is on.
   }
 
   if (resetArduinoFlag == true)
   {
-    //Serial.println("ResetArduinoFlag set.");
+    //Serial.println( F("ResetArduinoFlag set."));
     if (bitRead(PINB, 0) == HIGH) //PI_RUNNING (Pin 8) is read as PORTB bit *0*
     {
       digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
-      //Serial.println(" - Telling the Pi to shutdown");
+      //Serial.println( F(" - Telling the Pi to shutdown"));
     }
     else
     {
-      //Serial.println(" - Resetting the Arduino");
+      //Serial.println( F(" - Resetting the Arduino"));
       resetArduinoFlag = false;
       digitalWrite(PI_POWER, LOW); // Turn the Pi off. May be redundant, but as softReset is ambiguous, best be on the safe side.
       DelaymS(1000); //Just to be sure the above has 'taken'
@@ -928,6 +928,7 @@ void loop()
     }
   }
 
+
   //By the time we reach this point through the loop we'll have:
   // - taken any photo that's required
   // - serviced any housekeeping alarm
@@ -937,14 +938,14 @@ void loop()
   if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false))
   {
     // The Pi is powered-off. It's safe for us to sleep
-    //Serial.println(" - About to sleep");
+    //Serial.println( F(" - About to sleep"));
     SLEEP = true;
   }
 
   if (SLEEP == true)
   {
-    //Serial.println(" - SLEEP");
-    //Serial.println("");
+    //Serial.println( F(" - SLEEP"));
+    //Serial.println( F(""));
     //DelaymS(2000); //Only enabled when Debugging, to ensure println messages are written before we sleep.
     SLEEP = false; //Reset the flag BEFORE we power-down, otherwise we risk looping
     bitWrite(PORTD, LED_PIN, LOW); //Make sure the LED's off before going to sleep
