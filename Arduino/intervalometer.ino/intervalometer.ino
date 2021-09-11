@@ -608,7 +608,7 @@ void UpdateTempMinMax(String resetOption)
   }
   sprintf(TemperaturesString, "%d,%d,%d", roundedTemp, currentMax, currentMin);
   TemperaturesString[strlen(TemperaturesString)+1] = '\0'; //Add a null terminator as strlen will vary
-  //Serial.println(String(TemperaturesString) + "\r\n");
+  //Serial.println("Temps [current, max, min]: " + String(TemperaturesString) + "\r\n");
   return;
 }
 
