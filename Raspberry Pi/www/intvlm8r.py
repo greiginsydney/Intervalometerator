@@ -141,7 +141,17 @@ def writeString(value):
     return -1
 
 
-def readString(value):
+def readString(value, cacheRequest):
+    #cacheRequest = False
+    if (cacheRequest == True):
+        cached = cache.get(value)
+        if cached is None:
+            #The cache is empty? Bummer
+            pass
+        else:
+            #app.logger.debug('YES! Cached value returned')
+            return cached
+
     status = ""
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
@@ -165,6 +175,10 @@ def readString(value):
         except Exception as e:
             app.logger.debug('readString error: ' + str(e))
             time.sleep(1) # Wait a second before each retry
+
+    if (cacheRequest == True):
+        cache.set(value, status, timeout = 0)
+
     if status == "":
         status = "Unknown"
     return status
