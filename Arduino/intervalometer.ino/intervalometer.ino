@@ -853,7 +853,11 @@ void loop()
     {
       //Serial.println(" - ALARM 2 fired");
       rtc.update();
-      if  (rtc.minute() == 0) { UpdateTempMinMax(""); }  // Runs at the top of the hour, 24x7
+      if (rtc.minute() == 0)
+      {
+        UpdateTempMinMax("");    // Runs at the top of the hour, 24x7
+        readVbatteryFlag = HIGH; //Trigger the battery reading process
+      }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
         //Serial.println(" -           " + String(rtc.hour()) + ":" + String(rtc.minute()) + "       WAKING the Pi");
