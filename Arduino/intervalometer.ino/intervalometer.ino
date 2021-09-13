@@ -962,6 +962,11 @@ void loop()
     resetTempMaxFlag = false;
   }
 
+  if (readVbatteryFlag == true)
+  {
+    UpdateVoltage();
+  }
+ 
   if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*. LOW means the Pi has gone to sleep
   {
     // Only remove power if we've prevously taken PI_SHUTDOWN (Pin 9) LOW *and* now PI_RUNNING has gone LOW:
