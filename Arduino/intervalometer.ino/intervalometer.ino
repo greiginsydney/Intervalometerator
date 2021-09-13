@@ -754,6 +754,11 @@ void receiveEvent(int howMany) {
       //It wants to know the Pi on time and duration:
       sprintf(sendToPi, "%02d%02d", WakePiHour, WakePiDuration);
     }
+    else if (incoming == "6")
+    {
+      //It wants to know the last 24 hours' voltage readings:
+      sprintf(sendToPi, VoltageString);
+    }
     return; //Requests have all been responded to. OK to exit the ISR
   }
 
