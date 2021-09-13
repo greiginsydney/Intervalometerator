@@ -50,6 +50,32 @@
 			</td>
 		</tr>
 	</table>
+	
+	{% if voltage != "" %}
+	<table>
+		<tr>
+			<th>Battery Voltage</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage:</div>
+				<div class="alignright" >{{ voltage }}V</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage maximum ({{ vMaxAt}}):</div>
+				<div class="alignright" >{{ vMax }}V</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage minimum ({{ vMinAt}}):</div>
+				<div class="alignright" >{{ vMin }}V</div>
+			</td>
+		</tr>
+	</table>
+	{% endif %}
 </form>
 
 <script>
