@@ -1045,7 +1045,12 @@ def thermal():
         'arduinoTemp'    : 'Unknown',
         'arduinoMin'     : 'Unknown',
         'arduinoMax'     : 'Unknown',
-        'piTemp'         : 'Unknown'
+        'piTemp'         : 'Unknown',
+        'voltage'        : 'Unknown',
+        'vMax'           : '- ',
+        'vMaxAt'         : 'Unknown',
+        'vMin'           : '- ',
+        'vMinAt'         : 'Unknown'
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
@@ -1062,6 +1067,37 @@ def thermal():
         pass
     templateData['piTemp'] = getPiTemp()
 
+    batteryVoltageArray = str(readString("6"))
+    if batteryVoltageArray == "Unknown":
+        batteryVoltage = '- '
+    elif len(batteryVoltageArray) == 24:
+        # It appears formatted correctly?? Loop through to determine max/min values
+        vMax = 0
+        vMin = 180
+        for i in range(24):
+            thisHour = ord(batteryVoltageArray[i]) - 10
+            app.logger.info('Battery voltage at {0} = {1}V'.format(i, thisHour))
+            if thisHour == 0:
+                continue # "0V" is invalid / should not happen. Exclude from max/min calc's
+            if thisHour > vMax:
+                vMax = thisHour
+                vMaxAt = i
+            if thisHour < vMin:
+                vMin = thisHour
+                vMinAt = i
+        templateData['vMax']   = '{0:.1f}'.format(float(vMax)/10)
+        templateData['vMaxAt'] = vMaxAt
+        templateData['vMin']   = '{0:.1f}'.format(float(vMin)/10)
+        templateData['vMinAt'] = vMinAt
+        
+        batteryVoltage = str((ord(batteryVoltageArray[10]) - 10)) # Subtract the offset added in the Arduino (to prevent returning 0V as NULL)
+        app.logger.info('Battery voltage: ' + batteryVoltage)
+    try:
+        batteryVoltage = batteryVoltage[:2] + '.' + batteryVoltage
+    except:
+        pass
+    templateData['voltage'] = batteryVoltage
+    
     return render_template('thermal.html', **templateData)
 
 
