@@ -39,6 +39,7 @@ Last updated/changed in version:
 #define PI_RUNNING      8 // The Pi takes this High when it's running (input)
 #define PI_SHUTDOWN     9 // Take low to initiate a shutdown in the Pi
 #define MAINT_PIN      14 // Take low to enable Maintenance Mode (D14 = A0 = PC0)
+#define V_SENSE_PIN    15 // Analog input, reads battery voltage (D15 = A1 = PC1)
 
 #define DS3234_REGISTER_CONTROL 0x0E
 #define DS3234_REGISTER_STATUS  0x0F
@@ -53,8 +54,11 @@ Last updated/changed in version:
 #define MEMEndHour    0x04
 #define MEMWakePiHour 0x05
 #define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  //2 bytes to store an int.
+#define MEMTempMin    0x07  // 2 bytes to store an int.
 #define MEMTempMax    0x09  // "
+#define MEMVolt0      0x0A  // First memory location for voltage reading. (Midnight).
+#define MEMVolt23     0x41  // This define isn't actually used in the code, it's just a reminder of the last MEM address I've used (11pm)
+
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -80,6 +84,8 @@ volatile bool   getTempsFlag     = false; //
 bool   LastRunningState = LOW;  // Used in loop() to tell for a falling Edge of the Pi state
 bool   LastMaintState = HIGH;   // Used in loop() to tell if the maint/debug jumper has been removed
 bool   LastRtcIrqState = LOW;   // Used in loop() to help protect against "stuck" issues
+bool   readVbatteryFlag = LOW;  // Used in loop() to trigger a battery read
+
 byte   ShootDays = 0b11111110;  // Default shoot days (Mon-Sun). Only used if we power up with a flat clock battery
 byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot today.
 byte   StartHour = 00;          // Default start hour.
@@ -88,6 +94,7 @@ byte   interval  = 15;          // Default spacing between photos. Defaults to a
 byte   WakePiHour = 14;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
+byte   VoltageReadingCounter=0; // A global, so the asynch voltmeter loop knows how many times it's been called.
 
 String newTimeDate = "";        // A new time and date sent by the Pi
 String newInterval = "";        // A new interval sent by the Pi
@@ -98,6 +105,9 @@ char LastShotMsg[6] = "19999";  // Sent to the Pi. Is "<d><hh><mm>" where d is S
 char NextShotMsg[6] = "19999";  // Sent to the Pi. Same as above.
 char Intervalstring[8];         // Sent to the Pi. Is "<d><startHour><EndHour><Interval>"
 char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<MinTemp>"
+char VoltageString[24];         // Twenty-four hours' worth of readings, indexed by the hour. The value is the voltage * 10. (e.g. 12.0V is saved as "120")
+
+int  VoltageReading = 0;        // This is the sum of the 16 voltage readings taken, to be averaged and converted to a byte
 
 
 //////////////////////////////////
