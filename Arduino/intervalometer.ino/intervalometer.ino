@@ -631,6 +631,37 @@ void UpdateTempMinMax(String resetOption)
   return;
 }
 
+
+// Called repeatedly at the top of every hour to read the battery voltage
+// Loops 16 times, each time reading the battery voltage. On the last loop it averages the values, stores the result in an array, and resets its flags.
+void UpdateVoltage()
+{
+  VoltageReading += analogRead(V_SENSE_PIN);
+  //Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
+  if (VoltageReadingCounter >= 15)
+  {
+    int thisHour = rtc.getHour();
+    float averageVolts = VoltageReading / 16;            // Average the 16 different readings
+    VoltageReading = (int)((averageVolts * 183) / 1023); // Convert 0-1023 to 0-"180" (18.0) Volts. (We'll add the decimal in the Pi)
+    VoltageReading += 10;                                // Add an offset to allow transfer as bytes. (Preventing 0v being NULL is the issue addressed here).
+    VoltageString[thisHour] = char(VoltageReading);      // Insert this voltage reading in the array
+    EEPROM.write(MEMVolt0 + thisHour, VoltageReading);
+    //Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
+    //Serial.println("Voltage string     = " + String(VoltageString));
+    //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
+    
+    readVbatteryFlag = false;    // OK, all done, reset the flag.
+    VoltageReading = 0;
+    VoltageReadingCounter = 0;   // Reset the counter for next time.
+  }
+  else
+  {
+    VoltageReadingCounter += 1;
+    DelaymS (1000);
+  }
+}
+
+
 void softReset()
 {
   asm volatile ("  jmp 0");
