@@ -168,6 +168,10 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
+    for (int i = 0; i <= 23; i++)
+    {
+      VoltageString[i] = char(EEPROM.read(MEMVolt0 + i));
+    }
     //Serial.println("Values from RAM are start hour = " + String(StartHour));
     //Serial.println("Values from RAM are end hour   = " + String(EndHour));
     //Serial.println("Values from RAM are interval   = " + String(interval));
@@ -190,6 +194,12 @@ void setup()
     EEPROM.put(MEMTempMin, (int)200); //Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.put(MEMTempMax, (int)-200);
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
+    //Initalise the voltmeter EEPROM and array to zeroes:
+    for (int i = 0; i <= 23; i++)
+    {
+      EEPROM.write(MEMVolt0 + i, 10);
+      VoltageString[i] = char(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
+    }
   }
 
   UpdateTempMinMax(""); //Reset or initialise the temperature readings on boot
