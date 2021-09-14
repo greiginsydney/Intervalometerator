@@ -177,6 +177,7 @@ void setup()
       if ((voltageValid < 10) || (voltageValid > 190))
       {
         voltageValid = 10;
+        EEPROM.write(MEMVolt0 + i, byte(10)); // Repair broken memory location
       }
       VoltageString[i] = voltageValid;
     }
