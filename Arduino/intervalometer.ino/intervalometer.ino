@@ -170,7 +170,7 @@ void setup()
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
     for (int i = 0; i <= 23; i++)
     {
-      VoltageString[i] = char(EEPROM.read(MEMVolt0 + i));
+      VoltageString[i] = byte(EEPROM.read(MEMVolt0 + i));
     }
     //Serial.println( F("Values from RAM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
@@ -199,7 +199,7 @@ void setup()
     for (int i = 0; i <= 23; i++)
     {
       EEPROM.write(MEMVolt0 + i, 10);
-      VoltageString[i] = char(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
+      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
   }
 
@@ -646,8 +646,8 @@ void UpdateVoltage()
     float averageVolts = VoltageReading / 16;            // Average the 16 different readings
     VoltageReading = (int)((averageVolts * 183) / 1023); // Convert 0-1023 to 0-"180" (18.0) Volts. (We'll add the decimal in the Pi)
     VoltageReading += 10;                                // Add an offset to allow transfer as bytes. (Preventing 0v being NULL is the issue addressed here).
-    VoltageString[thisHour] = char(VoltageReading);      // Insert this voltage reading in the array
-    EEPROM.write(MEMVolt0 + thisHour, VoltageReading);
+    VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
+    EEPROM.write(MEMVolt0 + thisHour, byte(VoltageReading));
     //Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
     //Serial.println("Voltage string     = " + String(VoltageString));
     //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
