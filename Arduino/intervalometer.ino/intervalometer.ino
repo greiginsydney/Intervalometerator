@@ -168,9 +168,17 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
+    
+    byte voltageValid;
     for (int i = 0; i <= 23; i++)
     {
-      VoltageString[i] = byte(EEPROM.read(MEMVolt0 + i));
+      voltageValid = EEPROM.read(MEMVolt0 + i);
+      //Ensure the voltages we read from EEPROM are within the allowed range:
+      if ((voltageValid < 10) || (voltageValid > 190))
+      {
+        voltageValid = 10;
+      }
+      VoltageString[i] = voltageValid;
     }
     //Serial.println( F("Values from RAM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
