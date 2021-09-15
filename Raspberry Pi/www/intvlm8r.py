@@ -1046,7 +1046,6 @@ def thermal():
         'arduinoMin'     : 'Unknown',
         'arduinoMax'     : 'Unknown',
         'piTemp'         : 'Unknown',
-        'voltage'        : 'Unknown',
         'vMax'           : '- ',
         'vMaxAt'         : 'Unknown',
         'vMin'           : '- ',
@@ -1087,16 +1086,6 @@ def thermal():
         templateData['vMaxAt'] = vMaxAt
         templateData['vMin']   = '{0:.1f}'.format(float(vMin)/10)
         templateData['vMinAt'] = vMinAt
-        
-        batteryVoltage = str((ord(batteryVoltageArray[10]) - 10)) # Subtract the offset added in the Arduino (to prevent returning 0V as NULL)
-        app.logger.info('Battery voltage: ' + batteryVoltage)
-        try:
-            batteryVoltage = batteryVoltage[:2] + '.' + batteryVoltage
-        except:
-            pass
-    else:
-        batteryVoltage = '- '
-    templateData['voltage'] = batteryVoltage
     
     return render_template('thermal.html', **templateData)
 
