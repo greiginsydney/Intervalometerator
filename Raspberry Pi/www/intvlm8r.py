@@ -1089,10 +1089,12 @@ def thermal():
         templateData['vMaxAt'] = vMaxAt
         templateData['vMin']   = '{0:.1f}'.format(float(vMin)/10)
         templateData['vMinAt'] = vMinAt
-        templateData.update({'voltageReadings' : voltageReadings})
     else:
         app.logger.info("Voltage array is BAD - or absent")
-
+        for i in range(24):
+            voltageReadings.append({'hour' : str(i), 'voltage' : '0'})
+    templateData.update({'voltageReadings' : voltageReadings})
+    
     return render_template('thermal.html', **templateData)
 
 
