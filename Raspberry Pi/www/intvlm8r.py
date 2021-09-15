@@ -1068,9 +1068,7 @@ def thermal():
     templateData['piTemp'] = getPiTemp()
 
     batteryVoltageArray = str(readString("6"))
-    if batteryVoltageArray == "Unknown":
-        batteryVoltage = '- '
-    elif len(batteryVoltageArray) == 24:
+    if len(batteryVoltageArray) == 24:
         # It appears formatted correctly?? Loop through to determine max/min values
         vMax = 0
         vMin = 180
@@ -1092,10 +1090,12 @@ def thermal():
         
         batteryVoltage = str((ord(batteryVoltageArray[10]) - 10)) # Subtract the offset added in the Arduino (to prevent returning 0V as NULL)
         app.logger.info('Battery voltage: ' + batteryVoltage)
-    try:
-        batteryVoltage = batteryVoltage[:2] + '.' + batteryVoltage
-    except:
-        pass
+        try:
+            batteryVoltage = batteryVoltage[:2] + '.' + batteryVoltage
+        except:
+            pass
+    else:
+        batteryVoltage = '- '
     templateData['voltage'] = batteryVoltage
     
     return render_template('thermal.html', **templateData)
