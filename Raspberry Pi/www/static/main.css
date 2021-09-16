@@ -496,6 +496,14 @@ input[type=radio] {
 		width: calc(40% * 100vw);
 		padding: 0px;
 	}
+	
+	.timeline li .label {
+  		display: none;
+	}
+
+	.timeline li {
+  		width: 1.0em;
+	}
 }
 
 @media screen and (max-width: 900px) {
