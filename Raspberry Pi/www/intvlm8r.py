@@ -1061,9 +1061,9 @@ def thermal():
         'arduinoMax'     : 'Unknown',
         'piTemp'         : 'Unknown',
         'vMax'           : '- ',
-        'vMaxAt'         : 'Unknown',
+        'vMaxAt'         : '',
         'vMin'           : '- ',
-        'vMinAt'         : 'Unknown'
+        'vMinAt'         : ''
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
