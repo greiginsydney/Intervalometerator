@@ -172,7 +172,7 @@ install_apps ()
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
-	echo -e ""$GREEN"Installing ExifReader requests"$RESET""
+	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
 	pip3 install ExifReader requests
 	
 	echo -e ""$GREEN"Installing smbus2"$RESET""
