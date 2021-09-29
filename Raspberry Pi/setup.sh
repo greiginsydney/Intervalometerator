@@ -224,6 +224,7 @@ install_apps ()
 	fi
 	# -------------------------------------------------------------------------------------------------
 	ln -sfnv /usr/local/share/python-gphoto2/examples ${HOME}/examples
+	ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 ${HOME}/gphoto2
 	
 	# Prepare for reboot/restart:
 	echo ''
