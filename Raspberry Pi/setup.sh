@@ -223,6 +223,7 @@ install_apps ()
 		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
 	fi
 	# -------------------------------------------------------------------------------------------------
+	ln -sfnv /usr/local/share/python-gphoto2/examples ${HOME}/examples
 	
 	# Prepare for reboot/restart:
 	echo ''
