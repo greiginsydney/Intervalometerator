@@ -1080,7 +1080,7 @@ def thermal():
         pass
     templateData['piTemp'] = getPiTemp()
 
-    batteryVoltageArray = str(readString("6"))  # All 24 voltage readings (offset by 10) as a string of bytes
+    batteryVoltageArray = str(readString("6", False))  # All 24 voltage readings (offset by 10) as a string of bytes
     voltageReadings = []                        # A list that stores all 24 voltage readings for the page to render
     if len(batteryVoltageArray) == 24:
         # It appears formatted correctly?? Loop through to decode, correct and capture max/min values
