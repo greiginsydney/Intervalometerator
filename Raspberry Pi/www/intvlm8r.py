@@ -1059,7 +1059,11 @@ def thermal():
         'arduinoTemp'    : 'Unknown',
         'arduinoMin'     : 'Unknown',
         'arduinoMax'     : 'Unknown',
-        'piTemp'         : 'Unknown'
+        'piTemp'         : 'Unknown',
+        'vMax'           : '- ',
+        'vMaxAt'         : 'Unknown',
+        'vMin'           : '- ',
+        'vMinAt'         : 'Unknown'
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
@@ -1076,6 +1080,35 @@ def thermal():
         pass
     templateData['piTemp'] = getPiTemp()
 
+    batteryVoltageArray = str(readString("6"))  # All 24 voltage readings (offset by 10) as a string of bytes
+    voltageReadings = []                        # A list that stores all 24 voltage readings for the page to render
+    if len(batteryVoltageArray) == 24:
+        # It appears formatted correctly?? Loop through to decode, correct and capture max/min values
+        app.logger.info("Voltage array is GOOD")
+        vMax = 0
+        vMin = 180
+        for i in range(24):
+            thisHour = ord(batteryVoltageArray[i]) - 10
+            #app.logger.info('Battery voltage at {0} = {1}V'.format(i, thisHour))
+            voltageReadings.append({'hour' : str(i), 'voltage' : '{0:.1f}'.format(float(thisHour)/10) })
+            if thisHour == 0:
+                continue # "0V" is invalid / should not happen. Exclude from max/min calc's
+            if thisHour > vMax:
+                vMax = thisHour
+                vMaxAt = i
+            if thisHour < vMin:
+                vMin = thisHour
+                vMinAt = i
+        templateData['vMax']   = '{0:.1f}'.format(float(vMax)/10)
+        templateData['vMaxAt'] = vMaxAt
+        templateData['vMin']   = '{0:.1f}'.format(float(vMin)/10)
+        templateData['vMinAt'] = vMinAt
+    else:
+        app.logger.info("Voltage array is BAD - or absent")
+        for i in range(24):
+            voltageReadings.append({'hour' : str(i), 'voltage' : '0'})
+    templateData.update({'voltageReadings' : voltageReadings})
+    
     return render_template('thermal.html', **templateData)
 
 

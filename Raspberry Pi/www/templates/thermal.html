@@ -50,7 +50,45 @@
 			</td>
 		</tr>
 	</table>
+	
+	{% if voltage != "" %}
+	<table>
+		<tr>
+			<th>Battery Voltage</th>
+		</tr>
+		<tr>
+			<td>
+				<ul class="timeline">
+					{% for voltageReading in voltageReadings %}
+					<li>
+						<a title="{{ voltageReading['voltage'] }}V">
+							<span class="label">{{ voltageReading['hour'] }}</span>
+							<span class="count" style="height: {{ (voltageReading['voltage']|float) * 100 / 18 }}%">{{ voltageReading['voltage'] }}</span>
+						</a>
+					</li>
+					{% endfor %}
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage maximum{% if vMaxAt != '' %} (at {{ '%02d:00' % vMaxAt }}){% endif %}:</div>
+				<div class="alignright" >{{ vMax }}V</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage minimum{% if vMinAt != '' %} (at {{ '%02d:00' % vMinAt }}){% endif %}:</div>
+				<div class="alignright" >{{ vMin }}V</div>
+			</td>
+		</tr>
+	</table>
+	{% endif %}
 </form>
+
+
+
+
 
 <script>
 // Run when the form first loads:
