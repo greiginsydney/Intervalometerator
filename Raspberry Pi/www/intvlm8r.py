@@ -639,7 +639,6 @@ def camera():
             shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
             expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
 
-            abilities = camera.get_abilities()
             if abilities.model in cameraPreviewBlocklist:
                 cameraData['blockPreview']  = 'True'
 
