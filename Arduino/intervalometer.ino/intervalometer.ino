@@ -168,7 +168,6 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
-    
     byte voltageValid;
     for (int i = 0; i <= 23; i++)
     {
