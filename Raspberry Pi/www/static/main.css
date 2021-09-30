@@ -386,73 +386,7 @@ input[type=radio] {
 
 /* End: Thumbs  */
 /* ---------------------------------------------------------*/
-/* Start: Environmental page graphs */
-
-
-./* TIMELINE CHARTS */
-
-.section {
-  float: left;
-  clear: left;
-  padding: 1em 2em;
-}
-
-.timeline {
-  font-size: 0.75em;
-  height: 10em;
-  padding: 0 1.5em 0 1.5em;
-}
-
-.timeline li {
-  list-style-type: none;
-  position: relative;
-  float: left;
-  width: 1.3em;
-  margin: 0 0.1em;
-  height: 8em;
-}
-
-.timeline li a {
-  display: block;
-  height: 100%;
-}
-
-.timeline li .label {
-  display: block;
-  position: absolute;
-  bottom: -2em;
-  left: 0;
-  background: #fff;
-  width: 100%;
-  height: 2em;
-  line-height: 2em;
-  text-align: center;
-}
-
-.timeline li a .count {
-  display: block;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 0;
-  width: 100%;
-  background: #AAA;
-  text-indent: -9999px;
-  overflow: hidden;
-}
-
-.timeline li:hover {
-  background: #EFEFEF;
-}
-
-.timeline li a:hover .count {
-  background: #2D7BB2;
-}
-
-/* End: Environmental page graphs */
-/* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
-
 
 @media screen and (max-height: 450px) {
 	.overlay {overflow-y: auto;}
