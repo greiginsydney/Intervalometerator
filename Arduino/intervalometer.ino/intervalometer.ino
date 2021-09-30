@@ -18,7 +18,7 @@ References:
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
  
 Last updated/changed in version:
-<TODO> was 4.3.1
+4.3.1
 *****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -39,7 +39,6 @@ Last updated/changed in version:
 #define PI_RUNNING      8 // The Pi takes this High when it's running (input)
 #define PI_SHUTDOWN     9 // Take low to initiate a shutdown in the Pi
 #define MAINT_PIN      14 // Take low to enable Maintenance Mode (D14 = A0 = PC0)
-#define V_SENSE_PIN    15 // Analog input, reads battery voltage (D15 = A1 = PC1)
 
 #define DS3234_REGISTER_CONTROL 0x0E
 #define DS3234_REGISTER_STATUS  0x0F
@@ -56,9 +55,6 @@ Last updated/changed in version:
 #define MEMWakePiDuration 0x06
 #define MEMTempMin    0x07  // 2 bytes to store an int.
 #define MEMTempMax    0x09  // "
-#define MEMVolt0      0x0A  // First memory location for voltage reading. (Midnight).
-#define MEMVolt23     0x41  // This define isn't actually used in the code, it's just a reminder of the last MEM address I've used (11pm)
-
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -84,7 +80,6 @@ volatile bool   getTempsFlag     = false; //
 bool   LastRunningState = LOW;  // Used in loop() to tell for a falling Edge of the Pi state
 bool   LastMaintState = HIGH;   // Used in loop() to tell if the maint/debug jumper has been removed
 bool   LastRtcIrqState = LOW;   // Used in loop() to help protect against "stuck" issues
-bool   readVbatteryFlag = LOW;  // Used in loop() to trigger a battery read
 
 byte   ShootDays = 0b11111110;  // Default shoot days (Mon-Sun). Only used if we power up with a flat clock battery
 byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot today.
@@ -94,7 +89,6 @@ byte   interval  = 15;          // Default spacing between photos. Defaults to a
 byte   WakePiHour = 14;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
-byte   VoltageReadingCounter=0; // A global, so the asynch voltmeter loop knows how many times it's been called.
 
 String newTimeDate = "";        // A new time and date sent by the Pi
 String newInterval = "";        // A new interval sent by the Pi
@@ -105,10 +99,6 @@ char LastShotMsg[6] = "19999";  // Sent to the Pi. Is "<d><hh><mm>" where d is S
 char NextShotMsg[6] = "19999";  // Sent to the Pi. Same as above.
 char Intervalstring[8];         // Sent to the Pi. Is "<d><startHour><EndHour><Interval>"
 char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<MinTemp>"
-char VoltageString[24];         // Twenty-four hours' worth of readings, indexed by the hour. The value is the voltage * 10. (e.g. 12.0V is saved as "120")
-
-int  VoltageReading = 0;        // This is the sum of the 16 voltage readings taken, to be averaged and converted to a byte
-
 
 //////////////////////////////////
 //            SETUP             //
@@ -168,18 +158,6 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
-    byte voltageValid;
-    for (int i = 0; i <= 23; i++)
-    {
-      voltageValid = EEPROM.read(MEMVolt0 + i);
-      //Ensure the voltages we read from EEPROM are within the allowed range:
-      if ((voltageValid < 10) || (voltageValid > 190))
-      {
-        voltageValid = 10;
-        EEPROM.write(MEMVolt0 + i, byte(10)); // Repair broken memory location
-      }
-      VoltageString[i] = voltageValid;
-    }
     //Serial.println( F("Values from RAM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
     //Serial.println( "  end hour   = " + String(EndHour));
@@ -203,12 +181,6 @@ void setup()
     EEPROM.put(MEMTempMin, (int)200); //Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.put(MEMTempMax, (int)-200);
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
-    //Initalise the voltmeter EEPROM and array to zeroes:
-    for (int i = 0; i <= 23; i++)
-    {
-      EEPROM.write(MEMVolt0 + i, 10);
-      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
-    }
   }
 
   UpdateTempMinMax(""); //Reset or initialise the temperature readings on boot
@@ -642,42 +614,6 @@ void UpdateTempMinMax(String resetOption)
 }
 
 
-// Called repeatedly at the top of every hour to read the battery voltage
-// Loops 16 times, each time reading the battery voltage. On the last loop it averages the values, stores the result in an array, and resets its flags.
-void UpdateVoltage()
-{
-  VoltageReading += analogRead(V_SENSE_PIN);
-  //Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
-  if (VoltageReadingCounter >= 15)
-  {
-    int thisHour = rtc.getHour();
-    float averageVolts = VoltageReading / 16;            // Average the 16 different readings
-    VoltageReading = (int)((averageVolts * 183) / 1023); // Convert 0-1023 to 0-"180" (18.0) Volts. (We'll add the decimal in the Pi)
-    VoltageReading += 10;                                // Add an offset to allow transfer as bytes. (Preventing 0v being NULL is the issue addressed here).
-    //Clamp valid voltages to a range of 0-18.0V (even though a reading anywhere near zero isn't possible)
-    if ((VoltageReading < 10) || (VoltageReading > 190))
-    {
-      VoltageReading = 10;
-      Serial.println( "YESSS!! Trapped an invalid voltage read at hour = " + String(thisHour));
-    }
-    VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
-    EEPROM.write(MEMVolt0 + thisHour, byte(VoltageReading));
-    //Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
-    //Serial.println("Voltage string     = " + String(VoltageString));
-    //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
-    
-    readVbatteryFlag = false;  // OK, all done, reset the flag.
-    VoltageReading = 0;
-    VoltageReadingCounter = 0; // Reset the counter for next time.
-  }
-  else
-  {
-    VoltageReadingCounter += 1;
-    DelaymS (1000);
-  }
-}
-
-
 void softReset()
 {
   asm volatile ("  jmp 0");
@@ -769,11 +705,6 @@ void receiveEvent(int howMany) {
     {
       //It wants to know the Pi on time and duration:
       sprintf(sendToPi, "%02d%02d", WakePiHour, WakePiDuration);
-    }
-    else if (incoming == "6")
-    {
-      //It wants to know the last 24 hours' voltage readings:
-      sprintf(sendToPi, VoltageString);
     }
     return; //Requests have all been responded to. OK to exit the ISR
   }
@@ -877,7 +808,6 @@ void loop()
       if (rtc.minute() == 0)
       {
         UpdateTempMinMax("");  // Runs at the top of the hour, 24x7
-        readVbatteryFlag = HIGH; //Trigger the battery reading process
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -976,11 +906,6 @@ void loop()
     resetTempMaxFlag = false;
   }
 
-  if (readVbatteryFlag == true)
-  {
-    UpdateVoltage();
-  }
- 
   if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*. LOW means the Pi has gone to sleep
   {
     // Only remove power if we've prevously taken PI_SHUTDOWN (Pin 9) LOW *and* now PI_RUNNING has gone LOW:
@@ -1015,7 +940,7 @@ void loop()
   // - made any changes pushed via the Pi
   // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
 
-  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (readVbatteryFlag == false))
+  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false))
   {
     // The Pi is powered-off. It's safe for us to sleep
     //Serial.println( F(" - About to sleep"));
