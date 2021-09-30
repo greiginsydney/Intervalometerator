@@ -201,7 +201,6 @@ input[type=radio] {
 	background-color: #eee;
 }
 
-
 /* Create the checkmark/indicator (hidden when not checked) */
 .rememberme:after {
 	content: "";
@@ -287,7 +286,6 @@ input[type=radio] {
 	background: black;
 }
 
-
 /* End: radio button */
 /* ---------------------------------------------------------*/
 /* Start: Menu */
@@ -347,7 +345,6 @@ input[type=radio] {
 	font-size: 2em;
 }
 
-
 /* End: Menu */
 /* ----------------------------------------------------------------------------------*/
 /* Start: Thumbnails --*/
@@ -395,7 +392,6 @@ input[type=radio] {
 /* TY StealthyNinja for the meter lines: https://stackoverflow.com/questions/8909888/how-would-you-design-the-html-markup-for-this/8909962#8909962 */
 /* TIMELINE CHARTS */
 
-
 .nopadding {
   padding: 0;
 }
@@ -414,7 +410,7 @@ input[type=radio] {
   z-index: 10;
 }
 
-.vLimits{
+.vLimits {
   position: absolute;
   overflow:visible;
   /* height:9px; */
@@ -436,7 +432,7 @@ input[type=radio] {
   border-bottom: 1px solid orange;
 }
 
-.vLimits span{
+.vLimits span {
   position: absolute;
   background-color: white;
   font-size: 0.75em;
@@ -501,12 +497,9 @@ input[type=radio] {
   background: #2D7BB2;
 }
 
-
-
 /* End: Environmental page graphs */
 /* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
-
 
 @media screen and (max-height: 450px) {
 	.overlay {overflow-y: auto;}
@@ -552,14 +545,12 @@ input[type=radio] {
 	}
 	
 	.timeline li .label {
-  display: none;
-}
+  		display: none;
+	}
 
-/*.timeline li {
-  width: 1.0em;
-}*/
-
-	
+	/*.timeline li {
+  		width: 1.0em;
+	}*/
 }
 
 @media screen and (max-width: 900px) {
