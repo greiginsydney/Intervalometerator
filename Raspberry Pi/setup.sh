@@ -223,8 +223,23 @@ install_apps ()
 		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
 	fi
 	# -------------------------------------------------------------------------------------------------
-	ln -sfnv /usr/local/share/python-gphoto2/examples ${HOME}/examples
-	ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 ${HOME}/gphoto2
+	echo ''
+	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2/examples ]; then
+		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2/examples /home/${SUDO_USER}/examples
+		echo "created shortcut 'examples' to point to '/usr/local/lib/python3.7/dist-packages/gphoto2/examples'"
+	elif [ -d /usr/local/share/python-gphoto2/examples ]; then
+		ln -sfnv /usr/local/share/python-gphoto2/examples /home/${SUDO_USER}/examples
+		echo "created shortcut 'examples' to point to '/usr/local/share/python-gphoto2/examples'"
+	else
+		echo -e ""$YELLOW"Unable to find installed gphoto2 examples to create shortcut"$RESET""
+	fi
+	
+	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2 ]; then
+		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 /home/${SUDO_USER}/gphoto2
+		echo "created shortcut 'gphoto2' to point to '/usr/local/lib/python3.7/dist-packages/gphoto2'"
+	else
+		echo -e ""$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
+	fi
 	
 	# Prepare for reboot/restart:
 	echo ''
