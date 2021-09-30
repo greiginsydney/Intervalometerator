@@ -62,7 +62,7 @@ app.jinja_env.trim_blocks = True
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
 celery.conf.update(app.config)
 
-cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
+cache = Cache(app, config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -141,7 +141,17 @@ def writeString(value):
     return -1
 
 
-def readString(value):
+def readString(value, cacheRequest):
+    #cacheRequest = False
+    if (cacheRequest == True):
+        cached = cache.get(value)
+        if cached is None:
+            #The cache is empty? Bummer
+            pass
+        else:
+            #app.logger.debug('YES! Cached value returned')
+            return cached
+
     status = ""
     ascii = ord(value[0])
     app.logger.debug('ASCII = ' + str(ascii))
@@ -165,6 +175,10 @@ def readString(value):
         except Exception as e:
             app.logger.debug('readString error: ' + str(e))
             time.sleep(1) # Wait a second before each retry
+
+    if (cacheRequest == True):
+        cache.set(value, status, timeout = 0)
+
     if status == "":
         status = "Unknown"
     return status
@@ -315,7 +329,7 @@ def main():
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
 
     try:
-        arduinoStats = str(readString("2"))
+        arduinoStats = str(readString("2", False))
         if arduinoStats != "Unknown":
             lastShot= arduinoStats.split(":")[0]
             if lastShot != "19999":
@@ -468,7 +482,7 @@ def setArduinoDateTime():
 def getArduinoDate():
     formattedDate = 'Unknown'
     try:
-        rawDate = str(readString("0"))
+        rawDate = str(readString("0", False))
         if rawDate != 'Unknown':
             formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
@@ -480,7 +494,7 @@ def getArduinoDate():
 def getArduinoTime():
     formattedTime = ''
     try:
-        rawTime = str(readString("1"))
+        rawTime = str(readString("1", False))
         if rawTime != 'Unknown':
             formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
@@ -757,7 +771,7 @@ def intervalometer():
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
-    ArdInterval = str(readString("3"))
+    ArdInterval = str(readString("3", True))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug('Int query returned: ' + ArdInterval)
     if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
@@ -898,7 +912,7 @@ def transfer():
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
 
-    rawWakePi = str(readString("5"))
+    rawWakePi = str(readString("5", True))
     if rawWakePi != "Unknown":
         templateData['wakePiTime']     = rawWakePi[0:2]
 
@@ -1054,14 +1068,14 @@ def thermal():
     try:
         writeString("GT") # Asks the Arduino to update its temperature string
         time.sleep(1);
-        temperatures = str(readString("4")) # Reads the resulting string, a csv array
+        temperatures = str(readString("4", False)) # Reads the resulting string, a csv array
         templateData['arduinoTemp'] = temperatures.split(",")[0]
         templateData['arduinoMin']  = temperatures.split(",")[2]
         templateData['arduinoMax']  = temperatures.split(",")[1]
     except:
         pass
     templateData['piTemp'] = getPiTemp()
-
+    
     return render_template('thermal.html', **templateData)
 
 
@@ -1244,21 +1258,23 @@ def initiateHeartbeat(self):
 def system():
 
     templateData = {
-        'piThumbCount'   : '24',
-        'arduinoDate'    : 'Unknown',
-        'arduinoTime'    : '',
-        'piDateTime'     : 'Unknown',
-        'piNtp'          : '',
-        'piHostname'     : 'Unknown',
-        'piUptime'       : 'Unknown',
-        'piModel'        : 'Unknown',
-        'piLinuxVer'     : 'Unknown',
-        'piSpaceFree'    : 'Unknown',
-        'wakePiTime'     : '',
-        'wakePiDuration' : '',
-        'rebootSafeWord' : REBOOT_SAFE_WORD,
-        'intvlm8rVersion': 'Unknown',
-        'cameraDateTime' : 'Unknown'
+        'piThumbCount'        : '24',
+        'arduinoDate'         : 'Unknown',
+        'arduinoTime'         : '',
+        'piDateTime'          : 'Unknown',
+        'piNtp'               : '',
+        'piHostname'          : 'Unknown',
+        'piUptime'            : 'Unknown',
+        'piModel'             : 'Unknown',
+        'piLinuxVer'          : 'Unknown',
+        'piSpaceFree'         : 'Unknown',
+        'wakePiTime'          : '',
+        'wakePiDuration'      : '',
+        'rebootSafeWord'      : REBOOT_SAFE_WORD,
+        'intvlm8rVersion'     : 'Unknown',
+        'libgphoto2Version'   : 'Unknown',
+        'pythonGphoto2Version': 'Unknown',
+        'cameraDateTime'      : 'Unknown'
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
@@ -1286,7 +1302,7 @@ def system():
         tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
         if tempTime != '':
                 templateData['arduinoTime'] = tempTime
-        rawWakePi = str(readString("5"))
+        rawWakePi = str(readString("5", True))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
@@ -1305,9 +1321,11 @@ def system():
 
     try:
         with open('version', 'r') as versionFile:
-            templateData['intvlm8rVersion'] = versionFile.read()
-    except:
-        pass
+            templateData['intvlm8rVersion']   = versionFile.read()
+        templateData['libgphoto2Version']     = gp.gp_library_version(gp.GP_VERSION_SHORT)[0]
+        templateData['pythonGphoto2Version'] = gp.__version__
+    except Exception as e:
+        app.logger.debug('system: Unexpected error querying version info: ' + str(e))
 
     try:
         if not config:
@@ -2309,7 +2327,7 @@ def getShotsPerDay():
     """
     shotsPerDay = 0
     try:
-        ArdInterval = str(readString("3"))
+        ArdInterval = str(readString("3", True))
         #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
         if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
             startHour = int(ArdInterval[1:3])

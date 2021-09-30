@@ -388,7 +388,6 @@ input[type=radio] {
 /* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
-
 @media screen and (max-height: 450px) {
 	.overlay {overflow-y: auto;}
 	.overlay .closebtn {
@@ -430,6 +429,14 @@ input[type=radio] {
 		float: right;
 		width: calc(40% * 100vw);
 		padding: 0px;
+	}
+	
+	.timeline li .label {
+  		display: none;
+	}
+
+	.timeline li {
+  		width: 1.0em;
 	}
 }
 
