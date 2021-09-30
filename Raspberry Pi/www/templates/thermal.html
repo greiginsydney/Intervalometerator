@@ -51,23 +51,29 @@
 		</tr>
 	</table>
 	
-	{% if voltage != "" %}
 	<table>
 		<tr>
 			<th>Battery Voltage</th>
 		</tr>
 		<tr>
-			<td>
-				<ul class="timeline">
-					{% for voltageReading in voltageReadings %}
-					<li>
-						<a title="{{ voltageReading['voltage'] }}V">
-							<span class="label">{{ voltageReading['hour'] }}</span>
-							<span class="count" style="height: {{ (voltageReading['voltage']|float) * 100 / 18 }}%">{{ voltageReading['voltage'] }}</span>
-						</a>
-					</li>
-					{% endfor %}
-				</ul>
+			<td class="nopadding">
+				<div class="metercontainer">
+					<ul class="timeline">
+						{% for voltageReading in voltageReadings %}
+						<li>
+							<a title="{{ voltageReading['voltage'] }}V">
+								<span class="label">{{ voltageReading['hour'] }}</span>
+								<span class="count" style="height: {{ (voltageReading['voltage']|float) * 100 / 18 }}%">{{ voltageReading['voltage'] }}</span>
+							</a>
+						</li>
+						{% endfor %}
+					</ul>
+					<div class="meterscale" >
+						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ 100 - ((VHiAlarm * 100) / 18) }}%;"><span>{{ VHiAlarm }}V</span></div>{% endif %}
+						<div class="greenLimit vLimits"  style="height: {{ 100 - ((12 * 100) / 18) }}%;"><span>12V</span></div>
+						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ 100 - ((VLoAlarm * 100) / 18) }}%;"><span>{{ VLoAlarm }}V</span></div>{% endif %}
+					</div>
+				</div>
 			</td>
 		</tr>
 		<tr>
@@ -83,7 +89,6 @@
 			</td>
 		</tr>
 	</table>
-	{% endif %}
 </form>
 
 
