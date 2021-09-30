@@ -359,7 +359,7 @@ def main():
                 fileCount = len(files)
                 info = get_camera_file_info(camera, files[-1]) #Get the last file
                 lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
             templateData['fileCount']                = fileCount
             templateData['lastImage']                = lastImage
             templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
@@ -382,7 +382,7 @@ def main():
                 except Exception as e:
                     app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
             templateData['availableShots'] = readValue (config, 'availableshots')
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except Exception as e:
         app.logger.debug('Unknown camera error in main: ' + str(e))
 
@@ -643,7 +643,7 @@ def camera():
             if abilities.model in cameraPreviewBlocklist:
                 cameraData['blockPreview']  = 'True'
 
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
             cameraData['cameraDate']    = cameraTimeAndDate
             cameraData['focusmode']     = readValue (config, 'focusmode')
             cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
@@ -720,7 +720,7 @@ def cameraPOST():
                 getPreviewImage(camera, context, config)
                 preview = 1
 
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except Exception as e:
         app.logger.debug('Unknown camera POST error: ' + str(e))
 
@@ -767,7 +767,7 @@ def intervalometer():
                 except Exception as e:
                     app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
             templateData['availableShots'] = readValue (config, 'availableshots')
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except Exception as e:
         app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
 
@@ -1332,7 +1332,7 @@ def system():
             camera, context, config = connectCamera(1)
         if camera:
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except:
         pass
 
@@ -1467,13 +1467,13 @@ def connectCamera(retries):
                 elif e.string == 'Could not claim the USB device':
                     app.logger.debug('connectCamera could not claim the USB device. Exiting')
                     #TODO: pass this back upstream to present to the user
-                    gp.check_result(gp.gp_camera_exit(camera))
+                    camera.exit()
                     return None, None, None
             except Exception as e:
                 app.logger.debug('connectCamera error: ' + str(e))
             if retries >= 4:
                 app.logger.debug('connectCamera returning None')
-                gp.check_result(gp.gp_camera_exit(camera))
+                camera.exit()
                 return None, None, None
             if retries % 2 == 0:
                 time.sleep(1.5);    # Pause after waking
@@ -2148,7 +2148,7 @@ def copyNow(self):
             except Exception as e:
                 app.logger.info('Unknown error in copyNow(): ' + str(e))
     try:
-        gp.check_result(gp.gp_camera_exit(camera))
+        camera.exit()
         app.logger.info('copyNow() ended happily')
     except Exception as e:
         app.logger.info('copyNow() ended sad: ' + str(e))
