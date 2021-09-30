@@ -1062,7 +1062,9 @@ def thermal():
         'vMax'           : '- ',
         'vMaxAt'         : '',
         'vMin'           : '- ',
-        'vMinAt'         : ''
+        'vMinAt'         : '',
+        'VHiAlarm'       : 15,
+        'VLoAlarm'       : 10
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
