@@ -72,6 +72,13 @@
 						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ 100 - ((VHiAlarm * 100) / 18) }}%;"><span>VHi</span></div>{% endif %}
 						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ 100 - ((VLoAlarm * 100) / 18) }}%;"><span>VLo</span></div>{% endif %}
 					</div>
+					<div class="graticule" >
+						{% for i in range(18) %}
+						{% if i < 8 %} {% continue %} {% endif %}
+						{% if i is odd %} {% continue %} {% endif %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / 18)) }}%;"><span>{{ i }}V</span></div>
+						{% endfor %}
+					</div>
 				</div>
 			</td>
 		</tr>
