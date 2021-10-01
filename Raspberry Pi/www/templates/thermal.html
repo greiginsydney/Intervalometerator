@@ -69,9 +69,9 @@
 						{% endfor %}
 					</ul>
 					<div class="meterscale" >
-						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ 100 - ((VHiAlarm * 100) / 18) }}%;"><span>{{ VHiAlarm }}V</span></div>{% endif %}
+						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ 100 - ((VHiAlarm * 100) / 18) }}%;"><span>VHi</span></div>{% endif %}
 						<div class="greenLimit vLimits"  style="height: {{ 100 - ((12 * 100) / 18) }}%;"><span>12V</span></div>
-						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ 100 - ((VLoAlarm * 100) / 18) }}%;"><span>{{ VLoAlarm }}V</span></div>{% endif %}
+						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ 100 - ((VLoAlarm * 100) / 18) }}%;"><span>VLo</span></div>{% endif %}
 					</div>
 				</div>
 			</td>
