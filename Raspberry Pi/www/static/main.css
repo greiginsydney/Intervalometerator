@@ -410,6 +410,25 @@ input[type=radio] {
   z-index: 10;
 }
 
+.graticule {
+  position: absolute;
+  font-size: 0.75em;
+  width: 96%;
+  height: 10em;
+  top: 0;
+  left: 4%;
+  z-index: 5;
+}
+
+.graticule span {
+  position: absolute;
+  background-color: white;
+  font-size: 0.75em;
+  padding: 0 1px;
+  left: 0;
+  bottom: -0.65em;
+}
+
 .vLimits {
   position: absolute;
   overflow:visible;
@@ -444,6 +463,7 @@ input[type=radio] {
   color: orange;
 }
 
+
 .vLimits span {
   position: absolute;
   background-color: white;
@@ -451,6 +471,27 @@ input[type=radio] {
   padding: 0 1px;
   left: 0;
   bottom: -0.65em;
+}
+
+
+.vScale {
+  position: absolute;
+  overflow:visible;
+  height:0.5em;
+  margin: 0;
+  width: 95%;
+  padding: 0;
+  border-bottom: 1px dotted gray;
+}
+
+.vScale span {
+  position: absolute;
+  background-color: white;
+  font-size: 0.75em;
+  padding: 0 1px;
+  left: 0;
+  bottom: -0.65em;
+  margin-left: 100%;
 }
 
 .timeline {
