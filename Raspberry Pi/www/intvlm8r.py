@@ -58,6 +58,7 @@ app.config['result_backend'] = 'redis://localhost:6379/0'
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
+app.jinja_env.add_extension('jinja2.ext.loopcontrols') #Adds support for 'continue', used in voltmeter code
 
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
 celery.conf.update(app.config)
