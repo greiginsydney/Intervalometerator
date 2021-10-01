@@ -63,17 +63,17 @@
 						<li>
 							<a title="{{ voltageReading['voltage'] }}V">
 								<span class="label">{{ voltageReading['hour'] }}</span>
-								<span class="count" style="height: {{ (voltageReading['voltage']|float) * 100 / 18 }}%
+								<span class="count" style="height: {{ '%0.2f'| format ((voltageReading['voltage']|float) * 100 / 18) }}%
 									{%- if   VHiAlarm != 0 and ((voltageReading['voltage']|float) >= VHiAlarm) %}; background: #ff4d4d;
 									{%- elif VLoAlarm != 0 and ((voltageReading['voltage']|float) <+ VLoAlarm) %}; background: #ffc266;
-									{%- endif %}">{{ voltageReading['voltage'] }}</span>			   
+									{%- endif %}">{{ voltageReading['voltage'] }}</span>
 							</a>
 						</li>
 						{% endfor %}
 					</ul>
 					<div class="meterscale" >
-						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ 100 - ((VHiAlarm * 100) / 18) }}%;"><span>VHi</span></div>{% endif %}
-						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ 100 - ((VLoAlarm * 100) / 18) }}%;"><span>VLo</span></div>{% endif %}
+						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (100 - ((VHiAlarm * 100) / 18)) }}%;"><span>VHi</span></div>{% endif %}
+						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (100 - ((VLoAlarm * 100) / 18)) }}%;"><span>VLo</span></div>{% endif %}
 					</div>
 					<div class="graticule" >
 						{% for i in range(18) %}
