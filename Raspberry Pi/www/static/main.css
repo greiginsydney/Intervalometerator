@@ -424,12 +424,24 @@ input[type=radio] {
   border-bottom: 1px solid red;
 }
 
+.redLimit span {
+  color: red;
+}
+
 .greenLimit {
   border-bottom: 1px solid green;
 }
 
+.greenLimit span {
+  color: green;
+}
+
 .orangeLimit {
   border-bottom: 1px solid orange;
+}
+
+.orangeLimit span {
+  color: orange;
 }
 
 .vLimits span {
