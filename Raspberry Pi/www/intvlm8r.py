@@ -62,7 +62,7 @@ app.jinja_env.trim_blocks = True
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
 celery.conf.update(app.config)
 
-cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
+cache = Cache(app, config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -1533,7 +1533,7 @@ def readValue ( camera, attribute ):
     return value
 
 
-def readRange ( camera, context, group, attribute ):
+def readRange ( camera, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
     It's only called by "camera" and "main" when we already have an established connection to the
