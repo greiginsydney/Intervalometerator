@@ -71,11 +71,15 @@
 						</li>
 						{% endfor %}
 					</ul>
-					<div class="meterscale" >
-						{% if VHiAlarm != 0 %}<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (100 - ((VHiAlarm * 100) / 18)) }}%;"><span>VHi</span></div>{% endif %}
-						{% if VLoAlarm != 0 %}<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (100 - ((VLoAlarm * 100) / 18)) }}%;"><span>VLo</span></div>{% endif %}
+					<div class="meterscale">
+						{% if VHiAlarm != 0 %}
+						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (100 - ((VHiAlarm * 100) / 18)) }}%;"><span>VHi</span></div>
+						{% endif %}
+						{% if VLoAlarm != 0 %}
+						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (100 - ((VLoAlarm * 100) / 18)) }}%;"><span>VLo</span></div>
+						{% endif %}
 					</div>
-					<div class="graticule" >
+					<div class="graticule">
 						{% for i in range(2,19,2) %}
 						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / 18)) }}%;"><span>{{ i }}V</span></div>
 						{% endfor %}
