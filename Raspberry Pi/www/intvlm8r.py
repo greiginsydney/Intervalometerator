@@ -1292,21 +1292,23 @@ def initiateHeartbeat(self):
 def system():
 
     templateData = {
-        'piThumbCount'   : '24',
-        'arduinoDate'    : 'Unknown',
-        'arduinoTime'    : '',
-        'piDateTime'     : 'Unknown',
-        'piNtp'          : '',
-        'piHostname'     : 'Unknown',
-        'piUptime'       : 'Unknown',
-        'piModel'        : 'Unknown',
-        'piLinuxVer'     : 'Unknown',
-        'piSpaceFree'    : 'Unknown',
-        'wakePiTime'     : '',
-        'wakePiDuration' : '',
-        'rebootSafeWord' : REBOOT_SAFE_WORD,
-        'intvlm8rVersion': 'Unknown',
-        'cameraDateTime' : 'Unknown'
+        'piThumbCount'        : '24',
+        'arduinoDate'         : 'Unknown',
+        'arduinoTime'         : '',
+        'piDateTime'          : 'Unknown',
+        'piNtp'               : '',
+        'piHostname'          : 'Unknown',
+        'piUptime'            : 'Unknown',
+        'piModel'             : 'Unknown',
+        'piLinuxVer'          : 'Unknown',
+        'piSpaceFree'         : 'Unknown',
+        'wakePiTime'          : '',
+        'wakePiDuration'      : '',
+        'rebootSafeWord'      : REBOOT_SAFE_WORD,
+        'intvlm8rVersion'     : 'Unknown',
+        'libgphoto2Version'   : 'Unknown',
+        'pythonGphoto2Version': 'Unknown',
+        'cameraDateTime'      : 'Unknown'
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
@@ -1353,15 +1355,17 @@ def system():
 
     try:
         with open('version', 'r') as versionFile:
-            templateData['intvlm8rVersion'] = versionFile.read()
-    except:
-        pass
+            templateData['intvlm8rVersion']   = versionFile.read()
+        templateData['libgphoto2Version']     = gp.gp_library_version(gp.GP_VERSION_SHORT)[0]
+        templateData['pythonGphoto2Version'] = gp.__version__
+    except Exception as e:
+        app.logger.debug('system: Unexpected error querying version info: ' + str(e))
 
     try:
         if not config:
             camera, context, config = connectCamera(1)
         if camera:
-            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
+            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
             gp.check_result(gp.gp_camera_exit(camera))
     except:
         pass
@@ -1529,7 +1533,7 @@ def readValue ( camera, attribute ):
     return value
 
 
-def readRange ( camera, group, attribute ):
+def readRange ( camera, context, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
     It's only called by "camera" and "main" when we already have an established connection to the
@@ -1538,7 +1542,7 @@ def readRange ( camera, group, attribute ):
     options = []
     currentValue = 'Unknown'
     try:
-        config_tree = camera.get_config()
+        config_tree = camera.get_config(context)
         total_child = config_tree.count_children()
         for i in range(total_child):
             child = config_tree.get_child(i)
@@ -1559,7 +1563,7 @@ def readRange ( camera, group, attribute ):
     return currentValue, options
 
 
-def getCameraTimeAndDate( camera, config, returnvalue ):
+def getCameraTimeAndDate( camera, context, config, returnvalue ):
     try:
         # find the date/time setting config item and get it
         # name varies with camera driver
@@ -1987,7 +1991,7 @@ def convert_to_float(frac_str):
         return whole - frac if whole < 0 else whole + frac
 
 
-def getPreviewImage(camera, config):
+def getPreviewImage(camera, context, config):
     """
     Straight out of Jim's examples
     """
