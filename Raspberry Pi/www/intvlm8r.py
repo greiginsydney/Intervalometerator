@@ -1285,7 +1285,7 @@ def system():
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
     except:
-        pass
+        app.logger.debug('system: Threw querying PiModel: ' + str(e))
 
     try:
         with open("/etc/os-release") as f:
@@ -1295,7 +1295,7 @@ def system():
                 release_info[key] = value.strip('"')
                 templateData['piLinuxVer'] = release_info["PRETTY_NAME"]
     except:
-        pass
+        app.logger.debug('system: Threw querying Pi os version: ' + str(e))
 
     try:
         templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
@@ -1307,7 +1307,7 @@ def system():
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
     except:
-        pass
+        app.logger.debug('system: Threw querying Arduino DateTime: ' + str(e))
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
     templateData['piNtp'] = checkNTP(None)
@@ -1317,7 +1317,7 @@ def system():
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'],_ = getDiskSpace()
     except:
-        pass
+        app.logger.debug('system: Threw querying Pi details: ' + str(e))
 
     try:
         with open('version', 'r') as versionFile:
@@ -1334,7 +1334,7 @@ def system():
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
             camera.exit()
     except:
-        pass
+        app.logger.debug('system: Threw querying cameraDateTime: ' + str(e))
 
     return render_template('system.html', **templateData)
 
