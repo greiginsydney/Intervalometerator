@@ -167,7 +167,7 @@ install_apps ()
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
 	echo -e ""$GREEN"Installing gphoto"$RESET""
-	pip3 install -v gphoto2
+	pip3 install -v gphoto2 --no-binary :all:
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
