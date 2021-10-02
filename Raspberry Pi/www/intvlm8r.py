@@ -717,7 +717,7 @@ def cameraPOST():
 
             if request.form['CamSubmit'] == 'preview':
                 app.logger.debug('-- Camera Preview selected')
-                getPreviewImage(camera, context, config)
+                getPreviewImage(camera, config)
                 preview = 1
 
             camera.exit()
@@ -1957,7 +1957,7 @@ def convert_to_float(frac_str):
         return whole - frac if whole < 0 else whole + frac
 
 
-def getPreviewImage(camera, context, config):
+def getPreviewImage(camera, config):
     """
     Straight out of Jim's examples
     """
