@@ -1366,7 +1366,7 @@ def system():
         if not config:
             camera, context, config = connectCamera(1)
         if camera:
-            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
+            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
             gp.check_result(gp.gp_camera_exit(camera))
     except:
         pass
@@ -1543,7 +1543,7 @@ def readRange ( camera, group, attribute ):
     options = []
     currentValue = 'Unknown'
     try:
-        config_tree = camera.get_config(context)
+        config_tree = camera.get_config()
         total_child = config_tree.count_children()
         for i in range(total_child):
             child = config_tree.get_child(i)
@@ -1564,7 +1564,7 @@ def readRange ( camera, group, attribute ):
     return currentValue, options
 
 
-def getCameraTimeAndDate( camera, context, config, returnvalue ):
+def getCameraTimeAndDate( camera, config, returnvalue ):
     try:
         # find the date/time setting config item and get it
         # name varies with camera driver
@@ -1992,7 +1992,7 @@ def convert_to_float(frac_str):
         return whole - frac if whole < 0 else whole + frac
 
 
-def getPreviewImage(camera, context, config):
+def getPreviewImage(camera, config):
     """
     Straight out of Jim's examples
     """
