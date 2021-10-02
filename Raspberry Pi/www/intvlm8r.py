@@ -1508,7 +1508,7 @@ def readRange ( camera, group, attribute ):
     options = []
     currentValue = 'Unknown'
     try:
-        config_tree = camera.get_config(context)
+        config_tree = camera.get_config()
         total_child = config_tree.count_children()
         for i in range(total_child):
             child = config_tree.get_child(i)
