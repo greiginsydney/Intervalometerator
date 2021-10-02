@@ -362,7 +362,7 @@ def main():
             camera.exit()
             templateData['fileCount']                = fileCount
             templateData['lastImage']                = lastImage
-            templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
+            templateData['cameraBattery'], discardMe = readRange (camera, 'status', 'batterylevel')
 
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
@@ -607,18 +607,18 @@ def camera():
         if camera:
             abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             cameraData['cameraModel']              = abilities.model
-            cameraData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
             if (cameraData['cameraLens'] == 'Unknown'):
                 #Try to build this from focal length:
-                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
-                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+                focalMin, discardMe = readRange (camera, 'status', 'minfocallength')
+                focalMax, discardMe = readRange (camera, 'status', 'maxfocallength')
                 if (focalMin == focalMax):
                     cameraData['cameraLens'] = focalMin
                 else:
                     focalMin = focalMin.replace(" mm", "")
                     cameraData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
             cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
-            cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
+            cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
                 cameraMfr = 'Nikon'
                 cameraData['cameraMfr'] = 'Nikon'
@@ -626,18 +626,18 @@ def camera():
                 cameraMfr = 'Canon'
                 cameraData['cameraMfr'] = 'Canon'
             if (cameraMfr == 'Nikon'):
-                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
-                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'f-number')
+                imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
+                apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
                 cameraData['exposuremode']      = readValue (config, 'expprogram')
             else:
-                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
-                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
+                imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
+                apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
                 cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
             #Attributes generic to all cameras:
-            wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
-            isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
-            shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
-            expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
+            wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
+            isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
+            shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
+            expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
 
             abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
             if abilities.model in cameraPreviewBlocklist:
@@ -1499,7 +1499,7 @@ def readValue ( camera, attribute ):
     return value
 
 
-def readRange ( camera, context, group, attribute ):
+def readRange ( camera, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
     It's only called by "camera" and "main" when we already have an established connection to the
