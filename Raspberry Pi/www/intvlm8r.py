@@ -617,7 +617,7 @@ def camera():
                 else:
                     focalMin = focalMin.replace(" mm", "")
                     cameraData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
-            cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
+            cameraTimeAndDate = getCameraTimeAndDate(camera, config, 'Unknown')
             cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
                 cameraMfr = 'Nikon'
@@ -1331,7 +1331,7 @@ def system():
         if not config:
             camera, context, config = connectCamera(1)
         if camera:
-            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
+            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
             camera.exit()
     except:
         app.logger.debug('system: Threw querying cameraDateTime: ' + str(e))
@@ -1529,7 +1529,7 @@ def readRange ( camera, group, attribute ):
     return currentValue, options
 
 
-def getCameraTimeAndDate( camera, context, config, returnvalue ):
+def getCameraTimeAndDate( camera, config, returnvalue ):
     try:
         # find the date/time setting config item and get it
         # name varies with camera driver
