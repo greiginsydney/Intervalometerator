@@ -413,7 +413,7 @@ input[type=radio] {
 .graticule {
   position: absolute;
   font-size: 0.75em;
-  width: 96%;
+  width: 97%;
   height: 10em;
   top: 0;
   left: 4%;
@@ -435,7 +435,7 @@ input[type=radio] {
   /* height:9px; */
   height:0.5em;
   margin: 0;
-  width: 95%;
+  width: 96%;
   padding: 0;
 }
 
@@ -487,6 +487,8 @@ input[type=radio] {
 }
 
 .timeline {
+  display: flex;
+  justify-content: space-between;
   font-size: 0.75em;
   height: 12em;
   padding: 0;
@@ -589,14 +591,38 @@ input[type=radio] {
 		padding: 0px;
 	}
 	
-	.timeline li .label {
-  		display: none;
+	.timeline {
+		margin-left: 5%;
+		margin-right: 5%;
 	}
 
-	/*.timeline li {
-  		width: 1.0em;
-	}*/
+	.graticule {
+		width: 96%;
+	}
+
+	/* .graticule span { 
+  		display: none;
+	} */
+	
 }
+
+@media (max-width:400px) {
+
+	.timeline {
+		margin-left: 6%;
+		margin-right: 6%;
+		height: 10em;
+	}
+	
+	.timeline li .label {
+		display: none;
+	}
+	
+	.vLimits {
+		width: 95%;
+	}
+}
+
 
 @media screen and (max-width: 900px) {
 
