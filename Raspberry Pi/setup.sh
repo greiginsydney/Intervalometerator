@@ -224,15 +224,16 @@ install_apps ()
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo ''
-	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2/examples ]; then
-		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2/examples /home/${SUDO_USER}/examples
-		echo "created shortcut 'examples' to point to '/usr/local/lib/python3.7/dist-packages/gphoto2/examples'"
-	elif [ -d /usr/local/share/python-gphoto2/examples ]; then
-		ln -sfnv /usr/local/share/python-gphoto2/examples /home/${SUDO_USER}/examples
-		echo "created shortcut 'examples' to point to '/usr/local/share/python-gphoto2/examples'"
-	else
-		echo -e ""$YELLOW"Unable to find installed gphoto2 examples to create shortcut"$RESET""
-	fi
+	whereisgphoto='/usr/local/share/python-gphoto2/examples /usr/local/lib/python3.7/dist-packages/gphoto2/examples /home/pi/.local/lib/python3.7/site-packages/gphoto2/examples'
+	message=""$YELLOW"Unable to find installed gphoto2 examples to create shortcut"$RESET""
+	for path in $whereisgphoto; do
+		if [ -d  $path ]; then
+			ln -sfnv "$path" /home/${SUDO_USER}/examples
+			message="created shortcut 'examples' to point to '$path'"
+			break
+		fi
+	done
+	echo $message
 	
 	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2 ]; then
 		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 /home/${SUDO_USER}/gphoto2
