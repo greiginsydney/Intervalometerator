@@ -163,11 +163,110 @@ install_apps ()
 	
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
-	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
-	apt-get install libgphoto2-dev -y
-	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
-	echo -e ""$GREEN"Installing gphoto"$RESET""
-	pip3 install -v gphoto2 --no-binary :all:
+	
+	# ================== START libgphoto & gphoto ================== 
+	# Remove legacy libgphoto2-dev build (if present)
+	echo -e ""$GREEN"Checking for legacy version of libgphoto2-dev"$RESET""
+	isDev=$(apt-cache policy libgphoto2-dev | sed -n 's/.*Installed:\s\(.*\).*/\1/p')
+	if [[ $isDev != "(none)" ]]; then
+		echo "REMOVING old libgphoto2-dev version"
+		apt-get purge libgphoto2-dev -y
+	else
+		echo "No legacy version of libgphoto2-dev found"
+	fi
+	echo ''
+	# So IF libgphoto2-dev was previously installed by apt, it's now gone.
+	
+	echo -e ""$GREEN"Installing libltdl-dev, libusb-1.0-0-dev, libexif-dev"$RESET""
+	apt-get install libltdl-dev libusb-1.0-0-dev libexif-dev -y
+	
+	# What's the installed version of libgphoto2 (if any)?
+	echo -e ""$GREEN"Checking for installed and latest release versions of libgphoto2"$RESET""
+	set +e #Suspend the error trap: pkg-config will throw an error and exit dirty if libgphoto2 is not installed
+	installedLibGphoto=$(pkg-config --modversion --errors-to-stdout libgphoto2)
+	#if [[ "$?" -ne 0 ]];
+	set -e #Resume the error trap
+	if [[ $installedLibGphoto == *"not found"* ]]; then
+		echo "Current installed version of libgphoto2     = not found"
+		installedLibGphoto=0
+	else
+		echo "Current installed version of libgphoto2     = $installedLibGphoto"
+	fi
+	
+	# What's the latest release of libgphoto2?
+	latestLibGphotoRls=$(curl --silent "https://api.github.com/repos/gphoto/libgphoto2/releases/latest" | sed -n 's/.*tag_name":\s"v\(.*\)".*/\1/p')
+	if [ -z $latestLibGphotoRls ]; then
+		echo ""$RED"Current  released version of libgphoto2     = unknown"$RESET""
+	else
+		echo "Current  released version of libgphoto2     = $latestLibGphotoRls"
+	fi
+	
+	if [[ $latestLibGphotoRls == $installedLibGphoto ]]; then
+		echo "No libgphoto2 upgrade required"
+	else
+		if [ $installedLibGphoto == 0 ]; then
+			echo -e ""$GREEN"Installing libgphoto2"$RESET""
+		else 
+			echo -e ""$GREEN"Upgrading libgphoto2"$RESET""
+		fi
+
+		# echo ''
+		# read -p "Press [Enter] to continue..."
+		
+		mkdir -pv /home/${SUDO_USER}/gphoto2-temp-folder
+		cd /home/${SUDO_USER}/gphoto2-temp-folder
+		
+		wget "https://github.com/gphoto/libgphoto2/releases/download/v$latestLibGphotoRls/libgphoto2-$latestLibGphotoRls.tar.gz"
+		tar -xvzf "libgphoto2-$latestLibGphotoRls.tar.gz"
+		cd "libgphoto2-$latestLibGphotoRls"
+		./configure
+		make
+		make install
+		# if (/usr/bin/git clone "--branch libgphoto2-$latestLibGphotoRls-release" https://github.com/gphoto/libgphoto2.git); then
+			# cd libgphoto2/
+		# else
+			# echo -e ""$RED"Unable to download libgphoto2. Aborting"$RESET""
+			# exit
+		# fi
+		# autoreconf --install --symlink
+		# ./configure
+		# make -j "$cores"
+		# make install
+		cd ..
+		cd ..
+		rm -r /home/${SUDO_USER}/gphoto2-temp-folder
+		
+		
+		
+		
+		#If gphoto2 is installed, reinstall it now, if not, install it anyway!
+		echo -e ""$GREEN"Installing/reinstalling python-gphoto2"$RESET""
+		pip3 install -v -U --force-reinstall gphoto2
+	fi
+	
+	echo ''
+	read -p "Press [Enter] to continue..."
+	
+	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
+	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
+	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
+	
+	echo -n "Checking installed version of python-gphoto2"
+	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+	if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
+		echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
+		if [[ $isGphoto != $latestPythonGphotoRls ]]; then
+			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
+			pip3 install -v -U --force-reinstall gphoto2
+		else
+			echo "No python-gphoto2 upgrade required"
+		fi
+	else
+		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
+		pip3 install -v gphoto2 --no-binary :all:
+	fi
+	# ================== END libgphoto & gphoto ==================
+	echo ''
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
