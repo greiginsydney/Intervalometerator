@@ -233,12 +233,14 @@ install_apps ()
 			break
 		fi
 	done
+	echo ''
 	echo $message
 	
 	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2 ]; then
 		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 /home/${SUDO_USER}/gphoto2
 		echo "created shortcut 'gphoto2' to point to '/usr/local/lib/python3.7/dist-packages/gphoto2'"
 	else
+		echo ''
 		echo -e ""$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 	fi
 	
