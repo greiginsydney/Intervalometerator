@@ -161,8 +161,8 @@ install_apps ()
 		pip3 install sysrsync
 	fi
 	
-	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev"$RESET""
-	apt-get install nginx nginx-common supervisor python-dev -y
+	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
+	apt-get install nginx nginx-common supervisor python-dev jq -y
 	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
 	apt-get install libgphoto2-dev -y
 	#If the above doesn't install or throws errors, run apt-cache search libgphoto2 & it should reveal the name of the "development" version, which you should substitute back into your repeat attempt at this step.
