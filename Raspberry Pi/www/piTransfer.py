@@ -168,12 +168,14 @@ def main(argv):
             ftpRemoteFolder = ftpRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
         while '//' in ftpRemoteFolder:
             ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
+        log('ftpServer={0}, ftpUser={1}, ftpPassword=<redacted>, ftpRemoteFolder={2}'.format(ftpServer, ftpUser, ftpRemoteFolder))
         commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder)
     elif (tfrMethod == 'SFTP'):
         while '\\' in sftpRemoteFolder:
             sftpRemoteFolder = sftpRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
         while '//' in sftpRemoteFolder:
             sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
+        log('sftpServer={0}, sftpUser={1}, sftpPassword=<redacted>, sftpRemoteFolder={2}'.format(sftpServer, sftpUser, sftpRemoteFolder))
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
         commenceDbx(dbx_token)
@@ -188,6 +190,7 @@ def main(argv):
             rsyncRemoteFolder = rsyncRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
         while '//' in rsyncRemoteFolder:
             rsyncRemoteFolder = rsyncRemoteFolder.replace('//', '/')
+        log('rsyncUsername={0}, rsyncHost={1}, rsyncRemoteFolder={2}'.format(rsyncUsername, rsyncHost, rsyncRemoteFolder))
         commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder)
 
 
