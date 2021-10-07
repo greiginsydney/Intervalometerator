@@ -29,21 +29,21 @@ print('=======')
 total_child = config_tree.count_children()
 for i in range(total_child):
     child = config_tree.get_child(i)
-    text_child = '# ' + child.get_label() + ' ' + child.get_name()
+    text_child = (f'# {child.get_label()} {child.get_name()}')
     print(text_child)
 
     for a in range(child.count_children()):
         grandchild = child.get_child(a)
-        text_grandchild = '    * ' + grandchild.get_label() + ' -- ' + grandchild.get_name()
+        text_grandchild = (f'    * {grandchild.get_label()} -- {grandchild.get_name()}')
         print(text_grandchild)
 
         try:
-            text_grandchild_value = '        Setted: ' + grandchild.get_value()
+            text_grandchild_value = (f'        Setted: {grandchild.get_value()}')
             print(text_grandchild_value)
             print('        Possibilities:')
             for k in range(grandchild.count_choices()):
                 choice = grandchild.get_choice(k)
-                text_choice = '         - ' + choice
+                text_choice = (f'         - {choice}')
                 print(text_choice)
         except:
             pass
