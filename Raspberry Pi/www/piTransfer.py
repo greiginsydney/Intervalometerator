@@ -259,30 +259,35 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         numFilesOK = 0
         previousFilePath = ''
         for needupload in newFiles:
-            log(f'Uploading {needupload}')
-            # Format the destination path to strip the /home/pi/photos off:
-            shortPath = makeShortPath(ftpRemoteFolder, needupload)
-            try:
-                remoteFolderTree = os.path.split(shortPath)
-                if previousFilePath != remoteFolderTree[0]:
-                    # Create the tree & CD to it:
-                    foldersList = remoteFolderTree[0].split("/")
-                    remotePath = "/"
-                    if len(foldersList) != 0:
-                        for oneFolder in foldersList:
-                            remotePath += oneFolder + "/"
-                            try:
-                                ftp.cwd(remotePath)
-                            except:
-                                ftp.mkd(oneFolder)
-                                ftp.cwd(remotePath)
-                fp = open(needupload, 'rb')
-                ftp.storbinary(f'STOR {remoteFolderTree[1]}', fp, 1024)
-                previousFilePath = remoteFolderTree[0]
-                numFilesOK = uploadedOK(needupload, numFilesOK)
-                break
-            except Exception as e:
-                log(f'Error uploading {needupload} via FTP: {e}')
+            for retries in range(2):
+                log(f'Uploading {needupload}')
+                # Format the destination path to strip the /home/pi/photos off:
+                shortPath = makeShortPath(ftpRemoteFolder, needupload)
+                try:
+                    remoteFolderTree = os.path.split(shortPath)
+                    if previousFilePath != remoteFolderTree[0]:
+                        # Create the tree & CD to it:
+                        foldersList = remoteFolderTree[0].split("/")
+                        remotePath = "/"
+                        if len(foldersList) != 0:
+                            for oneFolder in foldersList:
+                                remotePath += oneFolder + "/"
+                                try:
+                                    ftp.cwd(remotePath)
+                                except:
+                                    ftp.mkd(oneFolder)
+                                    ftp.cwd(remotePath)
+                    fp = open(needupload, 'rb')
+                    ftp.storbinary(f'STOR {remoteFolderTree[1]}', fp, 1024)
+                    previousFilePath = remoteFolderTree[0]
+                    numFilesOK = uploadedOK(needupload, numFilesOK)
+                    break
+                except Exception as e:
+                    if retries == 0:
+                        log(f'Error on  first attempt uploading {needupload} via FTP: {e}')
+                        time.sleep(1)
+                    else:
+                        log(f'Error on second attempt uploading {needupload} via FTP: {e}')
         log(f'STATUS: {numFilesOK} of {numNewFiles} files uploaded OK')
     try:
         ftp.quit()
