@@ -417,6 +417,8 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
                                 except IOError:
                                     sftp.mkdir(oneFolder)
                                     sftp.chdir(remotePath)
+                                except Exception as e:
+                                    log(f'Unexpected path/folder error in SFTP: {e}')
                     sftp.put(needupload, remoteFolderTree[1])
                     previousFilePath = remoteFolderTree[0]
                     numFilesOK = uploadedOK(needupload, numFilesOK)
