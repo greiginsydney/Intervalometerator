@@ -1284,7 +1284,7 @@ def system():
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
-    except:
+    except Exception as e:
         app.logger.debug('system: Threw querying PiModel: ' + str(e))
 
     try:
@@ -1294,7 +1294,7 @@ def system():
                 key, value = line.rstrip().split("=")
                 release_info[key] = value.strip('"')
                 templateData['piLinuxVer'] = release_info["PRETTY_NAME"]
-    except:
+    except Exception as e:
         app.logger.debug('system: Threw querying Pi os version: ' + str(e))
 
     try:
@@ -1306,7 +1306,7 @@ def system():
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
-    except:
+    except Exception as e:
         app.logger.debug('system: Threw querying Arduino DateTime: ' + str(e))
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
@@ -1316,7 +1316,7 @@ def system():
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'],_ = getDiskSpace()
-    except:
+    except Exception as e:
         app.logger.debug('system: Threw querying Pi details: ' + str(e))
 
     try:
@@ -1333,7 +1333,7 @@ def system():
         if camera:
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
             camera.exit()
-    except:
+    except Exception as e:
         app.logger.debug('system: Threw querying cameraDateTime: ' + str(e))
 
     return render_template('system.html', **templateData)
@@ -1391,8 +1391,8 @@ def systemPOST():
                     else:
                         app.logger.debug('Failed to setCameraTimeAndDate')
                     camera.exit()
-            except:
-                pass
+            except Exception as e:
+                app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
