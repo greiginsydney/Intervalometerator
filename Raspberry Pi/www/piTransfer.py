@@ -399,28 +399,34 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         numFilesOK = 0
         previousFilePath = ''
         for needupload in newFiles:
-            log(f'Uploading {needupload}')
-            # Format the destination path to strip the /home/pi/photos off:
-            shortPath = makeShortPath(sftpRemoteFolder, needupload)
-            try:
-                remoteFolderTree = os.path.split(shortPath)
-                if previousFilePath != remoteFolderTree[0]:
-                    # Create the tree & CD to it:
-                    foldersList = remoteFolderTree[0].split("/")
-                    remotePath = "/"
-                    if len(foldersList) != 0:
-                        for oneFolder in foldersList:
-                            remotePath += oneFolder + "/"
-                            try:
-                                sftp.chdir(remotePath)
-                            except IOError:
-                                sftp.mkdir(oneFolder)
-                                sftp.chdir(remotePath)
-                sftp.put(needupload, remoteFolderTree[1])
-                previousFilePath = remoteFolderTree[0]
-                numFilesOK = uploadedOK(needupload, numFilesOK)
-            except Exception as e:
-                log(f'Error uploading {needupload} via SFTP: {e}')
+            for retries in range(2):
+                log(f'Uploading {needupload}')
+                # Format the destination path to strip the /home/pi/photos off:
+                shortPath = makeShortPath(sftpRemoteFolder, needupload)
+                try:
+                    remoteFolderTree = os.path.split(shortPath)
+                    if previousFilePath != remoteFolderTree[0]:
+                        # Create the tree & CD to it:
+                        foldersList = remoteFolderTree[0].split("/")
+                        remotePath = "/"
+                        if len(foldersList) != 0:
+                            for oneFolder in foldersList:
+                                remotePath += oneFolder + "/"
+                                try:
+                                    sftp.chdir(remotePath)
+                                except IOError:
+                                    sftp.mkdir(oneFolder)
+                                    sftp.chdir(remotePath)
+                    sftp.put(needupload, remoteFolderTree[1])
+                    previousFilePath = remoteFolderTree[0]
+                    numFilesOK = uploadedOK(needupload, numFilesOK)
+                    break
+                except Exception as e:
+                    if retries == 0:
+                        log(f'Error on  first attempt uploading {needupload} via SFTP: {e}')
+                        time.sleep(1)
+                    else:
+                        log(f'Error on second attempt uploading {needupload} via SFTP: {e}')
         log(f'STATUS: {numFilesOK} of {numNewFiles} files uploaded OK')
     try:
         sftp.close()
