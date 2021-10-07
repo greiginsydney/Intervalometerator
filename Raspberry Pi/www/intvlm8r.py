@@ -142,7 +142,6 @@ def writeString(value):
 
 
 def readString(value, cacheRequest):
-    #cacheRequest = False
     if (cacheRequest == True):
         cached = cache.get(value)
         if cached is None:
@@ -817,7 +816,8 @@ def intervalometerPOST():
         newInterval += startHour
         newInterval += endHour
         newInterval += interval
-        writeString("SI=" + str(newInterval)) # Send the new interval data to the Arduino
+        writeString("SI=" + str(newInterval))   # Send the new interval data to the Arduino
+        cache.delete("3")                       # Flush the previously cached value
         app.logger.debug('Detected a valid POST. Updated the interval to ' + str(newInterval))
     else:
         app.logger.debug('Detected an *invalid* POST')
@@ -1370,6 +1370,7 @@ def systemPOST():
         if WakePiHour == 'Always On':
             WakePiHour = '25'
         writeString("SP=" + WakePiHour + str(request.form.get('wakePiDuration')))
+        cache.delete("5")   # Flush the previously cached value
 
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
