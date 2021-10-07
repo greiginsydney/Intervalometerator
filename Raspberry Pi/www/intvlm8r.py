@@ -142,7 +142,6 @@ def writeString(value):
 
 
 def readString(value, cacheRequest):
-    #cacheRequest = False
     if (cacheRequest == True):
         cached = cache.get(value)
         if cached is None:
