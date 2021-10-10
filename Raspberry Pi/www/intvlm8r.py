@@ -604,7 +604,7 @@ def camera():
     try:
         camera, context, config = connectCamera(1)
         if camera:
-            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            abilities = camera.get_abilities()
             cameraData['cameraModel']              = abilities.model
             cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
             if (cameraData['cameraLens'] == 'Unknown'):
@@ -638,7 +638,7 @@ def camera():
             shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
             expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
 
-            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            abilities = camera.get_abilities()
             if abilities.model in cameraPreviewBlocklist:
                 cameraData['blockPreview']  = 'True'
 
