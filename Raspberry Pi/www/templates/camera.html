@@ -7,7 +7,7 @@
 		<tr>
 			<th>Camera Settings</th>
 		</tr>
-		<tr>
+		<tr{{ (' class="orange"' | safe) if cameraModel == "USB PTP Class Camera" }}>
 			<td>
 				<div class="alignleft">Camera:</div>
 				<div class="alignright">{{ cameraModel }}</div>
