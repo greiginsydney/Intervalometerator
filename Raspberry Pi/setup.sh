@@ -1175,11 +1175,17 @@ test_install ()
 			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
 			;;
 	esac
-	echo ''
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	
+	if iw wlan0 get power_save | grep -q "on";
+	then
+		echo -e ""$YELLOW"FAIL:"$RESET" WiFi power save is ON"
+	else
+		echo -e ""$GREEN"PASS:"$RESET" WiFi power save is OFF"
+	fi
+	echo ''	
 	systemctl is-active --quiet nginx    && echo -e ""$GREEN"PASS:"$RESET" nginx    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" nginx    service is dead"
 	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
