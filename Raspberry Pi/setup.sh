@@ -712,6 +712,23 @@ END
 		mv -fv www/intvlm8r.old www/intvlm8r.bak
 	fi
 	
+	# WiFi Power Save
+	# Disable WiFi power save mode:
+	if iw wlan0 get power_save | grep -q "on";
+	then
+		iw wlan0 set power_save off
+		echo -e ""$GREEN"Disabled WiFi power save mode"$RESET""
+	else
+		echo -e "WiFi power save mode is already off"
+	fi
+	# Permanently disable WiFi power save mode:
+	if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local; then
+		echo -e "WiFi power save mode is already disabled in /etc/rc.local"
+	else
+		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
+		echo -e ""$GREEN"WiFi power save mode disabled in /etc/rc.local"$RESET""
+	fi
+	
 	# Prepare for reboot/restart:
 	echo "Exited install_website OK."
 }
