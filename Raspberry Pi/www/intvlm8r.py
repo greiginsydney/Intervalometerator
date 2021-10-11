@@ -561,6 +561,10 @@ def thumbnails():
             flash("There are no images on the Pi. Copy some from the Transfer page.")
     except Exception as e:
         app.logger.debug(f'Thumbs error: {e}')
+
+    if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
+        flash('Delete after transfer is active', 'info')
+
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
 
 
