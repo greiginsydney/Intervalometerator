@@ -9,8 +9,13 @@
 		</tr>
 		<tr{{ (' class="orange"' | safe) if cameraModel == "USB PTP Class Camera" }}>
 			<td>
+				{% if cameraModel == "USB PTP Class Camera" %}
+				<div class="alignleft tooltip">Camera:<span class="tooltiptext">Limited camera support</span></div>
+				<div class="alignright tooltip">USB PTP Class Camera<span class="tooltiptext">Limited camera support</span></div>
+				{% else %}
 				<div class="alignleft">Camera:</div>
 				<div class="alignright">{{ cameraModel }}</div>
+				{% endif %}
 			</td>
 		</tr>
 		<tr>
