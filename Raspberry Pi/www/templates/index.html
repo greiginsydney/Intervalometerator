@@ -61,25 +61,15 @@
 </header>
 {% with messages = get_flashed_messages() %}
 	<table id="progress">
-	{% if current_user.is_anonymous %}
-	  {% if messages %}
+	{% if messages %}
 		<tr class="red">
 			{% for message in messages %}
 				<td class="centre-text">{{ message }}</td>
 			{% endfor %}
-	  {% endif %}
-	{% else %}
-	  {% if messages %}
-		<tr class="red">
-			{% for message in messages %}
-				<td class="centre-text">{{ message }}</td>
-			{% endfor %}
-		</tr>
-	  {% else %}
+	{% elif not current_user.is_anonymous %}
 		<tr>
 			<td class="centre-text">Background tasks idle</td>
 		</tr>
-	  {% endif %}
 	{% endif %}
 	</table>
 {% endwith %}
