@@ -226,7 +226,8 @@ void setup()
   attachInterrupt (digitalPinToInterrupt(RTC_IRQ_PIN), wakeisr, FALLING);  // attach interrupt handler for RTC
   attachInterrupt (digitalPinToInterrupt(REED_IRQ_PIN), REEDisr, FALLING); // attach interrupt handler for reed switch
 
-
+  TestVoltmeter();
+ 
   // Initialise the alarm
   // When Alarm1 fires we take a photo:
   SetAlarm1();
@@ -640,6 +641,35 @@ void UpdateTempMinMax(String resetOption)
   TemperaturesString[strlen(TemperaturesString)+1] = '\0'; //Add a null terminator as strlen will vary
   //Serial.println("Temps [current, max, min]: " + String(TemperaturesString) + "\r\n");
   return;
+}
+
+
+// This tests if the on-board voltmeter is detected. If not, VM readings are skipped.
+void TestVoltmeter()
+{
+  int thisReading;
+  int totalValues = 0;
+  
+  pinMode(V_SENSE_PIN, INPUT_PULLUP);
+  DelaymS(100);
+  for (int i = 0; i < 10; i++)
+  {
+    thisReading = analogRead(V_SENSE_PIN);
+    //Serial.println("Voltage pin test reads " + String(thisReading) + "/1023");
+    totalValues += thisReading;
+    DelaymS(100);
+  }
+  //Serial.println("");
+  if (totalValues >= 10100)
+  {
+    //Serial.println("NO, there is no VM connected to this pin");
+  }
+  else
+  {
+    //Serial.println("YES, there is a VM connected to this pin");
+  }
+  //Serial.println("");
+  pinMode(V_SENSE_PIN, INPUT); 
 }
 
 
