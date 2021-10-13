@@ -270,19 +270,43 @@ void SetAlarm1()
     }
   }
 
-  //We haven't yet started for the day:
-  if (nextHour < StartHour)
+  if (StartHour < EndHour)
   {
-    nextHour = StartHour; //Reset the alarm to restart later today
-    nextShot = 0;
+    //Normal daytime shoot, or 24hr operation
+    Serial.println("Trad daytime shoot");
+    if (nextHour < StartHour)
+    {
+      //We haven't yet started for the day:
+      nextHour = StartHour; //Reset the alarm to restart later today
+      nextShot = 0;
+    }
+    else if (nextHour >= EndHour)
+    {
+      //We've finished for today:
+      nextHour = StartHour; //Reset the alarm to restart next shooting day
+      nextShot = 0;
+      nextDay++;
+    }
+    else
+    {
+      Serial.println(" - we're in the shooting window. (Daytime shoot)");
+    }
   }
-
-  //We've finished for today:
-  if (nextHour >= EndHour)
+  else
   {
-    nextHour = StartHour; //Reset the alarm to restart next shooting day
-    nextShot = 0;
-    nextDay++;
+    //Shoot through midnight
+    Serial.println("STM");
+    if ((nextHour >= EndHour) & (nextHour < StartHour))
+    {
+        //We haven't yet started for the day:
+        Serial.println(" - we haven't started for the day yet");
+        nextHour = StartHour;
+        nextShot = 0;
+    }
+    else
+    {
+      Serial.println(" - we're in the shooting window - STM");
+    }
   }
 
   if (nextDay == 8) nextDay = 1; //Correct in case the day has wrapped around the week
@@ -296,6 +320,29 @@ void SetAlarm1()
     nextShootDay = 0b0000001 << (nextDay);
   }
 
+  //Shoot through midnight: continue to shoot even if today is a "non-shooting" day
+  if (StartHour > EndHour)
+  {
+    if (nextHour < EndHour)
+    {
+      //It's after midnight, so we've rolled into the next day.
+      byte today = rtc.getDay();                    //Re-read the current day
+      byte yesterday = today - 1;                   //Subtract back to yesterday
+      if (yesterday == 0) yesterday = 7;            //Wrap around the week if required
+      byte prevShootDay = 0b0000001 << (yesterday); //Sunday = bit 1 to align with clock's day ordering
+      Serial.println(" - today is " + String(today) + ", yesterday was " + String(yesterday) + "\r\n");
+      if (prevShootDay & ShootDays)
+      {
+        Serial.println(" - yesterday was a shooting day, so our next shot is *today*\r\n");
+        nextDay = today;  // So we'll tell the Pi that our next shot will be today
+      }
+      else
+      {
+        nextHour = StartHour; // Yesterday wasn't a shooting day, so we won't shoot until the next startHour
+        nextShot = 0;
+      }
+   }
+ 
   // NB: Whilst this code calculates the DAY, hour and minute for the next photo, we don't add the
   // day to the alarm, even though the RTC supports this.
   // This is a deliberate safety net. If we happen to miss an alarm for whatever reason, it will
