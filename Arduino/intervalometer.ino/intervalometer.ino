@@ -18,7 +18,7 @@ References:
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
  
 Last updated/changed in version:
-4.3.1
+<TODO> 4.3.1
 *****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -311,38 +311,49 @@ void SetAlarm1()
 
   if (nextDay == 8) nextDay = 1; //Correct in case the day has wrapped around the week
 
-  byte nextShootDay = 0b0000001 << (nextDay); //Sunday = bit 1 to align with clock's day ordering
-  while (!(nextShootDay & ShootDays))
+  //Run the various tests to determine if we keep shooting or jump to the next shooting day:
+  while (true)
   {
-    nextShot = 0; //Next shot isn't today, so reset this to the top of the hour
-    nextHour = StartHour; //... and at StartHour 
-    nextDay++;
-    if (nextDay == 8) nextDay = 1;
-    nextShootDay = 0b0000001 << (nextDay);
-  }
-
-  //Shoot through midnight: continue to shoot even if today is a "non-shooting" day
-  if (StartHour > EndHour)
-  {
-    if (nextHour < EndHour)
+    byte today = rtc.getDay();                    //Re-read the current day
+    byte yesterday = today - 1;                   //Subtract back to yesterday
+    if (yesterday == 0) yesterday = 7;            //Wrap around the week if required
+    byte prevShootDay = 0b0000001 << (yesterday); //Sunday = bit 1 to align with clock's day ordering
+    byte nextShootDay = 0b0000001 << (nextDay); //Sunday = bit 1 to align with clock's day ordering  
+    
+    if (StartHour > EndHour)
     {
-      //It's after midnight, so we've rolled into the next day.
-      byte today = rtc.getDay();                    //Re-read the current day
-      byte yesterday = today - 1;                   //Subtract back to yesterday
-      if (yesterday == 0) yesterday = 7;            //Wrap around the week if required
-      byte prevShootDay = 0b0000001 << (yesterday); //Sunday = bit 1 to align with clock's day ordering
-      Serial.println(" - today is " + String(today) + ", yesterday was " + String(yesterday) + "\r\n");
-      if (prevShootDay & ShootDays)
+      //STM
+      Serial.println("STM in the day calculation");
+      if (nextHour < EndHour)
       {
-        Serial.println(" - yesterday was a shooting day, so our next shot is *today*\r\n");
-        nextDay = today;  // So we'll tell the Pi that our next shot will be today
+        //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
+        Serial.println(" - today is " + String(today) + ", yesterday was " + String(yesterday) + "\r\n");
+        if (prevShootDay & ShootDays)
+        {
+          Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
+          nextDay = today;  // So we'll tell the Pi that our next shot will be today - GREIG is this necessary. Do we drop "today" and stick with nextDay?
+          break;
+        }
+        else
+        {
+          nextHour = StartHour; // Yesterday wasn't a shooting day, so we won't shoot until the next startHour
+          nextShot = 0;
+          //Continue - drop to the nextShootDay test below.
+        }
       }
-      else
-      {
-        nextHour = StartHour; // Yesterday wasn't a shooting day, so we won't shoot until the next startHour
-        nextShot = 0;
-      }
-   }
+    }
+    
+    //If we get to here, run this while loop and then break:
+    while (!(nextShootDay & ShootDays))
+    {
+      nextShot = 0; //Next shot isn't today, so reset this to the top of the hour
+      nextHour = StartHour; //... and at StartHour 
+      nextDay++;
+      if (nextDay == 8) nextDay = 1;
+      nextShootDay = 0b0000001 << (nextDay);
+    }
+    break;
+  }
  
   // NB: Whilst this code calculates the DAY, hour and minute for the next photo, we don't add the
   // day to the alarm, even though the RTC supports this.
