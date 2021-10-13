@@ -315,6 +315,7 @@ void SetAlarm1()
   while (!(nextShootDay & ShootDays))
   {
     nextShot = 0; //Next shot isn't today, so reset this to the top of the hour
+    nextHour = StartHour; //... and at StartHour 
     nextDay++;
     if (nextDay == 8) nextDay = 1;
     nextShootDay = 0b0000001 << (nextDay);
