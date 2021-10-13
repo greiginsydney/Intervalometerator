@@ -314,11 +314,10 @@ void SetAlarm1()
   //Run the various tests to determine if we keep shooting or jump to the next shooting day:
   while (true)
   {
-    byte today = rtc.getDay();                    //Re-read the current day
-    byte yesterday = today - 1;                   //Subtract back to yesterday
+    byte yesterday = nextDay - 1;                 //Subtract back to yesterday
     if (yesterday == 0) yesterday = 7;            //Wrap around the week if required
     byte prevShootDay = 0b0000001 << (yesterday); //Sunday = bit 1 to align with clock's day ordering
-    byte nextShootDay = 0b0000001 << (nextDay); //Sunday = bit 1 to align with clock's day ordering  
+    byte nextShootDay = 0b0000001 << (nextDay);   //Sunday = bit 1 to align with clock's day ordering  
     
     if (StartHour > EndHour)
     {
@@ -327,11 +326,10 @@ void SetAlarm1()
       if (nextHour < EndHour)
       {
         //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
-        Serial.println(" - today is " + String(today) + ", yesterday was " + String(yesterday) + "\r\n");
+        Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
         if (prevShootDay & ShootDays)
         {
           Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
-          nextDay = today;  // So we'll tell the Pi that our next shot will be today - GREIG is this necessary. Do we drop "today" and stick with nextDay?
           break;
         }
         else
