@@ -96,6 +96,10 @@
 
 <script>
 
+var startHour = document.getElementById("startHour");
+var endHour   = document.getElementById("endHour");
+var interval  = document.getElementById("interval");
+
 var numDaysSelected = 1;
 var SelectionByte = 0;
 var SelectionBits = new Array();
@@ -147,16 +151,13 @@ function newDaySelected()
 
 function calculateShots()
 {
-	var selectedStart    = document.getElementById("startHour");
-	var selectedEnd      = document.getElementById("endHour");
-	var selectedInterval = document.getElementById("interval");
-	var result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value)) * (60 / parseInt(selectedInterval.value)));
+	var result = ((parseInt(endHour.value) - parseInt(startHour.value)) * (60 / parseInt(interval.value)));
 	if (result == result) // A value that is NotANumber(NaN) != itself
 	{
 		// So we know the numbers are valid
 		if (result < 0 ) // We need to correct for the wrap-around midnight
 		{
-			result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value) + 24) * (60 / parseInt(selectedInterval.value)));
+			result = ((parseInt(endHour.value) - parseInt(startHour.value) + 24) * (60 / parseInt(interval.value)));
 		}
 		document.getElementById("shotsperday").innerHTML = result;
 		calculateCameraDays(result);
