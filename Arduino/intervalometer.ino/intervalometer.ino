@@ -851,9 +851,28 @@ void loop()
     {
       //Serial.println( F(" - ALARM 1 fired"));
       todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
-      if (todayAsBits & ShootDays)
+      if ((todayAsBits & ShootDays) && (rtc.hour() >= StartHour))
       {
+        //So it's a ShootDay and either before midnight on an STM shoot, or otherwise within the duration for a daytime shoot
         TakePhoto();
+      }
+      else if ((StartHour > EndHour) && (rtc.hour() < EndHour))
+      {
+        //Is it post-midnight on an overnight shoot, and today ISN'T a shooting day, but yesterday was?
+        byte yesterdayAsBits = todayAsBits >> 1;
+        if (yesterdayAsBits == 0b0000001) yesterdayAsBits = 0b1000000;
+        if (yesterdayAsBits & ShootDays)
+        {
+          TakePhoto();
+        }
+        else
+        {
+          //Serial.println( F(" - alarm1 overnight handling says NO GO"));
+        }
+      }
+      else
+      {
+          //Serial.println( F(" - Nope, the hour/minute might be good, but it's not a shoot day"));
       }
       SetAlarm1(); // Re-set the alarm
     }
