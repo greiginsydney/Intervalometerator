@@ -180,7 +180,11 @@ function calculateCameraDays(shotsperday)
 	if (availableShots != "Unknown" && availableShots != "Not available")
 	{
 		var result = ~~(availableShots / shotsperday); 
-		if (result == result)
+		if (shotsperday == 0)
+		{
+			document.getElementById("daysincamera").innerHTML = "n/a";
+		}
+		else if (result == result)
 		{
 			document.getElementById("daysincamera").innerHTML = result;
 		}
@@ -201,7 +205,11 @@ function calculatePiDays(shotsperday)
 	if (piAvailableShots != "Unknown" && piAvailableShots != "Not available")
 	{
 		var result = ~~(piAvailableShots / shotsperday); 
-		if (result == result)
+		if (shotsperday == 0)
+		{
+			document.getElementById("daysinpi").innerHTML = "n/a";
+		}
+		else if (result == result)
 		{
 			document.getElementById("daysinpi").innerHTML = result;
 		}
