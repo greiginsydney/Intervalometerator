@@ -173,7 +173,7 @@
 		</tr>
 	</table>
 
-	<table id="dbx">
+	<table id="dropbox">
 		<tr>
 			<td>
 				<div class="alignleft"><label for="dbx_token">Token:</label></div>
@@ -295,9 +295,9 @@ SelectionBits["renameString"]       =  524288;
 //These text fields can't be blank if their respective selection is active
 var MandatoryByte     = 0;
 var MandatoryMaskBits = new Array();
-MandatoryMaskBits["ftp"]            =       6;
+MandatoryMaskBits["ftp"]            =       6; //These values are the *sum* of the bit values (above) that can't be empty
 MandatoryMaskBits["sftp"]           =     224;
-MandatoryMaskBits["dbx"]            =     512;
+MandatoryMaskBits["dropbox"]        =     512;
 MandatoryMaskBits["google"]         =       0;
 MandatoryMaskBits["rsync"]          =    6144;
 MandatoryMaskBits["copy"]           =  524288;
@@ -316,7 +316,7 @@ var showHideTrnWarning = document.getElementById("showHideTrnWarning");
 var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
 var ftp                = document.getElementById("ftp");
 var sftp               = document.getElementById("sftp");
-var dbx                = document.getElementById("dbx");
+var dbx                = document.getElementById("dropbox");
 var google             = document.getElementById("google");
 var rsync              = document.getElementById("rsync");
 var transfer           = document.getElementById("transfer");
@@ -428,7 +428,7 @@ function newSelected(id)
 	}
 	else
 	{
-		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
 	}
 	lightButtons();
 }
@@ -445,7 +445,7 @@ function newText(id)
 	}
 	else
 	{
-		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
 	}
 
 	//This adds colour and sets a flag if this is one of the mandatory text fields & is blank:
