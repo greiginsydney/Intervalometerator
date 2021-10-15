@@ -96,9 +96,12 @@
 
 <script>
 
-var startHour = document.getElementById("startHour");
-var endHour   = document.getElementById("endHour");
-var interval  = document.getElementById("interval");
+var startHour    = document.getElementById("startHour");
+var endHour      = document.getElementById("endHour");
+var interval     = document.getElementById("interval");
+var shotsperday  = document.getElementById("shotsperday")
+var daysincamera = document.getElementById("daysincamera")
+var daysinpi     = document.getElementById("daysinpi")
 
 var numDaysSelected = 1;
 var SelectionByte = 0;
@@ -159,7 +162,7 @@ function calculateShots()
 		{
 			result = ((parseInt(endHour.value) - parseInt(startHour.value) + 24) * (60 / parseInt(interval.value)));
 		}
-		document.getElementById("shotsperday").innerHTML = result;
+		shotsperday.innerHTML = result;
 		calculateCameraDays(result);
 		calculatePiDays(result);
 		checkThresholds("cameraDaysRow", "daysincamera");
@@ -167,9 +170,9 @@ function calculateShots()
 	}
 	else
 	{
-		document.getElementById("shotsperday").innerHTML = "Unknown";
-		document.getElementById("daysincamera").innerHTML = "Unknown";
-		document.getElementById("daysinpi").innerHTML = "Unknown";
+		shotsperday.innerHTML = "Unknown";
+		daysincamera.innerHTML = "Unknown";
+		daysinpi.innerHTML = "Unknown";
 	}
 }
 
@@ -181,20 +184,20 @@ function calculateCameraDays(_shotsperday)
 		var result = ~~(availableShots / _shotsperday); 
 		if (_shotsperday == 0)
 		{
-			document.getElementById("daysincamera").innerHTML = "n/a";
+			daysincamera.innerHTML = "n/a";
 		}
 		else if (result == result)
 		{
-			document.getElementById("daysincamera").innerHTML = result;
+			daysincamera.innerHTML = result;
 		}
 		else
 		{
-			document.getElementById("daysincamera").innerHTML = "Unknown";
+			daysincamera.innerHTML = "Unknown";
 		}
 	}
 	else
 	{
-		document.getElementById("daysincamera").innerHTML = "{{ availableShots }}";
+		daysincamera.innerHTML = "{{ availableShots }}";
 	}
 }
 
@@ -206,20 +209,20 @@ function calculatePiDays(_shotsperday)
 		var result = ~~(piAvailableShots / _shotsperday); 
 		if (_shotsperday == 0)
 		{
-			document.getElementById("daysinpi").innerHTML = "n/a";
+			daysinpi.innerHTML = "n/a";
 		}
 		else if (result == result)
 		{
-			document.getElementById("daysinpi").innerHTML = result;
+			daysinpi.innerHTML = result;
 		}
 		else
 		{
-			document.getElementById("daysinpi").innerHTML = "Unknown";
+			daysinpi.innerHTML = "Unknown";
 		}
 	}
 	else
 	{
-		document.getElementById("daysinpi").innerHTML = "{{ piAvailableShots }}";
+		daysinpi.innerHTML = "{{ piAvailableShots }}";
 	}
 }
 
