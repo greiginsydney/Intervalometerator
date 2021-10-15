@@ -173,13 +173,13 @@ function calculateShots()
 	}
 }
 
-function calculateCameraDays(shotsperday)
+function calculateCameraDays(_shotsperday)
 {
 	var availableShots = "{{ availableShots }}";
 	if (availableShots != "Unknown" && availableShots != "Not available")
 	{
-		var result = ~~(availableShots / shotsperday); 
-		if (shotsperday == 0)
+		var result = ~~(availableShots / _shotsperday); 
+		if (_shotsperday == 0)
 		{
 			document.getElementById("daysincamera").innerHTML = "n/a";
 		}
@@ -198,13 +198,13 @@ function calculateCameraDays(shotsperday)
 	}
 }
 
-function calculatePiDays(shotsperday)
+function calculatePiDays(_shotsperday)
 {
 	var piAvailableShots = "{{ piAvailableShots }}";
 	if (piAvailableShots != "Unknown" && piAvailableShots != "Not available")
 	{
-		var result = ~~(piAvailableShots / shotsperday); 
-		if (shotsperday == 0)
+		var result = ~~(piAvailableShots / _shotsperday); 
+		if (_shotsperday == 0)
 		{
 			document.getElementById("daysinpi").innerHTML = "n/a";
 		}
