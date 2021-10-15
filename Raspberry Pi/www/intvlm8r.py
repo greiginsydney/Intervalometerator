@@ -2310,7 +2310,7 @@ def getLargestImageSize(path):
     Finds the largest file on the /photos/ folder tree.
     Used to calculate the number of days' worth of storage left on the Pi
     """
-    max_size = 0
+    max_size = 100000
     try:
         for folder, subfolders, files in os.walk(path):
             # checking the size of each file
@@ -2320,10 +2320,9 @@ def getLargestImageSize(path):
                 if size > max_size:
                     max_size = size
         app.logger.debug(f'getLargestImageSize returned: {max_size}')
-        return max_size
     except Exception as e:
         app.logger.debug(f'getLargestImageSize exception: {e}')
-        return None
+    return max_size
 
 
 def getShotsPerDay():
