@@ -296,7 +296,7 @@ void SetAlarm1()
   {
     //Shoot through midnight
     Serial.println("STM");
-    if ((nextHour >= EndHour) & (nextHour < StartHour))
+    if ((nextHour >= EndHour) && (nextHour < StartHour))
     {
         //We haven't yet started for the day:
         Serial.println(" - we haven't started for the day yet");
@@ -851,7 +851,7 @@ void loop()
     {
       //Serial.println( F(" - ALARM 1 fired"));
       todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
-      if (todayAsBits && ShootDays)
+      if (todayAsBits & ShootDays)
       {
         TakePhoto();
       }
