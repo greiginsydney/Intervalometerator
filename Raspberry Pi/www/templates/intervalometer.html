@@ -244,6 +244,19 @@ function lightButtons()
 	{
 		document.getElementById("apply").disabled  = false;
 	}
+	
+	// Block Apply if startHour==endHour
+	if (startHour.value == endHour.value)
+	{
+		document.getElementById("apply").disabled  = true;
+		startHour.classList.add("redborder")
+		  endHour.classList.add("redborder")
+	}
+	else
+	{
+		startHour.classList.remove("redborder")
+		  endHour.classList.remove("redborder")
+	}
 }
 </script>
 
