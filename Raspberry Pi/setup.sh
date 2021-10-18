@@ -458,6 +458,8 @@ install_website ()
 			mv -fv intvlm8r.logrotate /etc/logrotate.d/intvlm8r.logrotate
 		fi
 	fi
+	chown root /etc/logrotate.d/intvlm8r.logrotate
+	chgrp root /etc/logrotate.d/intvlm8r.logrotate
 
 	#Camera Transfer
 	if [ -f cameraTransfer.service ];
