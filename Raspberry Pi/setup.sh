@@ -45,9 +45,9 @@ install_apps ()
 
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ""
-		echo "intvlm8r.old found. Looks like this is an upgrade."
-		echo ""
+		echo ''
+		echo 'intvlm8r.old found. Looks like this is an upgrade.'
+		echo ''
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
 		then
 			installSftp=1
@@ -73,12 +73,12 @@ install_apps ()
 			installRsync=0
 		fi
 		
-		echo "====== Select Upload/Transfer options ======="
+		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
 	else
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
-		echo ""
-		echo "====== Select Upload/Transfer options ======="
+		echo ''
+		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option will be installed"
 		installSftp=1
 		installDropbox=1
@@ -86,15 +86,15 @@ install_apps ()
 		installRsync=1
 	fi
 	while true; do
-		echo ""
+		echo ''
 		
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
 		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
 		echo "4. [$([[ installRsync   -eq 1 ]] && echo ''X'' || echo '' '')] rsync"
-		echo ""
-		echo "Press 1, 2, 3 or 4 to toggle the selection."
-		read -p "Press return on its own to continue with the install " response
+		echo ''
+		echo 'Press 1, 2, 3 or 4 to toggle the selection.'
+		read -p 'Press return on its own to continue with the install ' response
 		case "$response" in
 			(1)
 				installSftp=$((1-installSftp))
@@ -182,7 +182,7 @@ install_apps ()
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
 			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
 		else
-			echo "No python-gphoto2 upgrade required"
+			echo 'No python-gphoto2 upgrade required'
 		fi
 	else
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
@@ -247,7 +247,7 @@ install_apps ()
 	# -------------------------------------------------------------------------------------------------
 	echo ''
 	whereisgphoto='/usr/local/share/python-gphoto2/examples /usr/local/lib/python3.7/dist-packages/gphoto2/examples /home/pi/.local/lib/python3.7/site-packages/gphoto2/examples'
-	message=""$YELLOW"Unable to find installed gphoto2 examples to create shortcut"$RESET""
+	message="\n"$YELLOW"Unable to find installed gphoto2 examples to create shortcut"$RESET""
 	for path in $whereisgphoto; do
 		if [ -d  $path ]; then
 			ln -sfnv "$path" /home/${SUDO_USER}/examples
@@ -255,20 +255,18 @@ install_apps ()
 			break
 		fi
 	done
+	echo -e $message
 	echo ''
-	echo $message
 	
 	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2 ]; then
 		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 /home/${SUDO_USER}/gphoto2
 		echo "created shortcut 'gphoto2' to point to '/usr/local/lib/python3.7/dist-packages/gphoto2'"
 	else
-		echo ''
-		echo -e ""$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
+		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 	fi
 	
 	# Prepare for reboot/restart:
-	echo ''
-	echo -e ""$GREEN"Exited install_apps OK"$RESET""
+	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
 
 install_website ()
@@ -312,21 +310,21 @@ install_website ()
 
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ""
-		echo "intvlm8r.old found. Skipping the login prompt step."
+		echo ''
+		echo 'intvlm8r.old found. Skipping the login prompt step.'
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
-		echo ""
+		echo ''
 		
 		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
 			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
-			echo "intvlm8r.old found. Restored first login."
+			echo 'intvlm8r.old found. Restored first login.'
 		else
-			echo "Upgrade file found but the first login was not found/detected."
+			echo 'Upgrade file found but the first login was not found/detected.'
 		fi
 		
-		if grep -q "^users.update" ~/www/intvlm8r.old;
+		if grep -q '^users.update' ~/www/intvlm8r.old;
 		then
 			#There are additional users we need to reinstate.
 			matchRegex="^(users.update\(\{')(\w+)'.*$"
@@ -362,7 +360,7 @@ install_website ()
 		chg_web_login
 	fi
 
-	if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.py;
+	if grep -q '### Paste the secret key here. See the Setup docs ###' www/intvlm8r.py;
 	then
 		if [ ! -z "$oldSecretKey" ];
 		then
@@ -378,7 +376,7 @@ install_website ()
 		echo 'Skipped: a Secret Key already exists.'
 	fi
 
-	if [ $SUDO_USER != "pi" ];
+	if [ $SUDO_USER != 'pi' ];
 	then
 		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
 		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "intvlm8r.logrotate" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
@@ -428,7 +426,7 @@ install_website ()
 	# Suppress server details in HTML headers:
 	if grep -q "^\s*server_tokens off;$" /etc/nginx/nginx.conf;
 	then 
-		echo 'Skipped: "/etc/nginx/nginx.conf" already contains "server_tokens off"'
+		echo "Skipped: '/etc/nginx/nginx.conf' already contains 'server_tokens off'"
 	else
 		sed -i -E 's/^(\s*)#\s*(server_tokens off;)/\1\2/g' /etc/nginx/nginx.conf #Match on "<whitepace>#<whitepace>server_tokens off" and remove the "#"
 	fi
@@ -446,7 +444,7 @@ install_website ()
 		fi
 	fi
 	systemctl start intvlm8r
-	echo "Enabling intvlm8r"
+	echo 'Enabling intvlm8r'
 	systemctl enable intvlm8r
 
 	if [ -f intvlm8r.logrotate ];
@@ -472,7 +470,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/cameraTransfer.service
-	echo "Enabling cameraTransfer.service"
+	echo 'Enabling cameraTransfer.service'
 	systemctl enable cameraTransfer.service
 
 	#Pi Transfer
@@ -486,7 +484,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/piTransfer.service
-	echo "Enabling piTransfer.service"
+	echo 'Enabling piTransfer.service'
 	systemctl enable piTransfer.service
 
 	#Celery
@@ -520,7 +518,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/celery.service
-	echo "Enabling celery.service"
+	echo 'Enabling celery.service'
 	systemctl enable celery.service
 
 	#Redis
@@ -534,27 +532,27 @@ install_website ()
 			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|g' /etc/systemd/system/redis.service
 		else
 			#NO? OK, then just insert the new line:
-			sed -i --follow-symlinks "/^ExecStart=/a ExecStartPost=/bin/sleep 1" /etc/systemd/system/redis.service
+			sed -i --follow-symlinks '/^ExecStart=/a ExecStartPost=/bin/sleep 1' /etc/systemd/system/redis.service
 		fi
 	fi
 
 	if grep -q "^Type=notify$" /etc/systemd/system/redis.service;
 	then
-		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "Type=notify"'
+		echo "Skipped: '/etc/systemd/system/redis.service' already contains 'Type=notify'"
 	else
 		sed -i --follow-symlinks 's|^Type=.*|Type=notify|g' /etc/systemd/system/redis.service
 	fi
 
 	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
 	then 
-		echo 'Skipped: "/etc/redis/redis.conf" already contains "daemonize yes"'
+		echo "Skipped: '/etc/redis/redis.conf' already contains 'daemonize yes'"
 	else
 		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/g' /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
 	then 
-		echo 'Skipped: "/etc/redis/redis.conf" already contains "supervised systemd"'
+		echo "Skipped: '/etc/redis/redis.conf' already contains 'supervised systemd'"
 	else
 		sed -i 's/^#\?supervised .*/supervised systemd/g' /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
@@ -562,7 +560,7 @@ install_website ()
 	#Redis is just a *little* too chatty by default:
 	if grep -q "^loglevel warning$" /etc/redis/redis.conf;
 	then
-		echo 'Skipped: "/etc/redis/redis.conf" already contains "loglevel warning"'
+		echo "Skipped: '/etc/redis/redis.conf' already contains 'loglevel warning'"
 	else
 		sed -i 's/^\s*#*\s*loglevel .*/loglevel warning/g' /etc/redis/redis.conf #Match on "loglevel <anything>" whether commented-out or not, and replace the line.
 	fi
@@ -578,7 +576,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/heartbeat.service
-	echo "Enabling heartbeat.service"
+	echo 'Enabling heartbeat.service'
 	systemctl enable heartbeat.service
 
 	if [ -f heartbeat.timer ];
@@ -591,7 +589,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/heartbeat.timer
-	echo "Enabling heartbeat.timer"
+	echo 'Enabling heartbeat.timer'
 	systemctl enable heartbeat.timer
 
 
@@ -602,7 +600,7 @@ install_website ()
 	# https://stackoverflow.com/questions/4880290/how-do-i-create-a-crontab-through-a-script
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q cameraTransfer.py "cronTemp";
+	if grep -q cameraTransfer.py 'cronTemp';
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
@@ -615,7 +613,7 @@ install_website ()
 	#piTransfer
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q piTransfer.py "cronTemp";
+	if grep -q piTransfer.py 'cronTemp';
 	then
 		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
@@ -632,7 +630,7 @@ install_website ()
 	then
 	    echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-	    sed -i "/setTime.py/d" cronTemp #delete any previous reference to setTime. 
+	    sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime. 
  	    echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
 	    crontab -u $SUDO_USER cronTemp #install new cron file
 	    echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
@@ -647,8 +645,8 @@ install_website ()
 	#NTP
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ""
-		echo "intvlm8r.old found. Skipping the NTP prompt step."
+		echo ''
+		echo 'intvlm8r.old found. Skipping the NTP prompt step.'
 	else
 		timeTest
 		timeSync1
@@ -671,16 +669,16 @@ install_website ()
 	fi
 
 	# Step 101 - slows the I2C speed
-	if  grep -q "dtparam=i2c1=on" /boot/config.txt;
+	if  grep -q 'dtparam=i2c1=on' /boot/config.txt;
 	then
-		echo 'Skipped: "/boot/config.txt" already contains "dtparam=i2c1=on"'
+		echo "Skipped: '/boot/config.txt' already contains 'dtparam=i2c1=on'"
 	else
-		sed -i "/dtparam=i2c_arm=on/i dtparam=i2c1=on" /boot/config.txt
+		sed -i '/dtparam=i2c_arm=on/i dtparam=i2c1=on' /boot/config.txt
 	fi
 
-	if  grep -q "i2c_arm_baudrate" /boot/config.txt;
+	if  grep -q 'i2c_arm_baudrate' /boot/config.txt;
 	then
-		echo 'Skipped: "/boot/config.txt" already contains "i2c_arm_baudrate"'
+		echo "Skipped: '/boot/config.txt' already contains 'i2c_arm_baudrate'"
 	else
 		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt
 	fi
@@ -688,9 +686,9 @@ install_website ()
 	
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
-	if  grep -Fq "intervalometerator" "/boot/config.txt";
+	if  grep -Fq 'intervalometerator' '/boot/config.txt';
 	then
-		echo 'Skipped: "/boot/config.txt" already contains our added config lines'
+		echo "Skipped: '/boot/config.txt' already contains our added config lines'"
 	else
 cat <<END >> /boot/config.txt
 
@@ -716,7 +714,7 @@ END
 	
 	# WiFi Power Save
 	# Disable WiFi power save mode:
-	if iw wlan0 get power_save | grep -q "on";
+	if iw wlan0 get power_save | grep -q 'on';
 	then
 		iw wlan0 set power_save off
 		echo -e ""$GREEN"Disabled WiFi power save mode"$RESET""
@@ -725,14 +723,14 @@ END
 	fi
 	# Permanently disable WiFi power save mode:
 	if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local; then
-		echo -e "WiFi power save mode is already disabled in /etc/rc.local"
+		echo -e 'WiFi power save mode is already disabled in /etc/rc.local'
 	else
 		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
 		echo -e ""$GREEN"WiFi power save mode disabled in /etc/rc.local"$RESET""
 	fi
 	
 	# Prepare for reboot/restart:
-	echo "Exited install_website OK."
+	echo 'Exited install_website OK.'
 }
 
 
@@ -759,19 +757,19 @@ chg_web_login ()
 			read -e -r -i "$oldLoginName" -p "Change the website's login name: " loginName
 			if [[ ${#loginName} -lt 1 ]];
 			then
-				echo " The login name can't be empty/blank"
+				echo ' The login name can't be empty/blank'
 				continue
 			fi
 			if [[ ! $loginName =~ $matchLoginName ]];
 			then
-				echo "Please use only standard word characters for the login name"
+				echo 'Please use only standard word characters for the login name'
 				continue
 			fi
 			break	# We only get to here if the login name is not blank and doesn't contain invalid characters
 		done
 		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
 		matchPassword="[\']+"
-		if [[ $oldPassword == "password" ]]; # we'll change this to a random 8-char default:
+		if [[ $oldPassword == 'password' ]]; # we'll change this to a random 8-char default:
 		then
 			oldPassword=$(shuf -zer -n4 {a..z} | tr -d '\0' )
 			oldPassword+=$(shuf -zer -n4 {0..9} | tr -d '\0')
@@ -780,14 +778,14 @@ chg_web_login ()
 			read -e -r -i "$oldPassword" -p "Change the website's password  : " password
 			if [ -z "$password" ];
 			then
-				echo -e "Error: An empty password is invalid."
+				echo -e 'Error: An empty password is invalid.'
 				echo ''
 				continue
 			fi
 			if [[ $password =~ $matchPassword ]];
 			then
 				echo ''
-				echo "Please try a different password. Don't use backslashes or apostrophes/single-quotes"
+				echo 'Please try a different password. Don't use backslashes or apostrophes/single-quotes'
 				echo ''
 				continue
 			fi
@@ -797,7 +795,7 @@ chg_web_login ()
 			sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':)\s*'.*'}}$/\1 '$escapedPassword'}}/" ~/www/intvlm8r.py
 			if [[ "$?" -ne 0 ]];
 			then
-				echo "Whoops - something broke. Please try again with a less complex password"
+				echo 'Whoops - something broke. Please try again with a less complex password'
 				echo ''
 				continue
 			fi
@@ -805,7 +803,7 @@ chg_web_login ()
 			break
 		done
 	else
-		echo "Error: Login name not found. Please edit ~/www/intvlm8r.py to resolve."
+		echo 'Error: Login name not found. Please edit ~/www/intvlm8r.py to resolve.'
 	fi
 }
 
@@ -838,7 +836,7 @@ make_ap ()
 	systemctl stop hostapd
 	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
-	if  grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
+	if  grep -Fq 'interface wlan0' '/etc/dhcpcd.conf';
 	then
 		wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
 		sed -i -E "s/^\s*#*\s*(interface wlan0.*)/\1/" /etc/dhcpcd.conf #Un-comment if present but inactive
@@ -862,13 +860,13 @@ interface wlan0
    nohook wpa_supplicant
 END
 	fi
-	if ! grep -Fq "nohook wpa_supplicant" "/etc/dhcpcd.conf";
+	if ! grep -Fq 'nohook wpa_supplicant' '/etc/dhcpcd.conf';
 	then
-		sed -i -e "\$anohook wpa_supplicant" "/etc/dhcpcd.conf";
+		sed -i -e "\$anohook wpa_supplicant" '/etc/dhcpcd.conf';
 	fi
 	if [ -z "$oldPiIpV4" ]; then oldPiIpV4='10.10.10.1'; fi
 
-	if  grep -q "interface=wlan0" /etc/dnsmasq.conf;
+	if  grep -q 'interface=wlan0' /etc/dnsmasq.conf;
 	then
 		#Read the current values:
 		wlanLine=$(sed -n '/interface=wlan0/=' /etc/dnsmasq.conf) #This is the line number that the wlan config starts at
@@ -881,7 +879,7 @@ END
 				oldDhcpSubnetMask=${BASH_REMATCH[5]}
 			fi
 	else
-		echo "No IPs in /etc/dnsmasq.conf. Adding some defaults"
+		echo 'No IPs in /etc/dnsmasq.conf. Adding some defaults'
 		#Create default values:
 		cat <<END >> /etc/dnsmasq.conf
 interface=wlan0      # Use the required wireless interface - usually wlan0
@@ -904,17 +902,17 @@ END
 	if [ -z "$oldWifiChannel" ]; then oldWifiChannel='5'; fi
 	if [ -z "$oldWifiPwd" ]; then oldWifiPwd='myPiNetw0rkAccess!'; fi
 
-	echo ""
-	echo "Set your Pi as a WiFi Access Point. (Ctrl-C to abort)"
-	echo "If unsure, go with the defaults until you get to the SSID and password"
-	echo ""
-	read -e -i "$oldPiIpV4" -p         "Choose an IP address for the Pi        : " piIpV4
-	read -e -i "$oldDhcpStartIp" -p    "Choose the starting IP address for DCHP: " dhcpStartIp
-	read -e -i "$oldDhcpEndIp" -p      "Choose  the  ending IP address for DCHP: " dhcpEndIp
-	read -e -i "$oldDhcpSubnetMask" -p "Set the appropriate subnet mask        : " dhcpSubnetMask
-	read -e -i "$oldWifiSsid" -p       "Pick a nice SSID                       : " wifiSsid
-	read -e -i "$oldWifiPwd" -p        "Choose a better password than this     : " wifiPwd
-	read -e -i "$oldWifiChannel" -p    "Choose an appropriate WiFi channel     : " wifiChannel
+	echo ''
+	echo 'Set your Pi as a WiFi Access Point. (Ctrl-C to abort)'
+	echo 'If unsure, go with the defaults until you get to the SSID and password'
+	echo ''
+	read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi        : ' piIpV4
+	read -e -i "$oldDhcpStartIp" -p    'Choose the starting IP address for DCHP: ' dhcpStartIp
+	read -e -i "$oldDhcpEndIp" -p      'Choose  the  ending IP address for DCHP: ' dhcpEndIp
+	read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask        : ' dhcpSubnetMask
+	read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                       : ' wifiSsid
+	read -e -i "$oldWifiPwd" -p        'Choose a better password than this     : ' wifiPwd
+	read -e -i "$oldWifiChannel" -p    'Choose an appropriate WiFi channel     : ' wifiChannel
 
 	#TODO: Validate these inputs. Make sure none are null
 
@@ -928,22 +926,22 @@ END
 	sed -i -E "s/^(wpa_passphrase=)(.*)$/\1$wifiPwd/" /etc/hostapd/hostapd.conf
 
 	systemctl unmask hostapd
-	echo "Enabling hostapd"
+	echo 'Enabling hostapd'
 	systemctl enable hostapd
-	echo "Enabling dnsmasq"
+	echo 'Enabling dnsmasq'
 	systemctl enable dnsmasq
-	echo "WARNING: After the next reboot, the Pi will come up as a WiFi access point!"
+	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi access point!'
 }
 
 
 unmake_ap ()
 {
-	if systemctl --all --type service | grep -q "dnsmasq";
+	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
 		systemctl disable dnsmasq #Stops it launching on bootup
 		echo 'Disabled dnsmasq'
 	fi
-	if systemctl --all --type service | grep -q "hostapd";
+	if systemctl --all --type service | grep -q 'hostapd';
 	then
 		systemctl disable hostapd
 		echo 'Disabled hostapd'
@@ -954,10 +952,10 @@ unmake_ap ()
 	oldSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	oldPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	while true; do
-		read -e -i "$oldCountry" -p "Set your two-letter WiFi country code : " newCountry
+		read -e -i "$oldCountry" -p 'Set your two-letter WiFi country code : ' newCountry
 		if [ -z "$newCountry" ];
 		then
-			echo -e "Error: Country value cannot be empty."
+			echo -e 'Error: Country value cannot be empty.'
 			echo ''
 			continue
 		fi
@@ -967,7 +965,7 @@ unmake_ap ()
 		read -e -i "$oldSsid"    -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
-			echo -e "Error: SSID value cannot be empty."
+			echo -e 'Error: SSID value cannot be empty.'
 			echo ''
 			continue
 		fi
@@ -1006,7 +1004,7 @@ unmake_ap ()
 	set -e #Resume the error trap
 
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
-	if ! grep -Fq "interface wlan0" "/etc/dhcpcd.conf";
+	if ! grep -Fq 'interface wlan0' '/etc/dhcpcd.conf';
 	then
 		cat <<END >> /etc/dhcpcd.conf
 interface wlan0
@@ -1016,18 +1014,18 @@ interface wlan0
 END
 	fi
 	# Just in case either of these lines are STILL missing, paste in some defaults:
-	if ! grep -Fq "static routers=" "/etc/dhcpcd.conf";
+	if ! grep -Fq 'static routers=' '/etc/dhcpcd.conf';
 	then
-		sed -i -e "\$astatic routers=192.168.0.1" "/etc/dhcpcd.conf";
+		sed -i -e "\$astatic routers=192.168.0.1" '/etc/dhcpcd.conf';
 	fi
-	if ! grep -Fq "static domain_name_servers=" "/etc/dhcpcd.conf";
+	if ! grep -Fq 'static domain_name_servers=' '/etc/dhcpcd.conf';
 	then
-		sed -i -e "\$astatic domain_name_servers=192.168.0.1" "/etc/dhcpcd.conf";
+		sed -i -e "\$astatic domain_name_servers=192.168.0.1" '/etc/dhcpcd.conf';
 	fi
 	
 	wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
 	echo ""
-	read -p "Do you want to assign the Pi a static IP address? [Y/n]: " staticResponse
+	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
 	case $staticResponse in
 		(y|Y|"")
 			oldPiIpV4=$(sed -n -E 's|^\s*#*\s*static ip_address=(([0-9]{1,3}\.){3}[0-9]{1,3})/([0-9]{1,2}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
@@ -1035,10 +1033,10 @@ END
 			oldRouter=$(sed -n -E 's|^\s*#*\s*static routers=(([0-9]{1,3}\.){3}[0-9]{1,3}).*$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
 			oldDnsServers=$(sed -n -E 's|^\s*#*\s*static domain_name_servers=(.*)$|\1|p' /etc/dhcpcd.conf | tail -1) # Delimiter needs to be '|'
 			if [ "$oldDhcpSubnetCIDR" ]; then oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
-			read -e -i "$oldPiIpV4" -p         "Choose an IP address for the Pi         : " piIpV4
-			read -e -i "$oldDhcpSubnetMask" -p "Set the appropriate subnet mask         : " dhcpSubnetMask
-			read -e -i "$oldRouter" -p         "Set the Router IP                       : " router
-			read -e -i "$oldDnsServers" -p     "Set the DNS Server(s) (space-delimited) : " DnsServers
+			read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
+			read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
+			read -e -i "$oldRouter" -p         'Set the Router IP                       : ' router
+			read -e -i "$oldDnsServers" -p     'Set the DNS Server(s) (space-delimited) : ' DnsServers
 			
 			cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 			#Paste in the new settings
@@ -1049,22 +1047,22 @@ END
 			sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
 			;;
 		(*)
-			if grep -qi "interface wlan0" /etc/dhcpcd.conf;
+			if grep -qi 'interface wlan0' /etc/dhcpcd.conf;
 			then
 				# Comment out the wlan0 lines:
-				sed -i -E "s/^(interface wlan0\s*)/##\1/" /etc/dhcpcd.conf
+				sed -i -E 's/^(interface wlan0\s*)/##\1/' /etc/dhcpcd.conf
 				# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
 				sed -i -E "$wlanLine,$ s/^\s*(static\s*ip_address=)(.*)/##  \1\2/" /etc/dhcpcd.conf 
 				sed -i -E "$wlanLine,$ s/^\s*(static routers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "routers"
 				sed -i -E "$wlanLine,$ s/^\s*(static domain_name_servers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "domain_name_servers"
 				sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
 			else
-				echo -e "Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf"
+				echo -e 'Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf'
 			fi
 			;;
 	esac
 	
-	echo "WARNING: After the next reboot, the Pi will come up as a WiFi *client*"
+	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
 	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
 	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
 	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change"
@@ -1077,9 +1075,9 @@ timeTest ()
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
 	if [ $NTP = "ActiveState=active" ];
 	then
-		echo "NTP is currently active. NTP is our master time source."
+		echo 'NTP is currently active. NTP is our master time source.'
 	else
-		echo "NTP is not active. The Arduino is our master time source."
+		echo 'NTP is not active. The Arduino is our master time source.'
 	fi
 }
 
@@ -1088,19 +1086,19 @@ timeSync1 ()
 {
 	echo ''
 	echo 'Does the Pi have network connectivity?'
-	read -p "If so, can we use NTP as our master time source? [Y/n]: " Response
+	read -p 'If so, can we use NTP as our master time source? [Y/n]: ' Response
 	echo ''
 	case $Response in
 		(y|Y|"")
-			echo "Enabling systemd-timesyncd"
+			echo 'Enabling systemd-timesyncd'
 			systemctl enable systemd-timesyncd
-			echo "Starting systemd-timesyncd"
+			echo 'Starting systemd-timesyncd'
 			systemctl start systemd-timesyncd
 			;;
 		(*)
-			echo "Disabling systemd-timesyncd"
+			echo 'Disabling systemd-timesyncd'
 			systemctl disable systemd-timesyncd
-			echo "Stopping systemd-timesyncd"
+			echo 'Stopping systemd-timesyncd'
 			systemctl stop systemd-timesyncd
 			;;
 	esac
@@ -1110,10 +1108,10 @@ timeSync1 ()
 timeSync2 ()
 {
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
-	if [ $NTP = "ActiveState=active" ];
+	if [ $NTP = 'ActiveState=active' ];
 	then
-		echo "NTP is active"
-		if  grep -q "Requires=intvlm8r.service time-sync.target" /etc/systemd/system/setTime.service;
+		echo 'NTP is active'
+		if  grep -q 'Requires=intvlm8r.service time-sync.target' /etc/systemd/system/setTime.service;
 		then
 			echo ' Requires time-sync.target suffix is already present'
 		else
@@ -1123,10 +1121,10 @@ timeSync2 ()
 		sed -i '/Before=time-sync.target/d' /etc/systemd/system/setTime.service #Delete time-sync.target
 		echo ' Deleted Before=time-sync.target'
 	else
-		echo "NTP is not active"
+		echo 'NTP is not active'
 		sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1/g' /etc/systemd/system/setTime.service ##Delete REQUIRES time-sync.target
 		echo ' Deleted Requires time-sync.target suffix'
-		if  grep -q "Before=time-sync.target" /etc/systemd/system/setTime.service;
+		if  grep -q 'Before=time-sync.target' /etc/systemd/system/setTime.service;
 		then
 			echo ' Before=time-sync.target is already present'
 		else
@@ -1134,16 +1132,16 @@ timeSync2 ()
 			echo ' Added Before=time-sync.target'
 		fi
 	fi
-	echo ""
+	echo ''
 	chmod 644 /etc/systemd/system/setTime.service
-	echo "Enabling setTime.service"
+	echo 'Enabling setTime.service'
 	systemctl enable setTime.service
 }
 
 
 test_install ()
 {
-	echo "TEST!"
+	echo 'TEST!'
 	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
 	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/cameraTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/cameraTransfer.service not found"
@@ -1151,8 +1149,8 @@ test_install ()
 	[ -f /etc/systemd/system/setTime.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/setTime.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/setTime.service not found"
 	[ -f /etc/systemd/system/redis.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/redis.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/redis.service not found"
 	[ -f /etc/systemd/system/celery.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/celery.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/celery.service not found"
-	grep -q "i2c_arm_baudrate" /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
-	if grep -qcim1 "i2c-dev" /etc/modules;
+	grep -q 'i2c_arm_baudrate' /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
+	if grep -qcim1 'i2c-dev' /etc/modules;
 	then
 		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
 		echo ''
@@ -1164,11 +1162,11 @@ test_install ()
 	echo ''
 	# Test for ap/noap mode:
 	ap_test=0
-	if systemctl --all --type service | grep -q "dnsmasq";
+	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
 		$ap_test=$((ap_test+1))
 	fi
-	if systemctl --all --type service | grep -q "hostapd";
+	if systemctl --all --type service | grep -q 'hostapd';
 	then
 		$ap_test=$((ap_test+2))
 	fi
@@ -1198,7 +1196,7 @@ test_install ()
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	
-	if iw wlan0 get power_save | grep -q "on";
+	if iw wlan0 get power_save | grep -q 'on';
 	then
 		echo -e ""$YELLOW"FAIL:"$RESET" WiFi power save is ON"
 	else
@@ -1216,7 +1214,7 @@ test_install ()
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
-	echo ""
+	echo '
 
 	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
 	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
@@ -1229,31 +1227,31 @@ test_install ()
 			serviceActiveState=${BASH_REMATCH[3]}
 			serviceSubState=${BASH_REMATCH[4]}
 		fi
-		echo ""
+		echo ''
 		echo -e "Service = $serviceName"
 
-		[ $serviceLoadState == "loaded" ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
-		if [ $serviceName == "heartbeat" ] ;
+		[ $serviceLoadState == 'loaded' ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+		if [ $serviceName == 'heartbeat' ] ;
 		then
-			[ $serviceActiveState == "active" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+			[ $serviceActiveState == 'active' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
 		else
-			[ $serviceActiveState == "inactive" ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+			[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
 		fi
-		[ $serviceSubState != "failed" ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
+		[ $serviceSubState != 'failed' ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
 	done
 	
 	timeTest
-	echo ""
+	echo ''
 }
 
 
 prompt_for_reboot()
 {
-	echo ""
-	read -p "Reboot now? [Y/n]: " rebootResponse
+	echo ''
+	read -p 'Reboot now? [Y/n]: ' rebootResponse
 	case $rebootResponse in
 		(y|Y|"")
-			echo "Bye!"
+			echo 'Bye!'
 			exec reboot now
 			;;
 		(*)
@@ -1281,34 +1279,34 @@ then
 fi
 
 case "$1" in
-	("start")
+	('start')
 		install_apps
 		prompt_for_reboot
 		;;
-	("web")
+	('web')
 		install_website
 		prompt_for_reboot
 		;;
-	("login")
+	('login')
 		chg_web_login
 		;;
-	("ap")
+	('ap')
 		make_ap
 		prompt_for_reboot
 		;;
-	("noap")
+	('noap')
 		unmake_ap
 		prompt_for_reboot
 		;;
-	("time")
+	('time')
 		timeTest
 		timeSync1
 		timeSync2
 		;;
-	("test")
+	('test')
 		test_install
 		;;
-	("")
+	('')
 		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test' or 'time' after the script name\n"
 		exit 1
 		;;
