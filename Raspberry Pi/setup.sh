@@ -1214,7 +1214,7 @@ test_install ()
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
-	echo '
+	echo ''
 
 	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
 	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
