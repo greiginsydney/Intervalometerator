@@ -757,7 +757,7 @@ chg_web_login ()
 			read -e -r -i "$oldLoginName" -p "Change the website's login name: " loginName
 			if [[ ${#loginName} -lt 1 ]];
 			then
-				echo ' The login name can't be empty/blank'
+				echo " The login name can't be empty/blank"
 				continue
 			fi
 			if [[ ! $loginName =~ $matchLoginName ]];
@@ -785,7 +785,7 @@ chg_web_login ()
 			if [[ $password =~ $matchPassword ]];
 			then
 				echo ''
-				echo 'Please try a different password. Don't use backslashes or apostrophes/single-quotes'
+				echo "Please try a different password. Don't use backslashes or apostrophes/single-quotes"
 				echo ''
 				continue
 			fi
