@@ -644,6 +644,8 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                 log(f"rsync err'd with stderrdata = {stderrdata}")
                 if 'Host key verification failed' in str(stderrdata):
                     log('STATUS: rsync host key verification failed')
+                elif 'Permission denied' in str(stderrdata):
+                    log('STATUS: rsync error: permission denied')
                 else:
                     log('STATUS: rsync error')
             # wait until process is really terminated
