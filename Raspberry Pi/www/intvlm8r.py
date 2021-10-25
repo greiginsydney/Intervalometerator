@@ -134,6 +134,7 @@ def writeString(value):
     for x in range(0, 2):
         try:
             bus.write_i2c_block_data(address, 0, ascii)
+            break   # Break out of the retry loop if we get to here
         except Exception as e:
             app.logger.debug(f'writeString error: {e}')
             time.sleep(1) # Wait a second before each retry
@@ -170,7 +171,7 @@ def readString(value, cacheRequest):
                      break
                  status += chr(array[i])
             app.logger.debug(f'Status received was: >{status}<')
-            break
+            break   # Break out of the retry loop if we get to here
         except Exception as e:
             app.logger.debug(f'readString error: {e}')
             time.sleep(1) # Wait a second before each retry
