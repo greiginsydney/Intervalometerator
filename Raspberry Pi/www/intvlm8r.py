@@ -357,7 +357,6 @@ def main():
                 fileCount = len(files)
                 info = get_camera_file_info(camera, files[-1]) #Get the last file
                 lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
-            camera.exit()
             templateData['fileCount']                = fileCount
             templateData['lastImage']                = lastImage
             templateData['cameraBattery'], discardMe = readRange (camera, 'status', 'batterylevel')
