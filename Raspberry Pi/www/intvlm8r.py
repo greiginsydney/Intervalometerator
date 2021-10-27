@@ -190,8 +190,8 @@ def getPiUptime():
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
             uptime_string = str(timedelta(seconds = round(uptime_seconds)))
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in getPiUptime: {e}')
     return uptime_string
 
 
@@ -337,10 +337,8 @@ def main():
             nextShot = arduinoStats.split(":")[1]
             if nextShot != "19999":
                 templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
-    except:
-        pass
-    #except Exception as e:
-    #    app.logger.debug(f'Time template error: {e}')
+    except Exception as e:
+        app.logger.debug(f'Time template error in /home: {e}')
 
     # Camera comms:
     try:
@@ -486,8 +484,8 @@ def getArduinoDate():
         if rawDate != 'Unknown':
             formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in getArduinoDate: {e}')
     return formattedDate
 
 
@@ -498,8 +496,8 @@ def getArduinoTime():
         if rawTime != 'Unknown':
             formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in getArduinoTime: {e}')
     return formattedTime
 
 
@@ -1077,8 +1075,8 @@ def thermal():
         templateData['arduinoTemp'] = temperatures.split(",")[0]
         templateData['arduinoMin']  = temperatures.split(",")[2]
         templateData['arduinoMax']  = temperatures.split(",")[1]
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
     
     return render_template('thermal.html', **templateData)
@@ -1126,8 +1124,8 @@ def monitoring():
     try:
         with open(PI_HBRESULT_FILE, 'r') as f:
             templateData['hbResult'] = f.readline()
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception reading PI_HBRESULT_FILE in /monitoring: {e}')
 
     return render_template('monitoring.html', **templateData)
 
@@ -1227,19 +1225,19 @@ def initiateHeartbeat(self):
             app.logger.debug(f'Status code = {statusCode}')
             app.logger.debug(f'This is what I received: {htmltext}')
         except requests.exceptions.Timeout as e:
-            app.logger.debug(f'initiateHeartbeat() Timeout error: {e}')
+            app.logger.debug(f'initiateHeartbeat Timeout error: {e}')
             briefErrMsg = 'Timeout error'
         except requests.exceptions.ConnectionError as e:
-            app.logger.debug(f'initiateHeartbeat() ConnectionError: {e}')
+            app.logger.debug(f'initiateHeartbeat ConnectionError: {e}')
             briefErrMsg = 'Conn. error'
         except requests.exceptions.HTTPError as e:
-            app.logger.debug(f'initiateHeartbeat() HTTPError: {e}')
+            app.logger.debug(f'initiateHeartbeat HTTPError: {e}')
             briefErrMsg = 'HTTP error {0}'.format(e.response.status_code)
         except requests.exceptions.TooManyRedirects as e:
-            app.logger.debug(f'initiateHeartbeat() TooManyRedirects error: {e}')
+            app.logger.debug(f'initiateHeartbeat TooManyRedirects error: {e}')
             briefErrMsg = 'Redir error'
         except Exception as e:
-            app.logger.debug(f'initiateHeartbeat() Unhandled web error: {e}')
+            app.logger.debug(f'initiateHeartbeat Unhandled web error: {e}')
             briefErrMsg = 'Unknown error'
         try:
             with open(PI_HBRESULT_FILE, 'w') as resultFile:
@@ -1251,9 +1249,9 @@ def initiateHeartbeat(self):
                     resultFile.write(f'{nowtime} ({briefErrMsg})')
                     statusMessage = (f'Heartbeat reported failure: ({briefErrMsg})')
         except Exception as e:
-            app.logger.debug(f'initiateHeartbeat() resultfile exception: {e}')
+            app.logger.debug(f'initiateHeartbeat resultfile exception: {e}')
     else:
-        app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
+        app.logger.debug('initiateHeartbeat exited. No heartbeatUrl')
         statusMessage = 'Error: no heartbeat url'
     return {'status': statusMessage, 'statusCode': statusCode}
 
@@ -1527,8 +1525,8 @@ def readRange ( camera, group, attribute ):
                             for k in range(grandchild.count_choices()):
                                 choice = grandchild.get_choice(k)
                                 options.append(choice)
-                    except:
-                        pass
+                    except Exception as e:
+                        app.logger.debug(f'Exception in readRange: {e}')
                         #break   #We have found and extracted the attribute we were seeking
     except Exception as e:
         app.logger.debug(f'readRange threw: {e}')
@@ -1786,14 +1784,14 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
                         #This is a safety net.
                         #You MIGHT be deliberately doing this (say, sequentially numbering all the files in a given year-month-day-hour), but...
                         # if we get to 1000 I'm going to abort, otherwise we risk looping here forever.
-                        app.logger.info(f'renameFile() safety net fired renaming file {imageFullFilename} to {renameString}')
+                        app.logger.info(f'renameFile safety net fired renaming file {imageFullFilename} to {renameString}')
                         safetyNet = True
                         break
                     suffix += 1 #Increment the suffix and loop.
                 else:
                     break
             if not safetyNet == True:
-                app.logger.info(f'renameFile() about to rename file {imageFullFilename} to {renameString}')
+                app.logger.info(f'renameFile about to rename file {imageFullFilename} to {renameString}')
                 os.rename(imageFullFilename,renamedFile)
                 if (deleteAfterCopy == False):
                     #Add to the rename file here
@@ -1801,12 +1799,12 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
                         with open(PI_PHOTO_RENAME_FILE, "a") as f:
                             f.write(f'{fileName}{fileExt} {renamedFile}\r\n')
                     except Exception as e:
-                        app.logger.info(f'renameFile() error writing to PI_PHOTO_RENAME_FILE: {e}')
+                        app.logger.info(f'renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
         except Exception as e:
-            app.logger.info(f'renameFile() error  renaming file {imageFullFilename} to {renameString}')
-            app.logger.info(f'renameFile() error : {e}')
+            app.logger.info(f'renameFile error  renaming file {imageFullFilename} to {renameString}')
+            app.logger.info(f'renameFile error : {e}')
     except Exception as e:
-        app.logger.info(f'renameFile() unhandled error: {e}')
+        app.logger.info(f'renameFile unhandled error: {e}')
     return
 
 
@@ -1831,19 +1829,19 @@ def makeThumb(imageFile):
                             try:
                                 preview.save(previewfilename, "JPEG")
                             except Exception as e:
-                                app.logger.info(f'makeThumb() preview save error: {e}')
+                                app.logger.info(f'makeThumb preview save error: {e}')
                     except Exception as e:
-                        app.logger.info(f'makeThumb() preview open error: {e}')
+                        app.logger.info(f'makeThumb preview open error: {e}')
             try:
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
                     thumb.save(dest, "JPEG")
             except Exception as e:
-                app.logger.info(f'makeThumb() thumbnail save error: {e}')
+                app.logger.info(f'makeThumb thumbnail save error: {e}')
         getExifData(imageFile, imageFileName)
         return dest, alreadyExists
     except Exception as e:
-        app.logger.info(f'Unknown Exception in makeThumb(): {e}')
+        app.logger.info(f'Unknown Exception in makeThumb: {e}')
         return None, None
 
 
@@ -1862,12 +1860,12 @@ def getExifData(imageFilePath, imageFileName):
                 dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
                 timeOriginal = dateTimeOriginal[1]
             except Exception as e:
-                app.logger.info(f'getExifData() dateTimeOriginal error: {e}')
+                app.logger.info(f'getExifData dateTimeOriginal error: {e}')
             if os.path.isfile(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
                         if (f'{imageFileName} = {dateOriginal} {timeOriginal}|') in line:
-                            app.logger.info(f'getExifData() image {imageFileName} already exists in Exif file. Aborting')
+                            app.logger.info(f'getExifData image {imageFileName} already exists in Exif file. Aborting')
                             abort = True
                             break
             if abort:
@@ -1877,7 +1875,7 @@ def getExifData(imageFilePath, imageFileName):
                 fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
             except Exception as e:
                 fileExtension = '?'
-                app.logger.info(f'getExifData() fileExtension error: {e}')
+                app.logger.info(f'getExifData fileExtension error: {e}')
             try:
                 #Reformat depending on the value:
                 # 6/1   becomes 6s
@@ -1895,27 +1893,27 @@ def getExifData(imageFilePath, imageFileName):
                     pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
             except Exception as e:
                 exposureTime = '?'
-                app.logger.info(f'getExifData() ExposureTime error: {e}')
+                app.logger.info(f'getExifData ExposureTime error: {e}')
             try:
                 fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
                 #Strip the '.0' if it's a whole F-stop
                 fNumber = fNumber.replace('.0','')
             except Exception as e:
                 fNumber = '?'
-                app.logger.info(f'getExifData() fNumber error: {e}')
+                app.logger.info(f'getExifData fNumber error: {e}')
             try:
                 ISO = tags['EXIF ISOSpeedRatings']
             except Exception as e:
                 ISO = '?'
-                app.logger.info(f'getExifData() ISO error: {e}')
+                app.logger.info(f'getExifData ISO error: {e}')
             try:
                 with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
                     thumbsInfoFile.write(f'{imageFileName} = {dateOriginal} {timeOriginal}|{fileExtension} &bull; {exposureTime}s &bull; F{fNumber} &bull; ISO{ISO}\r\n')
             except Exception as e:
-                app.logger.info(f'getExifData() error writing to thumbsInfoFile: {e}')
+                app.logger.info(f'getExifData error writing to thumbsInfoFile: {e}')
             break
         except Exception as e:
-            app.logger.info(f'getExifData() EXIF error: {e}')
+            app.logger.info(f'getExifData EXIF error: {e}')
             break
     return
 
@@ -1936,7 +1934,7 @@ def dedupeExifData():
                         app.logger.debug(f'dedupeExifData info file error: {e}')
         if lines != len(ThumbsInfo):
             #We have a discrepancy (dupe or bad line). Re-write the file:
-            app.logger.info(f'dedupeExifData() recreating thumbs info file: lines = {lines}, UniqueImages = {len(ThumbsInfo)}')
+            app.logger.info(f'dedupeExifData recreating thumbs info file: lines = {lines}, UniqueImages = {len(ThumbsInfo)}')
             with open(PI_THUMBS_INFO_FILE, 'r+') as file:
                 file.seek(0)
                 for key, value in ThumbsInfo.items():
@@ -2054,11 +2052,11 @@ def getIni(keySection, keyName, keyType, defaultValue):
         else:
             returnValue = config.get(keySection, keyName)
     except configparser.Error as e:
-        app.logger.info(f'getIni() reports key error: {e}')
+        app.logger.info(f'getIni reports key error: {e}')
         #Looks like the flag doesn't exist. Let's add it
         setIni(keySection, keyName, defaultValue)
     except Exception as e:
-        app.logger.info(f'Unhandled error in getIni(): {e}')
+        app.logger.info(f'Unhandled error in getIni: {e}')
     return returnValue
 
 
@@ -2072,7 +2070,7 @@ def setIni(keySection, keyName, newValue):
         config = configparser.ConfigParser()
         config.read(iniFile)
     except Exception as e:
-        app.logger.info(f'Unhandled error in setIni(): {e}')
+        app.logger.info(f'Unhandled error in setIni: {e}')
     try:
         if not config.has_section(keySection):
             config.add_section(keySection)
@@ -2107,7 +2105,7 @@ def trnCopyNow():
 @celery.task(time_limit=1800, bind=True)
 def copyNow(self):
     writeString("WC") # Sends the camera WAKE command to the Arduino
-    app.logger.info('copyNow() entered') #This logs to /var/log/celery/celery_worker.log
+    app.logger.info('copyNow entered') #This logs to /var/log/celery/celery_worker.log
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
@@ -2117,31 +2115,31 @@ def copyNow(self):
         retries += 1
         if retries >= 6:
             #We've waited too long. Abort.
-            app.logger.info(f'copyNow() could not claim the USB device after {retries} attempts.')
+            app.logger.info(f'copyNow could not claim the USB device after {retries} attempts.')
             return {'status': 'USB error'}
         try:
-            app.logger.info('copyNow() trying to init the camera')
+            app.logger.info('copyNow trying to init the camera')
             camera.init(context)
             #The line above will throw an exception if we can't connect to the camera
-            app.logger.info('copyNow() camera initialised')
+            app.logger.info('copyNow camera initialised')
             break
         except gp.GPhoto2Error as e:
-            app.logger.info(f"copyNow() wasn't able to connect to the camera: {e.string}")
+            app.logger.info(f"copyNow wasn't able to connect to the camera: {e.string}")
             continue
         except Exception as e:
-            app.logger.info(f'Unknown error in copyNow(): {e}')
+            app.logger.info(f'Unknown error in copyNow: {e}')
             continue
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
     thisImage = 0
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
         numberToCopy = len(filesToCopy)
-        app.logger.info(f'copyNow() has been tasked with copying {numberToCopy} images')
+        app.logger.info(f'copyNow has been tasked with copying {numberToCopy} images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
         renameString = getIni('Copy', 'renameString', 'string', None)
         if not renameString:
-            app.logger.info('copyNow() reports renameString is blank/empty. Forcing renameOnCopy = False')
+            app.logger.info('copyNow reports renameString is blank/empty. Forcing renameOnCopy = False')
             renameOnCopy = False
         while len(filesToCopy) > 0:
             try:
@@ -2152,14 +2150,14 @@ def copyNow(self):
                 if copyResult == 0:
                     thisImage += 1
             except Exception as e:
-                app.logger.info(f'Unknown error in copyNow(): {e}')
+                app.logger.info(f'Unknown error in copyNow: {e}')
     try:
         camera.exit()
-        app.logger.info('copyNow() ended happily')
+        app.logger.info('copyNow ended happily')
     except Exception as e:
-        app.logger.info(f'copyNow() ended sad: {e}')
+        app.logger.info(f'copyNow ended sad: {e}')
     if thisImage == 0:
-        app.logger.info('copyNow() reported there were no new images to copy')
+        app.logger.info('copyNow reported there were no new images to copy')
         statusMessage = "There were no new images to copy"
     else:
         statusMessage = (f'Copied {thisImage} images OK')
@@ -2210,11 +2208,11 @@ def newThumbs(self):
                 else:
                     app.logger.info(f'Thumb for {dest} already exists')
         else:
-            app.logger.info('newThumbs() reports there are no thumbsToCreate.')
+            app.logger.info('newThumbs reports there are no thumbsToCreate.')
     except Exception as e:
         app.logger.info(f'newThumbs error: {e}')
     dedupeExifData()
-    app.logger.info('newThumbs() returned')
+    app.logger.info('newThumbs returned')
     return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
 
 
@@ -2223,7 +2221,7 @@ def newThumbs(self):
 @login_required
 def backgroundStatus(task_id):
     task = copyNow.AsyncResult(task_id)
-    app.logger.debug(f'backgroundStatus() entered with task_id = {task_id} and task.state = {task.state}')
+    app.logger.debug(f'backgroundStatus entered with task_id = {task_id} and task.state = {task.state}')
     if task.state == 'PENDING':
         # job did not start yet
         response = {
@@ -2242,7 +2240,7 @@ def backgroundStatus(task_id):
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
         }
-    app.logger.debug('backgroundStatus() returned')
+    app.logger.debug('backgroundStatus returned')
     return jsonify(response)
 
 
