@@ -129,7 +129,7 @@ for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
         hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
 app.logger.debug(f'hiddenTransferOptions = {hiddenTransferOptions}')
 
-def writeString(value):
+def writeString(value, waitTime):
     ascii = [ord(c) for c in value]
     for x in range(0, 2):
         try:
@@ -138,7 +138,7 @@ def writeString(value):
         except Exception as e:
             app.logger.debug(f'writeString error: {e}')
             time.sleep(1) # Wait a second before each retry
-    time.sleep(0.5) # Give the Arduino time to act on the data sent
+    time.sleep(waitTime)  # Give the Arduino time to act on the data sent
     return -1
 
 
@@ -318,8 +318,7 @@ def main():
 
     args = request.args.to_dict()
     if args.get('wakeCamera'):
-        writeString("WC") # Sends the WAKE command to the Arduino
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+        writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
 
@@ -470,7 +469,7 @@ def setArduinoDateTime():
         abort(403)
 
     newTime = datetime.now().strftime('%Y%m%d%H%M%S') #20190613235900
-    writeString(f'ST={newTime}') # Send the new time and date to the Arduino
+    writeString(f'ST={newTime}', 1) # Send the new time and date to the Arduino
     app.logger.debug(f'setArduinoDateTime to {newTime}')
     res = make_response(f'<p>Set Arduino datetime to {newTime}</p>')
     return res, 200
@@ -598,8 +597,7 @@ def camera():
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(calendar.timegm(time.gmtime())) #Adds a unique suffix so the browser always downloads the file
 
     if args.get('wakeCamera'):
-        writeString("WC") # Sends the WAKE command to the Arduino
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+        writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('camera'))
 
@@ -818,7 +816,7 @@ def intervalometerPOST():
         newInterval += startHour
         newInterval += endHour
         newInterval += interval
-        writeString(f'SI={newInterval}')       # Send the new interval data to the Arduino
+        writeString(f'SI={newInterval}', 1)    # Send the new interval data to the Arduino
         cache.delete("3")                      # Flush the previously cached value
         app.logger.debug(f'Detected a valid POST. Updated the interval to {newInterval}')
     else:
@@ -1068,8 +1066,7 @@ def thermal():
     if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
 
     try:
-        writeString("GT") # Asks the Arduino to update its temperature string
-        time.sleep(1);
+        writeString("GT", 2) # Asks the Arduino to update its temperature string
         temperatures = str(readString("4", False)) # Reads the resulting string, a csv array
         templateData['arduinoTemp'] = temperatures.split(",")[0]
         templateData['arduinoMin']  = temperatures.split(",")[2]
@@ -1096,10 +1093,10 @@ def thermalPOST():
 
     if 'resetMin' in request.form:
         app.logger.debug('thermal sent RN')
-        writeString("RN") # Sends the Reset Min command to the Arduino
+        writeString("RN", 1) # Sends the Reset Min command to the Arduino
     if 'resetMax' in request.form:
         app.logger.debug('thermal sent RX')
-        writeString("RX") # Sends the Reset Max command to the Arduino
+        writeString("RX", 1) # Sends the Reset Max command to the Arduino
 
     res.headers['location'] = url_for('thermal')
     return res, 302
@@ -1371,7 +1368,7 @@ def systemPOST():
         WakePiHour = str(request.form.get('wakePiTime'))
         if WakePiHour == 'Always On':
             WakePiHour = '25'
-        writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}")
+        writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}", 1)
         cache.delete("5")   # Flush the previously cached value
 
     if 'SyncSystem' in request.form:
@@ -1379,7 +1376,7 @@ def systemPOST():
         app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
-            writeString("ST=" + newTime) # Send the new time and date to the Arduino
+            writeString("ST=" + newTime, 1) # Send the new time and date to the Arduino
         if request.form.get('setPiTime'):
             app.logger.debug('Checked: setPiTime' )
             setTime(newTime)
@@ -1399,7 +1396,7 @@ def systemPOST():
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
-            writeString("RA")
+            writeString("RA", 1)
             #app.logger.debug(f'Yes we got reboot safe word - {REBOOT_SAFE_WORD}')
         else:
             pass
@@ -1464,7 +1461,7 @@ def connectCamera(retries):
                 if e.string == 'Unknown model':
                     if retries % 2 == 0:
                         app.logger.debug('connectCamera waking the camera & going again')
-                        writeString("WC") # Sends the WAKE command to the Arduino
+                        writeString("WC", 1) # Sends the WAKE command to the Arduino
                     else:
                         app.logger.debug('connectCamera going again without waking the camera')
                 elif e.string == 'Could not claim the USB device':
@@ -2103,7 +2100,7 @@ def trnCopyNow():
 
 @celery.task(time_limit=1800, bind=True)
 def copyNow(self):
-    writeString("WC") # Sends the camera WAKE command to the Arduino
+    writeString("WC", 1) # Sends the camera WAKE command to the Arduino
     app.logger.info('copyNow entered') #This logs to /var/log/celery/celery_worker.log
     camera = gp.Camera()
     context = gp.gp_context_new()
