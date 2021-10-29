@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
+	{% if ((current_user.is_authenticated) and (locationName != "") and (locationName != "Intvlm8r")) %}
+	<title>Intvlm8r - {{ locationName }}</title>
+	{% else %}
 	<title>Intvlm8r</title>
+	{% endif %}
 	<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/static/main.css">
