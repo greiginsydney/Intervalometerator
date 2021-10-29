@@ -138,7 +138,8 @@ def writeString(value, waitTime):
         except Exception as e:
             app.logger.debug(f'writeString error: {e}')
             time.sleep(1) # Wait a second before each retry
-    time.sleep(waitTime)  # Give the Arduino time to act on the data sent
+    if not waitTime == 0:
+        time.sleep(waitTime)  # Give the Arduino time to act on the data sent
     return -1
 
 
