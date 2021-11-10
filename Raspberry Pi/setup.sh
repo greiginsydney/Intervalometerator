@@ -116,8 +116,8 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing subversion"$RESET""
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
-	echo -e ""$GREEN"Installing python3-pip, python-flask"$RESET""
-	apt-get install python3-pip python-flask -y
+	echo -e ""$GREEN"Installing python3-pip, python3-flask"$RESET""
+	apt-get install python3-pip python3-flask -y
 	echo -e ""$GREEN"Installing Werkzeug"$RESET""
 	pip3 install Werkzeug
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
