@@ -672,11 +672,11 @@ def uploadedOK(filename, filecount):
     The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
     Delete local file, thumb, preview & metadata if required
     """
-    log(f'Uploaded  {filename}')
+    log(f' Uploaded {filename}')
     if deleteAfterTransfer:
         try:
             os.remove(filename)
-            log(f'Deleted   {filename}')
+            log(f'  Deleted {filename}')
             deleteThumbsInfo(filename)
             for folder,suffix in [(PI_THUMBS_DIR, '-thumb.JPG'), (PI_PREVIEW_DIR, '-preview.JPG')]:
                 try:
@@ -684,7 +684,7 @@ def uploadedOK(filename, filecount):
                     file2Delete = os.path.splitext(file2Delete)[0] + suffix
                     if os.path.isfile(file2Delete):
                         os.remove(file2Delete)
-                        log(f'Deleted   {file2Delete}')
+                        log(f'  Deleted {file2Delete}')
                 except Exception as e:
                     log(f'Error deleting file {file2Delete} : {e}')
         except Exception as e:
