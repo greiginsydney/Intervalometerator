@@ -144,17 +144,17 @@ def writeString(value, waitTime):
 
 
 def readString(value, cacheRequest):
+    ascii = ord(value[0])
     if (cacheRequest == True):
         cached = cache.get(value)
         if cached is None:
             #The cache is empty? Bummer
             pass
         else:
-            #app.logger.debug('YES! Cached value returned')
+            app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
-
-    status = ""
-    ascii = ord(value[0])
+    
+    status = ""    ascii = ord(value[0])
     app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
     if (ascii == 48 ): rxLength = 8  # "0" - Date - 8
