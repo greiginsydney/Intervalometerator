@@ -56,8 +56,8 @@ Last updated/changed in version:
 #define MEMWakePiDuration 0x06
 #define MEMTempMin    0x07  // 2 bytes to store an int.
 #define MEMTempMax    0x09  // "
-#define MEMVolt0      0x0A  // First memory location for voltage reading. (Midnight).
-#define MEMVolt23     0x41  // This define isn't actually used in the code, it's just a reminder of the last MEM address I've used (11pm)
+#define MEMVolt0      0x0B  // First memory location for voltage reading. (Midnight).
+#define MEMVolt23     0x42  // This define isn't actually used in the code, it's just a reminder of the last MEM address I've used (11pm)
 
 
 //////////////////////////////////
