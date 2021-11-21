@@ -154,7 +154,7 @@ def readString(value, cacheRequest):
             app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
     
-    status = ""    ascii = ord(value[0])
+    status = ""    
     app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
     if (ascii == 48 ): rxLength = 8  # "0" - Date - 8
