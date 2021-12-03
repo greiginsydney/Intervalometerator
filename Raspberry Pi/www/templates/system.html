@@ -116,13 +116,13 @@
 
 <form name="sendTime" method="post" onsubmit="userFeedback(this, event); sendTimeToServer()">
 	<table>
-		<tr>
+		<tr{% if '2018' in arduinoDate %} class="red"{% endif %}>
 			<td>
 				<div class="alignleft">Arduino date/time:</div>
 				<div class="alignright">{{ arduinoDate }} {{ arduinoTime }}</div>
 			</td>
 		</tr>
-		<tr>
+		<tr{% if '2018' in piDateTime %} class="red"{% endif %}>
 			<td>
 				<div class="alignleft">Pi date/time:</div>
 				<div class="alignright">{{ piDateTime }}</div>

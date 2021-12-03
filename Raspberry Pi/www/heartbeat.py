@@ -72,7 +72,7 @@ def main():
         #(The point being we won't send a HB probe if the *intvlm8r* script isn't running OK)
         initiateHeartbeat(INTERNAL_HB_URL)
     else:
-        log("Not yet Heartbeat o'clock. hbFreq={0}".format(hbFreq))
+        log(f"Not yet Heartbeat o'clock. hbFreq={hbFreq}")
 
 
 def initiateHeartbeat(url):
@@ -88,20 +88,20 @@ def initiateHeartbeat(url):
             response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
             htmltext = response.text.rstrip()
             statusCode = response.status_code
-            log('Status code = {0}'.format(str(statusCode)))
-            log('This is what I received: ' + str(htmltext))
+            log(f'Status code = {statusCode}')
+            log(f'This is what I received: {htmltext}')
         except requests.exceptions.Timeout as e:
-            log('initiateHeartbeat() Timeout error: ' + str(e))
+            log(f'initiateHeartbeat() Timeout error: {e}')
         except requests.exceptions.ConnectionError as e:
-            log('initiateHeartbeat() ConnectionError: ' + str(e))
+            log(f'initiateHeartbeat() ConnectionError: {e}')
         except requests.exceptions.HTTPError as e:
-            log('initiateHeartbeat() HTTPError: ' + str(e))
+            log(f'initiateHeartbeat() HTTPError: {e}')
         except requests.exceptions.TooManyRedirects as e:
-            log('initiateHeartbeat() TooManyRedirects error: ' + str(e))
+            log(f'initiateHeartbeat() TooManyRedirects error: {e}')
         except Exception as e:
-            log('initiateHeartbeat() Unhandled web error: ' + str(e))
+            log(f'initiateHeartbeat() Unhandled web error: {e}')
     else:
-        log('initiateHeartbeat() exited. No heartbeatUrl')
+        log(f'initiateHeartbeat() exited. No heartbeatUrl')
     return statusCode
 
 
@@ -109,7 +109,7 @@ def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        print('error: ' + str(e))
+        print(f'error: {e}')
         #pass
 
 

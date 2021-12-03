@@ -10,7 +10,8 @@
     notifempty
     copytruncate
 
-/home/pi/*.log {}
+/home/pi/cameraTransfer.log {}
+/home/pi/setTime.log {}
 /home/pi/www/gunicorn.error {}
 /var/log/celery/*.log {}
 /home/pi/heartbeat.log

@@ -96,6 +96,13 @@
 
 <script>
 
+var startHour    = document.getElementById("startHour");
+var endHour      = document.getElementById("endHour");
+var interval     = document.getElementById("interval");
+var shotsperday  = document.getElementById("shotsperday")
+var daysincamera = document.getElementById("daysincamera")
+var daysinpi     = document.getElementById("daysinpi")
+
 var numDaysSelected = 1;
 var SelectionByte = 0;
 var SelectionBits = new Array();
@@ -147,18 +154,15 @@ function newDaySelected()
 
 function calculateShots()
 {
-	var selectedStart    = document.getElementById("startHour");
-	var selectedEnd      = document.getElementById("endHour");
-	var selectedInterval = document.getElementById("interval");
-	var result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value)) * (60 / parseInt(selectedInterval.value)));
+	var result = ((parseInt(endHour.value) - parseInt(startHour.value)) * (60 / parseInt(interval.value)));
 	if (result == result) // A value that is NotANumber(NaN) != itself
 	{
 		// So we know the numbers are valid
 		if (result < 0 ) // We need to correct for the wrap-around midnight
 		{
-			result = ((parseInt(selectedEnd.value) - parseInt(selectedStart.value) + 24) * (60 / parseInt(selectedInterval.value)));
+			result = ((parseInt(endHour.value) - parseInt(startHour.value) + 24) * (60 / parseInt(interval.value)));
 		}
-		document.getElementById("shotsperday").innerHTML = result;
+		shotsperday.innerHTML = result;
 		calculateCameraDays(result);
 		calculatePiDays(result);
 		checkThresholds("cameraDaysRow", "daysincamera");
@@ -166,52 +170,59 @@ function calculateShots()
 	}
 	else
 	{
-		document.getElementById("shotsperday").innerHTML = "Unknown";
-		document.getElementById("daysincamera").innerHTML = "Unknown";
-		document.getElementById("daysinpi").innerHTML = "Unknown";
-		document.getElementById("daysinpi").className = "alignright";
+		shotsperday.innerHTML = "Unknown";
+		daysincamera.innerHTML = "Unknown";
+		daysinpi.innerHTML = "Unknown";
 	}
 }
 
-function calculateCameraDays(shotsperday)
+function calculateCameraDays(_shotsperday)
 {
 	var availableShots = "{{ availableShots }}";
 	if (availableShots != "Unknown" && availableShots != "Not available")
 	{
-		var result = ~~(availableShots / shotsperday); 
-		if (result == result)
+		var result = ~~(availableShots / _shotsperday); 
+		if (_shotsperday == 0)
 		{
-			document.getElementById("daysincamera").innerHTML = result;
+			daysincamera.innerHTML = "n/a";
+		}
+		else if (result == result)
+		{
+			daysincamera.innerHTML = result;
 		}
 		else
 		{
-			document.getElementById("daysincamera").innerHTML = "Unknown";
+			daysincamera.innerHTML = "Unknown";
 		}
 	}
 	else
 	{
-		document.getElementById("daysincamera").innerHTML = "{{ availableShots }}";
+		daysincamera.innerHTML = "{{ availableShots }}";
 	}
 }
 
-function calculatePiDays(shotsperday)
+function calculatePiDays(_shotsperday)
 {
 	var piAvailableShots = "{{ piAvailableShots }}";
 	if (piAvailableShots != "Unknown" && piAvailableShots != "Not available")
 	{
-		var result = ~~(piAvailableShots / shotsperday); 
-		if (result == result)
+		var result = ~~(piAvailableShots / _shotsperday); 
+		if (_shotsperday == 0)
 		{
-			document.getElementById("daysinpi").innerHTML = result;
+			daysinpi.innerHTML = "n/a";
+		}
+		else if (result == result)
+		{
+			daysinpi.innerHTML = result;
 		}
 		else
 		{
-			document.getElementById("daysinpi").innerHTML = "Unknown";
+			daysinpi.innerHTML = "Unknown";
 		}
 	}
 	else
 	{
-		document.getElementById("daysinpi").innerHTML = "{{ piAvailableShots }}";
+		daysinpi.innerHTML = "{{ piAvailableShots }}";
 	}
 }
 
@@ -242,6 +253,19 @@ function lightButtons()
 	else
 	{
 		document.getElementById("apply").disabled  = false;
+	}
+	
+	// Block Apply if startHour==endHour
+	if (startHour.value == endHour.value)
+	{
+		document.getElementById("apply").disabled  = true;
+		startHour.classList.add("redborder")
+		  endHour.classList.add("redborder")
+	}
+	else
+	{
+		startHour.classList.remove("redborder")
+		  endHour.classList.remove("redborder")
 	}
 }
 </script>

@@ -388,7 +388,7 @@ input[type=radio] {
 /* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
-@media screen and (max-height: 450px) {
+@media screen and (max-height: 700px) {
 	.overlay {overflow-y: auto;}
 	.overlay .closebtn {
 	top: 15px;

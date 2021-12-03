@@ -90,7 +90,7 @@ PI_TRANSFER_DIR = os.path.join(PI_USER_HOME, 'www/static')
 PI_TRANSFER_FILE = os.path.join(PI_TRANSFER_DIR, 'piTransfer.log')
 PI_HBRESULT_FILE = os.path.join(PI_USER_HOME, 'hbresults.txt')
 gunicorn_logger = logging.getLogger('gunicorn.error')
-REBOOT_SAFE_WORD = 'sayonara'
+REBOOT_SAFE_WORD = 'seeyasoon'
 HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
 PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
@@ -125,35 +125,37 @@ hiddenTransferDict = {
 for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
     spec = importlib.util.find_spec(package_name)
     if spec is None:
-        app.logger.debug(package_name + ' is not installed')
+        app.logger.debug(f'{package_name} is not installed')
         hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
-app.logger.debug('hiddenTransferOptions = ' + hiddenTransferOptions)
+app.logger.debug(f'hiddenTransferOptions = {hiddenTransferOptions}')
 
-def writeString(value):
+def writeString(value, waitTime):
     ascii = [ord(c) for c in value]
     for x in range(0, 2):
         try:
             bus.write_i2c_block_data(address, 0, ascii)
+            break   # Break out of the retry loop if we get to here
         except Exception as e:
-            app.logger.debug('writeString error: ' + str(e))
+            app.logger.debug(f'writeString error: {e}')
             time.sleep(1) # Wait a second before each retry
-    time.sleep(0.5) # Give the Arduino time to act on the data sent
+    if not waitTime == 0:
+        time.sleep(waitTime)  # Give the Arduino time to act on the data sent
     return -1
 
 
 def readString(value, cacheRequest):
+    ascii = ord(value[0])
     if (cacheRequest == True):
         cached = cache.get(value)
         if cached is None:
             #The cache is empty? Bummer
             pass
         else:
-            #app.logger.debug('YES! Cached value returned')
+            app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
-
-    status = ""
-    ascii = ord(value[0])
-    app.logger.debug('ASCII = ' + str(ascii))
+    
+    status = ""    
+    app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
     if (ascii == 48 ): rxLength = 8  # "0" - Date - 8
     if (ascii == 49 ): rxLength = 8  # "1" - Time
@@ -169,10 +171,10 @@ def readString(value, cacheRequest):
                  if (array[i] == 0):
                      break
                  status += chr(array[i])
-            app.logger.debug('Status received was: >' + status + "<")
-            break
+            app.logger.debug(f'Status received was: >{status}<')
+            break   # Break out of the retry loop if we get to here
         except Exception as e:
-            app.logger.debug('readString error: ' + str(e))
+            app.logger.debug(f'readString error: {e}')
             time.sleep(1) # Wait a second before each retry
 
     if (cacheRequest == True):
@@ -189,8 +191,8 @@ def getPiUptime():
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
             uptime_string = str(timedelta(seconds = round(uptime_seconds)))
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in getPiUptime: {e}')
     return uptime_string
 
 
@@ -200,8 +202,8 @@ def getPiTemp():
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as tempfile:
             temp = '{0:.0f}'.format(round(int(tempfile.read()) / 1000, 0))
     except Exception as e:
-        app.logger.debug('Pi temp error: ' + str(e))
-    app.logger.debug('Pi temp = ' + temp)
+        app.logger.debug(f'Pi temp error: {e}')
+    app.logger.debug(f'Pi temp = {temp}')
     return temp
 
 
@@ -262,14 +264,14 @@ def login():
                 if request.form.get('rememberme'):
                     remember = 'true'
                 login_user(user,'remember=' + remember)
-                app.logger.debug('Logged-in ' + name)
+                app.logger.debug(f'Logged-in {name}')
                 next = request.args.get('next')
                 # is_safe_url should check if the url is safe for redirects.
                 # See http://flask.pocoo.org/snippets/62/ for an example.
                 if not is_safe_url(next):
                     return abort(400)
                 return redirect(next or url_for('main'))
-    app.logger.debug('User \'' + username + '\' failed to login')
+    app.logger.debug(f"User '{username}' failed to login")
     flash('Bad creds. Try again')
     return redirect(url_for('login'))
 
@@ -317,8 +319,7 @@ def main():
 
     args = request.args.to_dict()
     if args.get('wakeCamera'):
-        writeString("WC") # Sends the WAKE command to the Arduino
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+        writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('main'))
 
@@ -336,10 +337,8 @@ def main():
             nextShot = arduinoStats.split(":")[1]
             if nextShot != "19999":
                 templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
-    except:
-        pass
-    #except Exception as e:
-    #    app.logger.debug('Time template error: ' + str(e))
+    except Exception as e:
+        app.logger.debug(f'Time template error in /home: {e}')
 
     # Camera comms:
     try:
@@ -358,15 +357,14 @@ def main():
                 fileCount = len(files)
                 info = get_camera_file_info(camera, files[-1]) #Get the last file
                 lastImage = datetime.utcfromtimestamp(info.file.mtime).isoformat(' ')
-            gp.check_result(gp.gp_camera_exit(camera))
             templateData['fileCount']                = fileCount
             templateData['lastImage']                = lastImage
-            templateData['cameraBattery'], discardMe = readRange (camera, context, 'status', 'batterylevel')
+            templateData['cameraBattery'], discardMe = readRange (camera, 'status', 'batterylevel')
 
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
             currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
-            #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+            #app.logger.debug(f'Current captureTarget =  {currentTarget}')
             if currentTarget == "Internal RAM":
                 #Change it to "Memory Card"
                 try:
@@ -377,13 +375,13 @@ def main():
                     config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
                     app.logger.debug('Set captureTarget to "Memory Card" in main')
                 except gp.GPhoto2Error as e:
-                    app.logger.debug('GPhoto camera error setting capturetarget in main: ' + str(e))
+                    app.logger.debug(f'GPhoto camera error setting capturetarget in main: {e}')
                 except Exception as e:
-                    app.logger.debug('Unknown camera error setting capturetarget in main: ' + str(e))
+                    app.logger.debug(f'Unknown camera error setting capturetarget in main: {e}')
             templateData['availableShots'] = readValue (config, 'availableshots')
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except Exception as e:
-        app.logger.debug('Unknown camera error in main: ' + str(e))
+        app.logger.debug(f'Unknown camera error in main: {e}')
 
     # Pi comms:
     piLastImage = ''
@@ -414,7 +412,7 @@ def main():
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
     except Exception as e:
         flash('Error talking to the Pi')
-        app.logger.debug('Pi error: {0}'.format(str(e)))
+        app.logger.debug(f'Pi error: {e}')
         PI_PHOTO_COUNT = 0
     templateData['piLastImageFile'] = piLastImageFile
     templateData['piImageCount']    = PI_PHOTO_COUNT
@@ -442,7 +440,7 @@ def main():
                     templateData['lastTrnResult'] = line.replace('STATUS: ','')
                     break
     except Exception as e:
-        app.logger.debug('Exception reading STATUS in piTransfer.log file: ' + str(e))
+        app.logger.debug(f'Exception reading STATUS in piTransfer.log file: {e}')
     return render_template('main.html', **templateData)
 
 
@@ -457,7 +455,7 @@ def getTime():
         abort(403)
     arduinoDate = getArduinoDate()
     arduinoTime = getArduinoTime()
-    res = make_response('<div id="dateTime">' + arduinoDate + ' ' + arduinoTime + '</div>')
+    res = make_response(f'<div id="dateTime">{arduinoDate} {arduinoTime}</div>')
     return res, 200
 
 
@@ -472,9 +470,9 @@ def setArduinoDateTime():
         abort(403)
 
     newTime = datetime.now().strftime('%Y%m%d%H%M%S') #20190613235900
-    writeString("ST=" + newTime) # Send the new time and date to the Arduino
-    app.logger.debug('setArduinoDateTime to {0}'.format(newTime))
-    res = make_response('<p>Set Arduino datetime to ' + newTime + '</p>')
+    writeString(f'ST={newTime}', 1) # Send the new time and date to the Arduino
+    app.logger.debug(f'setArduinoDateTime to {newTime}')
+    res = make_response(f'<p>Set Arduino datetime to {newTime}</p>')
     return res, 200
 
 
@@ -485,8 +483,8 @@ def getArduinoDate():
         if rawDate != 'Unknown':
             formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in getArduinoDate: {e}')
     return formattedDate
 
 
@@ -497,8 +495,8 @@ def getArduinoTime():
         if rawTime != 'Unknown':
             formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in getArduinoTime: {e}')
     return formattedTime
 
 
@@ -533,7 +531,7 @@ def thumbnails():
                                 ThumbsInfo[key] = val
                             except Exception as e:
                                 #Skip over bad line
-                                app.logger.debug('Error in thumbs info file: ' + str(e))
+                                app.logger.debug(f'Error in thumbs info file: {e}')
             #Read the thumb files themselves:
             for loop in range(-1, (-1 * (ThumbnailCount + 1)), -1):
                 _, imageFileName = os.path.split(FileList[loop])
@@ -551,7 +549,7 @@ def thumbnails():
                     PreviewFileName = createDestFilename(FileList[loop], PI_PREVIEW_DIR, '-preview') #Switch to the /PREVIEW/ folder
                     if not os.path.isfile(PreviewFileName):
                         PreviewFileName = ThumbFileName
-                        app.logger.debug('No preview of RAW image {0}'.format(str(FileList[loop])))
+                        app.logger.debug(f'No preview of RAW image {FileList[loop]}')
                 else:
                     PreviewFileName = createDestFilename(FileList[loop], PI_PHOTO_DIR, '') #Switch to the /PHOTOS/ folder
                 PreviewFileName = PreviewFileName.replace(PI_USER_HOME + '/', '')
@@ -560,7 +558,11 @@ def thumbnails():
         else:
             flash("There are no images on the Pi. Copy some from the Transfer page.")
     except Exception as e:
-        app.logger.debug('Thumbs error: ' + str(e))
+        app.logger.debug(f'Thumbs error: {e}')
+
+    if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
+        flash('Delete after transfer is active', 'info')
+
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
 
 
@@ -596,28 +598,27 @@ def camera():
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(calendar.timegm(time.gmtime())) #Adds a unique suffix so the browser always downloads the file
 
     if args.get('wakeCamera'):
-        writeString("WC") # Sends the WAKE command to the Arduino
-        time.sleep(1);    # (Adds another second on top of the 0.5s baked into WriteString)
+        writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('Returned after detecting camera wake command')
         return redirect(url_for('camera'))
 
     try:
         camera, context, config = connectCamera(1)
         if camera:
-            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            abilities = camera.get_abilities()
             cameraData['cameraModel']              = abilities.model
-            cameraData['cameraLens'], discardMe    = readRange (camera, context, 'status', 'lensname')
+            cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
             if (cameraData['cameraLens'] == 'Unknown'):
                 #Try to build this from focal length:
-                focalMin, discardMe = readRange (camera, context, 'status', 'minfocallength')
-                focalMax, discardMe = readRange (camera, context, 'status', 'maxfocallength')
+                focalMin, discardMe = readRange (camera, 'status', 'minfocallength')
+                focalMax, discardMe = readRange (camera, 'status', 'maxfocallength')
                 if (focalMin == focalMax):
                     cameraData['cameraLens'] = focalMin
                 else:
                     focalMin = focalMin.replace(" mm", "")
-                    cameraData['cameraLens'] = ('{0}-{1}'.format(focalMin,focalMax))
-            cameraTimeAndDate = getCameraTimeAndDate(camera, context, config, 'Unknown')
-            cameraMfr, discardMe = readRange (camera, context, 'status', 'manufacturer')
+                    cameraData['cameraLens'] = (f'{focalMin}-{focalMax}')
+            cameraTimeAndDate = getCameraTimeAndDate(camera, config, 'Unknown')
+            cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
             if 'Nikon' in cameraMfr:
                 cameraMfr = 'Nikon'
                 cameraData['cameraMfr'] = 'Nikon'
@@ -625,24 +626,24 @@ def camera():
                 cameraMfr = 'Canon'
                 cameraData['cameraMfr'] = 'Canon'
             if (cameraMfr == 'Nikon'):
-                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'capturesettings', 'imagequality')
-                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'f-number')
+                imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
+                apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
                 cameraData['exposuremode']      = readValue (config, 'expprogram')
             else:
-                imgfmtselected, imgfmtoptions   = readRange (camera, context, 'imgsettings', 'imageformat')
-                apselected, apoptions           = readRange (camera, context, 'capturesettings', 'aperture')
+                imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
+                apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
                 cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
             #Attributes generic to all cameras:
-            wbselected, wboptions           = readRange (camera, context, 'imgsettings', 'whitebalance')
-            isoselected, isooptions         = readRange (camera, context, 'imgsettings', 'iso')
-            shutselected, shutoptions       = readRange (camera, context, 'capturesettings', 'shutterspeed')
-            expselected, expoptions         = readRange (camera, context, 'capturesettings', 'exposurecompensation')
+            wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
+            isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
+            shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
+            expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
 
-            abilities = gp.check_result(gp.gp_camera_get_abilities(camera))
+            abilities = camera.get_abilities()
             if abilities.model in cameraPreviewBlocklist:
                 cameraData['blockPreview']  = 'True'
 
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
             cameraData['cameraDate']    = cameraTimeAndDate
             cameraData['focusmode']     = readValue (config, 'focusmode')
             cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
@@ -663,7 +664,7 @@ def camera():
             cameraData['expselected']   = expselected
             cameraData['expoptions']    = expoptions
     except Exception as e:
-        app.logger.debug('Unknown camera GET error: ' + str(e))
+        app.logger.debug(f'Unknown camera GET error: {e}')
 
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
@@ -682,7 +683,7 @@ def cameraPOST():
             if request.form['CamSubmit'] == 'apply':
                 app.logger.debug('-- Camera Apply selected')
                 cameraMfr = request.form.get('cameraMfr')
-                app.logger.debug('cameraMfr = {0}'.format(cameraMfr))
+                app.logger.debug(f'cameraMfr = {cameraMfr}')
                 if cameraMfr == 'Canon':
                     #This *does* write a new setting to the camera:
                     node = config.get_child_by_name('imageformat') #
@@ -716,12 +717,12 @@ def cameraPOST():
 
             if request.form['CamSubmit'] == 'preview':
                 app.logger.debug('-- Camera Preview selected')
-                getPreviewImage(camera, context, config)
+                getPreviewImage(camera, config)
                 preview = 1
 
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except Exception as e:
-        app.logger.debug('Unknown camera POST error: ' + str(e))
+        app.logger.debug(f'Unknown camera POST error: {e}')
 
     return redirect(url_for('camera', preview = preview))
 
@@ -751,7 +752,7 @@ def intervalometer():
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
             currentTarget = gp.check_result(gp.gp_widget_get_value(capture_target))
-            #app.logger.debug('Current captureTarget =  ' + str(currentTarget))
+            #app.logger.debug(f'Current captureTarget =  {currentTarget}')
             if currentTarget == "Internal RAM":
                 #Change it to "Memory Card"
                 try:
@@ -762,26 +763,26 @@ def intervalometer():
                     config = camera.get_config(context) #Refresh the config data for the availableshots to be read below
                     app.logger.debug('Set captureTarget to "Memory Card" in /intervalometer')
                 except gp.GPhoto2Error as e:
-                    app.logger.debug('GPhoto camera error setting capturetarget in /intervalometer: ' + str(e))
+                    app.logger.debug(f'GPhoto camera error setting capturetarget in /intervalometer: {e}')
                 except Exception as e:
-                    app.logger.debug('Unknown camera error setting capturetarget in /intervalometer: ' + str(e))
+                    app.logger.debug(f'Unknown camera error setting capturetarget in /intervalometer: {e}')
             templateData['availableShots'] = readValue (config, 'availableshots')
-            gp.check_result(gp.gp_camera_exit(camera))
+            camera.exit()
     except Exception as e:
-        app.logger.debug('Unknown camera error in intervalometer: ' + str(e))
+        app.logger.debug(f'Unknown camera error in intervalometer: {e}')
 
     ArdInterval = str(readString("3", True))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
-    app.logger.debug('Int query returned: ' + ArdInterval)
+    app.logger.debug(f'Int query returned: {ArdInterval}')
     if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
         for bit in range(1,8): # i.e. 1-7 inclusive
             if (ord(ArdInterval[0]) & (0b00000001<<bit)):
-                app.logger.debug('Added ' + arduinoDoW[bit])
+                app.logger.debug(f'Added {arduinoDoW[bit]}')
                 templateData['piDoW'] += arduinoDoW[bit]   #Crude but effective: no need for csv niceties with this one
         templateData['piStartHour'] = ArdInterval[1:3]
         templateData['piEndHour'] = ArdInterval[3:5]
         templateData['piInterval'] = ArdInterval[5:7]
-        app.logger.debug('Decoded Interval = ' + ArdInterval[5:7])
+        app.logger.debug(f'Decoded Interval = {ArdInterval[5:7]}')
 
     _,piBytesFree = getDiskSpace()
     largestImageSize = getLargestImageSize(PI_PHOTO_DIR)
@@ -816,9 +817,9 @@ def intervalometerPOST():
         newInterval += startHour
         newInterval += endHour
         newInterval += interval
-        writeString("SI=" + str(newInterval))   # Send the new interval data to the Arduino
-        cache.delete("3")                       # Flush the previously cached value
-        app.logger.debug('Detected a valid POST. Updated the interval to ' + str(newInterval))
+        writeString(f'SI={newInterval}', 1)    # Send the new interval data to the Arduino
+        cache.delete("3")                      # Flush the previously cached value
+        app.logger.debug(f'Detected a valid POST. Updated the interval to {newInterval}')
     else:
         app.logger.debug('Detected an *invalid* POST')
         flash('Invalid data posted to the page')
@@ -907,7 +908,7 @@ def transfer():
         templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
         templateData['renameString']       = config.get('Copy', 'renameString')
     except Exception as e:
-        app.logger.debug('INI file error: ' + str(e))
+        app.logger.debug(f'INI file error: {e}')
         flash('Error reading from the Ini file')
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
@@ -929,9 +930,9 @@ def transferPOST():
         try:
             with open(PI_TRANSFER_FILE, 'w') as piTransferLogfile:
                 nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
-                piTransferLogfile.write(nowtime + ' STATUS: piTransfer.log cleared\r\n')
+                piTransferLogfile.write(f'{nowtime} STATUS: piTransfer.log cleared\r\n')
         except Exception as e:
-            app.logger.debug('Exception clearing piTransfer.log: ' + str(e))
+            app.logger.debug(f'Exception clearing piTransfer.log: {e}')
 
     if 'tfrApply' in request.form:
         if not os.path.isfile(iniFile):
@@ -976,7 +977,7 @@ def transferPOST():
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
-            app.logger.debug('INI file error writing: ' + str(e))
+            app.logger.debug(f'INI file error writing: {e}')
             if 'Permission denied' in str(e):
                 flash('Permission denied writing to the ini file')
             else:
@@ -1020,7 +1021,7 @@ def trnTransferNow():
     ]
     task = chain(*tasks).apply_async()
 
-    app.logger.debug('trnTransferNow() returned with task_id= ' + str(task.id))
+    app.logger.debug(f'trnTransferNow() returned with task_id= {task.id}')
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
@@ -1035,16 +1036,16 @@ def transferNow(self):
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
-            app.logger.info('transferNow output text = ' + str(stdoutdata))
+            app.logger.info(f'transferNow output text = {stdoutdata}')
         if stderrdata:
             stderrdata = stderrdata.strip()
-            app.logger.info('transferNow error = ' + str(stderrdata))
+            app.logger.info(f'transferNow error = {stderrdata}')
             errorMsg = ''
     except Exception as e:
-        app.logger.info('Unhandled transferNow error: ' + str(e))
+        app.logger.info(f'Unhandled transferNow error: {e}')
         errorMsg = ' unexpected'
     
-    statusMessage = 'transferNow returned with{0} error'.format(errorMsg)
+    statusMessage = (f'transferNow returned with{errorMsg} error')
     return {'status': statusMessage}
 
 
@@ -1066,14 +1067,13 @@ def thermal():
     if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
 
     try:
-        writeString("GT") # Asks the Arduino to update its temperature string
-        time.sleep(1);
+        writeString("GT", 2) # Asks the Arduino to update its temperature string
         temperatures = str(readString("4", False)) # Reads the resulting string, a csv array
         templateData['arduinoTemp'] = temperatures.split(",")[0]
         templateData['arduinoMin']  = temperatures.split(",")[2]
         templateData['arduinoMax']  = temperatures.split(",")[1]
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
     
     return render_template('thermal.html', **templateData)
@@ -1094,10 +1094,10 @@ def thermalPOST():
 
     if 'resetMin' in request.form:
         app.logger.debug('thermal sent RN')
-        writeString("RN") # Sends the Reset Min command to the Arduino
+        writeString("RN", 1) # Sends the Reset Min command to the Arduino
     if 'resetMax' in request.form:
         app.logger.debug('thermal sent RX')
-        writeString("RX") # Sends the Reset Max command to the Arduino
+        writeString("RX", 1) # Sends the Reset Max command to the Arduino
 
     res.headers['location'] = url_for('thermal')
     return res, 302
@@ -1121,8 +1121,8 @@ def monitoring():
     try:
         with open(PI_HBRESULT_FILE, 'r') as f:
             templateData['hbResult'] = f.readline()
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'Exception reading PI_HBRESULT_FILE in /monitoring: {e}')
 
     return render_template('monitoring.html', **templateData)
 
@@ -1146,7 +1146,7 @@ def monitoringPOST():
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
-            app.logger.debug('mon INI file error writing: ' + str(e))
+            app.logger.debug(f'mon INI file error writing: {e}')
             if 'Permission denied' in str(e):
                 flash('Permission denied writing to the ini file')
             else:
@@ -1170,7 +1170,7 @@ def monHbNow():
     ]
     task = chain(*tasks).apply_async()
 
-    app.logger.debug('monHbNow returned with task_id= ' + str(task.id))
+    app.logger.debug(f'monHbNow returned with task_id= {task.id}')
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
@@ -1193,7 +1193,7 @@ def heartbeatCronJob():
     for i in range(2):
         task = chain(*tasks).apply_async()
         result = task.wait(timeout=20, interval=1)
-        app.logger.debug('heartbeatCronJob {0}/2 reported result = {1}'.format(str(i + 1),str(result)))
+        app.logger.debug(f'heartbeatCronJob {i + 1}/2 reported result = {result}')
         if int(result['statusCode']) // 100 == 2:
             #It's a success message, in the 2xx range.
             break
@@ -1219,36 +1219,36 @@ def initiateHeartbeat(self):
             response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
             htmltext = response.text.rstrip()
             statusCode = response.status_code
-            app.logger.debug('Status code = {0}'.format(str(statusCode)))
-            app.logger.debug('This is what I received: ' + str(htmltext))
+            app.logger.debug(f'Status code = {statusCode}')
+            app.logger.debug(f'This is what I received: {htmltext}')
         except requests.exceptions.Timeout as e:
-            app.logger.debug('initiateHeartbeat() Timeout error: ' + str(e))
+            app.logger.debug(f'initiateHeartbeat Timeout error: {e}')
             briefErrMsg = 'Timeout error'
         except requests.exceptions.ConnectionError as e:
-            app.logger.debug('initiateHeartbeat() ConnectionError: ' + str(e))
+            app.logger.debug(f'initiateHeartbeat ConnectionError: {e}')
             briefErrMsg = 'Conn. error'
         except requests.exceptions.HTTPError as e:
-            app.logger.debug('initiateHeartbeat() HTTPError: ' + str(e))
+            app.logger.debug(f'initiateHeartbeat HTTPError: {e}')
             briefErrMsg = 'HTTP error {0}'.format(e.response.status_code)
         except requests.exceptions.TooManyRedirects as e:
-            app.logger.debug('initiateHeartbeat() TooManyRedirects error: ' + str(e))
+            app.logger.debug(f'initiateHeartbeat TooManyRedirects error: {e}')
             briefErrMsg = 'Redir error'
         except Exception as e:
-            app.logger.debug('initiateHeartbeat() Unhandled web error: ' + str(e))
+            app.logger.debug(f'initiateHeartbeat Unhandled web error: {e}')
             briefErrMsg = 'Unknown error'
         try:
             with open(PI_HBRESULT_FILE, 'w') as resultFile:
                 nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
                 if statusCode:
-                    resultFile.write('{0} ({1})'.format(nowtime, statusCode))
-                    statusMessage = 'Heartbeat reported success ({0})'.format(str(statusCode))
+                    resultFile.write(f'{nowtime} ({statusCode})')
+                    statusMessage = (f'Heartbeat reported success ({statusCode})')
                 else:
-                    resultFile.write('{0} ({1})'.format(nowtime, briefErrMsg))
-                    statusMessage = 'Heartbeat reported failure: ({0})'.format(briefErrMsg)
+                    resultFile.write(f'{nowtime} ({briefErrMsg})')
+                    statusMessage = (f'Heartbeat reported failure: ({briefErrMsg})')
         except Exception as e:
-            app.logger.debug('initiateHeartbeat() resultfile exception: ' + str(e))
+            app.logger.debug(f'initiateHeartbeat resultfile exception: {e}')
     else:
-        app.logger.debug('initiateHeartbeat() exited. No heartbeatUrl')
+        app.logger.debug('initiateHeartbeat exited. No heartbeatUrl')
         statusMessage = 'Error: no heartbeat url'
     return {'status': statusMessage, 'statusCode': statusCode}
 
@@ -1284,8 +1284,8 @@ def system():
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'system: Threw querying PiModel: {e}')
 
     try:
         with open("/etc/os-release") as f:
@@ -1294,8 +1294,8 @@ def system():
                 key, value = line.rstrip().split("=")
                 release_info[key] = value.strip('"')
                 templateData['piLinuxVer'] = release_info["PRETTY_NAME"]
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'system: Threw querying Pi os version: {e}')
 
     try:
         templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
@@ -1306,8 +1306,8 @@ def system():
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'system: Threw querying Arduino DateTime: {e}')
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
     templateData['piNtp'] = checkNTP(None)
@@ -1316,8 +1316,8 @@ def system():
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'],_ = getDiskSpace()
-    except:
-        pass
+    except Exception as e:
+        app.logger.debug(f'system: Threw querying Pi details: {e}')
 
     try:
         with open('version', 'r') as versionFile:
@@ -1325,16 +1325,16 @@ def system():
         templateData['libgphoto2Version']     = gp.gp_library_version(gp.GP_VERSION_SHORT)[0]
         templateData['pythonGphoto2Version'] = gp.__version__
     except Exception as e:
-        app.logger.debug('system: Unexpected error querying version info: ' + str(e))
+        app.logger.debug(f'system: Unexpected error querying version info: {e}')
 
     try:
         if not config:
             camera, context, config = connectCamera(1)
         if camera:
-            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, context, config, 'Unknown')
-            gp.check_result(gp.gp_camera_exit(camera))
-    except:
-        pass
+            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
+            camera.exit()
+    except Exception as e:
+        app.logger.debug(f'system: Threw querying cameraDateTime: {e}')
 
     return render_template('system.html', **templateData)
 
@@ -1350,7 +1350,7 @@ def systemPOST():
             newName = str(request.form.get('newName'))
             if newName != None:
                 cache.set('locationName', newName, timeout = 0)
-                app.logger.debug('New loc set as ' + newName)
+                app.logger.debug(f'New loc set as {newName}')
                 setIni('Global', 'locationName', newName)
         except:
             app.logger.debug('Location set error')
@@ -1359,25 +1359,25 @@ def systemPOST():
         try:
             newCount = str(request.form.get('thumbsCount'))
             if newCount != None:
-                app.logger.debug('New thumbs count set as ' + newCount)
+                app.logger.debug(f'New thumbs count set as {newCount}')
                 setIni('Global', 'thumbsCount', newCount)
         except Exception as e:
-            app.logger.debug('New Thumbs set error: ' + str(e))
+            app.logger.debug(f'New Thumbs set error: {e}')
 
     if 'wakePi' in request.form:
-        app.logger.debug('Yes we got the WAKE PI button & values ' + str(request.form.get('wakePiTime')) + ', ' + str(request.form.get('wakePiDuration')) )
+        app.logger.debug(f"Yes we got the WAKE PI button & values {request.form.get('wakePiTime')}, {request.form.get('wakePiDuration')}")
         WakePiHour = str(request.form.get('wakePiTime'))
         if WakePiHour == 'Always On':
             WakePiHour = '25'
-        writeString("SP=" + WakePiHour + str(request.form.get('wakePiDuration')))
+        writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}", 1)
         cache.delete("5")   # Flush the previously cached value
 
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
-        app.logger.debug('Yes we got the SyncSystem button & value ' + newTime)
+        app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
-            writeString("ST=" + newTime) # Send the new time and date to the Arduino
+            writeString("ST=" + newTime, 1) # Send the new time and date to the Arduino
         if request.form.get('setPiTime'):
             app.logger.debug('Checked: setPiTime' )
             setTime(newTime)
@@ -1392,16 +1392,16 @@ def systemPOST():
                     else:
                         app.logger.debug('Failed to setCameraTimeAndDate')
                     camera.exit()
-            except:
-                pass
+            except Exception as e:
+                app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
-            writeString("RA")
-            #app.logger.debug('Yes we got reboot safe word - ' + REBOOT_SAFE_WORD)
+            writeString("RA", 1)
+            #app.logger.debug(f'Yes we got reboot safe word - {REBOOT_SAFE_WORD}')
         else:
             pass
-            #app.logger.debug('Button pressed but no reboot safe word - ' + REBOOT_SAFE_WORD)
+            #app.logger.debug(f'Button pressed but no reboot safe word - {REBOOT_SAFE_WORD}')
 
     return redirect(url_for('system'))
 
@@ -1414,15 +1414,15 @@ def checkNTP(returnvalue):
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
             if stdoutdata == 'active':
-                app.logger.info('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP')
+                app.logger.info(f'systemd-timesyncd = {stdoutdata}. The Pi takes its time from NTP')
                 returnvalue = True
             else:
-                app.logger.info('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP')
+                app.logger.info(f'systemd-timesyncd = {stdoutdata}. The Pi does NOT take its time from NTP')
         if stderrdata:
             stderrdata = stderrdata.strip()
-            app.logger.debug('systemd-timesyncd error = ' + str(stderrdata))
+            app.logger.debug(f'systemd-timesyncd error = {stderrdata}')
     except Exception as e:
-        app.logger.debug('Unhandled systemd-timesyncd error: ' + str(e))
+        app.logger.debug(f'Unhandled systemd-timesyncd error: {e}')
     return returnvalue
 
 
@@ -1437,12 +1437,12 @@ def setTime(newTime):
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
-            app.logger.debug('setTime result = ' + str(stdoutdata))
+            app.logger.debug(f'setTime result = {stdoutdata}')
         if stderrdata:
             stderrdata = stderrdata.strip()
-            app.logger.debug('setTime error = ' + str(stderrdata))
+            app.logger.debug(f'setTime error = {stderrdata}')
     except Exception as e:
-        app.logger.debug('setTime unhandled time error: ' + str(e))
+        app.logger.debug(f'setTime unhandled time error: {e}')
 
 
 def connectCamera(retries):
@@ -1451,30 +1451,30 @@ def connectCamera(retries):
         camera = gp.Camera()
         context = gp.gp_context_new()
         while True:
-            app.logger.debug('connectCamera retries = {0}'.format (retries))
+            app.logger.debug(f'connectCamera retries = {retries}')
             try:
                 camera.init(context)
                 config = camera.get_config(context)
                 app.logger.debug('connectCamera has made a connection to the camera. Exiting')
                 break
             except gp.GPhoto2Error as e:
-                app.logger.debug('connectCamera GPhoto2Error: ' + str(e))
+                app.logger.debug(f'connectCamera GPhoto2Error: {e}')
                 if e.string == 'Unknown model':
                     if retries % 2 == 0:
                         app.logger.debug('connectCamera waking the camera & going again')
-                        writeString("WC") # Sends the WAKE command to the Arduino
+                        writeString("WC", 1) # Sends the WAKE command to the Arduino
                     else:
                         app.logger.debug('connectCamera going again without waking the camera')
                 elif e.string == 'Could not claim the USB device':
                     app.logger.debug('connectCamera could not claim the USB device. Exiting')
                     #TODO: pass this back upstream to present to the user
-                    gp.check_result(gp.gp_camera_exit(camera))
+                    camera.exit()
                     return None, None, None
             except Exception as e:
-                app.logger.debug('connectCamera error: ' + str(e))
+                app.logger.debug(f'connectCamera error: {e}')
             if retries >= 4:
                 app.logger.debug('connectCamera returning None')
-                gp.check_result(gp.gp_camera_exit(camera))
+                camera.exit()
                 return None, None, None
             if retries % 2 == 0:
                 time.sleep(1.5);    # Pause after waking
@@ -1484,7 +1484,7 @@ def connectCamera(retries):
         app.logger.debug('connectCamera returning 3 values')
         return camera, context, config
     except Exception as e:
-        app.logger.debug('connectCamera outer error: ' + str(e))
+        app.logger.debug(f'connectCamera outer error: {e}')
         return None, None, None
 
 
@@ -1500,7 +1500,7 @@ def readValue ( camera, attribute ):
     return value
 
 
-def readRange ( camera, context, group, attribute ):
+def readRange ( camera, group, attribute ):
     """
     Reads an attribute within a given group and returns the current setting and all the possible options
     It's only called by "camera" and "main" when we already have an established connection to the
@@ -1509,7 +1509,7 @@ def readRange ( camera, context, group, attribute ):
     options = []
     currentValue = 'Unknown'
     try:
-        config_tree = camera.get_config(context)
+        config_tree = camera.get_config()
         total_child = config_tree.count_children()
         for i in range(total_child):
             child = config_tree.get_child(i)
@@ -1522,15 +1522,15 @@ def readRange ( camera, context, group, attribute ):
                             for k in range(grandchild.count_choices()):
                                 choice = grandchild.get_choice(k)
                                 options.append(choice)
-                    except:
-                        pass
+                    except Exception as e:
+                        app.logger.debug(f'Exception in readRange: {e}')
                         #break   #We have found and extracted the attribute we were seeking
     except Exception as e:
-        app.logger.debug('readRange threw: ' + str(e))
+        app.logger.debug(f'readRange threw: {e}')
     return currentValue, options
 
 
-def getCameraTimeAndDate( camera, context, config, returnvalue ):
+def getCameraTimeAndDate( camera, config, returnvalue ):
     try:
         # find the date/time setting config item and get it
         # name varies with camera driver
@@ -1555,7 +1555,7 @@ def getCameraTimeAndDate( camera, context, config, returnvalue ):
                     returnvalue = camera_time.isoformat(' ')
                 break
     except Exception as e:
-        app.logger.debug('Error reading camera time and date: ' + str(e))
+        app.logger.debug(f'Error reading camera time and date: {e}')
     return returnvalue
 
 
@@ -1684,7 +1684,7 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
     sourceFolderTree, imageFileName = os.path.split(imageToCopy)
     dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
     dest = os.path.join(dest, imageFileName)
-    app.logger.debug('Copying {0} --> {1}'.format(imageToCopy, dest))
+    app.logger.debug(f'Copying {imageToCopy} --> {dest}')
     try:
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
@@ -1698,11 +1698,11 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
         if (copyOK >= gp.GP_OK):
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
-                app.logger.info('Deleted {0}/{1}'.format(sourceFolderTree, imageFileName))
+                app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
             if (renameOnCopy == True):
                 renameFile(dest, renameString, deleteAfterCopy)
     except Exception as e:
-        app.logger.info('Exception in copy_files: ' + str(e))
+        app.logger.info(f'Exception in copy_files: {e}')
     return 0
 
 
@@ -1716,13 +1716,13 @@ def CreateDestPath(folder, NewDestDir):
                 if not os.path.isdir(subdir):
                     os.makedirs(subdir)
             except:
-                app.logger.debug("Didn't want to make " + subdir)
+                app.logger.debug(f"Didn't want to make {subdir}")
             dest = os.path.join(NewDestDir, subdir)
-            # app.logger.debug('Pi dest = ' + dest)
+            # app.logger.debug(f'Pi dest = {dest}')
         else:
             dest = NewDestDir
     except Exception as e:
-        app.logger.debug('Error in DCIM decoder: ' + str(e))
+        app.logger.debug(f'Error in DCIM decoder: {e}')
         dest = NewDestDir
     return dest
 
@@ -1737,7 +1737,7 @@ def createDestFilename(imageFullFilename, targetFolder, suffix):
     sourceFolderTree, imageFileName = os.path.split(imageFullFilename)
     dest = CreateDestPath(sourceFolderTree, targetFolder)
     dest = os.path.join(dest, imageFileName)
-    dest = os.path.splitext(dest)[0] + suffix + '.JPG'
+    dest = (f'{os.path.splitext(dest)[0]}{suffix}.JPG')
     return dest
 
 
@@ -1766,10 +1766,10 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
         renameString = renameString.replace('%H',pcH)
         renameString = renameString.replace('%M',pcM)
         renameString = renameString.replace('%S',pcS)
-        app.logger.info('reconstituted renameString = {0}'.format(renameString))
+        app.logger.info(f'reconstituted renameString = {renameString}')
         #Rebuild the string
         renamedFile = os.path.join(imageFolderTree, renameString) + fileExt
-        app.logger.info('renamedFile = {0}'.format(renamedFile))
+        app.logger.info(f'renamedFile = {renamedFile}')
         try:
             suffix = 1
             safetyNet = False
@@ -1781,27 +1781,27 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
                         #This is a safety net.
                         #You MIGHT be deliberately doing this (say, sequentially numbering all the files in a given year-month-day-hour), but...
                         # if we get to 1000 I'm going to abort, otherwise we risk looping here forever.
-                        app.logger.info('renameFile() safety net fired renaming file {0} to {1}'.format(imageFullFilename, renameString))
+                        app.logger.info(f'renameFile safety net fired renaming file {imageFullFilename} to {renameString}')
                         safetyNet = True
                         break
                     suffix += 1 #Increment the suffix and loop.
                 else:
                     break
             if not safetyNet == True:
-                app.logger.info('renameFile() about to rename file {0} to {1}'.format(imageFullFilename, renameString))
+                app.logger.info(f'renameFile about to rename file {imageFullFilename} to {renameString}')
                 os.rename(imageFullFilename,renamedFile)
                 if (deleteAfterCopy == False):
                     #Add to the rename file here
                     try:
                         with open(PI_PHOTO_RENAME_FILE, "a") as f:
-                            f.write('{0}{1} {2}\r\n'.format(fileName, fileExt, renamedFile))
+                            f.write(f'{fileName}{fileExt} {renamedFile}\r\n')
                     except Exception as e:
-                        app.logger.info('renameFile() error writing to PI_PHOTO_RENAME_FILE: ' + str(e))
+                        app.logger.info(f'renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
         except Exception as e:
-            app.logger.info('renameFile() error  renaming file {0} to {1}'.format(imageFullFilename, renameString))
-            app.logger.info('renameFile() error : {0}'.format(str(e)))
+            app.logger.info(f'renameFile error  renaming file {imageFullFilename} to {renameString}')
+            app.logger.info(f'renameFile error : {e}')
     except Exception as e:
-        app.logger.info('renameFile() unhandled error: {0}'.format(str(e)))
+        app.logger.info(f'renameFile unhandled error: {e}')
     return
 
 
@@ -1810,13 +1810,13 @@ def makeThumb(imageFile):
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
         dest = createDestFilename(imageFile, PI_THUMBS_DIR, '-thumb')
-        app.logger.debug('Thumb dest = ' + dest)
+        app.logger.debug(f'Thumb dest = {dest}')
         alreadyExists = False
         if dest in ThumbList:
             app.logger.debug('Thumbnail already exists.') #This logs to /var/log/celery/celery_worker.log
             alreadyExists = True
         else:
-            app.logger.info('We need to make a thumbnail of {0}'.format(imageFile)) #This logs to /var/log/celery/celery_worker.log
+            app.logger.info(f'We need to make a thumbnail of {imageFile}') #This logs to /var/log/celery/celery_worker.log
             if imageFile.endswith(RAWEXTENSIONS):
                 #It's a RAW. See if we can extract a large-format JPG to use internally
                 previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
@@ -1826,19 +1826,19 @@ def makeThumb(imageFile):
                             try:
                                 preview.save(previewfilename, "JPEG")
                             except Exception as e:
-                                app.logger.info('makeThumb() preview save error: ' + str(e))
+                                app.logger.info(f'makeThumb preview save error: {e}')
                     except Exception as e:
-                        app.logger.info('makeThumb() preview open error: ' + str(e))
+                        app.logger.info(f'makeThumb preview open error: {e}')
             try:
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
                     thumb.save(dest, "JPEG")
             except Exception as e:
-                app.logger.info('makeThumb() thumbnail save error: ' + str(e))
+                app.logger.info(f'makeThumb thumbnail save error: {e}')
         getExifData(imageFile, imageFileName)
         return dest, alreadyExists
     except Exception as e:
-        app.logger.info('Unknown Exception in makeThumb(): ' + str(e))
+        app.logger.info(f'Unknown Exception in makeThumb: {e}')
         return None, None
 
 
@@ -1857,12 +1857,12 @@ def getExifData(imageFilePath, imageFileName):
                 dateOriginal = (dateTimeOriginal[0]).replace(':', '/')
                 timeOriginal = dateTimeOriginal[1]
             except Exception as e:
-                app.logger.info('getExifData() dateTimeOriginal error: ' + str(e))
+                app.logger.info(f'getExifData dateTimeOriginal error: {e}')
             if os.path.isfile(PI_THUMBS_INFO_FILE):
                 with open(PI_THUMBS_INFO_FILE, 'rt') as f:
                     for line in f:
-                        if ('{0} = {1} {2}|'.format(imageFileName, dateOriginal, timeOriginal)) in line:
-                            app.logger.info('getExifData() image {0} already exists in Exif file. Aborting'.format(imageFileName))
+                        if (f'{imageFileName} = {dateOriginal} {timeOriginal}|') in line:
+                            app.logger.info(f'getExifData image {imageFileName} already exists in Exif file. Aborting')
                             abort = True
                             break
             if abort:
@@ -1872,7 +1872,7 @@ def getExifData(imageFilePath, imageFileName):
                 fileExtension = fileExtension.upper().replace('.', '') #Convert to upper case and delete the dot
             except Exception as e:
                 fileExtension = '?'
-                app.logger.info('getExifData() fileExtension error: ' + str(e))
+                app.logger.info(f'getExifData fileExtension error: {e}')
             try:
                 #Reformat depending on the value:
                 # 6/1   becomes 6s
@@ -1890,27 +1890,27 @@ def getExifData(imageFilePath, imageFileName):
                     pass #We'll stick with the originally calculated exposure time, which will be 1 decimal place below 1s, e.g. 0.3
             except Exception as e:
                 exposureTime = '?'
-                app.logger.info('getExifData() ExposureTime error: ' + str(e))
+                app.logger.info(f'getExifData ExposureTime error: {e}')
             try:
                 fNumber = str(convert_to_float(str(tags['EXIF FNumber'])))
                 #Strip the '.0' if it's a whole F-stop
                 fNumber = fNumber.replace('.0','')
             except Exception as e:
                 fNumber = '?'
-                app.logger.info('getExifData() fNumber error: ' + str(e))
+                app.logger.info(f'getExifData fNumber error: {e}')
             try:
                 ISO = tags['EXIF ISOSpeedRatings']
             except Exception as e:
                 ISO = '?'
-                app.logger.info('getExifData() ISO error: ' + str(e))
+                app.logger.info(f'getExifData ISO error: {e}')
             try:
                 with open(PI_THUMBS_INFO_FILE, "a") as thumbsInfoFile:
-                    thumbsInfoFile.write('{0} = {1} {2}|{3} &bull; {4}s &bull; F{5} &bull; ISO{6}\r\n'.format(imageFileName, dateOriginal, timeOriginal, fileExtension, exposureTime, fNumber, ISO))
+                    thumbsInfoFile.write(f'{imageFileName} = {dateOriginal} {timeOriginal}|{fileExtension} &bull; {exposureTime}s &bull; F{fNumber} &bull; ISO{ISO}\r\n')
             except Exception as e:
-                app.logger.info('getExifData() error writing to thumbsInfoFile: ' + str(e))
+                app.logger.info(f'getExifData error writing to thumbsInfoFile: {e}')
             break
         except Exception as e:
-            app.logger.info('getExifData() EXIF error: ' + str(e))
+            app.logger.info(f'getExifData EXIF error: {e}')
             break
     return
 
@@ -1928,14 +1928,14 @@ def dedupeExifData():
                         ThumbsInfo[key] = val
                     except Exception as e:
                         #Skip over bad line
-                        app.logger.debug('dedupeExifData info file error: ' + str(e))
+                        app.logger.debug(f'dedupeExifData info file error: {e}')
         if lines != len(ThumbsInfo):
             #We have a discrepancy (dupe or bad line). Re-write the file:
-            app.logger.info('dedupeExifData() recreating thumbs info file: lines = {0}, UniqueImages = {1}'.format(lines, len(ThumbsInfo)))
+            app.logger.info(f'dedupeExifData recreating thumbs info file: lines = {lines}, UniqueImages = {len(ThumbsInfo)}')
             with open(PI_THUMBS_INFO_FILE, 'r+') as file:
                 file.seek(0)
                 for key, value in ThumbsInfo.items():
-                    file.write('{0} = {1}\n'.format(key, value))
+                    file.write(f'{key} = {value}\n')
                 file.truncate() #Trash the leftovers.
     return
 
@@ -1958,7 +1958,7 @@ def convert_to_float(frac_str):
         return whole - frac if whole < 0 else whole + frac
 
 
-def getPreviewImage(camera, context, config):
+def getPreviewImage(camera, config):
     """
     Straight out of Jim's examples
     """
@@ -2029,7 +2029,7 @@ def createConfigFile(iniFile):
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
     except:
-        app.logger.debug('createConfigFile Threw creating ' + iniFile)
+        app.logger.debug(f'createConfigFile Threw creating {iniFile}')
     return
 
 
@@ -2049,11 +2049,11 @@ def getIni(keySection, keyName, keyType, defaultValue):
         else:
             returnValue = config.get(keySection, keyName)
     except configparser.Error as e:
-        app.logger.info('getIni() reports key error: ' + str(e))
+        app.logger.info(f'getIni reports key error: {e}')
         #Looks like the flag doesn't exist. Let's add it
         setIni(keySection, keyName, defaultValue)
     except Exception as e:
-        app.logger.info('Unhandled error in getIni(): ' + str(e))
+        app.logger.info(f'Unhandled error in getIni: {e}')
     return returnValue
 
 
@@ -2067,16 +2067,16 @@ def setIni(keySection, keyName, newValue):
         config = configparser.ConfigParser()
         config.read(iniFile)
     except Exception as e:
-        app.logger.info('Unhandled error in setIni(): ' + str(e))
+        app.logger.info(f'Unhandled error in setIni: {e}')
     try:
         if not config.has_section(keySection):
             config.add_section(keySection)
         config.set(keySection, keyName, newValue)
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
-        app.logger.debug('Added key {0}/{1} with a value of {2}'.format(keySection, keyName, newValue))
+        app.logger.debug(f'Added key {keySection}/{keyName} with a value of {newValue}')
     except Exception as e:
-        app.logger.debug('Exception thrown trying to add key {0}/{1} with a value of {2}'.format(keySection, keyName, newValue))
+        app.logger.debug(f'Exception thrown trying to add key {keySection}/{keyName} with a value of {newValue}')
 
 
 @app.route('/trnCopyNow', methods=['POST'])
@@ -2095,14 +2095,14 @@ def trnCopyNow():
     ]
     task = chain(*tasks).apply_async()
 
-    app.logger.debug('trnCopyNow() returned with task_id= ' + str(task.id))
+    app.logger.debug(f'trnCopyNow() returned with task_id= {task.id}')
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
 
 
 @celery.task(time_limit=1800, bind=True)
 def copyNow(self):
-    writeString("WC") # Sends the camera WAKE command to the Arduino
-    app.logger.info('copyNow() entered') #This logs to /var/log/celery/celery_worker.log
+    writeString("WC", 1) # Sends the camera WAKE command to the Arduino
+    app.logger.info('copyNow entered') #This logs to /var/log/celery/celery_worker.log
     camera = gp.Camera()
     context = gp.gp_context_new()
     retries = 0
@@ -2112,52 +2112,52 @@ def copyNow(self):
         retries += 1
         if retries >= 6:
             #We've waited too long. Abort.
-            app.logger.info('copyNow() could not claim the USB device after ' + str(retries) + ' attempts.')
+            app.logger.info(f'copyNow could not claim the USB device after {retries} attempts.')
             return {'status': 'USB error'}
         try:
-            app.logger.info('copyNow() trying to init the camera')
+            app.logger.info('copyNow trying to init the camera')
             camera.init(context)
             #The line above will throw an exception if we can't connect to the camera
-            app.logger.info('copyNow() camera initialised')
+            app.logger.info('copyNow camera initialised')
             break
         except gp.GPhoto2Error as e:
-            app.logger.info("copyNow() wasn't able to connect to the camera: " + e.string)
+            app.logger.info(f"copyNow wasn't able to connect to the camera: {e.string}")
             continue
         except Exception as e:
-            app.logger.info('Unknown error in copyNow(): ' + str(e))
+            app.logger.info(f'Unknown error in copyNow: {e}')
             continue
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
     thisImage = 0
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
         numberToCopy = len(filesToCopy)
-        app.logger.info('copyNow() has been tasked with copying ' + str(numberToCopy) + ' images')
+        app.logger.info(f'copyNow has been tasked with copying {numberToCopy} images')
         deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
         renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
         renameString = getIni('Copy', 'renameString', 'string', None)
         if not renameString:
-            app.logger.info('copyNow() reports renameString is blank/empty. Forcing renameOnCopy = False')
+            app.logger.info('copyNow reports renameString is blank/empty. Forcing renameOnCopy = False')
             renameOnCopy = False
         while len(filesToCopy) > 0:
             try:
                 self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
                 thisFile = filesToCopy.pop(0)
-                app.logger.info('About to copy file: ' + str(thisFile))
+                app.logger.info(f'About to copy file: {thisFile}')
                 copyResult = copy_files(camera, thisFile, deleteAfterCopy, renameOnCopy, renameString)
                 if copyResult == 0:
                     thisImage += 1
             except Exception as e:
-                app.logger.info('Unknown error in copyNow(): ' + str(e))
+                app.logger.info(f'Unknown error in copyNow: {e}')
     try:
-        gp.check_result(gp.gp_camera_exit(camera))
-        app.logger.info('copyNow() ended happily')
+        camera.exit()
+        app.logger.info('copyNow ended happily')
     except Exception as e:
-        app.logger.info('copyNow() ended sad: ' + str(e))
+        app.logger.info(f'copyNow ended sad: {e}')
     if thisImage == 0:
-        app.logger.info('copyNow() reported there were no new images to copy')
+        app.logger.info('copyNow reported there were no new images to copy')
         statusMessage = "There were no new images to copy"
     else:
-        statusMessage = 'Copied ' + str(thisImage) + ' images OK'
+        statusMessage = (f'Copied {thisImage} images OK')
     return {'status': statusMessage}
 
 
@@ -2188,7 +2188,7 @@ def newThumbs(self):
                 DifferenceList.append(image)
         thumbsToCreate = len(DifferenceList)
         thumbsCreated = 0
-        app.logger.info('Thumbs to create = ' + str(thumbsToCreate))
+        app.logger.info(f'Thumbs to create = {thumbsToCreate}')
 
         if thumbsToCreate >= 1:
             for loop in range(-1, (-1 * (thumbsToCreate + 1)), -1):
@@ -2196,20 +2196,20 @@ def newThumbs(self):
                 dest, alreadyExists = makeThumb(DifferenceList[loop]) #Create a thumb, and metadata for every image on the Pi
                 if (dest == None):
                     #Something went wrong
-                    app.logger.info('A thumb was not created for {0}'.format(DifferenceList[loop]))
+                    app.logger.info(f'A thumb was not created for {DifferenceList[loop]}')
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
                     self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate)})
-                    app.logger.info('Thumb  of {0} is {1}'.format(DifferenceList[loop], dest))
+                    app.logger.info(f'Thumb  of {DifferenceList[loop]} is {dest}')
                 else:
-                    app.logger.info('Thumb for ' + dest + ' already exists')
+                    app.logger.info(f'Thumb for {dest} already exists')
         else:
-            app.logger.info('newThumbs() reports there are no thumbsToCreate.')
+            app.logger.info('newThumbs reports there are no thumbsToCreate.')
     except Exception as e:
-        app.logger.info('newThumbs error: ' + str(e))
+        app.logger.info(f'newThumbs error: {e}')
     dedupeExifData()
-    app.logger.info('newThumbs() returned')
+    app.logger.info('newThumbs returned')
     return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
 
 
@@ -2218,7 +2218,7 @@ def newThumbs(self):
 @login_required
 def backgroundStatus(task_id):
     task = copyNow.AsyncResult(task_id)
-    app.logger.debug('backgroundStatus() entered with task_id = ' + task_id + ' and task.state = ' + str(task.state))
+    app.logger.debug(f'backgroundStatus entered with task_id = {task_id} and task.state = {task.state}')
     if task.state == 'PENDING':
         # job did not start yet
         response = {
@@ -2232,12 +2232,12 @@ def backgroundStatus(task_id):
         }
     else:
         # something went wrong in the background job
-        app.logger.debug("Something went wrong in the background job: {0}".format(task.info))
+        app.logger.debug(f'Something went wrong in the background job: {task.info}')
         response = {
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
         }
-    app.logger.debug('backgroundStatus() returned')
+    app.logger.debug('backgroundStatus returned')
     return jsonify(response)
 
 
@@ -2261,11 +2261,11 @@ def getCeleryTasks():
                 else:
                     #app.logger.debug('getCeleryTasks cleared g.taskstr')
                     g.taskstr = None
-            #app.logger.debug("getCeleryTasks g.taskstr = {0}".format(g.taskstr))
+            #app.logger.debug(f'getCeleryTasks g.taskstr = {g.taskstr}')
         else:
             app.logger.debug('getCeleryTasks reports there are no activeTasks')
     except Exception as e:
-        app.logger.debug('getCeleryTasks exception: ' + str(e))
+        app.logger.debug('getCeleryTasks exception: {e}')
 
         
 @app.route("/iniview")
@@ -2283,7 +2283,7 @@ def iniview():
             for name, value in config.items(section_name):
                 iniEntries.append({'section': str(section_name), 'key': name, 'value': value })
     except Exception as e:
-        app.logger.debug('iniview error: ' + str(e))
+        app.logger.debug(f'iniview error: {e}')
         flash('INI error')
     return render_template('iniview.html', iniEntries = iniEntries)
 
@@ -2306,7 +2306,7 @@ def getLargestImageSize(path):
     Finds the largest file on the /photos/ folder tree.
     Used to calculate the number of days' worth of storage left on the Pi
     """
-    max_size = 0
+    max_size = 100000
     try:
         for folder, subfolders, files in os.walk(path):
             # checking the size of each file
@@ -2315,11 +2315,10 @@ def getLargestImageSize(path):
                 # updating maximum size
                 if size > max_size:
                     max_size = size
-        app.logger.debug('getLargestImageSize returned: ' + str(max_size))
-        return max_size
+        app.logger.debug(f'getLargestImageSize returned: {max_size}')
     except Exception as e:
-        app.logger.debug('getLargestImageSize exception: ' + str(e))
-        return None
+        app.logger.debug(f'getLargestImageSize exception: {e}')
+    return max_size
 
 
 def getShotsPerDay():
@@ -2338,12 +2337,12 @@ def getShotsPerDay():
                 shotsPerDay = (endHour - startHour) * (60 / interval)
             else:
                 shotsPerDay = ((endHour + 24) - startHour) * (60 / interval) #Future: when I finally code overnight shot handling
-            app.logger.debug('getShotsPerDay returned: ' + str(shotsPerDay))
+            app.logger.debug(f'getShotsPerDay returned: {shotsPerDay}')
             return shotsPerDay
         else:
             return None
     except Exception as e:
-        app.logger.debug('getShotsPerDay exception: ' + str(e))
+        app.logger.debug(f'getShotsPerDay exception: {e}')
         return None
 
 

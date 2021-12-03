@@ -46,19 +46,19 @@ def main(argv):
         if stdoutdata:
             stdoutdata = stdoutdata.strip()
             if stdoutdata == 'active':
-                log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi takes its time from NTP. Updating the Arduino with time from the Pi')
+                log(f'systemd-timesyncd = {stdoutdata}. The Pi takes its time from NTP. Updating the Arduino with time from the Pi')
                 setArduinoDateTime()
                 return
             else:
-                log('systemd-timesyncd = ' + str(stdoutdata) + '. The Pi does NOT take its time from NTP. Updating the Pi with time from the Arduino')
+                log(f'systemd-timesyncd = {stdoutdata}. The Pi does NOT take its time from NTP. Updating the Pi with time from the Arduino')
                 setPiDateTime()
                 return
         if stderrdata:
             stderrdata = stderrdata.strip()
-            log('systemd-timesyncd error = ' + str(stderrdata) + '. setTime.py aborting')
+            log(f'systemd-timesyncd error = {stderrdata}. setTime.py aborting')
             return
     except Exception as e:
-        log('Unhandled systemd-timesyncd error: ' + str(e) + '. setTime.py aborting')
+        log(f'Unhandled systemd-timesyncd error: {e}. setTime.py aborting')
 
 
 def setPiDateTime():
@@ -70,7 +70,7 @@ def setPiDateTime():
             tempTime = re.search(('id="dateTime">(.*)</div>'), htmltext)
             if tempTime != None:
                 newTime = tempTime.group(1)
-                log('New time is ' + newTime)
+                log(f'New time is {newTime}')
                 if 'Unknown' not in newTime:
                     break
             else:
@@ -86,13 +86,13 @@ def setPiDateTime():
             result = subprocess.Popen(timeCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
-                log('Result = ' + str(stdoutdata))
+                log(f'Result = {stdoutdata}')
             if stderrdata:
-                log('Error = ' + str(stderrdata))
+                log(f'Error = {stderrdata}')
         else:
-            log('Failed to set time. newTime = ' + newTime)
+            log(f'Failed to set time. newTime = {newTime}')
     except Exception as e:
-        log('Unhandled time error: ' + str(e))
+        log(f'Unhandled time error: {e}')
 
 
 def setArduinoDateTime():
@@ -103,7 +103,7 @@ def setArduinoDateTime():
             responseText = re.search(('<p>Set Arduino datetime to (.*)</p>'), htmltext)
             if responseText != None:
                 newTime = responseText.group(1)
-                log('New Arduino time is ' + newTime)
+                log(f'New Arduino time is {newTime}')
                 break
             else:
                 log('Failed to set the time')
@@ -121,19 +121,19 @@ def newWebRequest(url):
         response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
         htmltext = response.text.rstrip()
         statusCode = response.status_code
-        log('Status code = {0}'.format(str(statusCode)))
-        log('This is what I received: ' + str(htmltext))
+        log(f'Status code = {statusCode}')
+        log(f'This is what I received: {htmltext}')
     except requests.exceptions.Timeout as e:
-        log('Timeout error: ' + str(e))
+        log(f'Timeout error: {e}')
     except requests.exceptions.ConnectionError as e:
-        log('ConnectionError: ' + str(e))
+        log(f'ConnectionError: {e}')
     except requests.exceptions.HTTPError as e:
-        log('HTTPError: ' + str(e))
+        log(f'HTTPError: {e}')
         statusCode = e.response.status_code
     except requests.exceptions.TooManyRedirects as e:
-        log('TooManyRedirects error: ' + str(e))
+        log(f'TooManyRedirects error: {e}')
     except Exception as e:
-        log('Unhandled web error: ' + str(e))
+        log(f'Unhandled web error: {e}')
     return htmltext, statusCode
 
 
@@ -141,7 +141,7 @@ def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        #print 'error:' + str(e)
+        #print(f'error: {e}')
         pass
 
 
