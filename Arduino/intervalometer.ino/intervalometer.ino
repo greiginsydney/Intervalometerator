@@ -18,7 +18,7 @@ References:
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
  
 Last updated/changed in version:
-4.3.1
+<TODO> 4.3.1
 *****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -270,32 +270,89 @@ void SetAlarm1()
     }
   }
 
-  //We haven't yet started for the day:
-  if (nextHour < StartHour)
+  if (StartHour < EndHour)
   {
-    nextHour = StartHour; //Reset the alarm to restart later today
-    nextShot = 0;
+    //Normal daytime shoot, or 24hr operation
+    Serial.println("Trad daytime shoot");
+    if (nextHour < StartHour)
+    {
+      //We haven't yet started for the day:
+      nextHour = StartHour; //Reset the alarm to restart later today
+      nextShot = 0;
+    }
+    else if (nextHour >= EndHour)
+    {
+      //We've finished for today:
+      nextHour = StartHour; //Reset the alarm to restart next shooting day
+      nextShot = 0;
+      nextDay++;
+    }
+    else
+    {
+      Serial.println(" - we're in the shooting window. (Daytime shoot)");
+    }
   }
-
-  //We've finished for today:
-  if (nextHour >= EndHour)
+  else
   {
-    nextHour = StartHour; //Reset the alarm to restart next shooting day
-    nextShot = 0;
-    nextDay++;
+    //Shoot through midnight
+    Serial.println("STM");
+    if ((nextHour >= EndHour) && (nextHour < StartHour))
+    {
+        //We haven't yet started for the day:
+        Serial.println(" - we haven't started for the day yet");
+        nextHour = StartHour;
+        nextShot = 0;
+    }
+    else
+    {
+      Serial.println(" - we're in the shooting window - STM");
+    }
   }
 
   if (nextDay == 8) nextDay = 1; //Correct in case the day has wrapped around the week
 
-  byte nextShootDay = 0b0000001 << (nextDay); //Sunday = bit 1 to align with clock's day ordering
-  while (!(nextShootDay & ShootDays))
+  //Run the various tests to determine if we keep shooting or jump to the next shooting day:
+  while (true)
   {
-    nextShot = 0; //Next shot isn't today, so reset this to the top of the hour
-    nextDay++;
-    if (nextDay == 8) nextDay = 1;
-    nextShootDay = 0b0000001 << (nextDay);
+    byte yesterday = nextDay - 1;                 //Subtract back to yesterday
+    if (yesterday == 0) yesterday = 7;            //Wrap around the week if required
+    byte prevShootDay = 0b0000001 << (yesterday); //Sunday = bit 1 to align with clock's day ordering
+    byte nextShootDay = 0b0000001 << (nextDay);   //Sunday = bit 1 to align with clock's day ordering  
+    
+    if (StartHour > EndHour)
+    {
+      //STM
+      Serial.println("STM in the day calculation");
+      if (nextHour < EndHour)
+      {
+        //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
+        Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
+        if (prevShootDay & ShootDays)
+        {
+          Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
+          break;
+        }
+        else
+        {
+          nextHour = StartHour; // Yesterday wasn't a shooting day, so we won't shoot until the next startHour
+          nextShot = 0;
+          //Continue - drop to the nextShootDay test below.
+        }
+      }
+    }
+    
+    //If we get to here, run this while loop and then break:
+    while (!(nextShootDay & ShootDays))
+    {
+      nextShot = 0; //Next shot isn't today, so reset this to the top of the hour
+      nextHour = StartHour; //... and at StartHour 
+      nextDay++;
+      if (nextDay == 8) nextDay = 1;
+      nextShootDay = 0b0000001 << (nextDay);
+    }
+    break;
   }
-
+ 
   // NB: Whilst this code calculates the DAY, hour and minute for the next photo, we don't add the
   // day to the alarm, even though the RTC supports this.
   // This is a deliberate safety net. If we happen to miss an alarm for whatever reason, it will
@@ -794,9 +851,28 @@ void loop()
     {
       //Serial.println( F(" - ALARM 1 fired"));
       todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
-      if (todayAsBits && ShootDays)
+      if ((todayAsBits & ShootDays) && (rtc.hour() >= StartHour))
       {
+        //So it's a ShootDay and either before midnight on an STM shoot, or otherwise within the duration for a daytime shoot
         TakePhoto();
+      }
+      else if ((StartHour > EndHour) && (rtc.hour() < EndHour))
+      {
+        //Is it post-midnight on an overnight shoot, and today ISN'T a shooting day, but yesterday was?
+        byte yesterdayAsBits = todayAsBits >> 1;
+        if (yesterdayAsBits == 0b0000001) yesterdayAsBits = 0b1000000;
+        if (yesterdayAsBits & ShootDays)
+        {
+          TakePhoto();
+        }
+        else
+        {
+          //Serial.println( F(" - alarm1 overnight handling says NO GO"));
+        }
+      }
+      else
+      {
+          //Serial.println( F(" - Nope, the hour/minute might be good, but it's not a shoot day"));
       }
       SetAlarm1(); // Re-set the alarm
     }
