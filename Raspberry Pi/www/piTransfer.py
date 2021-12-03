@@ -144,7 +144,7 @@ def main(argv):
 
     except Exception as e:
         tfrMethod = 'Off' # If we hit an unknown exception, force tfrMethod=Off, because we can't be sure what triggered the error
-        log('INI file error: ' + str(e))
+        log(f'INI file error: {e}')
 
     if (tfrMethod == 'Off'):
         log('STATUS: Upload aborted. tfrMethod=Off')
@@ -154,26 +154,28 @@ def main(argv):
     now = datetime.datetime.now()
     if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
         # We're OK to transfer now
-        log('OK to transfer @ %s:00. Method = %s' % (transferHour, tfrMethod))
+        log(f'OK to transfer @ {transferHour}:00. Method = {tfrMethod}')
     elif copyNow == True:
         # We're OK to transfer now
-        log("OK to transfer on 'copyNow'. Method = %s" % tfrMethod)
+        log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
     else:
-        log('Not OK to transfer. Method = %s' % tfrMethod)
+        log(f'Not OK to transfer. Method = {tfrMethod}')
         return
 
-    log('STATUS: Commencing upload using %s' % tfrMethod)
+    log(f'STATUS: Commencing upload using {tfrMethod}')
     if (tfrMethod == 'FTP'):
         while '\\' in ftpRemoteFolder:
             ftpRemoteFolder = ftpRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
         while '//' in ftpRemoteFolder:
             ftpRemoteFolder = ftpRemoteFolder.replace('//', '/')
+        log(f'ftpServer={ftpServer}, ftpUser={ftpUser}, ftpPassword=<redacted>, ftpRemoteFolder={ftpRemoteFolder}')
         commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder)
     elif (tfrMethod == 'SFTP'):
         while '\\' in sftpRemoteFolder:
             sftpRemoteFolder = sftpRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
         while '//' in sftpRemoteFolder:
             sftpRemoteFolder = sftpRemoteFolder.replace('//', '/')
+        log(f'sftpServer={sftpServer}, sftpUser={sftpUser}, sftpPassword=<redacted>, sftpRemoteFolder={sftpRemoteFolder}')
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
         commenceDbx(dbx_token)
@@ -188,6 +190,7 @@ def main(argv):
             rsyncRemoteFolder = rsyncRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
         while '//' in rsyncRemoteFolder:
             rsyncRemoteFolder = rsyncRemoteFolder.replace('//', '/')
+        log(f'rsyncUsername={rsyncUsername}, rsyncHost={rsyncHost}, rsyncRemoteFolder={rsyncRemoteFolder}')
         commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder)
 
 
@@ -234,7 +237,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         elif 'Connection timed out' in e:
             log('FTP connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
-            log('FTP login exception. Unknown error: ' + str(e))
+            log(f'FTP login exception. Unknown error: {e}')
         log('STATUS: FTP connection failed')
         return
     try:
@@ -243,7 +246,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         if 'Login or password incorrect' in e:
             log('FTP login exception: Login or password incorrect')
         else:
-            log('FTP login exception. Unknown error: ' + str(e))
+            log(f'FTP login exception. Unknown error: {e}')
         log('STATUS: FTP login failed')
         return
     ftp.set_pasv(False) #Filezilla Server defaults to passive, and 2x passive = nothing happens!
@@ -256,30 +259,36 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         numFilesOK = 0
         previousFilePath = ''
         for needupload in newFiles:
-            log("Uploading " + needupload)
-            # Format the destination path to strip the /home/pi/photos off:
-            shortPath = makeShortPath(ftpRemoteFolder, needupload)
-            try:
-                remoteFolderTree = os.path.split(shortPath)
-                if previousFilePath != remoteFolderTree[0]:
-                    # Create the tree & CD to it:
-                    foldersList = remoteFolderTree[0].split("/")
-                    remotePath = "/"
-                    if len(foldersList) != 0:
-                        for oneFolder in foldersList:
-                            remotePath += oneFolder + "/"
-                            try:
-                                ftp.cwd(remotePath)
-                            except:
-                                ftp.mkd(oneFolder)
-                                ftp.cwd(remotePath)
-                fp = open(needupload, 'rb')
-                ftp.storbinary('STOR %s' % remoteFolderTree[1], fp, 1024)
-                previousFilePath = remoteFolderTree[0]
-                numFilesOK = uploadedOK(needupload, numFilesOK)
-            except Exception as e:
-                log('Error uploading {0} via FTP: {1}'.format(needupload,str(e)))
-        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+            for retries in range(2):
+                log(f'Uploading {needupload}')
+                # Format the destination path to strip the /home/pi/photos off:
+                shortPath = makeShortPath(ftpRemoteFolder, needupload)
+                try:
+                    remoteFolderTree = os.path.split(shortPath)
+                    if previousFilePath != remoteFolderTree[0]:
+                        # Create the tree & CD to it:
+                        foldersList = remoteFolderTree[0].split("/")
+                        remotePath = "/"
+                        if len(foldersList) != 0:
+                            for oneFolder in foldersList:
+                                remotePath += oneFolder + "/"
+                                try:
+                                    ftp.cwd(remotePath)
+                                except:
+                                    ftp.mkd(oneFolder)
+                                    ftp.cwd(remotePath)
+                    fp = open(needupload, 'rb')
+                    ftp.storbinary(f'STOR {remoteFolderTree[1]}', fp, 1024)
+                    previousFilePath = remoteFolderTree[0]
+                    numFilesOK = uploadedOK(needupload, numFilesOK)
+                    break
+                except Exception as e:
+                    if retries == 0:
+                        log(f'Error on  first attempt uploading {needupload} via FTP: {e}')
+                        time.sleep(1)
+                    else:
+                        log(f'Error on second attempt uploading {needupload} via FTP: {e}')
+        log(f'STATUS: {numFilesOK} of {numNewFiles} files uploaded OK')
     try:
         ftp.quit()
     except:
@@ -290,7 +299,7 @@ def commenceDbx(token):
     try:
         dbx = dropbox.Dropbox(token)
     except Exception as e:
-        log('Exception signing in to Dropbox: ' + str(e))
+        log(f'Exception signing in to Dropbox: {e}')
         log('STATUS: Exception signing in to Dropbox')
         return
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
@@ -300,16 +309,16 @@ def commenceDbx(token):
     else:
         numFilesOK = 0
         for needupload in newFiles:
-            log("Uploading " + needupload)
+            log(f'Uploading {needupload}')
             # Format the destination path to strip the /home/pi/photos off:
             shortPath = makeShortPath('', needupload)
             path,filename = os.path.split(shortPath)
             result = dbx_upload(dbx, needupload, path, '', filename)
             if result == None:
-                log('Error uploading {0} via DBX'.format(needupload))
+                log(f'Error uploading {needupload} via DBX')
             else:
                 numFilesOK = uploadedOK(needupload, numFilesOK)
-        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+        log(f'STATUS: {numFilesOK} of {numNewFiles} files uploaded OK')
 
 
 def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
@@ -317,7 +326,7 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
     Upload a file.
     Return the request response, or None in case of error
     """
-    path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
+    path = (f"/{folder}/{subfolder.replace(os.path.sep, '/')}/{name}")
     while '//' in path:
         path = path.replace('//', '/')
     mode = (dropbox.files.WriteMode.overwrite
@@ -332,11 +341,11 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
             mute=True)
     except dropbox.exceptions.ApiError as err:
-        log('Dropbox API error' + err)
+        log(f'Dropbox API error {err}')
         log('STATUS: Dropbox API error')
         return None
-    #log('Dropbox uploaded as ' + res.name.encode('utf8'))
-    #log('Dropbox result = ' + str(res))
+    #log(f'Dropbox uploaded as {res.name.encode('utf8')})
+    #log(f'Dropbox result = {res}')
     return res
 
 
@@ -350,11 +359,11 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
             if sftpServer in open(KNOWN_HOSTS_FILE).read():
                 #If the host exists, we'll ONLY accept the current saved key. If it DOESN'T exist, we'll gladly add it to the collection:
                 ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
-                log('Paramiko found ' + str(sftpServer) + ' in host keys file & set RejectPolicy')
+                log(f'Paramiko found {sftpServer} in host keys file & set RejectPolicy')
             ssh.load_host_keys(KNOWN_HOSTS_FILE)
             log('Paramiko loaded host keys file OK')
         except Exception as e:
-            log('Paramiko unable to open host keys file: ' + str(e))
+            log(f'Paramiko unable to open host keys file: {e}')
         ssh.connect(
             hostname=sftpServer,
             port=sftpPort,
@@ -363,22 +372,22 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         )
         sftp = ssh.open_sftp()
     except paramiko.AuthenticationException as e:
-        log('Authentication failed: ' + str(e))
+        log(f'Authentication failed: {e}')
         log('STATUS: SFTP Authentication failed')
         return
     except paramiko.SSHException as e:
-        log('Unable to establish SSH connection: ' + str(e))
+        log(f'Unable to establish SSH connection: {e}')
         if ('Connection timed out' in str(e)):
-            log('STATUS: SFTP timed out connecting to ' + sftpServer)
+            log(f'STATUS: SFTP timed out connecting to {sftpServer}')
         else:
             log('STATUS: SFTP Unable to establish SSH connection')
         return
     except paramiko.BadHostKeyException as e:
-        log("Unable to verify server's host key: " + str(e))
+        log(f"Unable to verify server's host key: {e}")
         log("STATUS: SFTP Unable to verify server's host key")
         return
     except Exception as e:
-        log('Exception signing in to SFTP server: ' + str(e))
+        log(f'Exception signing in to SFTP server: {e}')
         log('STATUS: SFTP exception signing in')
         return
 
@@ -390,29 +399,37 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
         numFilesOK = 0
         previousFilePath = ''
         for needupload in newFiles:
-            log("Uploading " + needupload)
-            # Format the destination path to strip the /home/pi/photos off:
-            shortPath = makeShortPath(sftpRemoteFolder, needupload)
-            try:
-                remoteFolderTree = os.path.split(shortPath)
-                if previousFilePath != remoteFolderTree[0]:
-                    # Create the tree & CD to it:
-                    foldersList = remoteFolderTree[0].split("/")
-                    remotePath = "/"
-                    if len(foldersList) != 0:
-                        for oneFolder in foldersList:
-                            remotePath += oneFolder + "/"
-                            try:
-                                sftp.chdir(remotePath)
-                            except IOError:
-                                sftp.mkdir(oneFolder)
-                                sftp.chdir(remotePath)
-                sftp.put(needupload, remoteFolderTree[1])
-                previousFilePath = remoteFolderTree[0]
-                numFilesOK = uploadedOK(needupload, numFilesOK)
-            except Exception as e:
-                log('Error uploading {0} via SFTP: {1}'.format(needupload,str(e)))
-        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+            for retries in range(2):
+                log(f'Uploading {needupload}')
+                # Format the destination path to strip the /home/pi/photos off:
+                shortPath = makeShortPath(sftpRemoteFolder, needupload)
+                try:
+                    remoteFolderTree = os.path.split(shortPath)
+                    if previousFilePath != remoteFolderTree[0]:
+                        # Create the tree & CD to it:
+                        foldersList = remoteFolderTree[0].split("/")
+                        remotePath = "/"
+                        if len(foldersList) != 0:
+                            for oneFolder in foldersList:
+                                remotePath += oneFolder + "/"
+                                try:
+                                    sftp.chdir(remotePath)
+                                except IOError:
+                                    sftp.mkdir(oneFolder)
+                                    sftp.chdir(remotePath)
+                                except Exception as e:
+                                    log(f'Unexpected path/folder error in SFTP: {e}')
+                    sftp.put(needupload, remoteFolderTree[1])
+                    previousFilePath = remoteFolderTree[0]
+                    numFilesOK = uploadedOK(needupload, numFilesOK)
+                    break
+                except Exception as e:
+                    if retries == 0:
+                        log(f'Error on  first attempt uploading {needupload} via SFTP: {e}')
+                        time.sleep(1)
+                    else:
+                        log(f'Error on second attempt uploading {needupload} via SFTP: {e}')
+        log(f'STATUS: {numFilesOK} of {numNewFiles} files uploaded OK')
     try:
         sftp.close()
     except:
@@ -460,7 +477,7 @@ def commenceGoogle(remoteFolder):
         http_auth = credentials.authorize(httplib2.Http())
         DRIVE = discovery.build('drive', 'v2', http_auth, cache_discovery=False)
     except Exception as e:
-        log('Error creating Google DRIVE object: ' + str(e))
+        log(f'Error creating Google DRIVE object: {e}')
         log('STATUS: Error creating Google DRIVE object')
         return 0
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
@@ -471,10 +488,10 @@ def commenceGoogle(remoteFolder):
         numFilesOK = 0
         previousFilePath = ''
         for needupload in newFiles:
-            log("Uploading " + needupload)
+            log(f'Uploading {needupload}')
             # Format the destination path to strip the /home/pi/photos off:
             shortPath = makeShortPath(remoteFolder, needupload)
-            log("ShortPath: " + shortPath)
+            log(f'ShortPath: {shortPath}')
             remoteFolderTree = os.path.split(shortPath)
             if previousFilePath != remoteFolderTree[0]:
                 ImageParentId = None
@@ -488,7 +505,7 @@ def commenceGoogle(remoteFolder):
                             newFolderId = createGoogleFolder(DRIVE, oneFolder, ImageParentId)
                             if newFolderId is None:
                                 log('Aborted uploading to Google. Error creating newFolder')
-                                log('STATUS: Google upload aborted. %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+                                log(f'STATUS: Google upload aborted. {numFilesOK} of {numNewFiles} files uploaded OK')
                                 return 0
                             else:
                                 ImageParentId = newFolderId
@@ -503,18 +520,18 @@ def commenceGoogle(remoteFolder):
                 if result is not None:
                     numFilesOK = uploadedOK(needupload, numFilesOK)
                 else:
-                    log('Bad result uploading ''%s'' to Google: %s' % (needupload,str(result)))
+                    log(f"Bad result uploading '{needupload}' to Google: {result}")
             except Exception as e:
                 errorMsg = str(e)
-                log('Error uploading {0} via Google: {1}'.format(needupload,errorMsg))
+                log(f'Error uploading {needupload} via Google: {errorMsg}')
                 if 'returned' in errorMsg:
                     errorReason = errorMsg.split('"')[1]
-                    log('STATUS: Google error: %s' % (errorReason))
+                    log(f'STATUS: Google error: {errorReason}')
                     if 'The user has exceeded their Drive storage quota' in errorReason:
                         log('Google upload aborted - no space')
                         return 0
             previousFilePath = remoteFolderTree[0]
-        log('STATUS: %d of %d files uploaded OK' % (numFilesOK, numNewFiles))
+        log(f'STATUS: {numFilesOK} of {numNewFiles} files uploaded OK')
     return 0
 
 
@@ -522,9 +539,9 @@ def getGoogleFolder(DRIVE, remoteFolder, parent=None):
     """
     Find and return the id of the remote folder
     """
-    log('Testing if folder \'%s\' exists.' % str(remoteFolder))
+    log(f"Testing if folder '{remoteFolder}' exists.")
     q = []
-    q.append("title='%s'" % remoteFolder)
+    q.append("title='{remoteFolder}'")
     if parent is not None:
         q.append("'%s' in parents" % parent.replace("'", "\\'"))
     q.append("mimeType contains 'application/vnd.google-apps.folder'")
@@ -532,18 +549,18 @@ def getGoogleFolder(DRIVE, remoteFolder, parent=None):
     params = {}
     params['q'] = ' and '.join(q)
     files = DRIVE.files().list(**params).execute()
-    log('FILES returned this: ' + str(files))
+    log(f'FILES returned this: {files}')
     if len(files['items']) == 1:
         remoteFolderId = files['items'][0]['id']
         remoteFolderTitle = files['items'][0]['title']
-        log('Found the folder \'%s\'. Its Id is \'%s\'' % (str(remoteFolderTitle), str(remoteFolderId)))
+        log(f"Found the folder '{remoteFolderTitle}'. Its Id is '{remoteFolderId}'")
         return remoteFolderId
     else:
         return None
 
 
 def createGoogleFolder(DRIVE, newFolder, parentId=None):
-    log('About to create folder \'%s\'.' % str(newFolder))
+    log(f"About to create folder '{newFolder}'.")
     try:
         body = {
           'title': newFolder,
@@ -554,7 +571,7 @@ def createGoogleFolder(DRIVE, newFolder, parentId=None):
         newFolderId = DRIVE.files().insert(body = body).execute()
         return newFolderId['id']
     except Exception as e:
-        log('Error in createGoogleFolder : ' + str(e))
+        log(f'Error in createGoogleFolder : {e}')
 
 
 def reauthGoogle():
@@ -588,7 +605,7 @@ def reauthGoogle():
             print('Error in Google re-auth. (See /home/pi/www/static/piTransfer.log for details)')
             print ('')
             log('STATUS: Error in Google re-auth')
-            log('Error in Google re-auth : ' + str(e))
+            log(f'Error in Google re-auth : {e}')
     else:
         print ('')
         print('Error: client_secrets.json file is missing')
@@ -621,12 +638,14 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
                 stdoutdata = stdoutdata.strip()
-                #log('rsync stdoutdata = ' + str(stdoutdata) + '.')
+                #log(f'rsync stdoutdata = {stdoutdata}.')
             if stderrdata:
                 stderrdata = stderrdata.strip()
-                log("rsync err'd with stderrdata = " + str(stderrdata))
-                if 'Host key verification failed' in str(stderrdata):
+                log(f"rsync err'd with stderrdata = {stderrdata}")
+                if 'Host key verification failed' in stderrdata:
                     log('STATUS: rsync host key verification failed')
+                elif 'Permission denied' in stderrdata:
+                    log('STATUS: rsync error: permission denied')
                 else:
                     log('STATUS: rsync error')
             # wait until process is really terminated
@@ -638,12 +657,12 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                     uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
                     if os.path.isfile(uploadedFile):
                         numFilesOK = uploadedOK(uploadedFile, numFilesOK)
-                log('STATUS: {0} files uploaded OK'.format(str(numFilesOK)))
+                log(f'STATUS: {numFilesOK} files uploaded OK')
             else:
                 log('rsync exited with a non-zero exitcode')
                 #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
         except Exception as e:
-            log('Error uploading via rsync: {0}'.format(str(e)))
+            log(f'Error uploading via rsync: {e}')
             log('STATUS: rsync error')
     return
 
@@ -653,11 +672,11 @@ def uploadedOK(filename, filecount):
     The file has been uploaded OK. Add it to the UPLOADED_PHOTOS_LIST.
     Delete local file, thumb, preview & metadata if required
     """
-    log('Uploaded  {0}'.format(filename))
+    log(f' Uploaded {filename}')
     if deleteAfterTransfer:
         try:
             os.remove(filename)
-            log('Deleted   {0}'.format(filename))
+            log(f'  Deleted {filename}')
             deleteThumbsInfo(filename)
             for folder,suffix in [(PI_THUMBS_DIR, '-thumb.JPG'), (PI_PREVIEW_DIR, '-preview.JPG')]:
                 try:
@@ -665,11 +684,11 @@ def uploadedOK(filename, filecount):
                     file2Delete = os.path.splitext(file2Delete)[0] + suffix
                     if os.path.isfile(file2Delete):
                         os.remove(file2Delete)
-                        log('Deleted   {0}'.format(file2Delete))
+                        log(f'  Deleted {file2Delete}')
                 except Exception as e:
-                    log('Error deleting file {0} : {1}'.format(file2Delete, str(e)))
+                    log(f'Error deleting file {file2Delete} : {e}')
         except Exception as e:
-            log('Unknown error in uploadedOK: {0}'.format(str(e)))
+            log(f'Unknown error in uploadedOK: {e}')
     else:
         with open(UPLOADED_PHOTOS_LIST, "a") as historyFile:
             historyFile.write(filename + "\n")
@@ -690,8 +709,8 @@ def deleteThumbsInfo(filepath):
                 if filename not in line.strip("\n"):
                     f.write(line)
     except Exception as e:
-        log('Exception deleting {0} from  {1}'.format(filename, PI_THUMBS_INFO_FILE))
-        log('Exception: ' + str(e))
+        log(f'Exception deleting {filename} from  {PI_THUMBS_INFO_FILE}')
+        log(f'Exception: {e}')
     return
 
 
@@ -699,7 +718,7 @@ def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        print('error: ' + str(e))
+        print(f'error: {e}')
         #pass
 
 

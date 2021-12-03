@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
+	{% if ((current_user.is_authenticated) and (locationName != "") and (locationName != "Intvlm8r")) %}
+	<title>Intvlm8r - {{ locationName }}</title>
+	{% else %}
 	<title>Intvlm8r</title>
+	{% endif %}
 	<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="/static/main.css">
@@ -59,29 +63,20 @@
 </div>
 <!--MENU ENDS -->
 </header>
-{% with messages = get_flashed_messages() %}
-	<table id="progress">
-	{% if current_user.is_anonymous %}
-	  {% if messages %}
-		<tr class="red">
-			{% for message in messages %}
-				<td class="centre-text">{{ message }}</td>
-			{% endfor %}
-	  {% endif %}
-	{% else %}
-	  {% if messages %}
-		<tr class="red">
-			{% for message in messages %}
-				<td class="centre-text">{{ message }}</td>
-			{% endfor %}
-		</tr>
-	  {% else %}
-		<tr>
-			<td class="centre-text">Background tasks idle</td>
-		</tr>
-	  {% endif %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+<table id="progress">
+	{% if messages %}
+	<tr>
+		{% for category, message in messages %}
+		<td class="centre-text{{ ' red' if category != 'info'}}">{{ message }}</td>
+		{% endfor %}
+	</tr>
+	{% elif not current_user.is_anonymous %}
+	<tr>
+		<td class="centre-text">Background tasks idle</td>
+	</tr>
 	{% endif %}
-	</table>
+</table>
 {% endwith %}
 
 {% block content %}

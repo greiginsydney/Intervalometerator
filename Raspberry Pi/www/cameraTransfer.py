@@ -67,7 +67,7 @@ def main(argv):
 
     log('')
     now = datetime.datetime.now()
-    log('Now values are: NowDay = %s, NowHour = %s, CopyDay = %s , CopyHour= %s' % (now.strftime("%A"), now.strftime("%H"), str(copyDay), str(copyHour)))
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour= {copyHour}')
     if ((now.strftime("%A") == copyDay) | (copyDay == "Daily")):
         # We're OK to copy TODAY
         if (copyNow == True):
@@ -75,12 +75,12 @@ def main(argv):
             log('OK to copy on copyNow.')
         elif (now.strftime("%H") == copyHour):
             # We're OK to copy NOW
-            log('OK to copy @ %s:00.' % copyHour)
+            log(f'OK to copy @ {copyHour}:00.')
         else:
-            log('Not OK to copy @ %s:00.' % now.strftime("%H"))
+            log(f'Not OK to copy @ {now.strftime("%H")}:00.')
             return
     else:
-        log('Not OK to copy today (%s).' % now.strftime("%A"))
+        log(f'Not OK to copy today ({now.strftime("%A")}).')
         return
 
     response = None
@@ -91,25 +91,25 @@ def main(argv):
         response.raise_for_status() #Throws a HTTPError if we didn't receive a 2xx response
         htmltext = response.text.rstrip()
         statusCode = response.status_code
-        log('Status code = {0}'.format(str(statusCode)))
-        log('This is what I received: ' + str(htmltext))
+        log(f'Status code = {statusCode}')
+        log(f'This is what I received: {htmltext}')
     except requests.exceptions.Timeout as e:
-        log('Timeout error: ' + str(e))
+        log(f'Timeout error: {e}')
     except requests.exceptions.ConnectionError as e:
-        log('ConnectionError: ' + str(e))
+        log(f'ConnectionError: {e}')
     except requests.exceptions.HTTPError as e:
-        log('HTTPError: ' + str(e))
+        log(f'HTTPError: {e}')
     except requests.exceptions.TooManyRedirects as e:
-        log('TooManyRedirects error: ' + str(e))
+        log(f'TooManyRedirects error: {e}')
     except Exception as e:
-        log('Unhandled web error: ' + str(e))
+        log(f'Unhandled web error: {e}')
 
 
 def log(message):
     try:
         logging.info(message)
     except Exception as e:
-        #print 'error:' + str(e)
+        #print(f'error: {e}')
         pass
 
 
