@@ -12,11 +12,11 @@ Notes:
 
 | Section | Approx pricing AU | Approx pricing USA |
 | :--- | ---: | ---: |
-| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $690 | $501 |
+| [Photographic](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#photographic) | $715 | $511 |
 | [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $213 | $160 |
 | [Power](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#power) | $113 | $83 |
 | [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $112 | $76 |
-| __TOTAL__ | __$1128__ | __$820__ |
+| __TOTAL__ | __$1153_ | __$830__ |
 
 <br>
 
@@ -43,10 +43,12 @@ See the [Design Decisions](https://github.com/greiginsydney/Intervalometerator/w
 
 Aka a "fake battery". We cut off the USB plugs, stripped the cable and terminated it directly to the matching plug for the PCB-mounted socket. If your camera has an auxiliary power input this coupler won't be necessary - substitute a suitable plug and cable instead.
 
-- [eBay](https://www.ebay.com/itm/Power-bank-usb-for-Canon-EOS-5D-7D-Mark-II-6D-80D-camera-DR-E6-dc-coupler-LP-E6/123101336453?hash=item1ca9695385:g:dWAAAOSwsQFa4ZVV:rk:1:pf:0)
+> We STRONGLY recommend you use a genuine coupler, not an after-market or Chinese clone. Non-genuine Canon and Nikon units have proven themselves erratic in operation, and in some cases refuse to power up the camera altogether. (There's a lot of electronics inside these.)
+
+- [Ted's camera (AU)](https://www.teds.com.au/canon-dr-e6-dc-coupler)
     
-    $AUD35</br>
-    $USD25
+    $AUD85</br>
+    $USD60
 
 #### Shutter Release cable to suit
 
@@ -93,7 +95,7 @@ This one's optional, and depends on your choice of housing and camera. We wanted
     $AUD2
 
 
-### SUBTOTAL: AUD$690 / $USD501
+### SUBTOTAL: AUD$715 / $USD511
 
 
 ##  Electronics
