@@ -229,8 +229,12 @@ def makeShortPath(remoteRootFolder, filepath):
 def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     ftp = FTP()
     ftp.set_debuglevel(2)
+    ftpPort = 21
+    if ':' in ftpServer:
+        ftpPort = int(ftpServer.split(':')[1])
+        log(f'FTP is using custom port {ftpPort}')
     try:
-        ftp.connect(ftpServer, 21)
+        ftp.connect(ftpServer, ftpPort)
     except Exception as e:
         if 'No route to host' in str(e):
             log('FTP connect exception: no route to host. Bad IP address or hostname')
