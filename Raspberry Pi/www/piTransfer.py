@@ -232,7 +232,8 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     ftpPort = 21
     if ':' in ftpServer:
         ftpPort = int(ftpServer.split(':')[1])
-        log(f'FTP is using custom port {ftpPort}')
+        ftpServer = ftpServer.split(':')[0]
+        log(f'ftpServer={ftpServer}, port={ftpPort}')
     try:
         ftp.connect(ftpServer, ftpPort)
     except Exception as e:
