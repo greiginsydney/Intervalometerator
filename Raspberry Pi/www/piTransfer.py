@@ -232,9 +232,9 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     try:
         ftp.connect(ftpServer, 21)
     except Exception as e:
-        if 'No route to host' in e:
+        if 'No route to host' in str(e):
             log('FTP connect exception: no route to host. Bad IP address or hostname')
-        elif 'Connection timed out' in e:
+        elif 'Connection timed out' in str(e):
             log('FTP connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
             log(f'FTP login exception. Unknown error: {e}')
@@ -243,7 +243,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     try:
         ftp.login(ftpUser,ftpPassword)
     except Exception as e:
-        if 'Login or password incorrect' in e:
+        if 'Login or password incorrect' in str(e):
             log('FTP login exception: Login or password incorrect')
         else:
             log(f'FTP login exception. Unknown error: {e}')
