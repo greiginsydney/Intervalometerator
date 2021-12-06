@@ -944,7 +944,7 @@ def transferPOST():
                 config.add_section('Transfer')
             config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
             if (request.form.get('tfrMethod') == 'FTP'):
-                config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
+                config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer').replace('ftp://','') or ''))
                 config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
                 config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
                 ftpRemoteFolder = reformatSlashes(str(request.form.get('ftpRemoteFolder')))
