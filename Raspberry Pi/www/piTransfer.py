@@ -359,6 +359,11 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #Set the default
+        sftpPort=22
+        if ':' in sftpServer:
+            sftpPort = int(sftpServer.split(':')[1])
+            sftpServer = sftpServer.split(':')[0]
+            log(f'sftpServer={sftpServer}, port={sftpPort}')
         # get host key, if we know one
         try:
             if sftpServer in open(KNOWN_HOSTS_FILE).read():
