@@ -950,7 +950,7 @@ def transferPOST():
                 ftpRemoteFolder = reformatSlashes(str(request.form.get('ftpRemoteFolder')))
                 config.set('Transfer', 'ftpRemoteFolder', ftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'SFTP'):
-                config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
+                config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer').replace('sftp://','') or ''))
                 config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
                 config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
                 sftpRemoteFolder = reformatSlashes(str(request.form.get('sftpRemoteFolder')))
