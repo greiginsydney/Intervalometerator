@@ -246,24 +246,28 @@ install_apps ()
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo ''
-	whereisgphoto='/usr/local/share/python-gphoto2/examples /usr/local/lib/python3.7/dist-packages/gphoto2/examples /home/pi/.local/lib/python3.7/site-packages/gphoto2/examples'
-	message="\n"$YELLOW"Unable to find installed gphoto2 examples to create shortcut"$RESET""
-	for path in $whereisgphoto; do
-		if [ -d  $path ]; then
-			ln -sfnv "$path" /home/${SUDO_USER}/examples
-			message="created shortcut 'examples' to point to '$path'"
-			break
-		fi
-	done
-	echo -e $message
 	echo ''
-	
-	if [ -d /usr/local/lib/python3.7/dist-packages/gphoto2 ]; then
-		ln -sfnv /usr/local/lib/python3.7/dist-packages/gphoto2 /home/${SUDO_USER}/gphoto2
-		echo "created shortcut 'gphoto2' to point to '/usr/local/lib/python3.7/dist-packages/gphoto2'"
+	echo 'Creating gphoto2 shortcuts'
+	whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+	if [ ! -z "$whereisgphoto" ]; then
+		gphoto2="$whereisgphoto/gphoto2"
+		examples="$gphoto2/examples"
+		if [ -d  $gphoto2 ]; then
+			ln -sfnv "$gphoto2" /home/${SUDO_USER}/gphoto2
+			echo ""$GREEN"Created shortcut 'gphoto2' to point to '$gphoto2'"$RESET""
+		else
+			echo "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
+		fi
+		if [ -d  $examples ]; then
+			ln -sfnv "$examples" /home/${SUDO_USER}/examples
+			echo ""$GREEN"Created shortcut 'examples' to point to '$examples'"$RESET""
+		else
+			echo "\n"$YELLOW"Unable to find installed gphoto2/examples to create shortcut"$RESET""
+		fi
 	else
-		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
+		echo "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
+	echo ''
 	
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
