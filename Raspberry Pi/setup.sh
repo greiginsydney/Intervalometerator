@@ -246,7 +246,6 @@ install_apps ()
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo ''
-	echo ''
 	echo 'Creating gphoto2 shortcuts'
 	whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
 	if [ ! -z "$whereisgphoto" ]; then
@@ -254,18 +253,18 @@ install_apps ()
 		examples="$gphoto2/examples"
 		if [ -d  $gphoto2 ]; then
 			ln -sfnv "$gphoto2" /home/${SUDO_USER}/gphoto2
-			echo ""$GREEN"Created shortcut 'gphoto2' to point to '$gphoto2'"$RESET""
+			echo -e ""$GREEN"Created shortcut 'gphoto2' to point to '$gphoto2'"$RESET""
 		else
-			echo "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
+			echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 		fi
 		if [ -d  $examples ]; then
 			ln -sfnv "$examples" /home/${SUDO_USER}/examples
-			echo ""$GREEN"Created shortcut 'examples' to point to '$examples'"$RESET""
+			echo -e ""$GREEN"Created shortcut 'examples' to point to '$examples'"$RESET""
 		else
-			echo "\n"$YELLOW"Unable to find installed gphoto2/examples to create shortcut"$RESET""
+			echo -e "\n"$YELLOW"Unable to find installed gphoto2/examples to create shortcut"$RESET""
 		fi
 	else
-		echo "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
+		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
 	echo ''
 	
