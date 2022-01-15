@@ -269,10 +269,13 @@ As the project is presented, this LED lights when the Arduino is awake, but only
 
 The custom PCB for the project is available on eBay.
 
-- [eBay](https://www.ebay.com.au/itm/264353662332)
+- [eBay](https://www.ebay.com.au/itm/265070048517)
 
     $AUD15.00</br>
     $USD10.00
+
+
+#### A fully populated and programmed board is available too: [https://www.ebay.com.au/itm/265085430681](https://www.ebay.com.au/itm/265085430681)
 
 #### Veroboard (alternative PCB)
 
