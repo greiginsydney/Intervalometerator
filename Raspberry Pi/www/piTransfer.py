@@ -229,12 +229,17 @@ def makeShortPath(remoteRootFolder, filepath):
 def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     ftp = FTP()
     ftp.set_debuglevel(2)
+    ftpPort = 21
+    if ':' in ftpServer:
+        ftpPort = int(ftpServer.split(':')[1])
+        ftpServer = ftpServer.split(':')[0]
+        log(f'ftpServer={ftpServer}, port={ftpPort}')
     try:
-        ftp.connect(ftpServer, 21)
+        ftp.connect(ftpServer, ftpPort)
     except Exception as e:
-        if 'No route to host' in e:
+        if 'No route to host' in str(e):
             log('FTP connect exception: no route to host. Bad IP address or hostname')
-        elif 'Connection timed out' in e:
+        elif 'Connection timed out' in str(e):
             log('FTP connect exception: connection timed out. Destination valid but not listening on port 21')
         else:
             log(f'FTP login exception. Unknown error: {e}')
@@ -243,7 +248,7 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
     try:
         ftp.login(ftpUser,ftpPassword)
     except Exception as e:
-        if 'Login or password incorrect' in e:
+        if 'Login or password incorrect' in str(e):
             log('FTP login exception: Login or password incorrect')
         else:
             log(f'FTP login exception. Unknown error: {e}')
@@ -354,6 +359,11 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #Set the default
+        sftpPort=22
+        if ':' in sftpServer:
+            sftpPort = int(sftpServer.split(':')[1])
+            sftpServer = sftpServer.split(':')[0]
+            log(f'sftpServer={sftpServer}, port={sftpPort}')
         # get host key, if we know one
         try:
             if sftpServer in open(KNOWN_HOSTS_FILE).read():

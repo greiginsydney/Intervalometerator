@@ -944,13 +944,13 @@ def transferPOST():
                 config.add_section('Transfer')
             config.set('Transfer', 'tfrMethod', str(request.form.get('tfrMethod')))
             if (request.form.get('tfrMethod') == 'FTP'):
-                config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer') or ''))
+                config.set('Transfer', 'ftpServer', str(request.form.get('ftpServer').replace('ftp://','') or ''))
                 config.set('Transfer', 'ftpUser', str(request.form.get('ftpUser') or ''))
                 config.set('Transfer', 'ftpPassword', str(request.form.get('ftpPassword') or ''))
                 ftpRemoteFolder = reformatSlashes(str(request.form.get('ftpRemoteFolder')))
                 config.set('Transfer', 'ftpRemoteFolder', ftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'SFTP'):
-                config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer') or ''))
+                config.set('Transfer', 'sftpServer', str(request.form.get('sftpServer').replace('sftp://','') or ''))
                 config.set('Transfer', 'sftpUser', str(request.form.get('sftpUser') or ''))
                 config.set('Transfer', 'sftpPassword', str(request.form.get('sftpPassword') or ''))
                 sftpRemoteFolder = reformatSlashes(str(request.form.get('sftpRemoteFolder')))
