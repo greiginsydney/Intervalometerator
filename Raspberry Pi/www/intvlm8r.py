@@ -2265,7 +2265,7 @@ def getCeleryTasks():
         else:
             app.logger.debug('getCeleryTasks reports there are no activeTasks')
     except Exception as e:
-        app.logger.debug('getCeleryTasks exception: {e}')
+        app.logger.debug(f'getCeleryTasks exception: {e}')
 
         
 @app.route("/iniview")
