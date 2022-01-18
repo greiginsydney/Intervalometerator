@@ -447,7 +447,7 @@ install_website ()
 			mv -fv intvlm8r.service /etc/systemd/system/intvlm8r.service
 		fi
 	fi
-	systemctl start intvlm8r
+	#systemctl start intvlm8r - TEMPORARILY COMMENTED OUT FOR TESTING, PENDING DELETION (bugs2201)
 	echo 'Enabling intvlm8r'
 	systemctl enable intvlm8r
 
