@@ -293,6 +293,7 @@ install_website ()
 		echo "/home/$SUDO_USER/photos/default_image.JPG" > photos/uploadedOK.txt #So we don't try to upload the default_image
 	fi
 	touch ${HOME}/setTime.log # Created here so it has correct ownership
+	touch ${HOME}/hbresults.txt
 
 	if [ -f default_image.JPG ];
 	then
