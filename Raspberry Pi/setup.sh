@@ -668,11 +668,12 @@ install_website ()
 	fi
 	timeSync2
 
-	# If upgrading, reload all services as a precautionary measure:
-	if [ -f www/intvlm8r.old ];
-	then
-		systemctl daemon-reload
-	fi
+	# Check and reload services if required:
+	# TY Alexander Tolkachev & Sergi Mayordomo, https://serverfault.com/questions/855042/how-do-i-know-if-systemctl-daemon-reload-needs-to-be-run
+	for val in "${ServiceFiles[@]}";
+	do
+		systemctl status $val 2>&1 | grep -q "changed on disk" && echo -e "\n"$GREEN"Executing daemon-reload"$RESET"" && systemctl daemon-reload && break;
+	done
 
 	# Step 101 - slows the I2C speed
 	if  grep -q 'dtparam=i2c1=on' /boot/config.txt;
