@@ -274,6 +274,8 @@ install_apps ()
 
 install_website ()
 {
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
 	mkdir -pv photos
@@ -383,7 +385,7 @@ install_website ()
 	if [ $SUDO_USER != 'pi' ];
 	then
 		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
-		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+		#ServiceFiles declaration moved to the top of 'web'. (Now also used by daemon-reload step.)
 		for val in "${ServiceFiles[@]}";
 		do
 			if [ -f $val ];
