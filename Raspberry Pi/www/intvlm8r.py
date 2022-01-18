@@ -1113,14 +1113,16 @@ def monitoring():
     templateData = {
         'hbUrl'  : '',
         'hbFreq' : '',
-        'hbResult' : ''
+        'hbResult' : 'None'
         }
     templateData['hbUrl']  = getIni('Monitoring', 'heartbeatUrl', 'string', '')
     templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', 'Off')
 
     try:
         with open(PI_HBRESULT_FILE, 'r') as f:
-            templateData['hbResult'] = f.readline()
+            hbResult = f.readline()
+            if hbResult:
+                templateData['hbResult'] = hbResult
     except Exception as e:
         app.logger.debug(f'Exception reading PI_HBRESULT_FILE in /monitoring: {e}')
 
