@@ -2254,6 +2254,11 @@ def getCeleryTasks():
     try:
         # Inspect all nodes.
         i = celery.control.inspect(['celery_worker@' + HOSTNAME])
+        d = i.stats()
+        if not d:
+            app.logger.debug('getCeleryTasks reports no Celery workers running.')
+            flash('There are no Celery workers running')
+            return
         # Show tasks that are currently active.
         activeTasks = i.active()
         if activeTasks != None:
