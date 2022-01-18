@@ -383,7 +383,7 @@ install_website ()
 	if [ $SUDO_USER != 'pi' ];
 	then
 		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
-		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "intvlm8r.logrotate" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
 		for val in "${ServiceFiles[@]}";
 		do
 			if [ -f $val ];
