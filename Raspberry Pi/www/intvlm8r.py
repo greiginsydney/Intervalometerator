@@ -2020,6 +2020,7 @@ def createConfigFile(iniFile):
         config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
+        config.set('Global', 'locationName', HOSTNAME)
         config.set('Global', 'thumbscount', '24')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
