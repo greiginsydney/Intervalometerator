@@ -1521,11 +1521,14 @@ def readRange ( camera, group, attribute ):
                     try:
                         if (grandchild.get_name() == attribute):
                             currentValue = grandchild.get_value()
+                            if grandchild.get_type() == gp.GP_WIDGET_TEXT:
+                                #This attribute is only text, there are no options. Return.
+                                break
                             for k in range(grandchild.count_choices()):
                                 choice = grandchild.get_choice(k)
                                 options.append(choice)
                     except Exception as e:
-                        app.logger.debug(f'Exception in readRange: {e}')
+                        app.logger.debug(f'Exception in readRange: {e}. Group/Attribute = {group}/{attribute}, currentValue = {currentValue}')
                         #break   #We have found and extracted the attribute we were seeking
     except Exception as e:
         app.logger.debug(f'readRange threw: {e}')
