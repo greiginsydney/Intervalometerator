@@ -732,14 +732,11 @@ void receiveEvent(int howMany) {
       //It wants to know the date:
       rtc.update(); //This updates the registers
       sprintf(sendToPi, "20%02d%02d%02d", rtc.year(), rtc.month(), rtc.date());
-      //strcpy(sendToPi, getMyDate(tempDate));
     }
     else if (incoming == "1")
     {
       //It wants to know the time:
-      //tempTime = getMyTime();
       sprintf(sendToPi, "%02d%02d%02d", rtc.hour(), rtc.minute(), rtc.second());
-      //strcpy(sendToPi, tempTime);
     }
     else if (incoming == "2")
     {
