@@ -486,7 +486,7 @@ def getArduinoDate():
 def getArduinoTime():
     formattedTime = ''
     try:
-        rawTime = str(readString("1", 8, False))
+        rawTime = str(readString("1", 6, False))
         if rawTime != 'Unknown':
             formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
