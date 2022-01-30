@@ -273,7 +273,7 @@ void SetAlarm1()
   if (StartHour < EndHour)
   {
     //Normal daytime shoot, or 24hr operation
-    Serial.println("Trad daytime shoot");
+    //Serial.println("Trad daytime shoot");
     if (nextHour < StartHour)
     {
       //We haven't yet started for the day:
@@ -289,23 +289,23 @@ void SetAlarm1()
     }
     else
     {
-      Serial.println(" - we're in the shooting window. (Daytime shoot)");
+      //Serial.println(" - we're in the shooting window. (Daytime shoot)");
     }
   }
   else
   {
     //Shoot through midnight
-    Serial.println("STM");
+    //Serial.println("STM");
     if ((nextHour >= EndHour) && (nextHour < StartHour))
     {
         //We haven't yet started for the day:
-        Serial.println(" - we haven't started for the day yet");
+        //Serial.println(" - we haven't started for the day yet");
         nextHour = StartHour;
         nextShot = 0;
     }
     else
     {
-      Serial.println(" - we're in the shooting window - STM");
+      //Serial.println(" - we're in the shooting window - STM");
     }
   }
 
@@ -322,14 +322,14 @@ void SetAlarm1()
     if (StartHour > EndHour)
     {
       //STM
-      Serial.println("STM in the day calculation");
+      //Serial.println("STM in the day calculation");
       if (nextHour < EndHour)
       {
         //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
-        Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
+        //Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
         if (prevShootDay & ShootDays)
         {
-          Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
+          //Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
           break;
         }
         else
