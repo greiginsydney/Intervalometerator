@@ -17,9 +17,10 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
  
-Last updated/changed in version:
-4.4.2 - **DEV**
-*****************************************************************************/
+*/ 
+//Last updated/changed in version:
+char version[6] = "4.4.2"; ** STILL IN DEV **
+/*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
 #include <EEPROM.h>
@@ -758,6 +759,11 @@ void receiveEvent(int howMany) {
     {
       //It wants to know the Pi on time and duration:
       sprintf(sendToPi, "%02d%02d", WakePiHour, WakePiDuration);
+    }
+    else if (incoming == "6")
+    {
+      //It wants to know my version number:
+      sprintf(sendToPi, version);
     }
     return; //Requests have all been responded to. OK to exit the ISR
   }
