@@ -1269,6 +1269,7 @@ def system():
         'wakePiDuration'      : '',
         'rebootSafeWord'      : REBOOT_SAFE_WORD,
         'intvlm8rVersion'     : 'Unknown',
+        'arduinoVersion'      : 'Unknown',
         'libgphoto2Version'   : 'Unknown',
         'pythonGphoto2Version': 'Unknown',
         'cameraDateTime'      : 'Unknown'
@@ -1323,6 +1324,14 @@ def system():
         templateData['pythonGphoto2Version'] = gp.__version__
     except Exception as e:
         app.logger.debug(f'system: Unexpected error querying version info: {e}')
+
+    try:
+        arduinoVersion = str(readFromArduino("6", "String", True)) # I think we're safe caching this?
+        arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
+        if arduinoVersion != None:
+            templateData['arduinoVersion'] = arduinoVersion.group(0)
+    except Exception as e:
+        app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')        
 
     try:
         if not config:
