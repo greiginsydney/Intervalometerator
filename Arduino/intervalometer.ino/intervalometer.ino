@@ -765,6 +765,11 @@ void receiveEvent(int howMany) {
       //It wants to know my version number:
       sprintf(sendToPi, version);
     }
+    else
+    {
+      //Unknown request:
+      sprintf(sendToPi, "Bad request - %d", (int)incoming[0]);
+    }
     return; //Requests have all been responded to. OK to exit the ISR
   }
 
