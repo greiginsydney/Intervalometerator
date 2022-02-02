@@ -1265,13 +1265,13 @@ test_os()
 		echo ''
 	else
 		echo ''
-        	echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
-        	echo $desktop
-        	echo ''
-        	echo "Use the Raspberry Pi Imager @ https://www.raspberrypi.com/software/ to install the 'no desktop environment' version"
-        	echo "(It's on the 'Raspberry Pi OS (other)' page)"
-        	echo "See https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md"
-        	echo ''
+		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
+		echo $desktop
+		echo ''
+		echo "Use the Raspberry Pi Imager @ https://www.raspberrypi.com/software/ to install the 'no desktop environment' version"
+		echo "(It's on the 'Raspberry Pi OS (other)' page)"
+		echo "See https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md"
+		echo ''
 		exit
 	fi
 }
