@@ -1252,6 +1252,31 @@ test_install ()
 }
 
 
+test_os()
+{
+	set +e #Suspend the error trap
+	desktop=$(type Xorg 2>&1)
+	set -e #Resume the error trap
+	matchRegex="not found$"
+	if [[ $desktop =~ $matchRegex ]];
+	then
+		echo ''
+		echo -e ""$GREEN"PASS:"$RESET" OS test passed"
+		echo ''
+	else
+		echo ''
+        	echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
+        	echo $desktop
+        	echo ''
+        	echo "Use the Raspberry Pi Imager @ https://www.raspberrypi.com/software/ to install the 'no desktop environment' version"
+        	echo "(It's on the 'Raspberry Pi OS (other)' page)"
+        	echo "See https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md"
+        	echo ''
+		exit
+	fi
+}
+
+
 prompt_for_reboot()
 {
 	echo ''
@@ -1284,6 +1309,8 @@ then
 	echo -e "(Only the 'start' step needs the extra -H switch)"
 	exit 1
 fi
+
+test_os
 
 case "$1" in
 	('start')
