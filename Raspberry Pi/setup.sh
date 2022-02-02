@@ -1310,29 +1310,33 @@ then
 	exit 1
 fi
 
-test_os
-
 case "$1" in
 	('start')
+		test_os
 		install_apps
 		prompt_for_reboot
 		;;
 	('web')
+		test_os
 		install_website
 		prompt_for_reboot
 		;;
 	('login')
+		test_os
 		chg_web_login
 		;;
 	('ap')
+		test_os
 		make_ap
 		prompt_for_reboot
 		;;
 	('noap')
+		test_os
 		unmake_ap
 		prompt_for_reboot
 		;;
 	('time')
+		test_os
 		timeTest
 		timeSync1
 		timeSync2
