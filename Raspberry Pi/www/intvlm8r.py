@@ -1264,6 +1264,7 @@ def system():
         'piUptime'            : 'Unknown',
         'piModel'             : 'Unknown',
         'piLinuxVer'          : 'Unknown',
+        'piBitness'           : 'Unknown',
         'piSpaceFree'         : 'Unknown',
         'wakePiTime'          : '',
         'wakePiDuration'      : '',
@@ -1311,6 +1312,10 @@ def system():
     templateData['piNtp'] = checkNTP(None)
 
     try:
+        if (sys.maxsize > 2**32):
+            templateData['piBitness']   = '64'
+        else:
+            templateData['piBitness']   = '32'
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'],_ = getDiskSpace()
