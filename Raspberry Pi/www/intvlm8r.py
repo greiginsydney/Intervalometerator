@@ -143,7 +143,7 @@ def writeString(value, waitTime):
     return -1
 
 
-def readString(value, rxLength, cacheRequest):
+def readString(value, cacheRequest):
     ascii = ord(value[0])
     if (cacheRequest == True):
         cached = cache.get(value)
@@ -156,8 +156,7 @@ def readString(value, rxLength, cacheRequest):
     
     status = ""    
     app.logger.debug(f'ASCII = {ascii}')
-    if not rxLength:
-        rxLength = 32
+    rxLength = 32
 
     for x in range(0, 2):
         try:
@@ -324,7 +323,7 @@ def main():
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
 
     try:
-        arduinoStats = str(readString("2", 11, False))
+        arduinoStats = str(readString("2", False))
         if arduinoStats != "Unknown":
             lastShot= arduinoStats.split(":")[0]
             if lastShot != "19999":
@@ -474,7 +473,7 @@ def setArduinoDateTime():
 def getArduinoDate():
     formattedDate = 'Unknown'
     try:
-        rawDate = str(readString("0", 8, False))
+        rawDate = str(readString("0", False))
         if rawDate != 'Unknown':
             formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
@@ -486,7 +485,7 @@ def getArduinoDate():
 def getArduinoTime():
     formattedTime = ''
     try:
-        rawTime = str(readString("1", 6, False))
+        rawTime = str(readString("1", False))
         if rawTime != 'Unknown':
             formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
@@ -766,7 +765,7 @@ def intervalometer():
     except Exception as e:
         app.logger.debug(f'Unknown camera error in intervalometer: {e}')
 
-    ArdInterval = str(readString("3", 7, True))
+    ArdInterval = str(readString("3", True))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug(f'Int query returned: {ArdInterval}')
     if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
@@ -908,7 +907,7 @@ def transfer():
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
 
-    rawWakePi = str(readString("5", 4, True))
+    rawWakePi = str(readString("5", True))
     if rawWakePi != "Unknown":
         templateData['wakePiTime']     = rawWakePi[0:2]
 
@@ -1063,7 +1062,7 @@ def thermal():
 
     try:
         writeString("GT", 2) # Asks the Arduino to update its temperature string
-        temperatures = str(readString("4", 7, False)) # Reads the resulting string, a csv array
+        temperatures = str(readString("4", False)) # Reads the resulting string, a csv array
         templateData['arduinoTemp'] = temperatures.split(",")[0]
         templateData['arduinoMin']  = temperatures.split(",")[2]
         templateData['arduinoMax']  = temperatures.split(",")[1]
@@ -1301,7 +1300,7 @@ def system():
         tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
         if tempTime != '':
                 templateData['arduinoTime'] = tempTime
-        rawWakePi = str(readString("5", 4, True))
+        rawWakePi = str(readString("5", True))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
@@ -2347,7 +2346,7 @@ def getShotsPerDay():
     """
     shotsPerDay = 0
     try:
-        ArdInterval = str(readString("3", 7, True))
+        ArdInterval = str(readString("3", True))
         #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
         if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
             startHour = int(ArdInterval[1:3])
