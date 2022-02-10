@@ -306,10 +306,15 @@ install_website ()
 	then
 		mv -nv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
 	fi
-	
+
 	if [ -f piThumbsInfo.txt ];
 	then
 		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
+	fi
+
+	if [ -f piTransfer.log ];
+	then
+		mv -nv piTransfer.log ~/www/static/piTransfer.log # -n = "do not overwrite"
 	fi
 	
 	chown -R $SUDO_USER:www-data ${HOME}
