@@ -184,7 +184,7 @@ void setup()
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
-  UpdateTempMinMax(""); //Reset or initialise the temperature readings on boot
+  UpdateTempMinMax("", -1); //Reset or initialise the temperature readings on boot
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
@@ -644,7 +644,7 @@ void DelaymS(int pauseFor)
 
 // Called once on boot and every hour thereafter, as Alarm2 fires
 // Also called by the Pi as a precursor to requesting the temps be fed back to it.
-void UpdateTempMinMax(String resetOption)
+void UpdateTempMinMax(String resetOption, int thisHour)
 {
   float tempy = rtc.temperature();
   tempy < 0 ? tempy -= 0.5 : tempy += 0.5; // Need to cater for negative temps. Round all numbers away from zero
@@ -890,7 +890,7 @@ void loop()
       rtc.update();
       if (rtc.minute() == 0)
       {
-        UpdateTempMinMax("");  // Runs at the top of the hour, 24x7
+        UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -973,19 +973,19 @@ void loop()
 
   if (getTempsFlag == true)
   {
-    UpdateTempMinMax("");
+    UpdateTempMinMax("", -1);
     getTempsFlag = false;
   }
 
   if (resetTempMinFlag == true)
   {
-    UpdateTempMinMax("Min");
+    UpdateTempMinMax("Min", -1);
     resetTempMinFlag = false;
   }
 
   if (resetTempMaxFlag == true)
   {
-    UpdateTempMinMax("Max");
+    UpdateTempMinMax("Max", -1);
     resetTempMaxFlag = false;
   }
 
