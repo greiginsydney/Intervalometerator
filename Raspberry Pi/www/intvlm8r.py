@@ -161,15 +161,18 @@ def readFromArduino(value, dataType, cacheRequest):
     for x in range(0, 2):
         try:
             array = bus.read_i2c_block_data(address, ascii, rxLength)
+            if dataType == "Binary":
+                status = array
+                break
             for i in range(len(array)):
                  if (array[i] == 0):
                      break
                  status += chr(array[i])
-            app.logger.debug(f'Status received was: >{status}<')
             break   # Break out of the retry loop if we get to here
         except Exception as e:
             app.logger.debug(f'readString error: {e}')
             time.sleep(1) # Wait a second before each retry
+    app.logger.debug(f'Status received was {dataType}: >{status}<')
 
     if (cacheRequest == True):
         cache.set(value, status, timeout = 0)
