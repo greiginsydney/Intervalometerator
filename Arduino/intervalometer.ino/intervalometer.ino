@@ -773,6 +773,11 @@ void receiveEvent(int howMany) {
       //It wants to know my version number:
       sprintf(sendToPi, version);
     }
+    else if (incoming == "7")
+    {
+      //It wants to know the last 24 hours' temp's:
+      sprintf(sendToPi, DailyTemps);
+    }
     else
     {
       //Unknown request:
