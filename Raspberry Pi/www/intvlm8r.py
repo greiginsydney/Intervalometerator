@@ -1070,8 +1070,14 @@ def thermal():
         templateData['arduinoMin']  = temperatures.split(",")[2]
         templateData['arduinoMax']  = temperatures.split(",")[1]
     except Exception as e:
-        app.logger.debug(f'Exception in /thermal: {e}')
+        app.logger.debug(f'GT exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
+    
+    try:
+        temperatures = str(readFromArduino("7", "Binary", False)) # Reads 24 hours' worth of temp's as 24 bytes of binary data
+        app.logger.debug(f'Binary temp result: {temperatures}')
+    except Exception as e:
+        app.logger.debug(f'24 temps exception in /thermal: {e}')
     
     return render_template('thermal.html', **templateData)
 
