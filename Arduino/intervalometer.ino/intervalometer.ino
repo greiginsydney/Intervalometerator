@@ -665,6 +665,14 @@ void UpdateTempMinMax(String resetOption, int thisHour)
     EEPROM.put(MEMTempMax, roundedTemp); 
     currentMax = roundedTemp;
   }
+ 
+  //Only update the hour-based readings if we've been called by the Alarm2 handler:
+  if (thisHour != -1)
+  {
+    //Serial.println("Alarm 2 temp read: Hour = " + String(thisHour) + ", temp = " + String(roundedTemp)  + "\r\n");
+    DailyTemps[thisHour] = char(roundedTemp);
+  }
+ 
   sprintf(TemperaturesString, "%d,%d,%d", roundedTemp, currentMax, currentMin);
   //Serial.println("Temps [current, max, min]: " + String(TemperaturesString) + "\r\n");
   return;
