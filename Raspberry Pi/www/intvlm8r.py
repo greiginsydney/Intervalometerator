@@ -1073,11 +1073,20 @@ def thermal():
         app.logger.debug(f'GT exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
     
+    time.sleep(0.1)
+    Temps24 = []
     try:
-        temperatures = str(readFromArduino("7", "Binary", False)) # Reads 24 hours' worth of temp's as 24 bytes of binary data
-        app.logger.debug(f'Binary temp result: {temperatures}')
+        temperatures = readFromArduino("7", "Binary", False) # Reads 24 hours' worth of temp's as 24 bytes of binary data
+        temperatures[3]= 254
+        for i in range(24):
+            value = int.from_bytes((temperatures[i]).to_bytes(1, byteorder='little'), 'little', signed=True)
+            # app.logger.info(f'Temp at {i} = {value} degrees')
+            Temps24.append({'hour' : str(i), 'temp' : value }) # Was "str(value)"
     except Exception as e:
-        app.logger.debug(f'24 temps exception in /thermal: {e}')
+        app.logger.debug(f'Temps24 exception in /thermal: {e}')
+        for i in range(24):
+            Temps24.append({'hour' : str(i), 'temp' : 0 }) # Was '0'
+    templateData.update({'Temps24' : Temps24})
     
     return render_template('thermal.html', **templateData)
 
