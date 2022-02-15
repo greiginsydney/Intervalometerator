@@ -666,8 +666,7 @@ void UpdateTempMinMax(String resetOption, int thisHour)
   int8_t currentMax;
   EEPROM.get(MEMTempMin, currentMin);
   EEPROM.get(MEMTempMax, currentMax);
-  currentMin = ValidateIncoming (127  , currentMin, -128, 127);
-  currentMax = ValidateIncoming (-128 , currentMax, -128, 127);
+  
   if (resetOption == "Min" || roundedTemp  < currentMin)
   {
     EEPROM.put(MEMTempMin, roundedTemp);
