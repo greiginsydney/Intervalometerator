@@ -1057,7 +1057,11 @@ def thermal():
         'arduinoTemp'    : 'Unknown',
         'arduinoMin'     : 'Unknown',
         'arduinoMax'     : 'Unknown',
-        'piTemp'         : 'Unknown'
+        'piTemp'         : 'Unknown',
+        'dayTempMax'     : '- ',
+        'dayTempMaxAt'   : '',
+        'dayTempMin'     : '- ',
+        'dayTempMinAt'   : ''
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
@@ -1078,10 +1082,20 @@ def thermal():
     try:
         temperatures = readFromArduino("7", "Binary", False) # Reads 24 hours' worth of temp's as 24 bytes of binary data
         temperatures[3]= 254
+        dayTempMax = -128
+        dayTempMin =  127
         for i in range(24):
             value = int.from_bytes((temperatures[i]).to_bytes(1, byteorder='little'), 'little', signed=True)
-            # app.logger.info(f'Temp at {i} = {value} degrees')
+            app.logger.info(f'Temp at {i} = {value} degrees')
             Temps24.append({'hour' : str(i), 'temp' : value }) # Was "str(value)"
+            if value > dayTempMax:
+                dayTempMax = value
+                templateData['dayTempMaxAt'] = i
+            if value < dayTempMin:
+                dayTempMin = value
+                templateData['dayTempMinAt'] = i
+        templateData['dayTempMax'] = str(dayTempMax)
+        templateData['dayTempMin'] = str(dayTempMin)
     except Exception as e:
         app.logger.debug(f'Temps24 exception in /thermal: {e}')
         for i in range(24):
