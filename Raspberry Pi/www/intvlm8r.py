@@ -30,6 +30,7 @@ import importlib.util           # Testing installed packages
 import io                       # Camera preview
 import json
 import logging
+import math                     # Used for ceiling in /thermal calcs
 import os                       # Hostname
 import psutil
 import re                       # RegEx. Used in Copy Files & createDestFilename
@@ -1061,7 +1062,8 @@ def thermal():
         'dayTempMax'     : '- ',
         'dayTempMaxAt'   : '',
         'dayTempMin'     : '- ',
-        'dayTempMinAt'   : ''
+        'dayTempMinAt'   : '',
+        'dayTempMaxScale': 80
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
@@ -1094,8 +1096,9 @@ def thermal():
             if value < dayTempMin:
                 dayTempMin = value
                 templateData['dayTempMinAt'] = i
-        templateData['dayTempMax'] = str(dayTempMax)
-        templateData['dayTempMin'] = str(dayTempMin)
+        templateData['dayTempMax']      = str(dayTempMax)
+        templateData['dayTempMin']      = str(dayTempMin)
+        templateData['dayTempMaxScale'] = math.ceil(dayTempMax/5)*5; # Rounds Max temp to nearest 5 so the table can auto-scale
     except Exception as e:
         app.logger.debug(f'Temps24 exception in /thermal: {e}')
         for i in range(24):
