@@ -101,6 +101,8 @@ char NextShotMsg[6] = "19999";  // Sent to the Pi. Same as above.
 char Intervalstring[8];         // Sent to the Pi. Is "<d><startHour><EndHour><Interval>"
 char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<MinTemp>"
 
+int8_t DailyTemps[25];          // 24 temperature readings, one per hour. The offset is the reading for that hour.
+
 //////////////////////////////////
 //            SETUP             //
 //////////////////////////////////
