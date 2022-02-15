@@ -63,7 +63,7 @@
 						<li>
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
-								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp']|float) * 100 / 80) }}%">{{ thisHoursTemp['temp'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format (thisHoursTemp['temp'] * 100 / 80) }}%">{{ thisHoursTemp['temp'] }}</span>
 							</a>
 						</li>
 						{% endfor %}
