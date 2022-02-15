@@ -683,7 +683,7 @@ void UpdateTempMinMax(String resetOption, int thisHour)
   if (thisHour != -1)
   {
     //Serial.println("Alarm 2 temp read: Hour = " + String(thisHour) + ", temp = " + String(roundedTemp)  + "\r\n");
-    DailyTemps[thisHour] = char(roundedTemp);
+    DailyTemps[thisHour] = roundedTemp;
     EEPROM.write(MEM24Temp0 + thisHour, roundedTemp); // Back it up to EEPROM
   }
  
