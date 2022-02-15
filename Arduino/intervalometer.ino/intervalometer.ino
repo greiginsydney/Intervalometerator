@@ -650,9 +650,9 @@ void UpdateTempMinMax(String resetOption, int thisHour)
 {
   float tempy = rtc.temperature();
   tempy < 0 ? tempy -= 0.5 : tempy += 0.5; // Need to cater for negative temps. Round all numbers away from zero
-  int roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
-  int currentMin;
-  int currentMax;
+  int8_t roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
+  int8_t currentMin;
+  int8_t currentMax;
   EEPROM.get(MEMTempMin, currentMin);
   EEPROM.get(MEMTempMax, currentMax);
   currentMin = ValidateIncoming (200  , currentMin, -200, 200);
