@@ -63,7 +63,7 @@
 						<li>
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
-								<span class="count" style="height: {{ '%0.2f'| format (thisHoursTemp['temp'] * 100 / 80) }}%">{{ thisHoursTemp['temp'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp']) * 100 / dayTempMaxScale) }}%">{{ thisHoursTemp['temp'] }}</span>
 							</a>
 						</li>
 						{% endfor %}
@@ -71,8 +71,8 @@
 					<div class="meterscale">
 					</div>
 					<div class="graticule">
-						{% for i in range(-10,85,5) %}
-						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / 80)) }}%;"><span>{{ i }}&deg;</span></div>
+						{% for i in range(-10, dayTempMaxScale + 5, 5) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / dayTempMaxScale)) }}%;"><span>{{ i }}&deg;</span></div>
 						{% endfor %}
 					</div>
 				</div>
