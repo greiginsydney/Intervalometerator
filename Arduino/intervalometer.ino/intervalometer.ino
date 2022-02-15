@@ -778,7 +778,11 @@ void receiveEvent(int howMany) {
     else if (incoming == "7")
     {
       //It wants to know the last 24 hours' temp's:
-      sprintf(sendToPi, DailyTemps);
+      for (int i = 0; i <= 23; i++)
+      {
+        sendToPi[i] = DailyTemps[i];
+      }
+      sendToPi[24] = '\0'; //Perhaps a formality?
     }
     else
     {
