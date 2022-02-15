@@ -1083,7 +1083,6 @@ def thermal():
     Temps24 = []
     try:
         temperatures = readFromArduino("7", "Binary", False) # Reads 24 hours' worth of temp's as 24 bytes of binary data
-        temperatures[3]= 254
         dayTempMax = -128
         dayTempMin =  127
         for i in range(24):
