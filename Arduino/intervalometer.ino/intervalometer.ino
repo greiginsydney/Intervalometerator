@@ -54,8 +54,8 @@ char version[6] = "4.5.0"; // **DEV**
 #define MEMEndHour    0x04
 #define MEMWakePiHour 0x05
 #define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  // 2 bytes to store an int.
-#define MEMTempMax    0x09  // "
+#define MEMTempMin    0x07  // Changed from int (2 bytes) to int8_t (1 byte) in 4.5.0
+#define MEMTempMax    0x08  // "
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -181,8 +181,8 @@ void setup()
     EEPROM.write(MEMInterval, interval);
     EEPROM.write(MEMWakePiHour, WakePiHour);
     EEPROM.write(MEMWakePiDuration, WakePiDuration);
-    EEPROM.put(MEMTempMin, (int)200); //Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.put(MEMTempMax, (int)-200);
+    EEPROM.put(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.put(MEMTempMax, (int8_t)-128);
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
@@ -655,8 +655,8 @@ void UpdateTempMinMax(String resetOption, int thisHour)
   int8_t currentMax;
   EEPROM.get(MEMTempMin, currentMin);
   EEPROM.get(MEMTempMax, currentMax);
-  currentMin = ValidateIncoming (200  , currentMin, -200, 200);
-  currentMax = ValidateIncoming (-200 , currentMax, -200, 200);
+  currentMin = ValidateIncoming (127  , currentMin, -128, 127);
+  currentMax = ValidateIncoming (-128 , currentMax, -128, 127);
   if (resetOption == "Min" || roundedTemp  < currentMin)
   {
     EEPROM.put(MEMTempMin, roundedTemp);
