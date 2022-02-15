@@ -163,6 +163,11 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
+    for (int i = 0; i <= 23; i++)
+    {
+      DailyTemps[i] = EEPROM.read(MEM24Temp0 + i);
+      //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
+    }
     //Serial.println( F("Values from RAM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
     //Serial.println( "  end hour   = " + String(EndHour));
@@ -185,6 +190,10 @@ void setup()
     EEPROM.write(MEMWakePiDuration, WakePiDuration);
     EEPROM.put(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.put(MEMTempMax, (int8_t)-128);
+    for (int i = 0; i <= 23; i++)
+    {
+      DailyTemps[i] = (int8_t)-128;
+    }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
