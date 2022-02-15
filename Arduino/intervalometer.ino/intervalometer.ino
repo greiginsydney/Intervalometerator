@@ -19,7 +19,7 @@ References:
  
 */ 
 //Last updated/changed in version:
-char version[6] = "4.5.0"; // ** DEV**
+char version[6] = "4.5.0"; // **DEV**
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -828,8 +828,8 @@ void receiveEvent(int howMany) {
 // callback for sending data
 void sendData()
 {
-  //Serial.println(" - SENT = " + String(sendToPi));
-  Wire.write((byte *) &sendToPi, sizeof(sendToPi));
+  int sent = Wire.write((byte *) &sendToPi, 32);
+  //Serial.println(" - SENT = " + String(sent) + " bytes");
 }
 
 
