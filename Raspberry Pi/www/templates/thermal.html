@@ -50,6 +50,35 @@
 			</td>
 		</tr>
 	</table>
+	
+	<table>
+		<tr>
+			<th>Daily Temperatures</th>
+		</tr>
+		<tr>
+			<td class="nopadding">
+				<div class="metercontainer">
+					<ul class="timeline">
+						{% for thisHoursTemp in Temps24 %}
+						<li>
+							<a title="{{ thisHoursTemp['temp'] }}&deg;">
+								<span class="label">{{ thisHoursTemp['hour'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp']|float) * 100 / 80) }}%">{{ thisHoursTemp['temp'] }}</span>
+							</a>
+						</li>
+						{% endfor %}
+					</ul>
+					<div class="meterscale">
+					</div>
+					<div class="graticule">
+						{% for i in range(-10,85,5) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / 80)) }}%;"><span>{{ i }}&deg;</span></div>
+						{% endfor %}
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
 </form>
 
 
