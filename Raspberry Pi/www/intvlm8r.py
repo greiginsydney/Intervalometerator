@@ -171,7 +171,7 @@ def readFromArduino(value, dataType, cacheRequest):
                  status += chr(array[i])
             break   # Break out of the retry loop if we get to here
         except Exception as e:
-            app.logger.debug(f'readString error: {e}')
+            app.logger.debug(f'readFromArduino error: {e}')
             time.sleep(1) # Wait a second before each retry
     app.logger.debug(f'Status received was {dataType}: >{status}<')
 
