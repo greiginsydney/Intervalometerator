@@ -155,7 +155,7 @@ def readFromArduino(value, dataType, cacheRequest):
             app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
     
-    status = ""    
+    status = ""
     app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
 
@@ -1098,7 +1098,9 @@ def thermal():
                 templateData['dayTempMinAt'] = i
         templateData['dayTempMax']      = str(dayTempMax)
         templateData['dayTempMin']      = str(dayTempMin)
-        templateData['dayTempMaxScale'] = math.ceil(dayTempMax/5)*5; # Rounds Max temp to nearest 5 so the table can auto-scale
+        templateData['dayTempMaxScale'] = max(10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
+                                                                             # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
+                                                                             # and also prevents a /0 error if the Arduino doesn't respond as expected.
     except Exception as e:
         app.logger.debug(f'Temps24 exception in /thermal: {e}')
         for i in range(24):
