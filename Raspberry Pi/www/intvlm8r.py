@@ -1072,7 +1072,7 @@ def thermal():
     try:
         writeString("GT", 2) # Asks the Arduino to update its temperature string
         temperatures = str(readFromArduino("4", "String", False)) # Reads the resulting string, a csv array
-        if temperatures:
+        if 'Unknown' not in temperatures:
             templateData['arduinoTemp'] = temperatures.split(",")[0]
             templateData['arduinoMin']  = temperatures.split(",")[2]
             templateData['arduinoMax']  = temperatures.split(",")[1]
