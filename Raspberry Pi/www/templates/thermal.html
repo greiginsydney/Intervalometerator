@@ -63,7 +63,11 @@
 						<li>
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
+								{% if thisHoursTemp['temp'] >= 0 %}
 								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp']) * 100 / dayTempMaxScale) }}%">{{ thisHoursTemp['temp'] }}</span>
+								{% else %}
+								<span class="negcount" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp'])|abs) * 100 / dayTempMaxScale) }}%">{{ thisHoursTemp['temp'] }}</span>
+								{% endif %}
 							</a>
 						</li>
 						{% endfor %}
