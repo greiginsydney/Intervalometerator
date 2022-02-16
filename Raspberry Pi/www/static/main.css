@@ -535,6 +535,18 @@ input[type=radio] {
   overflow: hidden;
 }
 
+.timeline li a .negcount {
+  display: block;
+  position: absolute;
+  bottom: -2em;
+  left: 0;
+  height: 0;
+  width: 100%;
+  background: #AAA;
+  text-indent: -9999px;
+  overflow: hidden;
+}
+
 .timeline li:hover {
   background: #EFEFEF;
 }
