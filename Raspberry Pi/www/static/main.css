@@ -551,7 +551,8 @@ input[type=radio] {
   background: #EFEFEF;
 }
 
-.timeline li a:hover .count {
+.timeline li a:hover .count,
+.timeline li a:hover .negcount{
   background: #2D7BB2;
 }
 
