@@ -1101,6 +1101,7 @@ def thermal():
         templateData['dayTempMaxScale'] = max(10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
                                                                              # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
                                                                              # and also prevents a /0 error if the Arduino doesn't respond as expected.
+        templateData['dayTempMinScale'] = math.floor(dayTempMin/5)*5;        # Rounds Min temp to nearest 5 so the table can auto-scale
     except Exception as e:
         app.logger.debug(f'Temps24 exception in /thermal: {e}')
         for i in range(24):
