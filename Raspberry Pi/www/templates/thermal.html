@@ -66,14 +66,14 @@
 								{% if thisHoursTemp['temp'] >= 0 %}
 								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp']) * 100 / dayTempMaxScale) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% else %}
-								<span class="negcount" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp'])|abs) * 100 / dayTempMaxScale) }}%">{{ thisHoursTemp['temp'] }}</span>
+								<span class="negcount" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp'])|abs) * 100 / dayTempMinScale) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% endif %}
 							</a>
 						</li>
 						{% endfor %}
 					</ul>
 					<div class="graticule">
-						{% for i in range(-10, dayTempMaxScale + 5, 5) %}
+						{% for i in range(dayTempMinScale, dayTempMaxScale + 5, 5) %}
 						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / dayTempMaxScale)) }}%;"><span>{{ i }}&deg;</span></div>
 						{% endfor %}
 					</div>
