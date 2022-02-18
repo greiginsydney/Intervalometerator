@@ -479,7 +479,7 @@ input[type=radio] {
   position: absolute;
   background-color: white;
   font-size: 0.75em;
-  padding: 0 1px;
+  padding: 0 0.5px;
   left: 0;
   bottom: -0.65em;
   margin-left: 100%;
@@ -491,8 +491,8 @@ input[type=radio] {
   font-size: 0.75em;
   height: 12em;
   padding: 0;
-  margin-left: 4%;
-  margin-right: 4%;
+  margin-left: 4.5%;
+  margin-right: 4.5%;
   background: transparent;
 }
 
