@@ -1096,10 +1096,10 @@ def thermal():
             if value < dayTempMin:
                 dayTempMin = value
                 templateData['dayTempMinAt'] = i
-        if dayTempMin > 0:
-            dayTempMin = 0
         templateData['dayTempMax']      = str(dayTempMax)
         templateData['dayTempMin']      = str(dayTempMin)
+        if dayTempMin > 0:
+            dayTempMin = 0 # Reset to 0 for positive-days to ensure the scale is zero-referenced
         templateData['dayTempMaxScale'] = max(10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
                                                                              # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
                                                                              # and also prevents a /0 error if the Arduino doesn't respond as expected.
