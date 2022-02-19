@@ -620,12 +620,6 @@ input[type=radio] {
 
 @media (max-width:400px) {
 
-	.timeline {
-		margin-left: 6%;
-		margin-right: 6%;
-		height: 10em;
-	}
-	
 	.timeline li .label {
 		display: none;
 	}
