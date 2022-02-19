@@ -58,6 +58,14 @@
 		<tr>
 			<td class="nopadding">
 				<div class="metercontainer">
+					<div class="graticule">
+						{% if dayTempMinScale > 0 %}
+							{% set dayTempMinScale = 0 %}
+						{% endif %}
+						{% for i in range(dayTempMinScale, dayTempMaxScale + 5, 5) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}&deg;</span></div>
+						{% endfor %}
+					</div>
 					<ul class="timeline">
 						{% for thisHoursTemp in Temps24 %}
 						<li>
@@ -72,14 +80,6 @@
 						</li>
 						{% endfor %}
 					</ul>
-					<div class="graticule">
-						{% if dayTempMinScale > 0 %}
-							{% set dayTempMinScale = 0 %}
-						{% endif %}
-						{% for i in range(dayTempMinScale, dayTempMaxScale + 5, 5) %}
-						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}&deg;</span></div>
-						{% endfor %}
-					</div>
 				</div>
 			</td>
 		</tr>
