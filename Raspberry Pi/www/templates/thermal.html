@@ -67,8 +67,9 @@
 						{% endfor %}
 					</div>
 					<ul class="timeline">
+						{% set ScaledZero = '%0.2f'| format  ((dayTempMaxScale / (dayTempMaxScale + dayTempMinScale|abs + 5)) * 100) %}
 						{% for thisHoursTemp in Temps24 %}
-						<li>
+						<li style="height: {{ ScaledZero }}%">
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
 								{% if thisHoursTemp['temp'] >= 0 %}
