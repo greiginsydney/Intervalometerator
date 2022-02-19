@@ -1370,7 +1370,7 @@ def system():
         app.logger.debug(f'system: Unexpected error querying version info: {e}')
 
     try:
-        arduinoVersion = str(readFromArduino("6", "String", True)) # I think we're safe caching this?
+        arduinoVersion = str(readFromArduino("6", "String", False))
         arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
         if arduinoVersion != None:
             templateData['arduinoVersion'] = arduinoVersion.group(0)
