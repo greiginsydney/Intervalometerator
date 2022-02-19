@@ -1096,6 +1096,8 @@ def thermal():
             if value < dayTempMin:
                 dayTempMin = value
                 templateData['dayTempMinAt'] = i
+        if dayTempMin > 0:
+            dayTempMin = 0
         templateData['dayTempMax']      = str(dayTempMax)
         templateData['dayTempMin']      = str(dayTempMin)
         templateData['dayTempMaxScale'] = max(10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
