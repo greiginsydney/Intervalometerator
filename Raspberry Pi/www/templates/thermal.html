@@ -86,14 +86,14 @@
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Daily maximum{% if dayTempMaxAt != '' %} (at {{ '%02d:00' % dayTempMaxAt }}){% endif %}:</div>
-				<div class="alignright" >{{ dayTempMax }}&deg;</div>
+				<div class="alignleft">Daily minimum{% if dayTempMinAt != '' %} (at {{ '%02d:00' % dayTempMinAt }}){% endif %}:</div>
+				<div class="alignright" >{{ dayTempMin }}&deg;</div>
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Daily minimum{% if dayTempMinAt != '' %} (at {{ '%02d:00' % dayTempMinAt }}){% endif %}:</div>
-				<div class="alignright" >{{ dayTempMin }}&deg;</div>
+				<div class="alignleft">Daily maximum{% if dayTempMaxAt != '' %} (at {{ '%02d:00' % dayTempMaxAt }}){% endif %}:</div>
+				<div class="alignright" >{{ dayTempMax }}&deg;</div>
 			</td>
 		</tr>
 	</table>
