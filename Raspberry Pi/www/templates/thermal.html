@@ -121,6 +121,7 @@ function handleRadioClick()
 	var expires = "expires="+d.toUTCString();
 	document.cookie = "thermalUnits=" + val + ";" + expires + ";path=/";
 	updateValues()
+	document.thermalForm.submit()
 }
 
 function updateValues()
