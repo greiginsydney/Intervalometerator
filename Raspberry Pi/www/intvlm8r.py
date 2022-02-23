@@ -1123,8 +1123,10 @@ def thermalPOST():
 
     if request.form.get('thermalUnits') == 'Celsius':
         res.set_cookie('thermalUnits', 'Celsius', 7 * 24 * 60 * 60)
+        setIni('Environmental', 'thermalUnits', 'Celsius')
     else:
         res.set_cookie('thermalUnits', 'Fahrenheit', 7 * 24 * 60 * 60)
+        setIni('Environmental', 'thermalUnits', 'Fahrenheit')
 
     if 'resetMin' in request.form:
         app.logger.debug('thermal sent RN')
