@@ -467,8 +467,8 @@ input[type=radio] {
 
 .vScale {
   position: absolute;
-  overflow:visible;
-  height:0.5em;
+  overflow: visible;
+  height: 0.5em;
   margin: 0;
   width: 95%;
   padding: 0;
@@ -479,10 +479,12 @@ input[type=radio] {
   position: absolute;
   background-color: white;
   font-size: 0.75em;
-  padding: 0 0.5px;
+  padding: 0;
   left: 0;
   bottom: -0.65em;
   margin-left: 100%;
+  width: 4.5%;
+  text-align: right;
 }
 
 .timeline {
