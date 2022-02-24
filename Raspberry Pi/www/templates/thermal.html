@@ -59,21 +59,21 @@
 			<td class="nopadding">
 				<div class="metercontainer">
 					<div class="graticule">
-						{% if dayTempMinScale > 0 %}
-							{% set dayTempMinScale = 0 %}
+						{% if dayTempMinScale > freezing %}
+							{% set dayTempMinScale = freezing %}
 						{% endif %}
 						{% for i in range(dayTempMinScale, dayTempMaxScale + 5, 5) %}
 						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}&deg;</span></div>
 						{% endfor %}
 					</div>
 					<ul class="timeline">
-						{% set ScaledZero = '%0.2f'| format  ((dayTempMaxScale / (dayTempMaxScale + dayTempMinScale|abs + 5)) * 100) %}
+						{% set AdjustedFreezing = '%0.2f'| format  (((dayTempMaxScale - freezing) / (dayTempMaxScale - dayTempMinScale|abs + 5)) * 100) %}
 						{% for thisHoursTemp in Temps24 %}
-						<li style="height: {{ ScaledZero }}%">
+						<li style="height: {{ AdjustedFreezing }}%">
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
-								{% if thisHoursTemp['temp'] >= 0 %}
-								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp']) * 100 / dayTempMaxScale) }}%">{{ thisHoursTemp['temp'] }}</span>
+								{% if thisHoursTemp['temp'] >= freezing %}
+								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp'] - freezing) * 100 / (dayTempMaxScale - dayTempMinScale|abs + 5)) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% else %}
 								<span class="negcount" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp']|abs ) / dayTempMaxScale) * 100) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% endif %}
