@@ -1064,7 +1064,8 @@ def thermal():
         'dayTempMin'     : '- ',
         'dayTempMinAt'   : '',
         'dayTempMaxScale': 80,
-        'dayTempMinScale': -40
+        'dayTempMinScale': -40,
+        'freezing'       : 0
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
