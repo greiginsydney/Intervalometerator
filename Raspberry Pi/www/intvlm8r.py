@@ -1098,25 +1098,28 @@ def thermal():
         for i in range(24):
             value = int.from_bytes((temperatures[i]).to_bytes(1, byteorder='little'), 'little', signed=True)
             app.logger.info(f'Temp at {i} = {value} degrees')
-            Temps24.append({'hour' : str(i), 'temp' : value }) # Was "str(value)"
+            Temps24.append({'hour' : str(i), 'temp' : convertTemp(value, thermalUnits)})
             if value > dayTempMax:
                 dayTempMax = value
                 templateData['dayTempMaxAt'] = i
             if value < dayTempMin:
                 dayTempMin = value
                 templateData['dayTempMinAt'] = i
-        templateData['dayTempMax']      = str(dayTempMax)
-        templateData['dayTempMin']      = str(dayTempMin)
-        if dayTempMin > 0:
-            dayTempMin = 0 # Reset to 0 for positive-days to ensure the scale is zero-referenced
-        templateData['dayTempMaxScale'] = max(10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
+        templateData['dayTempMax']      = str(dayTempMax) # C/F conversion happens in the page
+        templateData['dayTempMin']      = str(dayTempMin) # Here I'm stamping the ACTUAL Min to the page for the table, but 
+                                                           # next I adjust it for "freezing", to set dayTempMinScale
+        if dayTempMin > freezing:
+            dayTempMin = freezing # Reset to 'freezing' for positive-days to ensure the scale is zero-referenced
+        dayTempMin = convertTemp(dayTempMin, thermalUnits)
+        dayTempMax = convertTemp(dayTempMax, thermalUnits)
+        templateData['dayTempMaxScale'] = max(freezing + 10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
                                                                              # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
                                                                              # and also prevents a /0 error if the Arduino doesn't respond as expected.
         templateData['dayTempMinScale'] = math.floor(dayTempMin/5)*5;        # Rounds Min temp to nearest 5 so the table can auto-scale
     except Exception as e:
         app.logger.debug(f'Temps24 exception in /thermal: {e}')
         for i in range(24):
-            Temps24.append({'hour' : str(i), 'temp' : 0 }) # Was '0'
+            Temps24.append({'hour' : str(i), 'temp' : freezing })
     templateData.update({'Temps24' : Temps24})
     
     return render_template('thermal.html', **templateData)
