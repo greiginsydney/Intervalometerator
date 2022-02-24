@@ -1069,7 +1069,14 @@ def thermal():
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
-    if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
+    if thermalUnits == 'Fahrenheit' :
+        templateData['thermalUnits'] = "Fahrenheit"
+        templateData['freezing'] = 32
+        freezing = 32
+    else:
+        thermalUnits = 'Celsius'
+        templateData['freezing'] = 0
+        freezing = 0
 
     try:
         writeString("GT", 2) # Asks the Arduino to update its temperature string
