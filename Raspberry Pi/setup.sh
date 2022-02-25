@@ -1232,9 +1232,19 @@ test_install ()
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
 	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
 	
-	if systemctl --all --type service | grep -Fq remoteit-headless ;
+	if systemctl --all --type service | grep -Fq remoteit ;
 	then
-		systemctl is-active --quiet remoteit-headless && echo -e ""$GREEN"PASS:"$RESET" remoteit service is running" || echo -e ""$YELLOW"FAIL:"$RESET" remoteit    service is dead"
+		if systemctl is-active --quiet remoteit-headless ;
+		then
+			echo -e ""$GREEN"PASS:"$RESET" remoteit service is running"
+		else
+			if systemctl is-active --quiet schannel;
+			then
+				echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
+			else
+				echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
+			fi
+		fi
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
