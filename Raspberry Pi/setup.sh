@@ -122,8 +122,8 @@ install_apps ()
 	pip3 install Werkzeug
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
 	pip3 install flask flask-bootstrap flask-login Flask_Caching configparser
-	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
-	pip3 install gunicorn psutil
+	echo -e ""$GREEN"Installing gunicorn, psutil, packaging"$RESET""
+	pip3 install gunicorn psutil packaging
 	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
