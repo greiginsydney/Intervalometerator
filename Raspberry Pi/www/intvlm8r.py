@@ -1107,15 +1107,20 @@ def thermal():
                 templateData['dayTempMinAt'] = i
         templateData['dayTempMax']      = str(dayTempMax) # C/F conversion happens in the page
         templateData['dayTempMin']      = str(dayTempMin) # Here I'm stamping the ACTUAL Min to the page for the table, but 
-                                                           # next I adjust it for "freezing", to set dayTempMinScale
+                                                          # next I adjust it for "freezing", to set dayTempMinScale
         if dayTempMin > freezing:
             dayTempMin = freezing # Reset to 'freezing' for positive-days to ensure the scale is zero-referenced
         dayTempMin = convertTemp(dayTempMin, thermalUnits)
         dayTempMax = convertTemp(dayTempMax, thermalUnits)
-        templateData['dayTempMaxScale'] = max(freezing + 10,math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
-                                                                             # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
-                                                                             # and also prevents a /0 error if the Arduino doesn't respond as expected.
-        templateData['dayTempMinScale'] = math.floor(dayTempMin/5)*5;        # Rounds Min temp to nearest 5 so the table can auto-scale
+        dayTempMaxScale = max((freezing+10),math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
+                                                                        # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
+                                                                        # and also prevents a /0 error if the Arduino doesn't respond as expected.
+        dayTempMinScale = math.floor(dayTempMin/5)*5;       # Rounds Min temp to nearest 5 so the table can auto-scale
+        
+        templateData['dayTempMaxScale'] = dayTempMaxScale
+        templateData['dayTempMinScale'] = dayTempMinScale
+        #app.logger.info(f'Freezing = {freezing}, dayTempMaxScale / dayTempMinScale = {dayTempMaxScale} / {dayTempMinScale}')
+
     except Exception as e:
         app.logger.debug(f'Temps24 exception in /thermal: {e}')
         for i in range(24):
