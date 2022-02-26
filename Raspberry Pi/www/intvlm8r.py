@@ -205,6 +205,18 @@ def getPiTemp():
     return temp
 
 
+def getArduinoVersion(returnValue):
+    try:
+        arduinoVersion = str(readFromArduino("6", "String", False))
+        arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
+        if arduinoVersion != None:
+            returnValue = arduinoVersion.group(0)
+    except Exception as e:
+        app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')
+    app.logger.debug(f'returnValue = {returnValue}')
+    return returnValue
+
+
 @app.context_processor
 def customisation():
     loc = cache.get('locationName')
@@ -1391,13 +1403,7 @@ def system():
     except Exception as e:
         app.logger.debug(f'system: Unexpected error querying version info: {e}')
 
-    try:
-        arduinoVersion = str(readFromArduino("6", "String", False))
-        arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
-        if arduinoVersion != None:
-            templateData['arduinoVersion'] = arduinoVersion.group(0)
-    except Exception as e:
-        app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')        
+    templateData['arduinoVersion'] = getArduinoVersion('Unknown')       
 
     try:
         if not config:
