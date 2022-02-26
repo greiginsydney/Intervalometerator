@@ -20,6 +20,7 @@
 
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
+from packaging import version   # getArduinoVersion and related
 from PIL import Image           # For the camera page preview button
 from urllib.parse import urlparse, urljoin # Login
 import calendar
