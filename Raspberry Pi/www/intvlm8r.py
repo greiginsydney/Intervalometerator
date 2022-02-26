@@ -1074,7 +1074,7 @@ def thermal():
         templateData['freezing'] = 32
         freezing = 32
     else:
-        thermalUnits = 'Celsius'
+        thermalUnits = 'Celsius'   # Just in case the cookie doesn't exist.
         templateData['freezing'] = 0
         freezing = 0
 
