@@ -73,7 +73,7 @@
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
 								{% if thisHoursTemp['temp'] >= freezing %}
-								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp'] - freezing) * 100 / (dayTempMaxScale - dayTempMinScale|abs + 5)) }}%">{{ thisHoursTemp['temp'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format ((thisHoursTemp['temp'] - freezing) * 100 / (dayTempMaxScale - dayTempMinScale|abs)) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% else %}
 								<span class="negcount" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp']|abs ) / dayTempMaxScale) * 100) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% endif %}
