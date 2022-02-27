@@ -206,15 +206,15 @@ def getPiTemp():
     return temp
 
 
-def getArduinoVersion(returnvalue):
+def getArduinoVersion(returnValue):
     try:
         arduinoVersion = str(readFromArduino("6", "String", False))
         arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
         if arduinoVersion != None:
-            returnvalue = arduinoVersion.group(0)
+            returnValue = arduinoVersion.group(0)
     except Exception as e:
         app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')
-    return returnvalue
+    return returnValue
 
 
 @app.context_processor
@@ -1484,7 +1484,7 @@ def systemPOST():
     return redirect(url_for('system'))
 
 
-def checkNTP(returnvalue):
+def checkNTP(returnValue):
     try:
         cmd = ['/bin/systemctl', 'is-active', 'systemd-timesyncd']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
@@ -1493,7 +1493,7 @@ def checkNTP(returnvalue):
             stdoutdata = stdoutdata.strip()
             if stdoutdata == 'active':
                 app.logger.info(f'systemd-timesyncd = {stdoutdata}. The Pi takes its time from NTP')
-                returnvalue = True
+                returnValue = True
             else:
                 app.logger.info(f'systemd-timesyncd = {stdoutdata}. The Pi does NOT take its time from NTP')
         if stderrdata:
@@ -1501,7 +1501,7 @@ def checkNTP(returnvalue):
             app.logger.debug(f'systemd-timesyncd error = {stderrdata}')
     except Exception as e:
         app.logger.debug(f'Unhandled systemd-timesyncd error: {e}')
-    return returnvalue
+    return returnValue
 
 
 def setTime(newTime):
@@ -1611,7 +1611,7 @@ def readRange ( camera, group, attribute ):
     return currentValue, options
 
 
-def getCameraTimeAndDate( camera, config, returnvalue ):
+def getCameraTimeAndDate( camera, config, returnValue ):
     try:
         # find the date/time setting config item and get it
         # name varies with camera driver
@@ -1626,18 +1626,18 @@ def getCameraTimeAndDate( camera, config, returnvalue ):
                 if widget_type == gp.GP_WIDGET_DATE:
                     raw_value = gp.check_result(
                         gp.gp_widget_get_value(datetime_config))
-                    returnvalue = datetime.fromtimestamp(raw_value).strftime('%Y %b %d %H:%M:%S')
+                    returnValue = datetime.fromtimestamp(raw_value).strftime('%Y %b %d %H:%M:%S')
                 else:
                     raw_value = gp.check_result(gp.gp_widget_get_value(datetime_config))
                     if fmt:
                         camera_time = datetime.strptime(raw_value, fmt)
                     else:
                         camera_time = datetime.utcfromtimestamp(float(raw_value))
-                    returnvalue = camera_time.isoformat(' ')
+                    returnValue = camera_time.isoformat(' ')
                 break
     except Exception as e:
         app.logger.debug(f'Error reading camera time and date: {e}')
-    return returnvalue
+    return returnValue
 
 
 def setCameraTimeAndDate(camera, config, newTimeDate):
