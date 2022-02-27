@@ -46,6 +46,7 @@ import time
 import gphoto2 as gp
 
 from werkzeug.security import check_password_hash
+from werkzeug.exceptions import InternalServerError
 
 from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g, send_from_directory
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
@@ -2439,6 +2440,23 @@ def norobots():
     res.status_code = 200
     res.headers["Content-Type"] = "text/plain; charset=utf-8"
     return res
+
+
+@app.errorhandler(InternalServerError)
+def handle_500(e):
+    templateData = {
+        'errorAt' : 'Internal Server Error',
+        'errorIs' : 'Check ~/www/gunicorn.error for details'
+    }
+    try:
+        formatted_lines = traceback.format_exc().splitlines()
+        for error_location in formatted_lines:
+            if 'intvlm8r.py' in error_location:
+                templateData['errorAt'] = error_location
+        templateData['errorIs'] = formatted_lines[-1]
+    except Exception as e:
+        app.logger.debug(f'handle_500: Unhandled exception: {e}')
+    return render_template('500.html', **templateData),500
 
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
