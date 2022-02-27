@@ -16,4 +16,20 @@
 		</td>
 	</tr>
 </table>
+<table class="noborder">
+	<tr>
+		<td class="noborder">
+			<div class="alignleft">
+			<button name="GoBack" id="GoBack" onclick="history.back()">Back</button>
+		</td>
+	</tr>
+</table>
+
+<script>
+if (window.history.length == 1)
+{
+	document.getElementById("GoBack").disabled = true;
+}
+</script>
+
 {% endblock %}
