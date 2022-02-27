@@ -206,16 +206,15 @@ def getPiTemp():
     return temp
 
 
-def getArduinoVersion(returnValue):
+def getArduinoVersion(returnvalue):
     try:
         arduinoVersion = str(readFromArduino("6", "String", False))
         arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
         if arduinoVersion != None:
-            returnValue = arduinoVersion.group(0)
+            returnvalue = arduinoVersion.group(0)
     except Exception as e:
         app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')
-    app.logger.debug(f'returnValue = {returnValue}')
-    return returnValue
+    return returnvalue
 
 
 @app.context_processor
