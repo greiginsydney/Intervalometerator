@@ -199,7 +199,9 @@ The fix is to edit edit `/opt/remoteit-headless/scripts/remoteit-headless.servic
 After=network.target rc-local.service celery.service
 ```
 
-This just tells remote.it not to start until Celery is up. [(Reference: Issue #79)](https://github.com/greiginsydney/Intervalometerator/issues/79).
+If the above file doesn't exist, look for `/etc/systemd/system/connectd.service` and make the same edit there.
+
+This just tells remote.it not to start until Celery is up. References: [Issue #79](https://github.com/greiginsydney/Intervalometerator/issues/79), [Issue #114](https://github.com/greiginsydney/Intervalometerator/issues/114).
 
 ### Check the cron jobs
 
