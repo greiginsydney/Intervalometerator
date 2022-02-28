@@ -42,6 +42,7 @@ import struct
 import subprocess
 import sys
 import time
+import traceback                # @app.errorhandle
 
 import gphoto2 as gp
 
