@@ -209,12 +209,14 @@ def getPiTemp():
 
 def getArduinoVersion(returnValue):
     try:
-        arduinoVersion = str(readFromArduino("6", "String", False))
-        arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
-        if arduinoVersion != None:
-            returnValue = arduinoVersion.group(0)
+        rawArduinoVersion = str(readFromArduino("6", "String", False))
+        arduinoVersion = version.Version(rawArduinoVersion)  # This will throw if it's not a valid version
+        returnValue = arduinoVersion
+    except version.InvalidVersion as e:
+        app.logger.debug(f'getArduinoVersion: InvalidVersion error: {e}')
     except Exception as e:
-        app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')
+        app.logger.debug(f'getArduinoVersion: Unexpected error: {e}')
+    app.logger.debug(f'getArduinoVersion returned {returnValue}')
     return returnValue
 
 
