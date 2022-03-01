@@ -412,7 +412,7 @@ input[type=radio] {
 .graticule {
   position: absolute;
   font-size: 0.75em;
-  width: 97%;
+  width: 96.5%;
   height: 18em; /* I need to be the same height as .timeline */
   top: 0;
   left: 4%;
