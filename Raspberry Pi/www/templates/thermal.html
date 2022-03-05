@@ -60,9 +60,6 @@
 			<td class="nopadding">
 				<div class="metercontainer">
 					<div class="graticule">
-						{% if dayTempMinScale > freezing %}
-							{% set dayTempMinScale = freezing %}
-						{% endif %}
 						{% for i in range(dayTempMinScale, dayTempMaxScale + 5, 5) %}
 						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}&deg;</span></div>
 						{% endfor %}
