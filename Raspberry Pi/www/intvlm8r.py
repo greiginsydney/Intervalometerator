@@ -1136,7 +1136,28 @@ def thermal():
             dayTempMaxScale = max((freezing+10),math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
                                                                             # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
                                                                             # and also prevents a /0 error if the Arduino doesn't respond as expected.
-            
+            # The graticule needs to step in 2's and 7's if F, not 0's and 5's:
+            if 'Fahrenheit' in thermalUnits:
+                if dayTempMinScale < 0:
+                    if dayTempMin > (dayTempMinScale + 3):
+                        dayTempMinScale += 3
+                    else:
+                        dayTempMinScale -= 2
+                else:
+                    if dayTempMin > (dayTempMinScale + 2):
+                        dayTempMinScale += 2
+                    else:
+                        dayTempMinScale -= 3
+                if dayTempMaxScale >= 0:
+                    if dayTempMax > (dayTempMaxScale - 3):
+                        dayTempMaxScale += 2
+                    else:
+                        dayTempMaxScale -= 3
+                else:
+                    if dayTempMax > (dayTempMaxScale + 3):
+                        dayTempMaxScale -= 2
+                    else:
+                        dayTempMaxScale += 3
             if dayTempMinScale > freezing:
                 dayTempMinScale = freezing
             templateData['dayTempMaxScale'] = dayTempMaxScale
