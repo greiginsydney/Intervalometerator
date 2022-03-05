@@ -68,7 +68,7 @@
 						{% endfor %}
 					</div>
 					<ul class="timeline">
-						{% set AdjustedFreezing = '%0.2f'| format (((dayTempMaxScale - freezing) / (dayTempMaxScale + dayTempMinScale|abs + 5)) * 100) %}
+						{% set AdjustedFreezing = '%0.2f'| format (((dayTempMaxScale - freezing) / (dayTempMaxScale - dayTempMinScale + 5)) * 100) %}
 						{% for thisHoursTemp in Temps24 %}
 						<li style="height: {{ AdjustedFreezing }}%">
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
