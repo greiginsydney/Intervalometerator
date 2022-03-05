@@ -1137,6 +1137,8 @@ def thermal():
                                                                             # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
                                                                             # and also prevents a /0 error if the Arduino doesn't respond as expected.
             
+            if dayTempMinScale > freezing:
+                dayTempMinScale = freezing
             templateData['dayTempMaxScale'] = dayTempMaxScale
             templateData['dayTempMinScale'] = dayTempMinScale
             
