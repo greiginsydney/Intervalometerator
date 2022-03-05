@@ -1132,10 +1132,10 @@ def thermal():
                 dayTempMin = freezing # Reset to 'freezing' for positive-days to ensure the scale is zero-referenced
             dayTempMin = convertTemp(dayTempMin, thermalUnits)
             dayTempMax = convertTemp(dayTempMax, thermalUnits)
+            dayTempMinScale = math.floor(dayTempMin/5)*5;                   # Rounds Min temp to nearest 5 so the table can auto-scale
             dayTempMaxScale = max((freezing+10),math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
                                                                             # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
                                                                             # and also prevents a /0 error if the Arduino doesn't respond as expected.
-            dayTempMinScale = math.floor(dayTempMin/5)*5;       # Rounds Min temp to nearest 5 so the table can auto-scale
             
             templateData['dayTempMaxScale'] = dayTempMaxScale
             templateData['dayTempMinScale'] = dayTempMinScale
