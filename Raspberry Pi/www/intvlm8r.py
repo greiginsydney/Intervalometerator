@@ -1139,22 +1139,22 @@ def thermal():
             # The graticule needs to step in 2's and 7's if F, not 0's and 5's:
             if 'Fahrenheit' in thermalUnits:
                 if dayTempMinScale < 0:
-                    if dayTempMin > (dayTempMinScale + 3):
-                        dayTempMinScale += 3
+                    if dayTempMin >= (dayTempMinScale + 2):
+                        dayTempMinScale += 2
                     else:
-                        dayTempMinScale -= 2
+                        dayTempMinScale -= 3
                 else:
-                    if dayTempMin > (dayTempMinScale + 2):
+                    if dayTempMin >= (dayTempMinScale + 2):
                         dayTempMinScale += 2
                     else:
                         dayTempMinScale -= 3
                 if dayTempMaxScale >= 0:
-                    if dayTempMax > (dayTempMaxScale - 3):
+                    if dayTempMax >= (dayTempMaxScale - 3):
                         dayTempMaxScale += 2
                     else:
                         dayTempMaxScale -= 3
                 else:
-                    if dayTempMax > (dayTempMaxScale + 3):
+                    if dayTempMax >= (dayTempMaxScale + 3):
                         dayTempMaxScale -= 2
                     else:
                         dayTempMaxScale += 3
