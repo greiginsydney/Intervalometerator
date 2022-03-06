@@ -1178,7 +1178,7 @@ def thermal():
 
 def convertTemp(temperature, units):
     if "Celsius" in units: return temperature
-    return (int((temperature) * 9/5) + 32)
+    return (int(round((temperature) * 9/5) + 32))
 
 
 @app.route("/thermal", methods = ['POST'])    # The thermal page's POST method
