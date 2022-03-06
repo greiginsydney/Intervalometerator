@@ -71,7 +71,7 @@
 							<a title="{{ thisHoursTemp['temp'] }}&deg;">
 								<span class="label">{{ thisHoursTemp['hour'] }}</span>
 								{% if thisHoursTemp['temp'] >= freezing %}
-								<span class="count" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp'] - freezing) / (dayTempMaxScale - freezing)) * 100 ) }}%">{{ thisHoursTemp['temp'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp'] - freezing) / (dayTempMaxScale - freezing)) * 100) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% else %}
 								<span class="negcount" style="height: {{ '%0.2f'| format ((((freezing - thisHoursTemp['temp'] ) / (freezing - dayTempMaxScale)) * 100)|abs) }}%">{{ thisHoursTemp['temp'] }}</span>
 								{% endif %}
@@ -97,9 +97,6 @@
 	</table>
 	{% endif %}
 </form>
-
-
-
 
 
 <script>
