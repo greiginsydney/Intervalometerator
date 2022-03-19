@@ -157,12 +157,6 @@ def readString(value, cacheRequest):
     status = ""    
     app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
-    if (ascii == 48 ): rxLength = 8  # "0" - Date - 8
-    if (ascii == 49 ): rxLength = 8  # "1" - Time
-    if (ascii == 50 ): rxLength = 11 # "2" - Last/next shots
-    if (ascii == 51 ): rxLength = 7  # "3" - Interval
-    # if (ascii == 52 ): rxLength = 7  # "4" - All temps (current, max, min)
-    # if (ascii == 53 ): rxLength = 4  # "5" - WakePi hour and runtime
 
     for x in range(0, 2):
         try:
@@ -1113,14 +1107,16 @@ def monitoring():
     templateData = {
         'hbUrl'  : '',
         'hbFreq' : '',
-        'hbResult' : ''
+        'hbResult' : 'None'
         }
     templateData['hbUrl']  = getIni('Monitoring', 'heartbeatUrl', 'string', '')
     templateData['hbFreq'] = getIni('Monitoring', 'heartbeatFrequency', 'string', 'Off')
 
     try:
         with open(PI_HBRESULT_FILE, 'r') as f:
-            templateData['hbResult'] = f.readline()
+            hbResult = f.readline()
+            if hbResult:
+                templateData['hbResult'] = hbResult
     except Exception as e:
         app.logger.debug(f'Exception reading PI_HBRESULT_FILE in /monitoring: {e}')
 
@@ -1267,11 +1263,13 @@ def system():
         'piUptime'            : 'Unknown',
         'piModel'             : 'Unknown',
         'piLinuxVer'          : 'Unknown',
+        'piBitness'           : 'Unknown',
         'piSpaceFree'         : 'Unknown',
         'wakePiTime'          : '',
         'wakePiDuration'      : '',
         'rebootSafeWord'      : REBOOT_SAFE_WORD,
         'intvlm8rVersion'     : 'Unknown',
+        'arduinoVersion'      : 'Unknown',
         'libgphoto2Version'   : 'Unknown',
         'pythonGphoto2Version': 'Unknown',
         'cameraDateTime'      : 'Unknown'
@@ -1313,6 +1311,10 @@ def system():
     templateData['piNtp'] = checkNTP(None)
 
     try:
+        if (sys.maxsize > 2**32):
+            templateData['piBitness']   = '64'
+        else:
+            templateData['piBitness']   = '32'
         templateData['piUptime']    = getPiUptime()
         templateData['piHostname']  = HOSTNAME
         templateData['piSpaceFree'],_ = getDiskSpace()
@@ -1326,6 +1328,14 @@ def system():
         templateData['pythonGphoto2Version'] = gp.__version__
     except Exception as e:
         app.logger.debug(f'system: Unexpected error querying version info: {e}')
+
+    try:
+        arduinoVersion = str(readString("6", False))
+        arduinoVersion = re.search(("^\d+\.\d+\.\d+$"), arduinoVersion) # Valid data is "digit(s)<dot>digit(s)<dot>digit(s)"
+        if arduinoVersion != None:
+            templateData['arduinoVersion'] = arduinoVersion.group(0)
+    except Exception as e:
+        app.logger.debug(f'system: Unexpected error querying Arduino version info: {e}')
 
     try:
         if not config:
@@ -1519,11 +1529,14 @@ def readRange ( camera, group, attribute ):
                     try:
                         if (grandchild.get_name() == attribute):
                             currentValue = grandchild.get_value()
+                            if grandchild.get_type() == gp.GP_WIDGET_TEXT:
+                                #This attribute is only text, there are no options. Return.
+                                break
                             for k in range(grandchild.count_choices()):
                                 choice = grandchild.get_choice(k)
                                 options.append(choice)
                     except Exception as e:
-                        app.logger.debug(f'Exception in readRange: {e}')
+                        app.logger.debug(f'Exception in readRange: {e}. Group/Attribute = {group}/{attribute}, currentValue = {currentValue}')
                         #break   #We have found and extracted the attribute we were seeking
     except Exception as e:
         app.logger.debug(f'readRange threw: {e}')
@@ -2018,6 +2031,7 @@ def createConfigFile(iniFile):
         config = configparser.ConfigParser()
         config.add_section('Global')
         config.set('Global', 'file created', time.strftime("%0d %b %Y",time.localtime(time.time())))
+        config.set('Global', 'locationName', HOSTNAME)
         config.set('Global', 'thumbscount', '24')
         config.add_section('Transfer')
         config.set('Transfer', 'tfrMethod', 'Off')
@@ -2252,6 +2266,11 @@ def getCeleryTasks():
     try:
         # Inspect all nodes.
         i = celery.control.inspect(['celery_worker@' + HOSTNAME])
+        d = i.stats()
+        if not d:
+            app.logger.debug('getCeleryTasks reports no Celery workers running.')
+            flash('There are no Celery workers running')
+            return
         # Show tasks that are currently active.
         activeTasks = i.active()
         if activeTasks != None:
@@ -2265,7 +2284,7 @@ def getCeleryTasks():
         else:
             app.logger.debug('getCeleryTasks reports there are no activeTasks')
     except Exception as e:
-        app.logger.debug('getCeleryTasks exception: {e}')
+        app.logger.debug(f'getCeleryTasks exception: {e}')
 
         
 @app.route("/iniview")

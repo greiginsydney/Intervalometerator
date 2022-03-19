@@ -18,12 +18,18 @@
 Description=intvlm8r.service. Gunicorn instance to serve intvlm8r
 After=network.target
 
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
 [Service]
 User=pi
 Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
 ExecStart=/usr/local/bin/gunicorn --workers 3 --reload --timeout 300 --log-level debug --log-file /home/pi/www/gunicorn.error --bind unix:intvlm8r.sock -m 007 wsgi:app
+
+Restart=on-failure
+RestartSec=10s
 
 [Install]
 WantedBy=multi-user.target

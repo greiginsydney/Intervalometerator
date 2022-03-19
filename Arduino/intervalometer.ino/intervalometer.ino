@@ -17,9 +17,10 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
  
-Last updated/changed in version:
-4.4.0 - STM
-*****************************************************************************/
+*/ 
+//Last updated/changed in version:
+char version[6] = "4.4.2";
+/*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
 #include <EEPROM.h>
@@ -273,7 +274,7 @@ void SetAlarm1()
   if (StartHour < EndHour)
   {
     //Normal daytime shoot, or 24hr operation
-    Serial.println("Trad daytime shoot");
+    //Serial.println("Trad daytime shoot");
     if (nextHour < StartHour)
     {
       //We haven't yet started for the day:
@@ -289,23 +290,23 @@ void SetAlarm1()
     }
     else
     {
-      Serial.println(" - we're in the shooting window. (Daytime shoot)");
+      //Serial.println(" - we're in the shooting window. (Daytime shoot)");
     }
   }
   else
   {
     //Shoot through midnight
-    Serial.println("STM");
+    //Serial.println("STM");
     if ((nextHour >= EndHour) && (nextHour < StartHour))
     {
         //We haven't yet started for the day:
-        Serial.println(" - we haven't started for the day yet");
+        //Serial.println(" - we haven't started for the day yet");
         nextHour = StartHour;
         nextShot = 0;
     }
     else
     {
-      Serial.println(" - we're in the shooting window - STM");
+      //Serial.println(" - we're in the shooting window - STM");
     }
   }
 
@@ -322,14 +323,14 @@ void SetAlarm1()
     if (StartHour > EndHour)
     {
       //STM
-      Serial.println("STM in the day calculation");
+      //Serial.println("STM in the day calculation");
       if (nextHour < EndHour)
       {
         //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
-        Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
+        //Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
         if (prevShootDay & ShootDays)
         {
-          Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
+          //Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
           break;
         }
         else
@@ -665,7 +666,6 @@ void UpdateTempMinMax(String resetOption)
     currentMax = roundedTemp;
   }
   sprintf(TemperaturesString, "%d,%d,%d", roundedTemp, currentMax, currentMin);
-  TemperaturesString[strlen(TemperaturesString)+1] = '\0'; //Add a null terminator as strlen will vary
   //Serial.println("Temps [current, max, min]: " + String(TemperaturesString) + "\r\n");
   return;
 }
@@ -732,14 +732,11 @@ void receiveEvent(int howMany) {
       //It wants to know the date:
       rtc.update(); //This updates the registers
       sprintf(sendToPi, "20%02d%02d%02d", rtc.year(), rtc.month(), rtc.date());
-      //strcpy(sendToPi, getMyDate(tempDate));
     }
     else if (incoming == "1")
     {
       //It wants to know the time:
-      //tempTime = getMyTime();
       sprintf(sendToPi, "%02d%02d%02d", rtc.hour(), rtc.minute(), rtc.second());
-      //strcpy(sendToPi, tempTime);
     }
     else if (incoming == "2")
     {
@@ -762,6 +759,16 @@ void receiveEvent(int howMany) {
     {
       //It wants to know the Pi on time and duration:
       sprintf(sendToPi, "%02d%02d", WakePiHour, WakePiDuration);
+    }
+    else if (incoming == "6")
+    {
+      //It wants to know my version number:
+      sprintf(sendToPi, version);
+    }
+    else
+    {
+      //Unknown request:
+      sprintf(sendToPi, "Bad request - %d", (int)incoming[0]);
     }
     return; //Requests have all been responded to. OK to exit the ISR
   }

@@ -274,6 +274,8 @@ install_apps ()
 
 install_website ()
 {
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
 	mkdir -pv photos
@@ -293,6 +295,7 @@ install_website ()
 		echo "/home/$SUDO_USER/photos/default_image.JPG" > photos/uploadedOK.txt #So we don't try to upload the default_image
 	fi
 	touch ${HOME}/setTime.log # Created here so it has correct ownership
+	touch ${HOME}/hbresults.txt
 
 	if [ -f default_image.JPG ];
 	then
@@ -303,10 +306,15 @@ install_website ()
 	then
 		mv -nv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
 	fi
-	
+
 	if [ -f piThumbsInfo.txt ];
 	then
 		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
+	fi
+
+	if [ -f piTransfer.log ];
+	then
+		mv -nv piTransfer.log ~/www/static/piTransfer.log # -n = "do not overwrite"
 	fi
 	
 	chown -R $SUDO_USER:www-data ${HOME}
@@ -382,7 +390,7 @@ install_website ()
 	if [ $SUDO_USER != 'pi' ];
 	then
 		echo -e ""$GREEN"Changing user from default:"$RESET" Updated hard-coded user references to new user $SUDO_USER"
-		declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "intvlm8r.logrotate" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+		#ServiceFiles declaration moved to the top of 'web'. (Now also used by daemon-reload step.)
 		for val in "${ServiceFiles[@]}";
 		do
 			if [ -f $val ];
@@ -446,7 +454,7 @@ install_website ()
 			mv -fv intvlm8r.service /etc/systemd/system/intvlm8r.service
 		fi
 	fi
-	systemctl start intvlm8r
+	#systemctl start intvlm8r - TEMPORARILY COMMENTED OUT FOR TESTING, PENDING DELETION (bugs2201)
 	echo 'Enabling intvlm8r'
 	systemctl enable intvlm8r
 
@@ -665,11 +673,12 @@ install_website ()
 	fi
 	timeSync2
 
-	# If upgrading, reload all services as a precautionary measure:
-	if [ -f www/intvlm8r.old ];
-	then
-		systemctl daemon-reload
-	fi
+	# Check and reload services if required:
+	# TY Alexander Tolkachev & Sergi Mayordomo, https://serverfault.com/questions/855042/how-do-i-know-if-systemctl-daemon-reload-needs-to-be-run
+	for val in "${ServiceFiles[@]}";
+	do
+		systemctl status $val 2>&1 | grep -q "changed on disk" && echo -e "\n"$GREEN"Executing daemon-reload"$RESET"" && systemctl daemon-reload && break;
+	done
 
 	# Step 101 - slows the I2C speed
 	if  grep -q 'dtparam=i2c1=on' /boot/config.txt;
@@ -1145,6 +1154,18 @@ timeSync2 ()
 test_install ()
 {
 	echo 'TEST!'
+	echo ''
+	set +e #Suspend the error trap
+	desktop=$(type Xorg 2>&1)
+	set -e #Resume the error trap
+	matchRegex="not found$"
+	if [[ $desktop =~ $matchRegex ]];
+	then
+		echo -e ""$GREEN"PASS:"$RESET" OS test passed"
+	else
+		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
+	fi
+	echo ''
 	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
 	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/cameraTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/cameraTransfer.service not found"
@@ -1211,9 +1232,19 @@ test_install ()
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
 	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
 	
-	if systemctl --all --type service | grep -Fq remoteit-headless ;
+	if systemctl --all --type service | grep -Fq remoteit ;
 	then
-		systemctl is-active --quiet remoteit-headless && echo -e ""$GREEN"PASS:"$RESET" remoteit service is running" || echo -e ""$YELLOW"FAIL:"$RESET" remoteit    service is dead"
+		if systemctl is-active --quiet remoteit-headless ;
+		then
+			echo -e ""$GREEN"PASS:"$RESET" remoteit service is running"
+		else
+			if systemctl is-active --quiet schannel;
+			then
+				echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
+			else
+				echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
+			fi
+		fi
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
@@ -1245,6 +1276,31 @@ test_install ()
 	
 	timeTest
 	echo ''
+}
+
+
+test_os()
+{
+	set +e #Suspend the error trap
+	desktop=$(type Xorg 2>&1)
+	set -e #Resume the error trap
+	matchRegex="not found$"
+	if [[ $desktop =~ $matchRegex ]];
+	then
+		echo ''
+		echo -e ""$GREEN"PASS:"$RESET" OS test passed"
+		echo ''
+	else
+		echo ''
+		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
+		echo $desktop
+		echo ''
+		echo "Use the Raspberry Pi Imager @ https://www.raspberrypi.com/software/ to install the 'no desktop environment' version"
+		echo "(It's on the 'Raspberry Pi OS (other)' page)"
+		echo "See https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md"
+		echo ''
+		exit
+	fi
 }
 
 
@@ -1283,25 +1339,31 @@ fi
 
 case "$1" in
 	('start')
+		test_os
 		install_apps
 		prompt_for_reboot
 		;;
 	('web')
+		test_os
 		install_website
 		prompt_for_reboot
 		;;
 	('login')
+		test_os
 		chg_web_login
 		;;
 	('ap')
+		test_os
 		make_ap
 		prompt_for_reboot
 		;;
 	('noap')
+		test_os
 		unmake_ap
 		prompt_for_reboot
 		;;
 	('time')
+		test_os
 		timeTest
 		timeSync1
 		timeSync2
