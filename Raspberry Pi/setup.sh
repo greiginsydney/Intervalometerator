@@ -535,7 +535,7 @@ install_website ()
 	#Redis
 	if grep -q "^ExecStartPost=/bin/sleep 1$" /etc/systemd/system/redis.service;
 	then
-		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "ExecStartPost=/bin/sleep 1"'
+		echo "Skipped: '/etc/systemd/system/redis.service' already contains 'ExecStartPost=/bin/sleep 1'"
 	else
 		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
 		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
@@ -740,7 +740,9 @@ END
 		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
 		echo -e ""$GREEN"WiFi power save mode disabled in /etc/rc.local"$RESET""
 	fi
-	
+
+	remoteit
+
 	# Prepare for reboot/restart:
 	echo 'Exited install_website OK.'
 }
@@ -1232,19 +1234,33 @@ test_install ()
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
 	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
 	
-	if systemctl --all --type service | grep -Fq remoteit ;
+	#remoteit
+	echo ''
+	set +e #Suspend the error trap
+	remoteit=$(dpkg -s remoteit 2> null)
+	set -e #Resume the error trap
+	
+	if [[ $remoteit == *"install ok"* ]];
 	then
-		if systemctl is-active --quiet remoteit-headless ;
+		if systemctl is-active --quiet schannel;
 		then
-			echo -e ""$GREEN"PASS:"$RESET" remoteit service is running"
+			echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
 		else
-			if systemctl is-active --quiet schannel;
-			then
-				echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
-			else
-				echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
-			fi
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
 		fi
+		
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+			then
+				echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+			else
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+			fi
+		else
+			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
+		fi
+		
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
@@ -1300,6 +1316,38 @@ test_os()
 		echo "See https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md"
 		echo ''
 		exit
+	fi
+}
+
+
+remoteit()
+{
+	if [ -f /usr/lib/systemd/system/connectd.service ];
+	then
+		echo -e 'remoteit is installed'
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			#There's already a customised version of connectd.service
+			echo -e 'A copy of connectd.service already exists in /etc/systemd/system/'
+		else
+			cp -fv /usr/lib/systemd/system/connectd.service /etc/systemd/system/connectd.service
+		fi
+		#Modify the service to wait until celery is up:
+		if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+		then
+			echo 'After=celery.service suffix is already present'
+		else
+			sed -i -E 's/^(After=network.target rc-local.service)(.*)$/\1 celery.service/g' /etc/systemd/system/connectd.service #Add AFTER celery.service
+			echo "Added 'After=celery.service' suffix"
+			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
+		fi
+	else
+		echo -e 'remoteit is not installed'
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			rm -f /etc/systemd/system/connectd.service;
+			echo 'Removed /etc/systemd/system/connectd.service'
+		fi
 	fi
 }
 
@@ -1368,11 +1416,14 @@ case "$1" in
 		timeSync1
 		timeSync2
 		;;
+	('remoteit')
+		remoteit
+		;;
 	('test')
 		test_install
 		;;
 	('')
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test' or 'time' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test', 'time' or 'remoteit' after the script name\n"
 		exit 1
 		;;
 	(*)
