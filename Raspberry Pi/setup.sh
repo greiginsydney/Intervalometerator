@@ -1235,19 +1235,15 @@ test_install ()
 	set +e #Suspend the error trap
 	remoteit=$(dpkg -s remoteit 2> null)
 	set -e #Resume the error trap
+	
 	if [[ $remoteit == *"install ok"* ]];
 	then
-		# if systemctl is-active --quiet remoteit-headless ;
-		# then
-			echo -e ""$GREEN"PASS:"$RESET" remoteit service is running"
-		# else
-			# if systemctl is-active --quiet schannel;
-			# then
-				# echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
-			# else
-				# echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
-			# fi
-		# fi
+		if systemctl is-active --quiet schannel;
+		then
+			echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
+		else
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
+		fi
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
