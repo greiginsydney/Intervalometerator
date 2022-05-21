@@ -1234,6 +1234,8 @@ test_install ()
 	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
 	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
 	
+	#remoteit
+	echo ''
 	set +e #Suspend the error trap
 	remoteit=$(dpkg -s remoteit 2> null)
 	set -e #Resume the error trap
@@ -1246,6 +1248,19 @@ test_install ()
 		else
 			echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
 		fi
+		
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+			then
+				echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+			else
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E setup.sh remoteit' to fix"
+			fi
+		else
+			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E setup.sh remoteit' to fix"
+		fi
+		
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
 	fi
