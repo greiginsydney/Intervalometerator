@@ -189,19 +189,22 @@ Still crook?
 
 ### Remote.it
 
-Remote.it allows you to communicate with the Raspberry Pi via a 4G/5G Wifi "dongle". The remote-it service running on the Pi effectively builds a VPN tunnel to the remote.it servers, from which you can then login and access the Pi down the tunnel.
+Remote.it allows you to communicate with the Raspberry Pi via a 4G/5G Wifi "dongle". The remote.it service running on the Pi effectively builds a VPN tunnel to the remote.it servers, from which you can then login and access the Pi down the tunnel.
 
 The [default installation of remote.it](https://support.remote.it/hc/en-us/articles/360047542051-Installing-remoteit-on-a-Raspberry-Pi-running-Raspbian-or-Raspberry-Pi-OS) breaks Celery, which handles the transfer of images from the camera, and the uploads from the Pi to the outside world.
 
-The fix is to edit edit `/opt/remoteit-headless/scripts/remoteit-headless.service` and change the "after" line to add celery, like this:
+The fix is to:
+1) make a copy of `connectd.service`:  `cp -fv /usr/lib/systemd/system/connectd.service /etc/systemd/system/connectd.service`
+2) edit `/etc/systemd/system/connectd.service`, telling it to wait until celery has started: `After=network.target rc-local.service celery.service`
 
-```python
-After=network.target rc-local.service celery.service
+The above changes are automatically made by the setup.sh script if remote.it is found to be installed (from 4.4.3). The setup script's 'test' feature will report the current status and if any corrective action is required: `sudo -E ./setup.sh test`:
+
+```bash
+PASS: schannel service is running (remoteit)
+PASS: /etc/systemd/system/connectd.service waits until celery is up
 ```
 
-If the above file doesn't exist, look for `/etc/systemd/system/connectd.service` and make the same edit there.
-
-This just tells remote.it not to start until Celery is up. References: [Issue #79](https://github.com/greiginsydney/Intervalometerator/issues/79), [Issue #114](https://github.com/greiginsydney/Intervalometerator/issues/114).
+References: [Issue #79](https://github.com/greiginsydney/Intervalometerator/issues/79), [Issue #114](https://github.com/greiginsydney/Intervalometerator/issues/114).
 
 ### Check the cron jobs
 
