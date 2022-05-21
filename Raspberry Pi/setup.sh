@@ -535,7 +535,7 @@ install_website ()
 	#Redis
 	if grep -q "^ExecStartPost=/bin/sleep 1$" /etc/systemd/system/redis.service;
 	then
-		echo 'Skipped: "/etc/systemd/system/redis.service" already contains "ExecStartPost=/bin/sleep 1"'
+		echo "Skipped: '/etc/systemd/system/redis.service' already contains 'ExecStartPost=/bin/sleep 1'"
 	else
 		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
 		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
@@ -700,7 +700,7 @@ install_website ()
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
 	if  grep -Fq 'intervalometerator' '/boot/config.txt';
 	then
-		echo "Skipped: '/boot/config.txt' already contains our added config lines'"
+		echo "Skipped: '/boot/config.txt' already contains our added config lines"
 	else
 cat <<END >> /boot/config.txt
 
