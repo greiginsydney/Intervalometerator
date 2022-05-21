@@ -1255,10 +1255,10 @@ test_install ()
 			then
 				echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
 			else
-				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E setup.sh remoteit' to fix"
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
 			fi
 		else
-			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E setup.sh remoteit' to fix"
+			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 		fi
 		
 	else
