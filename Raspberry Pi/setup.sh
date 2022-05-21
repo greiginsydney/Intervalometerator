@@ -740,7 +740,36 @@ END
 		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
 		echo -e ""$GREEN"WiFi power save mode disabled in /etc/rc.local"$RESET""
 	fi
-	
+
+	#remoteit
+	if [ -f /usr/lib/systemd/system/connectd.service ];
+	then
+		echo -e 'remoteit is installed'
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			#There's already a customised version of connectd.service
+			echo -e 'A copy of connectd.service already exists in /etc/systemd/system/'
+		else
+			cp -fv /usr/lib/systemd/system/connectd.service /etc/systemd/system/connectd.service
+		fi
+		#Modify the service to wait until celery is up:
+		if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+		then
+			echo 'After=celery.service suffix is already present'
+		else
+			sed -i -E 's/^(After=network.target rc-local.service)(.*)$/\1 celery.service/g' /etc/systemd/system/connectd.service #Add AFTER celery.service
+			echo "Added 'After=celery.service' suffix"
+			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
+		fi
+	else
+		echo -e 'remoteit is not installed'
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			rm -f /etc/systemd/system/connectd.service;
+			echo 'Removed /etc/systemd/system/connectd.service'
+		fi
+	fi
+
 	# Prepare for reboot/restart:
 	echo 'Exited install_website OK.'
 }
