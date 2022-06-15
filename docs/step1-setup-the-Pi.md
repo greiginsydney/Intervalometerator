@@ -110,12 +110,13 @@ An 'X' indicates the option will be installed
 1. [X] SFTP
 2. [X] Dropbox
 3. [X] Google Drive
+4. [ ] rsync
 
 Press 1, 2 or 3 to toggle the selection.
 Press return on its own to continue with the install
 ```
 
-Accept the defaults just by pressing return on its own, or choose 1, 2 or 3 (then return) to de-select the options that aren't relevant to you. (You can always install them later if the need arises).
+Accept the defaults just by pressing return on its own, or choose 1, 2, 3 or 4 (then return) to de-select the options that aren't relevant to you. (You can always install them later if the need arises).
 
 > If you choose ALL the options (the default), this step now takes **over an hour** to complete, depending on how slow your Internet connection is. (As at March 2020.) SFTP is the real time-killer here.
 
