@@ -1,6 +1,9 @@
 # Setup upload options
 
-The intvlm8r provides four methods to automatically upload images off the Raspberry Pi:
+The intvlm8r provides five methods to automatically upload images off the Raspberry Pi. FTP is baked into the Pi by default, however the others require you to install extra software components.
+
+The setup steps on this page require you to have already installed the required components. See [step1-setup-the-Pi.md, step 33](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md#heres-where-all-the-software-modules-are-installed-this-might-take-a-while)
+
 - [FTP](#ftp--sftp)
 - [SFTP](#ftp--sftp)
 - [Dropbox](#dropbox)
