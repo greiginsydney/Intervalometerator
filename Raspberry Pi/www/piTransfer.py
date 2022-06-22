@@ -590,6 +590,10 @@ def reauthGoogle():
         try:
             storage = Storage(GOOGLE_CREDENTIALS)
             credentials = storage.get()
+            if credentials:
+                log ('Google re-auth found GOOGLE_CREDENTIALS')
+            else:
+                log ('Google re-auth did not find GOOGLE_CREDENTIALS')
             flow = client.flow_from_clientsecrets('client_secrets.json',
                 scope='https://www.googleapis.com/auth/drive',
                 redirect_uri='urn:ietf:wg:oauth:2.0:oob')
