@@ -1352,6 +1352,14 @@ remoteit()
 }
 
 
+# Here's where I test new bits when I'm working on the script.
+# Released versions of the script shouldn't have anything there. That's the plan anyway.
+dev()
+{
+
+}
+
+
 prompt_for_reboot()
 {
 	echo ''
@@ -1421,6 +1429,9 @@ case "$1" in
 		;;
 	('test')
 		test_install
+		;;
+	('dev')
+		dev
 		;;
 	('')
 		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test', 'time' or 'remoteit' after the script name\n"
