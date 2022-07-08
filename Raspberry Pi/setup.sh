@@ -673,6 +673,39 @@ install_website ()
 	fi
 	timeSync2
 
+	#Disable the daily auto-update process.
+	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
+	echo ''
+	apt-get remove unattended-upgrades -y
+	
+	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
+	then
+		echo "apt-daily.timer could not be found"
+	else
+		if ( systemctl is-enabled apt-daily.timer >/dev/null 2>&1 );
+		then
+			systemctl stop apt-daily.timer
+			systemctl disable apt-daily.timer
+			systemctl mask apt-daily.timer
+			echo -e ""$GREEN"Stopped and disabled apt-daily.timer"$RESET""
+		else
+			echo 'apt-daily.timer   already stopped and disabled'
+		fi
+	fi
+
+	if [[ $(systemctl status apt-daily.service | grep -Fq "could not be found") ]];
+	then
+		echo "apt-daily.service could not be found"
+	else
+		if ( systemctl is-enabled apt-daily.service >/dev/null 2>&1 );
+		then
+			echo 'apt-daily.service already disabled'
+		else
+			systemctl mask apt-daily.service
+			echo -e ""$GREEN"Stopped and disabled apt-daily.service"$RESET""
+		fi
+	fi
+
 	# Check and reload services if required:
 	# TY Alexander Tolkachev & Sergi Mayordomo, https://serverfault.com/questions/855042/how-do-i-know-if-systemctl-daemon-reload-needs-to-be-run
 	for val in "${ServiceFiles[@]}";
