@@ -706,6 +706,19 @@ install_website ()
 		fi
 	fi
 
+	# Block GVFS if found. (So far only found on desktop installs of the o/s - and one reason why I'm not supporting the desktop)
+	# References:
+	# https://www.reddit.com/r/linuxquestions/comments/gfi31i/can_gvfs_be_disabled_and_removed/
+	# https://github.com/gphoto/gphoto2/issues/181
+	if [ -f /usr/lib/gvfs/gvfs-gphoto2-volume-monitor ];
+	then
+		chmod -v -x /usr/lib/gvfs/gvfs-gphoto2-volume-monitor
+	fi
+	if [ -f /usr/lib/gvfs/gvfsd-gphoto2 ];
+	then
+		chmod -v -x /usr/lib/gvfs/gvfsd-gphoto2
+	fi
+
 	# Check and reload services if required:
 	# TY Alexander Tolkachev & Sergi Mayordomo, https://serverfault.com/questions/855042/how-do-i-know-if-systemctl-daemon-reload-needs-to-be-run
 	for val in "${ServiceFiles[@]}";
