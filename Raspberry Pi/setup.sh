@@ -1342,6 +1342,14 @@ test_install ()
 	
 	timeTest
 	echo ''
+	
+	gvfsFiles="/usr/lib/gvfs/gvfsd-gphoto2 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor"
+	for gvfsFile in $gvfsFiles;
+	do
+		[ -x  $gvfsFile ] && ""$YELLOW"FAIL:"$RESET" %-41s is executable\n" $gvfsFile || printf ""$GREEN"PASS:"$RESET" %-41s is not an executable or does not exist\n" $gvfsFile
+	done
+
+	echo ''
 }
 
 
