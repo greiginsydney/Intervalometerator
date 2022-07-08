@@ -1266,6 +1266,23 @@ test_install ()
 	fi
 	echo ''
 
+	aptList="apt-daily.timer apt-daily.service"
+	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*"
+	for service in $aptList; do
+		status=$(systemctl show $service)
+		if [[ $status =~ $matchRegex ]] ;
+		then
+			serviceName=${BASH_REMATCH[1]}
+			serviceLoadState=${BASH_REMATCH[2]}
+			if [[ $serviceLoadState == 'masked' ]];
+			then
+				printf ""$GREEN"PASS:"$RESET" %-17s is masked\n" $service
+			else
+				printf ""$YELLOW"FAIL:"$RESET" %-17s is $serviceLoadState\n" $service
+			fi
+		fi
+	done
+
 	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
 	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
 	for service in $oneShotList; do
