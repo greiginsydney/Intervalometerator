@@ -1229,10 +1229,10 @@ test_install ()
 		echo -e ""$GREEN"PASS:"$RESET" WiFi power save is OFF"
 	fi
 	echo ''	
-	systemctl is-active --quiet nginx    && echo -e ""$GREEN"PASS:"$RESET" nginx    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" nginx    service is dead"
-	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
-	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
-	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
+	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx
+	systemctl is-active --quiet intvlm8r && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" intvlm8r || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" intvlm8r
+	systemctl is-active --quiet celery   && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" celery   || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" celery
+	systemctl is-active --quiet redis    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" redis    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" redis
 	
 	#remoteit
 	echo ''
