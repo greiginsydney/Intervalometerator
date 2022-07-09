@@ -26,43 +26,43 @@ There's no special config required to upload to an (S)FTP site. All you need to 
 
 ## Dropbox
 
-Prior to using Dropbox you need to perform some authentication steps to allow the intvlm8r to upload photos into your Dropbox account.
-
 NB: This process was last confirmed accurate in July 2022.
 
-1. Browse to [https://www.dropbox.com/developers](https://www.dropbox.com/developers)
-2. Click the "App console" button in the top right-hand corner:
+1. Before you can use Dropbox, you need to have installed the Dropbox API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Dropbox is greyed out and can't be selected, that option has not been installed. To install it, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
+
+2. Browse to [https://www.dropbox.com/developers](https://www.dropbox.com/developers)
+3. Click the "App console" button in the top right-hand corner:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/64750027-10aca180-d55b-11e9-8945-cb62cceb24e7.jpg" width="80%">
  </p>
 
-3. Sign in to your account.
-4. Click "Create App":
+4. Sign in to your account.
+5. Click "Create App":
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/64750062-24f09e80-d55b-11e9-95f3-cba0c8ed7ead.jpg" width="80%">
  </p>
 
-5. Choose the radio buttons for "Scoped access", "App Folder", give it a name and then click Create App:
+6. Choose the radio buttons for "Scoped access", "App Folder", give it a name and then click Create App:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093266-0226a41b-0313-423b-a289-8d7fb0819a45.png" width="80%">
  </p>
 
-6. Change the "App folder name" if required, and then copy the "App key":
+7. Change the "App folder name" if required, and then copy the "App key":
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093329-9f4f4676-5c85-4cde-b9da-30bdd5d8f67b.png" width="80%">
  </p>
 
-7. Switch to the Permissions tab, click to check "files.content.write" and then Submit.
+8. Switch to the Permissions tab, click to check "files.content.write" and then Submit.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178094082-6951b16c-7e33-4dc6-a959-1b562f0101c5.png" width="80%">
  </p>
  
-8. If you're using Windows 10 and signed into that Dropbox account, you should soon receive a popup to let you know the app has been created, and see that it now appears in your Dropbox folders list:
+9. If you're using Windows 10 and signed into that Dropbox account, you should soon receive a popup to let you know the app has been created, and see that it now appears in your Dropbox folders list:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093395-73d26b10-ce7a-4227-9a8a-909bdaf8ba48.png" width="40%">
@@ -71,45 +71,45 @@ NB: This process was last confirmed accurate in July 2022.
 <img src="https://user-images.githubusercontent.com/11004787/178093417-00b1b271-2094-4c90-a3de-4ea1a20f24af.png" width="25%">
  </p>
 
-9. Now login to the intvlm8r, choose Dropbox for the Transfer Method on the /Transfer page, paste the App key from Step 6 into this field and click Apply.
+10. Now login to the intvlm8r, choose Dropbox for the Transfer Method on the /Transfer page, paste the App key from Step 6 into this field and click Apply.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093485-10bf1e6b-e2b7-4dd5-ab3b-f7c661eaf114.png" width="40%">
 </p>
 
-10. The final stage is to authorise the intvlm8r to access your Dropbox account. SSH to the intvlm8r and run the piTransfer script with the 'reauthDropbox' switch:
+11. The final stage is to authorise the intvlm8r to access your Dropbox account. SSH to the intvlm8r and run the piTransfer script with the 'reauthDropbox' switch:
 ```text
 python3 piTransfer.py reauthDropbox
 ``` 
 
-11. It will prompt you to copy a long link to your browser:
+12. It will prompt you to copy a long link to your browser:
 ```text
 The next step is to tell Dropbox it can trust the intvlm8r.
 Copy this link to somewhere you can open it in a browser:
 https://www.dropbox.com/oauth2/authorize?response_type=code&client_id=12345678abcd&token_access_type=offline&code_challenge=12345678abcd12345678abcd12345678abcd&code_challenge_method=S256
 ```
 
-12. Copy the link to your PC and browse to it. You'll be prompted to sign-in if you're not already.
+13. Copy the link to your PC and browse to it. You'll be prompted to sign-in if you're not already.
 
-13. At the "Before you connect this app..." prompt, click Continue:
+14. At the "Before you connect this app..." prompt, click Continue:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093648-ea449cf2-0669-48f6-a99d-8497586d42eb.png" width="60%">
 </p>
 
-14. At the "<Your app name from Step 5> would like to:" prompt, click Allow:
+15. At the "<Your app name from Step 5> would like to:" prompt, click Allow:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093706-9b3c1f6a-bbab-47a8-8bc6-1e24218f31a7.png" width="60%">
 </p>
 
-15. When the "Access Code [is] Generated", copy this to the clipboard:
+16. When the "Access Code [is] Generated", copy this to the clipboard:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/178093759-dfd897ad-2306-475f-859f-a633a62d2d13.png" width="60%">
 </p>
 
-16. Finally, return to the intvlm8r and paste the new code into the awaiting prompt:
+17. Finally, return to the intvlm8r and paste the new code into the awaiting prompt:
 
 ```text
 The next step is to tell Dropbox it can trust the intvlm8r.
@@ -119,15 +119,15 @@ https://www.dropbox.com/oauth2/authorize?response_type=code&client_id=12345678ab
 Enter the auth code here: abcd12345678ZZZZZZZZZZZZZabcd12345678ZZZZZZZZZZZZZ
 ```
 
-17. If this succeeds, you'll be prompted to take it for a test-run:
+18. If this succeeds, you'll be prompted to take it for a test-run:
 
 ```text
 Completed Dropbox re-auth OK.
 Shall we try uploading some images? [Y/n]: 
 ```
-18. If you press Return or Y, the piTransfer script will attempt an upload. Pressing any other option will abort at this stage.
+19. If you press Return or Y, the piTransfer script will attempt an upload. Pressing any other option will abort at this stage.
 
-19. Hopefully it's all working OK. If the images don't materialise in your Dropbox, check out the transfer error log at ```/home/pi/www/static/piTransfer.log```.
+20. Hopefully it's all working OK. If the images don't materialise in your Dropbox, check out the transfer error log at ```/home/pi/www/static/piTransfer.log```.
 
 
 <br>
