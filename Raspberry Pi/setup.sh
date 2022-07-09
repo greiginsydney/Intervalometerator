@@ -1313,7 +1313,6 @@ test_install ()
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
 	fi
-	echo ''
 
 	matchRegex="\s*Names=([\.[:alnum:]-]*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
 	serviceList="setTime cameraTransfer piTransfer heartbeat.timer apt-daily.timer apt-daily.service"
