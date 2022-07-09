@@ -1312,26 +1312,9 @@ test_install ()
 	fi
 	echo ''
 
-	aptList="apt-daily.timer apt-daily.service"
-	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*"
-	for service in $aptList; do
-		status=$(systemctl show $service)
-		if [[ $status =~ $matchRegex ]] ;
-		then
-			serviceName=${BASH_REMATCH[1]}
-			serviceLoadState=${BASH_REMATCH[2]}
-			if [[ $serviceLoadState == 'masked' ]];
-			then
-				printf ""$GREEN"PASS:"$RESET" %-17s is masked\n" $service
-			else
-				printf ""$YELLOW"FAIL:"$RESET" %-17s is $serviceLoadState\n" $service
-			fi
-		fi
-	done
-
-	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
-	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
-	for service in $oneShotList; do
+	matchRegex="\s*Names=([\.[:alnum:]-]*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
+	serviceList="setTime cameraTransfer piTransfer heartbeat.timer apt-daily.timer apt-daily.service"
+	for service in $serviceList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
 		then
@@ -1342,14 +1325,24 @@ test_install ()
 		fi
 		echo ''
 		echo -e "Service = $serviceName"
-
-		[ $serviceLoadState == 'loaded' ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
-		if [ $serviceName == 'heartbeat' ] ;
-		then
-			[ $serviceActiveState == 'active' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
-		else
-			[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
-		fi
+		case "$serviceName" in
+			("heartbeat.timer")
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'active' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			("apt-daily.timer")
+				[ $serviceLoadState == 'masked' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			("apt-daily.service")
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			(*)
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+		esac
 		[ $serviceSubState != 'failed' ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
 	done
 	
