@@ -19,6 +19,8 @@
 # This script is based on the FTP example from http://makble.com/upload-new-files-to-ftp-server-with-python
 # SFTP code from the paramiko project: https://github.com/paramiko/paramiko
 # Google Drive bits with thanks to @Jerbly: http://jeremyblythe.blogspot.com/2015/06/motion-google-drive-uploader-for-oauth.html
+# Dropbox 2022: https://github.com/dropbox/dropbox-sdk-python/blob/main/example/oauth/commandline-oauth-pkce.py
+#             & https://www.dropboxforum.com/t5/Dropbox-API-Support-Feedback/Oauth2-refresh-token-question-what-happens-when-the-refresh/td-p/486241
 
 
 import datetime
