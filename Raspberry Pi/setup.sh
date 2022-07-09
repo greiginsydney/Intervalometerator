@@ -274,7 +274,7 @@ install_apps ()
 
 install_website ()
 {
-	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -678,6 +678,7 @@ install_website ()
 	echo ''
 	apt-get remove unattended-upgrades -y
 	
+	echo ''
 	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
 	then
 		echo "apt-daily.timer could not be found"
@@ -706,6 +707,7 @@ install_website ()
 		fi
 	fi
 
+	echo ''
 	# Block GVFS if found. (So far only found on desktop installs of the o/s - and one reason why I'm not supporting the desktop)
 	# References:
 	# https://www.reddit.com/r/linuxquestions/comments/gfi31i/can_gvfs_be_disabled_and_removed/
@@ -717,6 +719,7 @@ install_website ()
 	if [ -f /usr/lib/gvfs/gvfsd-gphoto2 ];
 	then
 		chmod -v -x /usr/lib/gvfs/gvfsd-gphoto2
+		echo ''
 	fi
 
 	# Check and reload services if required:
@@ -1274,7 +1277,7 @@ test_install ()
 	else
 		echo -e ""$GREEN"PASS:"$RESET" WiFi power save is OFF"
 	fi
-	echo ''	
+	echo ''
 	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx
 	systemctl is-active --quiet intvlm8r && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" intvlm8r || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" intvlm8r
 	systemctl is-active --quiet celery   && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" celery   || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" celery
@@ -1290,9 +1293,9 @@ test_install ()
 	then
 		if systemctl is-active --quiet schannel;
 		then
-			echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
+			echo -e ""$GREEN"PASS:"$RESET" schannel service  is running (remoteit)"
 		else
-			echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel service  is dead (remoteit)"
 		fi
 		
 		if [ -f /etc/systemd/system/connectd.service ];
@@ -1308,7 +1311,7 @@ test_install ()
 		fi
 		
 	else
-		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
+		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
 	fi
 	echo ''
 
