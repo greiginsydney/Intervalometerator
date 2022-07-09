@@ -840,7 +840,7 @@ def transfer():
         'sftpPassword'          : '',
         'sftpRemoteFolder'      : '',
         'googleRemoteFolder'    : '',
-        'dbx_token'             : '',
+        'dbx_app_key'             : '',
         'rsyncUsername'         : '',
         'rsyncHost'             : '',
         'rsyncRemoteFolder'     : '',
@@ -866,7 +866,7 @@ def transfer():
         'sftpPassword'       : '',
         'sftpRemoteFolder'   : '',
         'googleRemoteFolder' : '',
-        'dbx_token'          : '',
+        'dbx_app_key'          : '',
         'rsyncUsername'      : '',
         'rsyncHost'          : '',
         'rsyncRemoteFolder'  : '',
@@ -891,7 +891,7 @@ def transfer():
         templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
         templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
         templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
-        templateData['dbx_token']          = config.get('Transfer', 'dbx_token')
+        templateData['dbx_app_key']          = config.get('Transfer', 'dbx_app_key')
         templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
         templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
         templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
@@ -950,7 +950,7 @@ def transferPOST():
                 sftpRemoteFolder = reformatSlashes(str(request.form.get('sftpRemoteFolder')))
                 config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'Dropbox'):
-                config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
+                config.set('Transfer', 'dbx_app_key', str(request.form.get('dbx_app_key') or ''))
             elif (request.form.get('tfrMethod') == 'Google Drive'):
                 googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
                 config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
@@ -978,7 +978,6 @@ def transferPOST():
                 flash('Error writing to the Ini file')
 
     return redirect(url_for('transfer'))
-
 
 @app.route("/copyNow")
 def copyNowCronJob():
