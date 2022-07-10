@@ -1286,16 +1286,16 @@ test_install ()
 	#remoteit
 	echo ''
 	set +e #Suspend the error trap
-	remoteit=$(dpkg -s remoteit 2> null)
+	remoteit=$(dpkg -s remoteit 2> /dev/null)
 	set -e #Resume the error trap
 	
 	if [[ $remoteit == *"install ok"* ]];
 	then
 		if systemctl is-active --quiet schannel;
 		then
-			echo -e ""$GREEN"PASS:"$RESET" schannel service  is running (remoteit)"
+			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remoteit)"
 		else
-			echo -e ""$YELLOW"FAIL:"$RESET" schannel service  is dead (remoteit)"
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remoteit)"
 		fi
 		
 		if [ -f /etc/systemd/system/connectd.service ];
