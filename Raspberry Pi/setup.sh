@@ -274,7 +274,7 @@ install_apps ()
 
 install_website ()
 {
-	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -672,6 +672,55 @@ install_website ()
 		fi
 	fi
 	timeSync2
+
+	#Disable the daily auto-update process.
+	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
+	echo ''
+	apt-get remove unattended-upgrades -y
+	
+	echo ''
+	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
+	then
+		echo "apt-daily.timer could not be found"
+	else
+		if ( systemctl is-enabled apt-daily.timer >/dev/null 2>&1 );
+		then
+			systemctl stop apt-daily.timer
+			systemctl disable apt-daily.timer
+			systemctl mask apt-daily.timer
+			echo -e ""$GREEN"Stopped and disabled apt-daily.timer"$RESET""
+		else
+			echo 'apt-daily.timer   already stopped and disabled'
+		fi
+	fi
+
+	if [[ $(systemctl status apt-daily.service | grep -Fq "could not be found") ]];
+	then
+		echo "apt-daily.service could not be found"
+	else
+		if ( systemctl is-enabled apt-daily.service >/dev/null 2>&1 );
+		then
+			echo 'apt-daily.service already disabled'
+		else
+			systemctl mask apt-daily.service
+			echo -e ""$GREEN"Stopped and disabled apt-daily.service"$RESET""
+		fi
+	fi
+
+	echo ''
+	# Block GVFS if found. (So far only found on desktop installs of the o/s - and one reason why I'm not supporting the desktop)
+	# References:
+	# https://www.reddit.com/r/linuxquestions/comments/gfi31i/can_gvfs_be_disabled_and_removed/
+	# https://github.com/gphoto/gphoto2/issues/181
+	if [ -f /usr/lib/gvfs/gvfs-gphoto2-volume-monitor ];
+	then
+		chmod -v -x /usr/lib/gvfs/gvfs-gphoto2-volume-monitor
+	fi
+	if [ -f /usr/lib/gvfs/gvfsd-gphoto2 ];
+	then
+		chmod -v -x /usr/lib/gvfs/gvfsd-gphoto2
+		echo ''
+	fi
 
 	# Check and reload services if required:
 	# TY Alexander Tolkachev & Sergi Mayordomo, https://serverfault.com/questions/855042/how-do-i-know-if-systemctl-daemon-reload-needs-to-be-run
@@ -1228,25 +1277,25 @@ test_install ()
 	else
 		echo -e ""$GREEN"PASS:"$RESET" WiFi power save is OFF"
 	fi
-	echo ''	
-	systemctl is-active --quiet nginx    && echo -e ""$GREEN"PASS:"$RESET" nginx    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" nginx    service is dead"
-	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
-	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
-	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
+	echo ''
+	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx
+	systemctl is-active --quiet intvlm8r && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" intvlm8r || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" intvlm8r
+	systemctl is-active --quiet celery   && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" celery   || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" celery
+	systemctl is-active --quiet redis    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" redis    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" redis
 	
 	#remoteit
 	echo ''
 	set +e #Suspend the error trap
-	remoteit=$(dpkg -s remoteit 2> null)
+	remoteit=$(dpkg -s remoteit 2> /dev/null)
 	set -e #Resume the error trap
 	
 	if [[ $remoteit == *"install ok"* ]];
 	then
 		if systemctl is-active --quiet schannel;
 		then
-			echo -e ""$GREEN"PASS:"$RESET" schannel service is running (remoteit)"
+			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remoteit)"
 		else
-			echo -e ""$YELLOW"FAIL:"$RESET" schannel service is dead (remoteit)"
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remoteit)"
 		fi
 		
 		if [ -f /etc/systemd/system/connectd.service ];
@@ -1262,13 +1311,12 @@ test_install ()
 		fi
 		
 	else
-		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
+		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
 	fi
-	echo ''
 
-	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
-	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
-	for service in $oneShotList; do
+	matchRegex="\s*Names=([\.[:alnum:]-]*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
+	serviceList="setTime cameraTransfer piTransfer heartbeat.timer apt-daily.timer apt-daily.service"
+	for service in $serviceList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
 		then
@@ -1279,18 +1327,36 @@ test_install ()
 		fi
 		echo ''
 		echo -e "Service = $serviceName"
-
-		[ $serviceLoadState == 'loaded' ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
-		if [ $serviceName == 'heartbeat' ] ;
-		then
-			[ $serviceActiveState == 'active' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
-		else
-			[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
-		fi
+		case "$serviceName" in
+			("heartbeat.timer")
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'active' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			("apt-daily.timer")
+				[ $serviceLoadState == 'masked' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			("apt-daily.service")
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			(*)
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+		esac
 		[ $serviceSubState != 'failed' ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
 	done
 	
 	timeTest
+	echo ''
+	
+	gvfsFiles="/usr/lib/gvfs/gvfsd-gphoto2 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor"
+	for gvfsFile in $gvfsFiles;
+	do
+		[ -x  $gvfsFile ] && ""$YELLOW"FAIL:"$RESET" %-41s is executable\n" $gvfsFile || printf ""$GREEN"PASS:"$RESET" %-41s is not executable or does not exist\n" $gvfsFile
+	done
+
 	echo ''
 }
 
@@ -1349,6 +1415,14 @@ remoteit()
 			echo 'Removed /etc/systemd/system/connectd.service'
 		fi
 	fi
+}
+
+
+# Here's where I test new bits when I'm working on the script.
+# Released versions of the script shouldn't have anything there. That's the plan anyway.
+dev()
+{
+	echo ''
 }
 
 
@@ -1421,6 +1495,9 @@ case "$1" in
 		;;
 	('test')
 		test_install
+		;;
+	('dev')
+		dev
 		;;
 	('')
 		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test', 'time' or 'remoteit' after the script name\n"

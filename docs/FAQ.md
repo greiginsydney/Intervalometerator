@@ -88,6 +88,17 @@ copyhour = 00
 <b>deleteaftercopy = On</b>
 </pre>
 
+If you want to delete ALL the images from the camera, Jim's provided an example script that will do this, and I've created a symbolic link to his examples folder.
+
+```bash
+cd /home/pi/examples
+sudo python3 clear-space.py 95
+```
+
+(Change `/home/pi` to your username if you've not installed the intvlm8r as 'pi').
+
+The number after clear-space.py tells the script to keep deleting files until that percentage of space is free.
+
 ## Can I copy/transfer images more than once per day?
 
 The web interface only supports one copy (from the camera) and transfer (from the Pi) per day, but it's easy to add more by adding extra occurrences to the "crontable".
