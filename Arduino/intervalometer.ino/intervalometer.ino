@@ -182,14 +182,14 @@ void setup()
     rtc.set24Hour(); // Force 24-hour mode to be sure (even though that's its default anyway)
     // Default to 12:00:01 pm, January 1, 2018:
     setTimeDate("20180101120001");
-    EEPROM.write(MEMShootDays, ShootDays);
-    EEPROM.write(MEMStartHour, StartHour);
-    EEPROM.write(MEMEndHour, EndHour);
-    EEPROM.write(MEMInterval, interval);
-    EEPROM.write(MEMWakePiHour, WakePiHour);
-    EEPROM.write(MEMWakePiDuration, WakePiDuration);
-    EEPROM.put(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.put(MEMTempMax, (int8_t)-128);
+    EEPROM.update(MEMShootDays, ShootDays);
+    EEPROM.update(MEMStartHour, StartHour);
+    EEPROM.update(MEMEndHour, EndHour);
+    EEPROM.update(MEMInterval, interval);
+    EEPROM.update(MEMWakePiHour, WakePiHour);
+    EEPROM.update(MEMWakePiDuration, WakePiDuration);
+    EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMax, (int8_t)-128);
     for (int i = 0; i <= 23; i++)
     {
       DailyTemps[i] = (int8_t)-128;
@@ -599,10 +599,10 @@ void setInterval(String incoming)
   EndHour   = (ValidateIncoming (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
   interval  = (ValidateIncoming (interval, incoming.substring(5, 7).toInt(), 00, 60));
 
-  EEPROM.write(MEMShootDays, ShootDays);
-  EEPROM.write(MEMStartHour, StartHour);
-  EEPROM.write(MEMEndHour,   EndHour);
-  EEPROM.write(MEMInterval,  interval);
+  EEPROM.update(MEMShootDays, ShootDays);
+  EEPROM.update(MEMStartHour, StartHour);
+  EEPROM.update(MEMEndHour,   EndHour);
+  EEPROM.update(MEMInterval,  interval);
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
@@ -620,8 +620,8 @@ void SetWakePiTime(String NewTimeDuration)
   WakePiHour     = (ValidateIncoming (WakePiHour,     NewTimeDuration.substring(0, 2).toInt(), 00, 25));
   WakePiDuration = (ValidateIncoming (WakePiDuration, NewTimeDuration.substring(2, 4).toInt(), 05, 60));
 
-  EEPROM.write(MEMWakePiHour,     WakePiHour);
-  EEPROM.write(MEMWakePiDuration, WakePiDuration);
+  EEPROM.update(MEMWakePiHour,     WakePiHour);
+  EEPROM.update(MEMWakePiDuration, WakePiDuration);
  
   SetAlarm2(HIGH);
 }
@@ -669,12 +669,12 @@ void UpdateTempMinMax(String resetOption, int thisHour)
   
   if (resetOption == "Min" || roundedTemp  < currentMin)
   {
-    EEPROM.put(MEMTempMin, roundedTemp);
+    EEPROM.update(MEMTempMin, roundedTemp);
     currentMin = roundedTemp;
   }
   if (resetOption == "Max" || roundedTemp  > currentMax)
   {
-    EEPROM.put(MEMTempMax, roundedTemp); 
+    EEPROM.update(MEMTempMax, roundedTemp); 
     currentMax = roundedTemp;
   }
  
@@ -683,7 +683,7 @@ void UpdateTempMinMax(String resetOption, int thisHour)
   {
     //Serial.println("Alarm 2 temp read: Hour = " + String(thisHour) + ", temp = " + String(roundedTemp)  + "\r\n");
     DailyTemps[thisHour] = roundedTemp;
-    EEPROM.write(MEM24Temp0 + thisHour, roundedTemp); // Back it up to EEPROM
+    EEPROM.update(MEM24Temp0 + thisHour, roundedTemp); // Back it up to EEPROM
   }
  
   sprintf(TemperaturesString, "%d,%d,%d", roundedTemp, currentMax, currentMin);
