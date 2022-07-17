@@ -19,7 +19,7 @@ References:
  
 */ 
 //Last updated/changed in version 4.4.2.
-char version[6] = "4.4.4";
+char version[6] = "4.4.5";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
