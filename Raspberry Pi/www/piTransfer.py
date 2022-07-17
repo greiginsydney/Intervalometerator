@@ -89,7 +89,7 @@ sftpPort = 22
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
-    try:
+    if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
         if sys.argv[1] == 'reauthGoogle':
@@ -98,8 +98,6 @@ def main(argv):
                 copyNow = True
             else:
                 return 0
-    except:
-        pass
 
     global deleteAfterTransfer  #Made global instead of passing this down from here to all the nested functions.
 
@@ -150,12 +148,13 @@ def main(argv):
         tfrMethod = 'Off' # If we hit an unknown exception, force tfrMethod=Off, because we can't be sure what triggered the error
         log(f'INI file error: {e}')
 
-    if sys.argv[1] == 'reauthDropbox':
-        returncode = reauthDropbox(dbx_app_key)
-        if returncode == 0:
-            copyNow = True
-        else:
-            return 0
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'reauthDropbox':
+            returncode = reauthDropbox(dbx_app_key)
+            if returncode == 0:
+                copyNow = True
+            else:
+                return 0
 
     if (tfrMethod == 'Off'):
         log('STATUS: Upload aborted. tfrMethod=Off')

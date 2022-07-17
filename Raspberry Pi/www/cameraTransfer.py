@@ -42,11 +42,9 @@ htmltext = ''
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
-    try:
+    if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
-    except:
-        pass
 
     if not os.path.exists(INIFILE_NAME):
         pass
