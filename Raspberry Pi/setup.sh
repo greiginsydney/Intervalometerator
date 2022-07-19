@@ -1165,6 +1165,7 @@ test_install ()
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
 	fi
+	echo "$(cat /etc/os-release | grep CODENAME)"
 	echo ''
 	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
 	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
