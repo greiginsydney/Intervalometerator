@@ -1178,8 +1178,8 @@ test_install ()
 	then
 		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
 		echo ''
-		echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
-		i2cdetect -y 1
+		echo -e 'If the Arduino is connected & programmed it will show as "04" in the top line below:\n'
+		i2cdetect -y -a 1 0x04 0x04
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
 	fi
