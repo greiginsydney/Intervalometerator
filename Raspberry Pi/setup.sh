@@ -97,16 +97,16 @@ install_apps ()
 		read -p 'Press return on its own to continue with the install ' response
 		case "$response" in
 			(1)
-				installSftp=$((1-installSftp))
+				((installSftp=1-installSftp))
 				;;
 			(2)
-				installDropbox=$((1-installDropbox))
+				((installDropbox=1-installDropbox))
 				;;
 			(3)
-				installGoogle=$((1-installGoogle))
+				((installGoogle=1-installGoogle))
 				;;
 			(4)
-				installRsync=$((1-installRsync))
+				((installRsync=1-installRsync))
 				;;
 			("")
 				break
@@ -1190,13 +1190,13 @@ test_install ()
 	ap_test=0
 	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
-		$ap_test=$((ap_test+1))
+		((ap_test=ap_test+1))
 	fi
 	if systemctl --all --type service | grep -q 'hostapd';
 	then
-		$ap_test=$((ap_test+2))
+		((ap_test=ap_test+2))
 	fi
-	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
+	[ -f /etc/hostapd/hostapd.conf ] && ((ap_test=ap_test+4))
 	
 	case $ap_test in
 		(0)
