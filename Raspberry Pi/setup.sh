@@ -97,16 +97,16 @@ install_apps ()
 		read -p 'Press return on its own to continue with the install ' response
 		case "$response" in
 			(1)
-				((installSftp=1-installSftp))
+				installSftp=$((1-installSftp))
 				;;
 			(2)
-				((installDropbox=1-installDropbox))
+				installDropbox=$((1-installDropbox))
 				;;
 			(3)
-				((installGoogle=1-installGoogle))
+				installGoogle=$((1-installGoogle))
 				;;
 			(4)
-				((installRsync=1-installRsync))
+				installRsync=$((1-installRsync))
 				;;
 			("")
 				break
