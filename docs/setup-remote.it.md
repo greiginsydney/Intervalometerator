@@ -136,7 +136,7 @@ This process installs Remote.it on the Pi which then launches and establishes th
 <img src="https://user-images.githubusercontent.com/11004787/180711369-358c61f4-56f8-47db-816d-2454ab7f0665.png" width="80%">
 </p>
 
-9. To double-check we're good to proceed, execute the install script with the "test" switch `sudo -E ./setup.sh test`. It should include the following:
+9. To double-check we're good to proceed, execute the install script with the "test" switch `sudo -E ./setup.sh test`. The output should include the following:
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11004787/180711278-59c5fcfa-0cae-494d-856d-132a253f4ea8.png" width="80%">
