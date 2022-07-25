@@ -1,6 +1,6 @@
 # Setup remote.it
 
-In deployments where the intvlm8r has no access to a permanent WiFi network, remote administration requires a "4G/5G dongle" in conjunction with an outbound VPN service such as ["remote.it"](https://www.remote.it/).
+In deployments where the intvlm8r has no access to a permanent WiFi network, remote administration requires a 4G/5G "dongle" in conjunction with an outbound VPN service such as [remote.it](https://www.remote.it/).
 
 Before proceeding you'll need a 4G/5G dongle, **and a means of powering it**.
 
