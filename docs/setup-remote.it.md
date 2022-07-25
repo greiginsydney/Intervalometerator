@@ -94,6 +94,8 @@ Cons:
 
 ## install remote.it
 
+**This process was last confirmed accurate on July 25th, 2022.**
+
 1. Visit [remote.it's homepage](https://www.remote.it/) and click the blue "Get Started" button in the top right. Follow your nose to create a new login.
 2. Login.
 3. Click the blue "+" button in the top left, then select "Raspberry Pi" from the popup menu:
@@ -105,7 +107,7 @@ Cons:
 4. Use the highlighted icon to copy the registration text to the clipboard:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180706135-611dad5b-9661-4dc3-b412-aa533b75ef4f.png" width="80%">
+<img src="https://user-images.githubusercontent.com/11004787/180706135-611dad5b-9661-4dc3-b412-aa533b75ef4f.png" width="60%">
 </p>
 
 Leave the browser window open.
