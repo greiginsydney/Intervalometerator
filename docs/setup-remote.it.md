@@ -9,7 +9,7 @@ This page documents the steps required to setup remote.it.
 - [4G/5G dongle](#4g5g-dongle)
 - [Powering the dongle](#powering-the-dongle)
 - [Install remote.it](#install-remoteit)
-- [Prepare the intvlm8r](#prepare-the-intvlm8r)
+- [Pair the Pi and the dongle](#pair-the-pi-and-the-dongle)
 
 
 <br/>
@@ -144,21 +144,43 @@ This process installs Remote.it on the Pi which then launches and establishes th
 <img src="https://user-images.githubusercontent.com/11004787/180711278-59c5fcfa-0cae-494d-856d-132a253f4ea8.png" width="80%">
 </p>
 
-
-
-
-
-
-
-
-
 <br>
 
 [Top](#setup-remoteit)
 <hr />
 
 
-## Prepare the intvlm8r
+## Pair the Pi and the dongle
+
+If you're running the Pi as an Access Point (AP), you'll need to turn it into a WiFi _client_ so it can connect to the dongle.
+
+The first thing we'll do though is connect it to your local WiFi network so you can still continue to access it on the bench.
+
+If the Pi is already a WiFi client, skip to Step 13.
+
+10. Follow the process shown in [Un-make AP](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step3-setup-the-Pi-as-an-access-point.md#un-make-ap) to join your local WiFi network.
+
+11. At the prompt `Do you want to assign the Pi a static IP address?` choose No and let your local DHCP server allocate it an address.
+
+> Beware here that without a monitor attached to the Pi or a means to query your local DHCP server, you risk losing connectivity with the Pi after the reboot in the next step, because you won't know its new IP address. Tread carefully.
+
+12. Reboot when prompted.
+
+13. Now for the tricky bit: the Pi can be set with the details of *multiple* WiFi networks, so when it's on the bench it will connect to your local WiFi, and when it's in the field it will connect to the dongle. For that we'll need to edit `/etc/wpa_supplicant/wpa_supplicant.conf`
+
+```
+sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+```
+
+All you need to do is duplicate a new "network" block, like shown in the red box:
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/180975807-b6a9a5e4-1505-4830-ae5a-08081da56c45.png" width="80%">
+</p>
+
+14. Done!
+
+> A word of warning: Things might get ugly if you power the dongle while you're still preparing the intvlm8r on your local WiFi network, as the Pi will have two networks from which to choose. You can prevent this by adding a "priority" setting to each network in `wpa_supplicant.conf`. [\[Reference\]](https://raspberrypi.stackexchange.com/a/114197)
 
 <br>
 
