@@ -16,7 +16,7 @@ Notes:
 | [Electronics](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#electronics) | $213 | $160 |
 | [Power](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#power) | $113 | $83 |
 | [Hardware](https://github.com/greiginsydney/Intervalometerator/blob/master/SHOPPINGLIST.md#hardware) | $112 | $76 |
-| __TOTAL__ | __$1153_ | __$830__ |
+| __TOTAL__ | __$1153__ | __$830__ |
 
 <br>
 
@@ -403,7 +403,7 @@ You might find these a challenge to source. Try a shop selling model aircraft, d
 
 ##### Interconnecting wires
 
- Let's call it $AUD10</br>
+Let's call it $AUD10</br>
 Let's call it $USD10
     
 
@@ -453,7 +453,7 @@ Choose a panel and matching charger to suit your installed environment. If you'r
 Your choice of solar panel might require some bracing or a bracket in order for it to mount to a pole. For ours we used two lengths of some 2" aluminium angle that we had to hand, resulting in a U-shaped support.
 
 
-     Let's call it $AUD10</br>
+Let's call it $AUD10</br>
 Let's call it $USD10
 
 ### SUBTOTAL: AUD$113 / $USD83
@@ -471,8 +471,9 @@ Let's call it $USD10
 #### CCTV Camera Mount
 
 - [Jaycar (AU)](https://www.jaycar.com.au/cctv-camera-external-mounting-bracket/p/QC3337)
- $AUD15</br>
-$USD
+
+    $AUD15</br>
+    $USD10.50
 
 I actually decided that this mount wasn't solid enough for my purpose. Being fairly lightweight, it has the potential to wobble a bit, which we want to avoid. I ended up using a heavy duty L-bracket from the local hardware store instead. A better alternative might be . . .
 
