@@ -37,12 +37,12 @@ You have a couple of options for powering the dongle:
 ### Permanently power it
 
 Pros:
-- the intvlm8r is always online for remote admin.
+- the intvlm8r is always online for remote admin
 
 Cons:
-- you need a permanent 5V source for the dongle. Some solar chargers have USB outlets, otherwise you'll need a separate 12V->5V converter.
-- the extra current consumption may require you install a larger solar panel, charger and battery. Of course if you have local mains power this is not a concern.
-- maintaining the VPN tunnel to remote.it 24x7x365 will presumably consume more of your data allowance.
+- you need a permanent 5V source for the dongle. Some solar chargers have USB outlets, otherwise you'll need a separate 12V->5V converter
+- the extra current consumption may require you install a larger solar panel, charger and battery. Of course if you have local mains power this is not a concern
+- maintaining the VPN tunnel to remote.it 24x7x365 will presumably consume more of your data allowance
 
 ### Power it from the intvlm8r PCB
 
@@ -166,21 +166,22 @@ If the Pi is already a WiFi client, skip to Step 13.
 
 12. Reboot when prompted.
 
-13. Now for the tricky bit: the Pi can be set with the details of *multiple* WiFi networks, so when it's on the bench it will connect to your local WiFi, and when it's in the field it will connect to the dongle. For that we'll need to edit `/etc/wpa_supplicant/wpa_supplicant.conf`
+13. Now for the sneaky bit: the Pi can be set with the details of *multiple* WiFi networks, so when it's on the bench it will connect to your local WiFi, and when it's in the field it will connect to the dongle. For that we'll need to edit `wpa_supplicant.conf`:
 
 ```
 sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
 ```
 
-All you need to do is duplicate a new "network" block, like shown in the red box:
+All you need to do is duplicate the existing "network" block, like shown in the red box, and add some Priority values:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180975807-b6a9a5e4-1505-4830-ae5a-08081da56c45.png" width="80%">
+<img src="https://user-images.githubusercontent.com/11004787/181138742-c1ad3111-81bc-400f-bafc-d9212aaa5292.png" width="80%">
 </p>
 
-14. Done!
+When in the presence of BOTH WiFi networks, the Pi will connect to the network with the numerically higher value, in this case "MyLocalWiFiSSID".
 
-> A word of warning: Things might get ugly if you power the dongle while you're still preparing the intvlm8r on your local WiFi network, as the Pi will have two networks from which to choose. You can prevent this by adding a "priority" setting to each network in `wpa_supplicant.conf`. [\[Reference\]](https://raspberrypi.stackexchange.com/a/114197)
+14. Save the file and you're done! Reboot for it to pick up all the new values and give it a test.
+
 
 <br>
 
