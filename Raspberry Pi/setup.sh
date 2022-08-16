@@ -274,6 +274,16 @@ install_apps ()
 
 install_website ()
 {
+	# Check for the '-E' switch:
+	if env | grep -q 'HOME=/root';
+	then
+		echo -e "\nPlease re-run as 'sudo -E ./setup.sh web'"
+		echo ''
+		exit 1
+	else
+		echo -e ""$GREEN"Environment passed with '-E' switch"$RESET""
+	fi
+
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
