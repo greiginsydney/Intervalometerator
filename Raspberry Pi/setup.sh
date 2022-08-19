@@ -164,12 +164,26 @@ install_apps ()
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
 	
-	# ================== START libgphoto & gphoto ================== 
-	echo -e ""$GREEN"libexif12, libgphoto2-6, libgphoto2-port12, libltdl7"$RESET""
-	apt install libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 -y
-	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
-	apt-get install libgphoto2-dev -y
+	# ================== START libgphoto ================== 
+	if ( apt list --manual-installed | grep -q libgphoto );
+	then
+		# Installed via apt = legacy. Uninstall
+		echo -e ""$YELLOW"Legacy libgphoto2 install detected."$RESET" Purging."
+		apt purge libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 libgphoto2-dev -y
+	else
+		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
+	fi
+	read -p "Press enter to continue"
 	
+	echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
+	git clone https://github.com/gphoto/libgphoto2.git
+	cd /home/${SUDO_USER}/libgphoto2
+	autoreconf --install --symlink
+	./configure
+	make
+	make install
+	
+	# ================== START python-gphoto ================== 
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
