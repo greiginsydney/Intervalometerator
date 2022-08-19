@@ -175,6 +175,9 @@ install_apps ()
 	fi
 	read -p "Press enter to continue"
 	
+	echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""	
+	apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
+
 	echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
 	git clone https://github.com/gphoto/libgphoto2.git
 	cd /home/${SUDO_USER}/libgphoto2
