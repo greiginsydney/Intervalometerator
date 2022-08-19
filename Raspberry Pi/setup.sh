@@ -186,6 +186,10 @@ install_apps ()
 	make
 	make install
 	
+	echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
+	# TY: https://www.maskaravivek.com/post/how-to-control-and-capture-images-from-dslr-using-raspberry-pi/
+	/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
+	
 	# ================== START python-gphoto ================== 
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
