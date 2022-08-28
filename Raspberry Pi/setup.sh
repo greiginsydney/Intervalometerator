@@ -164,12 +164,32 @@ install_apps ()
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
 	
-	# ================== START libgphoto & gphoto ================== 
-	echo -e ""$GREEN"libexif12, libgphoto2-6, libgphoto2-port12, libltdl7"$RESET""
-	apt install libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 -y
-	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
-	apt-get install libgphoto2-dev -y
+	# ================== START libgphoto ================== 
+	if ( apt list --manual-installed | grep -q libgphoto );
+	then
+		# Installed via apt = legacy. Uninstall
+		echo -e ""$YELLOW"Legacy libgphoto2 install detected. Purging"$RESET""
+		apt purge libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 libgphoto2-dev -y
+	else
+		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
+	fi
 	
+	echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""	
+	apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
+
+	echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
+	git clone https://github.com/gphoto/libgphoto2.git
+	cd /home/${SUDO_USER}/libgphoto2
+	autoreconf --install --symlink
+	./configure
+	make
+	make install
+	
+	echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
+	# TY: https://www.maskaravivek.com/post/how-to-control-and-capture-images-from-dslr-using-raspberry-pi/
+	/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
+	
+	# ================== START python-gphoto ================== 
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
@@ -274,6 +294,16 @@ install_apps ()
 
 install_website ()
 {
+	# Check for the '-E' switch:
+	if env | grep -q 'HOME=/root';
+	then
+		echo -e "\nPlease re-run as 'sudo -E ./setup.sh web'"
+		echo ''
+		exit 1
+	else
+		echo -e ""$GREEN"Environment passed with '-E' switch"$RESET""
+	fi
+
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
@@ -1230,7 +1260,7 @@ test_install ()
 		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
 		echo ''
 		echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
-		i2cdetect -y 1
+		i2cdetect -y -a 1 0x04 0x04
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
 	fi
