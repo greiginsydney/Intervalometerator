@@ -168,12 +168,11 @@ install_apps ()
 	if ( apt list --manual-installed | grep -q libgphoto );
 	then
 		# Installed via apt = legacy. Uninstall
-		echo -e ""$YELLOW"Legacy libgphoto2 install detected."$RESET" Purging."
+		echo -e ""$YELLOW"Legacy libgphoto2 install detected. Purging"$RESET""
 		apt purge libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 libgphoto2-dev -y
 	else
 		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
 	fi
-	read -p "Press enter to continue"
 	
 	echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""	
 	apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
