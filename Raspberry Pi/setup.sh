@@ -174,6 +174,7 @@ install_apps ()
 		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
 	fi
 	
+	installLibgphoto2=0
 	echo -e ""$GREEN"Checking for installed and latest release versions of libgphoto2"$RESET""
 	latestLibgphoto2Rls=$(curl --silent "https://api.github.com/repos/gphoto/libgphoto2/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
 	echo "Current     online version of libgphoto2 = $latestLibgphoto2Rls"
@@ -188,31 +189,39 @@ install_apps ()
 		then
 			echo ''
 			echo -e ""$GREEN"Updating libgphoto2"$RESET""
-			#TODO
+			installLibgphoto2=1
 		else
 			echo 'No libgphoto2 upgrade required'
 		fi
 	else
-		echo -e "= not found"
-		echo -e "\r"$GREEN"NOT INSTALLED Installing libgphoto2"$RESET""
-		#TODO
+		echo -e '= not found'
+		echo -e 'Installing libgphoto2'
+		installLibgphoto2=1
 	fi
-	# ================== END libgphoto & gphoto ==================
-
-	echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""	
-	apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
-
-	echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
-	git clone https://github.com/gphoto/libgphoto2.git
-	cd /home/${SUDO_USER}/libgphoto2
-	autoreconf --install --symlink
-	./configure
-	make
-	make install
 	
-	echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
-	# TY: https://www.maskaravivek.com/post/how-to-control-and-capture-images-from-dslr-using-raspberry-pi/
-	/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
+	if [ $installLibgphoto2 -eq 1 ];
+	then
+		echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""
+		apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
+
+		echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
+		echo '1'
+		git clone https://github.com/gphoto/libgphoto2.git
+		echo '2'
+		cd /home/${SUDO_USER}/libgphoto2
+		echo '3'
+		autoreconf --install --symlink
+		./configure
+		make
+		make install
+
+		echo ''
+		read -p "Press enter to generate the udev rules"
+
+		echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
+		# TY: https://www.maskaravivek.com/post/how-to-control-and-capture-images-from-dslr-using-raspberry-pi/
+		/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
+	fi
 	# =====================  END  libgphoto =========================
 	# ===================== START python-gphoto ===================== 
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
