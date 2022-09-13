@@ -205,18 +205,12 @@ install_apps ()
 		apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
 
 		echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
-		echo '1'
 		git clone https://github.com/gphoto/libgphoto2.git
-		echo '2'
 		cd /home/${SUDO_USER}/libgphoto2
-		echo '3'
 		autoreconf --install --symlink
 		./configure
 		make
 		make install
-
-		echo ''
-		read -p "Press enter to generate the udev rules"
 
 		echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
 		# TY: https://www.maskaravivek.com/post/how-to-control-and-capture-images-from-dslr-using-raspberry-pi/
