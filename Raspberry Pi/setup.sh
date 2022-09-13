@@ -174,6 +174,31 @@ install_apps ()
 		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
 	fi
 	
+	echo -e ""$GREEN"Checking for installed and latest release versions of libgphoto2"$RESET""
+	latestLibgphoto2Rls=$(curl --silent "https://api.github.com/repos/gphoto/libgphoto2/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+	echo "Current     online version of libgphoto2 = $latestLibgphoto2Rls"
+	echo -n "Checking installed version of libgphoto2 "
+	set +e #Suspend the error trap
+	isLibgphoto2=$(pkg-config --modversion --silence-errors libgphoto2)
+	set -e #Resume the error trap
+	
+	if [[ $isLibgphoto2 ]]; then
+		echo -e "\rCurrent  installed version of libgphoto2 = $isLibgphoto2"
+		if dpkg --compare-versions $isLibgphoto2 "lt" $latestLibgphoto2Rls ;
+		then
+			echo ''
+			echo -e ""$GREEN"Updating libgphoto2"$RESET""
+			#TODO
+		else
+			echo 'No libgphoto2 upgrade required'
+		fi
+	else
+		echo -e "= not found"
+		echo -e "\r"$GREEN"NOT INSTALLED Installing libgphoto2"$RESET""
+		#TODO
+	fi
+	# ================== END libgphoto & gphoto ==================
+
 	echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""	
 	apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
 
@@ -188,8 +213,8 @@ install_apps ()
 	echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
 	# TY: https://www.maskaravivek.com/post/how-to-control-and-capture-images-from-dslr-using-raspberry-pi/
 	/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
-	
-	# ================== START python-gphoto ================== 
+	# =====================  END  libgphoto =========================
+	# ===================== START python-gphoto ===================== 
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
@@ -208,7 +233,7 @@ install_apps ()
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
 		pip3 install -v gphoto2 --no-binary :all:
 	fi
-	# ================== END libgphoto & gphoto ==================
+	# ================== END python-gphoto ==================
 	echo ''
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
