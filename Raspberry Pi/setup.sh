@@ -72,7 +72,7 @@ install_apps ()
 		else
 			installRsync=0
 		fi
-		
+
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
 	else
@@ -87,7 +87,7 @@ install_apps ()
 	fi
 	while true; do
 		echo ''
-		
+
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
 		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
@@ -148,22 +148,22 @@ install_apps ()
 		echo -e ""$GREEN"Installing dropbox"$RESET""
 		pip3 install dropbox
 	fi
-	
+
 	if [ $installGoogle -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
 	fi
-	
+
 	if [ $installRsync -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing sysrsync"$RESET""
 		pip3 install sysrsync
 	fi
-	
+
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
-	
+
 	# ================== START libgphoto ================== 
 	if ( apt list --manual-installed | grep -q libgphoto );
 	then
@@ -173,7 +173,7 @@ install_apps ()
 	else
 		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
 	fi
-	
+
 	installLibgphoto2=0
 	echo -e ""$GREEN"Checking for installed and latest release versions of libgphoto2"$RESET""
 	latestLibgphoto2Rls=$(curl --silent "https://api.github.com/repos/gphoto/libgphoto2/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
@@ -182,7 +182,7 @@ install_apps ()
 	set +e #Suspend the error trap
 	isLibgphoto2=$(pkg-config --modversion --silence-errors libgphoto2)
 	set -e #Resume the error trap
-	
+
 	if [[ $isLibgphoto2 ]]; then
 		echo -e "\rCurrent  installed version of libgphoto2 = $isLibgphoto2"
 		if dpkg --compare-versions $isLibgphoto2 "lt" $latestLibgphoto2Rls ;
@@ -198,7 +198,7 @@ install_apps ()
 		echo -e 'Installing libgphoto2'
 		installLibgphoto2=1
 	fi
-	
+
 	if [ $installLibgphoto2 -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""
@@ -221,7 +221,7 @@ install_apps ()
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
-	
+
 	echo -n "Checking installed version of python-gphoto2 "
 	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
@@ -244,7 +244,7 @@ install_apps ()
 	pip3 install -v pillow --no-cache-dir
 	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
 	pip3 install ExifReader requests
-	
+
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
@@ -256,7 +256,7 @@ install_apps ()
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
-	
+
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
 	echo ''
@@ -315,7 +315,7 @@ install_apps ()
 		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
 	echo ''
-	
+
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
@@ -374,7 +374,7 @@ install_website ()
 	then
 		mv -nv piTransfer.log ~/www/static/piTransfer.log # -n = "do not overwrite"
 	fi
-	
+
 	chown -R $SUDO_USER:www-data ${HOME}
 
 	if [ -f www/intvlm8r.old ];
@@ -383,7 +383,7 @@ install_website ()
 		echo 'intvlm8r.old found. Skipping the login prompt step.'
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
 		echo ''
-		
+
 		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
@@ -392,7 +392,7 @@ install_website ()
 		else
 			echo 'Upgrade file found but the first login was not found/detected.'
 		fi
-		
+
 		if grep -q '^users.update' ~/www/intvlm8r.old;
 		then
 			#There are additional users we need to reinstate.
@@ -411,7 +411,7 @@ install_website ()
 				fi
 			done <~/www/intvlm8r.old
 		fi
-    
+
     		if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.old;
 		then
 			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
@@ -474,7 +474,7 @@ install_website ()
 			fi
 		fi
 	fi
-	
+
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
@@ -566,7 +566,7 @@ install_website ()
 			mv -fv celery.conf /etc/tmpfiles.d/celery.conf
 		fi
 	fi
-	
+
 	if [ -f celery ];
 	then
 		if cmp -s celery /etc/default/celery;
@@ -576,7 +576,7 @@ install_website ()
 			mv -fv celery /etc/default/celery
 		fi
 	fi
-	
+
 	if [ -f celery.service ];
 	then
 		if cmp -s celery.service /etc/systemd/system/celery.service;
@@ -625,7 +625,7 @@ install_website ()
 	else
 		sed -i 's/^#\?supervised .*/supervised systemd/g' /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
-	
+
 	#Redis is just a *little* too chatty by default:
 	if grep -q "^loglevel warning$" /etc/redis/redis.conf;
 	then
@@ -735,7 +735,7 @@ install_website ()
 	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
 	echo ''
 	apt-get remove unattended-upgrades -y
-	
+
 	echo ''
 	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
 	then
@@ -802,7 +802,7 @@ install_website ()
 		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt
 	fi
 	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
-	
+
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
 	if  grep -Fq 'intervalometerator' '/boot/config.txt';
@@ -825,12 +825,12 @@ dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 dtoverlay=gpio-poweroff,gpiopin=27,active_low
 END
 	fi
-	
+
 	if [ -f www/intvlm8r.old ];
 	then
 		mv -fv www/intvlm8r.old www/intvlm8r.bak
 	fi
-	
+
 	# WiFi Power Save
 	# Disable WiFi power save mode:
 	if iw wlan0 get power_save | grep -q 'on';
@@ -1102,9 +1102,9 @@ unmake_ap ()
 		fi
 		break
 	done
-	
+
 	sed -i -E "s|^\s*country=.*|country=$newCountry|" /etc/wpa_supplicant/wpa_supplicant.conf
-	
+
 	set +e #Suspend the error trap
 	sed -i -E "s|^(\s*ssid=).*|\1\"$newSsid\"|" /etc/wpa_supplicant/wpa_supplicant.conf
 	if [[ "$?" -ne 0 ]];
@@ -1143,7 +1143,7 @@ END
 	then
 		sed -i -e "\$astatic domain_name_servers=192.168.0.1" '/etc/dhcpcd.conf';
 	fi
-	
+
 	wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
 	echo ""
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
@@ -1182,7 +1182,7 @@ END
 			fi
 			;;
 	esac
-	
+
 	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
 	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
 	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
@@ -1304,7 +1304,7 @@ test_install ()
 		$ap_test=$((ap_test+2))
 	fi
 	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
-	
+
 	case $ap_test in
 		(0)
 			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
@@ -1328,7 +1328,7 @@ test_install ()
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
-	
+
 	if iw wlan0 get power_save | grep -q 'on';
 	then
 		echo -e ""$YELLOW"FAIL:"$RESET" WiFi power save is ON"
@@ -1340,13 +1340,13 @@ test_install ()
 	systemctl is-active --quiet intvlm8r && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" intvlm8r || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" intvlm8r
 	systemctl is-active --quiet celery   && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" celery   || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" celery
 	systemctl is-active --quiet redis    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" redis    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" redis
-	
+
 	#remoteit
 	echo ''
 	set +e #Suspend the error trap
 	remoteit=$(dpkg -s remoteit 2> /dev/null)
 	set -e #Resume the error trap
-	
+
 	if [[ $remoteit == *"install ok"* ]];
 	then
 		if systemctl is-active --quiet schannel;
@@ -1355,7 +1355,7 @@ test_install ()
 		else
 			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remoteit)"
 		fi
-		
+
 		if [ -f /etc/systemd/system/connectd.service ];
 		then
 			if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
@@ -1367,7 +1367,7 @@ test_install ()
 		else
 			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 		fi
-		
+
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
 	fi
@@ -1405,10 +1405,10 @@ test_install ()
 		esac
 		[ $serviceSubState != 'failed' ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
 	done
-	
+
 	timeTest
 	echo ''
-	
+
 	gvfsFiles="/usr/lib/gvfs/gvfsd-gphoto2 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor"
 	for gvfsFile in $gvfsFiles;
 	do
