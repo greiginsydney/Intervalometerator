@@ -211,6 +211,7 @@ install_apps ()
 		./configure
 		make
 		make install
+		ldconfig
 
 		echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
 		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
