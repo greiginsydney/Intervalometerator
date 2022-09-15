@@ -381,10 +381,8 @@ install_website ()
 
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ''
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the login prompt step."$RESET""
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
-		echo ''
 
 		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
@@ -501,8 +499,6 @@ install_website ()
 	else
 		sed -i -E 's/^(\s*)#\s*(server_tokens off;)/\1\2/g' /etc/nginx/nginx.conf #Match on "<whitepace>#<whitepace>server_tokens off" and remove the "#"
 	fi
-
-	echo ''
 
 	#intvlm8r
 	if [ -f intvlm8r.service ];
@@ -716,7 +712,6 @@ install_website ()
 	#NTP
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ''
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the NTP prompt step."$RESET""
 	else
 		timeTest
