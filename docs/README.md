@@ -6,7 +6,7 @@ If you're new to the intvlm8r, there's plenty of documentation to whet your whis
 
 The [Design Decisions](https://github.com/greiginsydney/Intervalometerator/wiki/Design-Decisions) page goes into lots of detail about all the decisions we made getting the intvlm8r to this stage.
 
-Check out the [Circuit diagram (PDF)](https://github.com/greiginsydney/Intervalometerator/docs/intvlm8r_v11.11_circuit.pdf) and [PCB Component layout (PDF)](https://github.com/greiginsydney/Intervalometerator/docs/intvlm8r_v11.11_comp.pdf).
+Check out the [Circuit diagram (PDF)](/docs/intvlm8r_v11.11_circuit.pdf) and [PCB Component layout (PDF)](/docs/intvlm8r_v11.11_comp.pdf).
 
 ## Installation steps
 
