@@ -43,11 +43,15 @@ RESET="\033[0m"
 install_apps ()
 {
 
-	if [ -f www/intvlm8r.old ];
+	if [[ -f www/intvlm8r.py.new &&  -f www/intvlm8r.py ]];
 	then
 		echo ''
-		echo 'intvlm8r.old found. Looks like this is an upgrade.'
+		echo 'intvlm8r.py.new found. Looks like this is an upgrade.'
 		echo ''
+
+		cp -fv www/intvlm8r.py www/intvlm8r.old
+		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
 		then
 			installSftp=1
@@ -850,6 +854,11 @@ END
 	fi
 
 	remoteit
+
+	if [ -f www/intvlm8r.py.new ];
+	then
+		rm -fv www/intvlm8r.py.new
+	fi
 
 	# Prepare for reboot/restart:
 	echo 'Exited install_website OK.'
