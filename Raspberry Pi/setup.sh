@@ -264,7 +264,6 @@ install_apps ()
 
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
-	echo ''
 	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo 'i2c-bcm2708 module already exists'
@@ -298,28 +297,26 @@ install_apps ()
 		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
 	fi
 	# -------------------------------------------------------------------------------------------------
-	echo ''
-	echo 'Creating gphoto2 shortcuts'
+	echo -e ""$GREEN"Creating gphoto2 shortcuts"$RESET""
 	whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
 	if [ ! -z "$whereisgphoto" ]; then
 		gphoto2="$whereisgphoto/gphoto2"
 		examples="$gphoto2/examples"
 		if [ -d  $gphoto2 ]; then
 			ln -sfnv "$gphoto2" /home/${SUDO_USER}/gphoto2
-			echo -e ""$GREEN"Created shortcut 'gphoto2' to point to '$gphoto2'"$RESET""
+			echo -e "Created shortcut 'gphoto2' to point to '$gphoto2'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 		fi
 		if [ -d  $examples ]; then
 			ln -sfnv "$examples" /home/${SUDO_USER}/examples
-			echo -e ""$GREEN"Created shortcut 'examples' to point to '$examples'"$RESET""
+			echo -e "Created shortcut 'examples' to point to '$examples'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2/examples to create shortcut"$RESET""
 		fi
 	else
 		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
-	echo ''
 
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
