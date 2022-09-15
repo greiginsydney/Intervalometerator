@@ -386,7 +386,7 @@ install_website ()
 	if [ -f www/intvlm8r.old ];
 	then
 		echo ''
-		echo 'intvlm8r.old found. Skipping the login prompt step.'
+		echo -e ""$GREEN"intvlm8r.old found. Skipping the login prompt step."$RESET""
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
 		echo ''
 
@@ -394,7 +394,7 @@ install_website ()
 		if [ ! -z "$firstLogin" ];
 		then
 			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
-			echo 'intvlm8r.old found. Restored first login.'
+			echo -e ""$GREEN"intvlm8r.old found. Restored first login."$RESET""
 		else
 			echo 'Upgrade file found but the first login was not found/detected.'
 		fi
@@ -519,7 +519,7 @@ install_website ()
 		fi
 	fi
 	#systemctl start intvlm8r - TEMPORARILY COMMENTED OUT FOR TESTING, PENDING DELETION (bugs2201)
-	echo 'Enabling intvlm8r'
+	echo -e ""$GREEN"Enabling intvlm8r"$RESET""
 	systemctl enable intvlm8r
 
 	if [ -f intvlm8r.logrotate ];
@@ -545,7 +545,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/cameraTransfer.service
-	echo 'Enabling cameraTransfer.service'
+	echo -e ""$GREEN"Enabling cameraTransfer.service"$RESET""
 	systemctl enable cameraTransfer.service
 
 	#Pi Transfer
@@ -559,7 +559,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/piTransfer.service
-	echo 'Enabling piTransfer.service'
+	echo -e ""$GREEN"Enabling piTransfer.service"$RESET""
 	systemctl enable piTransfer.service
 
 	#Celery
@@ -593,7 +593,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/celery.service
-	echo 'Enabling celery.service'
+	echo -e ""$GREEN"Enabling celery.service"$RESET""
 	systemctl enable celery.service
 
 	#Redis
@@ -651,7 +651,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/heartbeat.service
-	echo 'Enabling heartbeat.service'
+	echo -e ""$GREEN"Enabling heartbeat.service"$RESET""
 	systemctl enable heartbeat.service
 
 	if [ -f heartbeat.timer ];
@@ -664,7 +664,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/heartbeat.timer
-	echo 'Enabling heartbeat.timer'
+	echo -e ""$GREEN"Enabling heartbeat.timer"$RESET""
 	systemctl enable heartbeat.timer
 
 
@@ -721,7 +721,7 @@ install_website ()
 	if [ -f www/intvlm8r.old ];
 	then
 		echo ''
-		echo 'intvlm8r.old found. Skipping the NTP prompt step.'
+		echo -e ""$GREEN"intvlm8r.old found. Skipping the NTP prompt step."$RESET""
 	else
 		timeTest
 		timeSync1
@@ -1207,9 +1207,9 @@ timeTest ()
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
 	if [ $NTP = "ActiveState=active" ];
 	then
-		echo 'NTP is currently active. NTP is our master time source.'
+		echo -e ""$GREEN"NTP is currently active. NTP is our master time source."$RESET""
 	else
-		echo 'NTP is not active. The Arduino is our master time source.'
+		echo -e ""$GREEN"NTP is not active. The Arduino is our master time source."$RESET""
 	fi
 }
 
@@ -1224,13 +1224,13 @@ timeSync1 ()
 		(y|Y|"")
 			echo 'Enabling systemd-timesyncd'
 			systemctl enable systemd-timesyncd
-			echo 'Starting systemd-timesyncd'
+			echo -e ""$GREEN"Starting systemd-timesyncd"$RESET""
 			systemctl start systemd-timesyncd
 			;;
 		(*)
 			echo 'Disabling systemd-timesyncd'
 			systemctl disable systemd-timesyncd
-			echo 'Stopping systemd-timesyncd'
+			echo -e ""$GREEN"Stopping systemd-timesyncd"$RESET""
 			systemctl stop systemd-timesyncd
 			;;
 	esac
@@ -1242,7 +1242,7 @@ timeSync2 ()
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
 	if [ $NTP = 'ActiveState=active' ];
 	then
-		echo 'NTP is active'
+		echo -e ""$GREEN"NTP is active"$RESET""
 		if  grep -q 'Requires=intvlm8r.service time-sync.target' /etc/systemd/system/setTime.service;
 		then
 			echo ' Requires time-sync.target suffix is already present'
@@ -1253,7 +1253,7 @@ timeSync2 ()
 		sed -i '/Before=time-sync.target/d' /etc/systemd/system/setTime.service #Delete time-sync.target
 		echo ' Deleted Before=time-sync.target'
 	else
-		echo 'NTP is not active'
+		echo -e ""$GREEN"NTP is not active"$RESET""
 		sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1/g' /etc/systemd/system/setTime.service ##Delete REQUIRES time-sync.target
 		echo ' Deleted Requires time-sync.target suffix'
 		if  grep -q 'Before=time-sync.target' /etc/systemd/system/setTime.service;
