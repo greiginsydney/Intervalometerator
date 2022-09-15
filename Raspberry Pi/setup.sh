@@ -51,6 +51,7 @@ install_apps ()
 
 		cp -fv www/intvlm8r.py www/intvlm8r.old
 		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+		echo ''
 
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
 		then
