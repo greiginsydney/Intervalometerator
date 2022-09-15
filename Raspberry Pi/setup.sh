@@ -243,7 +243,6 @@ install_apps ()
 		pip3 install -v gphoto2 --no-binary :all:
 	fi
 	# ================== END python-gphoto ==================
-	echo ''
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
