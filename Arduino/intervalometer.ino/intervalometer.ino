@@ -612,7 +612,6 @@ void setInterval(String incoming)
 
 void SetWakePiTime(String NewTimeDuration)
 {
-  byte PiShutdownAlarm;
 
   //Serial.println(" - New WakePi time = " + String(NewTimeDuration));
   if (NewTimeDuration.length() != 4) return;
