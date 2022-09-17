@@ -168,7 +168,7 @@ void setup()
       DailyTemps[i] = EEPROM.read(MEM24Temp0 + i);
       //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
     }
-    //Serial.println( F("Values from RAM are: "));
+    //Serial.println( F("Values from EEPROM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
     //Serial.println( "  end hour   = " + String(EndHour));
     //Serial.println( "  interval   = " + String(interval));
