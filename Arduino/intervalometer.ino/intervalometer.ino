@@ -54,7 +54,7 @@ char version[6] = "4.5.0"; // **DEV**
 #define MEMEndHour    0x04
 #define MEMWakePiHour 0x05
 #define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  // Changed from int (2 bytes) to int8_t (1 byte) in 4.5.0
+#define MEMTempMin    0x07  // Changed from int (2 bytes) to int8_t (1 byte - signed) in 4.5.0
 #define MEMTempMax    0x08  // "
 #define MEM24Temp0    0x09  // Saved value for midnight.
 #define MEM24Temp23   0x20  // Not actually used in code: it's here for me to know the last memory location I've used
@@ -103,7 +103,7 @@ char NextShotMsg[6] = "19999";  // Sent to the Pi. Same as above.
 char Intervalstring[8];         // Sent to the Pi. Is "<d><startHour><EndHour><Interval>"
 char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<MinTemp>"
 
-int8_t DailyTemps[25];          // 24 temperature readings, one per hour. The offset is the reading for that hour.
+int8_t DailyTemps[25];          // 24 temperature readings, one per hour. The offset is the reading for that hour. A signed byte.
 
 //////////////////////////////////
 //            SETUP             //
