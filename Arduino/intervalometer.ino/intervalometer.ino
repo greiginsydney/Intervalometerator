@@ -883,10 +883,11 @@ void loop()
     //bitWrite(PORTD, LED_PIN, ON); //DEBUG: Turn the LED on. Remove this line when in operation to minimise current drain.
     //Serial.println( F(" - ALARM   fired"));
     printTime();
+    rtc.update();
     if (rtc.alarm1())
     {
       //Serial.println( F(" - ALARM 1 fired"));
-      todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
+      todayAsBits = 0b0000001 << (rtc.day()); //Sunday = bit 1 to align with clock's day ordering
       if ((todayAsBits & ShootDays) && (rtc.hour() >= StartHour))
       {
         //So it's a ShootDay and either before midnight on an STM shoot, or otherwise within the duration for a daytime shoot
@@ -916,7 +917,6 @@ void loop()
     if (rtc.alarm2())
     {
       //Serial.println( F(" - ALARM 2 fired"));
-      rtc.update();
       if (rtc.minute() == 0)
       {
         UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
