@@ -399,16 +399,16 @@ void SetAlarm2(bool reset)
       PiShutdownMinute = rtc.getMinute() + WakePiDuration;
       if (PiShutdownMinute >= 60)
       {
-        PiShutdownMinute -= 60 ;
+        PiShutdownMinute -= 60 ; // So shutdown will be in the NEXT hour. Save this value for later. Alarm2 will be at minute=0
       }
       else
       {
-        AlarmMinute = PiShutdownMinute;
+        AlarmMinute = PiShutdownMinute; // Shutdown is in THIS hour. Set this minute as the alarm2 time.
       }
     }
     else
     {
-      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; }
+      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; } // We're now in the 'next hour' referred to above. Set alarm2
       // Else it defaults to 0.
     }
   }
