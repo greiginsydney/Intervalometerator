@@ -595,9 +595,9 @@ void setInterval(String incoming)
   if (incoming.length() != 7) return;
 
   ShootDays = incoming.charAt(0);
-  StartHour = (ValidateIncoming (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
-  EndHour   = (ValidateIncoming (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
-  interval  = (ValidateIncoming (interval, incoming.substring(5, 7).toInt(), 00, 60));
+  StartHour = (Validate (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
+  EndHour   = (Validate (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
+  interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 60));
 
   EEPROM.update(MEMShootDays, ShootDays);
   EEPROM.update(MEMStartHour, StartHour);
@@ -616,8 +616,8 @@ void SetWakePiTime(String NewTimeDuration)
   //Serial.println(" - New WakePi time = " + String(NewTimeDuration));
   if (NewTimeDuration.length() != 4) return;
 
-  WakePiHour     = (ValidateIncoming (WakePiHour,     NewTimeDuration.substring(0, 2).toInt(), 00, 25));
-  WakePiDuration = (ValidateIncoming (WakePiDuration, NewTimeDuration.substring(2, 4).toInt(), 05, 60));
+  WakePiHour     = (Validate (WakePiHour,     NewTimeDuration.substring(0, 2).toInt(), 00, 25));
+  WakePiDuration = (Validate (WakePiDuration, NewTimeDuration.substring(2, 4).toInt(), 05, 60));
 
   EEPROM.update(MEMWakePiHour,     WakePiHour);
   EEPROM.update(MEMWakePiDuration, WakePiDuration);
@@ -626,7 +626,7 @@ void SetWakePiTime(String NewTimeDuration)
 }
 
 
-int ValidateIncoming (int CurrentValue, int NewValue, int LowerValue, int UpperValue)
+int Validate (int CurrentValue, int NewValue, int LowerValue, int UpperValue)
 {
   if (NewValue > UpperValue)
   {
