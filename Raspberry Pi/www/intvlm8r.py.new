@@ -218,6 +218,7 @@ def getArduinoVersion(returnValue):
     app.logger.debug(f'getArduinoVersion returned {returnValue}')
     return returnValue
 
+
 @app.context_processor
 def customisation():
     loc = cache.get('locationName')
@@ -995,6 +996,7 @@ def transferPOST():
                 flash('Error writing to the Ini file')
 
     return redirect(url_for('transfer'))
+
 
 @app.route("/copyNow")
 def copyNowCronJob():

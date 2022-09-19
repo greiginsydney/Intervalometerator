@@ -127,8 +127,8 @@ install_apps ()
 	pip3 install Werkzeug
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
 	pip3 install flask flask-bootstrap flask-login Flask_Caching configparser
-	echo -e ""$GREEN"Installing gunicorn, psutil"$RESET""
-	pip3 install gunicorn psutil
+	echo -e ""$GREEN"Installing gunicorn, psutil, packaging"$RESET""
+	pip3 install gunicorn psutil packaging
 	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
@@ -804,7 +804,7 @@ install_website ()
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
 	if  grep -Fq 'intervalometerator' '/boot/config.txt';
 	then
-		echo "Skipped: '/boot/config.txt' already contains our added config lines'"
+		echo "Skipped: '/boot/config.txt' already contains our added config lines"
 	else
 cat <<END >> /boot/config.txt
 
@@ -1070,6 +1070,7 @@ unmake_ap ()
 		echo 'Disabled hostapd'
 		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
 	fi
+	[ -f /etc/hostapd/hostapd.conf ] && mv -fv /etc/hostapd/hostapd.conf ~/hostapd.conf
 
 	oldCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	oldSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
@@ -1276,6 +1277,7 @@ test_install ()
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
 	fi
+	echo "$(cat /etc/os-release | grep CODENAME)"
 	echo ''
 	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
 	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
@@ -1299,14 +1301,13 @@ test_install ()
 	ap_test=0
 	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
-		$ap_test=$((ap_test+1))
+		((ap_test=ap_test+1))
 	fi
 	if systemctl --all --type service | grep -q 'hostapd';
 	then
-		$ap_test=$((ap_test+2))
+		((ap_test=ap_test+2))
 	fi
 	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
-
 	case $ap_test in
 		(0)
 			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"

@@ -1,7 +1,7 @@
 {% extends "index.html" %}
 {% block content %}
 
-<form method="POST" onsubmit="return userFeedback(this, event)">
+<form method="POST" name="thermalForm" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
 			<th>Thermal</th>
@@ -50,10 +50,53 @@
 			</td>
 		</tr>
 	</table>
+	
+	{% if Temps24 is defined %}
+	<table>
+		<tr>
+			<th>Daily Temperatures</th>
+		</tr>
+		<tr>
+			<td class="nopadding">
+				<div class="metercontainer">
+					<div class="graticule">
+						{% for i in range(dayTempMinScale, dayTempMaxScale + 5, 5) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}&deg;</span></div>
+						{% endfor %}
+					</div>
+					<ul class="timeline">
+						{% set AdjustedFreezing = '%0.2f'| format (((dayTempMaxScale - freezing) / (dayTempMaxScale - dayTempMinScale + 5)) * 100) %}
+						{% for thisHoursTemp in Temps24 %}
+						<li style="height: {{ AdjustedFreezing }}%">
+							<a title="{{ thisHoursTemp['temp'] }}&deg;">
+								<span class="label">{{ thisHoursTemp['hour'] }}</span>
+								{% if thisHoursTemp['temp'] >= freezing %}
+								<span class="count" style="height: {{ '%0.2f'| format (((thisHoursTemp['temp'] - freezing) / (dayTempMaxScale - freezing)) * 100) }}%">{{ thisHoursTemp['temp'] }}</span>
+								{% else %}
+								<span class="negcount" style="height: {{ '%0.2f'| format ((((freezing - thisHoursTemp['temp'] ) / (freezing - dayTempMaxScale)) * 100)|abs) }}%">{{ thisHoursTemp['temp'] }}</span>
+								{% endif %}
+							</a>
+						</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Daily minimum{% if dayTempMinAt != '' %} (at {{ '%02d:00' % dayTempMinAt }}){% endif %}:</div>
+				<div class="alignright" id="dayTempMin">{{ dayTempMin }}&deg;</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Daily maximum{% if dayTempMaxAt != '' %} (at {{ '%02d:00' % dayTempMaxAt }}){% endif %}:</div>
+				<div class="alignright" id="dayTempMax">{{ dayTempMax }}&deg;</div>
+			</td>
+		</tr>
+	</table>
+	{% endif %}
 </form>
-
-
-
 
 
 <script>
@@ -74,6 +117,7 @@ function handleRadioClick()
 	var expires = "expires="+d.toUTCString();
 	document.cookie = "thermalUnits=" + val + ";" + expires + ";path=/";
 	updateValues()
+	document.thermalForm.submit()
 }
 
 function updateValues()
@@ -86,6 +130,8 @@ function updateValues()
 		document.getElementById("arduinoMin").innerHTML = "{{ arduinoMin }} {% if arduinoMin != 'Unknown' %}&deg;C{% endif %}"
 		document.getElementById("arduinoMax").innerHTML = "{{ arduinoMax }} {% if arduinoMax != 'Unknown' %}&deg;C{% endif %}"
 		document.getElementById("piTemp").innerHTML = "{{ piTemp }} {% if piTemp != 'Unknown' %}&deg;C{% endif %}"
+		document.getElementById("dayTempMin").innerHTML = "{{ dayTempMin }} {% if dayTempMin != 'Unknown' %}&deg;C{% endif %}"
+		document.getElementById("dayTempMax").innerHTML = "{{ dayTempMax }} {% if dayTempMax != 'Unknown' %}&deg;C{% endif %}"
 	}
 	else
 	{
@@ -93,6 +139,8 @@ function updateValues()
 		document.getElementById("arduinoMin").innerHTML = convertToF("{{ arduinoMin }}")
 		document.getElementById("arduinoMax").innerHTML = convertToF("{{ arduinoMax }}")
 		document.getElementById("piTemp").innerHTML = convertToF("{{ piTemp }}")
+		document.getElementById("dayTempMin").innerHTML = convertToF("{{ dayTempMin }}")
+		document.getElementById("dayTempMax").innerHTML = convertToF("{{ dayTempMax }}")
 	}
 }
 

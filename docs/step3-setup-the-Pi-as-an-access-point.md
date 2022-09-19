@@ -89,10 +89,11 @@ Reboot now? [Y/n]:
 - check the hostapd service is running OK: `sudo service hostapd status`
 - run this debug command and look through the output for any clues:
 `sudo hostapd -d /etc/hostapd/hostapd.conf`
-- maybe change `hostapd.conf` to a different channel, just in case there's local congestion on the channel you've chosen? </ClutchingAtStraws>
+- maybe change `hostapd.conf` to a different channel, just in case there's local congestion on the channel you've chosen?
 
 ### Can see but can't connect to the Pi's WiFi network?
 - check you didn't wrap the password in `hostapd.conf` inside quotes
+- change `hostapd.conf` to a different channel, just in case there's local congestion on the channel you've chosen? \[3 days of painful learning experience speaking].
 
 ### Other problems
 - check the dnsmasq service is running OK: `sudo service dnsmasq status`
