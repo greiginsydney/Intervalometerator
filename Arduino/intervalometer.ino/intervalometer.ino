@@ -12,11 +12,11 @@ This script is part of the Intervalometerator project, a time-lapse camera contr
 https://github.com/greiginsydney/Intervalometerator
 https://greiginsydney.com/intvlm8r
 https://intvlm8r.com
- 
+
 References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
- 
+
 */ 
 //Last updated/changed in version 4.5.0.
 char version[6] = "4.5.0";
@@ -54,8 +54,10 @@ char version[6] = "4.5.0";
 #define MEMEndHour    0x04
 #define MEMWakePiHour 0x05
 #define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  // 2 bytes to store an int.
-#define MEMTempMax    0x09  // "
+#define MEMTempMin    0x07  // Changed from int (2 bytes) to int8_t (1 byte - signed) in 4.5.0
+#define MEMTempMax    0x08  // "
+#define MEM24Temp0    0x09  // Saved value for midnight.
+#define MEM24Temp23   0x20  // Not actually used in code: it's here for me to know the last memory location I've used
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -101,6 +103,8 @@ char NextShotMsg[6] = "19999";  // Sent to the Pi. Same as above.
 char Intervalstring[8];         // Sent to the Pi. Is "<d><startHour><EndHour><Interval>"
 char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<MinTemp>"
 
+int8_t DailyTemps[25];          // 24 temperature readings, one per hour. The offset is the reading for that hour. A signed byte.
+
 //////////////////////////////////
 //            SETUP             //
 //////////////////////////////////
@@ -113,7 +117,7 @@ void setup()
   //Serial.begin(9600);
   //Serial.println( F(""));
   //Serial.println( F("Hello. I've just booted"));
-  
+
   // initialize i2c as slave
   Wire.begin(SLAVE_ADDRESS);
   // define callbacks for i2c communication
@@ -159,7 +163,12 @@ void setup()
     EndHour        = EEPROM.read(MEMEndHour);
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
-    //Serial.println( F("Values from RAM are: "));
+    for (int i = 0; i <= 23; i++)
+    {
+      DailyTemps[i] = EEPROM.read(MEM24Temp0 + i);
+      //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
+    }
+    //Serial.println( F("Values from EEPROM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
     //Serial.println( "  end hour   = " + String(EndHour));
     //Serial.println( "  interval   = " + String(interval));
@@ -173,18 +182,22 @@ void setup()
     rtc.set24Hour(); // Force 24-hour mode to be sure (even though that's its default anyway)
     // Default to 12:00:01 pm, January 1, 2018:
     setTimeDate("20180101120001");
-    EEPROM.write(MEMShootDays, ShootDays);
-    EEPROM.write(MEMStartHour, StartHour);
-    EEPROM.write(MEMEndHour, EndHour);
-    EEPROM.write(MEMInterval, interval);
-    EEPROM.write(MEMWakePiHour, WakePiHour);
-    EEPROM.write(MEMWakePiDuration, WakePiDuration);
-    EEPROM.put(MEMTempMin, (int)200); //Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.put(MEMTempMax, (int)-200);
+    EEPROM.update(MEMShootDays, ShootDays);
+    EEPROM.update(MEMStartHour, StartHour);
+    EEPROM.update(MEMEndHour, EndHour);
+    EEPROM.update(MEMInterval, interval);
+    EEPROM.update(MEMWakePiHour, WakePiHour);
+    EEPROM.update(MEMWakePiDuration, WakePiDuration);
+    EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMax, (int8_t)-128);
+    for (int i = 0; i <= 23; i++)
+    {
+      DailyTemps[i] = (int8_t)-128;
+    }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
-  UpdateTempMinMax(""); //Reset or initialise the temperature readings on boot
+  UpdateTempMinMax("", -1); //Reset or initialise the temperature readings on boot
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
@@ -246,7 +259,7 @@ void SetAlarm1()
   byte nextDay  = rtc.getDay();
   byte nextShot = rtc.getMinute();
   byte nextHour = rtc.getHour();
- 
+
   // Lunchtime kludge
   // Un-comment this code and set nextHour and nextShot values as appropriate
   //  if (nextHour == 12)
@@ -254,7 +267,7 @@ void SetAlarm1()
   //     nextHour = 13;
   //     nextShot = 59;
   //  }
- 
+
   do
   {
     nextShot++;
@@ -318,8 +331,8 @@ void SetAlarm1()
     byte yesterday = nextDay - 1;                 //Subtract back to yesterday
     if (yesterday == 0) yesterday = 7;            //Wrap around the week if required
     byte prevShootDay = 0b0000001 << (yesterday); //Sunday = bit 1 to align with clock's day ordering
-    byte nextShootDay = 0b0000001 << (nextDay);   //Sunday = bit 1 to align with clock's day ordering  
-    
+    byte nextShootDay = 0b0000001 << (nextDay);   //Sunday = bit 1 to align with clock's day ordering
+
     if (StartHour > EndHour)
     {
       //STM
@@ -341,19 +354,19 @@ void SetAlarm1()
         }
       }
     }
-    
+
     //If we get to here, run this while loop and then break:
     while (!(nextShootDay & ShootDays))
     {
       nextShot = 0; //Next shot isn't today, so reset this to the top of the hour
-      nextHour = StartHour; //... and at StartHour 
+      nextHour = StartHour; //... and at StartHour
       nextDay++;
       if (nextDay == 8) nextDay = 1;
       nextShootDay = 0b0000001 << (nextDay);
     }
     break;
   }
- 
+
   // NB: Whilst this code calculates the DAY, hour and minute for the next photo, we don't add the
   // day to the alarm, even though the RTC supports this.
   // This is a deliberate safety net. If we happen to miss an alarm for whatever reason, it will
@@ -370,7 +383,7 @@ void SetAlarm1()
 void SetAlarm2(bool reset)
 {
   byte AlarmMinute = 0;
-  
+
   printTime();
 
   if (WakePiHour == 25)
@@ -383,19 +396,19 @@ void SetAlarm2(bool reset)
     if (reset == HIGH)
     {
       // Reset/restart the Pi Shutdown timer. Either the real time or the PiDuration has changed, or the Pi's just woken up:
-      PiShutdownMinute = rtc.getMinute() + WakePiDuration;
+      PiShutdownMinute = rtc.getMinute() + WakePiDuration + 1; // If rtc.secs=59 you're short-changed a minute, so I add a bonus one
       if (PiShutdownMinute >= 60)
       {
-        PiShutdownMinute -= 60 ;
+        PiShutdownMinute -= 60 ; // So shutdown will be in the NEXT hour. Save this value for later. Alarm2 will be at minute=0
       }
       else
       {
-        AlarmMinute = PiShutdownMinute;
+        AlarmMinute = PiShutdownMinute; // Shutdown is in THIS hour. Set this minute as the alarm2 time.
       }
     }
     else
     {
-      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; }
+      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; } // We're now in the 'next hour' referred to above. Set alarm2
       // Else it defaults to 0.
     }
   }
@@ -582,14 +595,14 @@ void setInterval(String incoming)
   if (incoming.length() != 7) return;
 
   ShootDays = incoming.charAt(0);
-  StartHour = (ValidateIncoming (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
-  EndHour   = (ValidateIncoming (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
-  interval  = (ValidateIncoming (interval, incoming.substring(5, 7).toInt(), 00, 60));
+  StartHour = (Validate (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
+  EndHour   = (Validate (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
+  interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 60));
 
-  EEPROM.write(MEMShootDays, ShootDays);
-  EEPROM.write(MEMStartHour, StartHour);
-  EEPROM.write(MEMEndHour,   EndHour);
-  EEPROM.write(MEMInterval,  interval);
+  EEPROM.update(MEMShootDays, ShootDays);
+  EEPROM.update(MEMStartHour, StartHour);
+  EEPROM.update(MEMEndHour,   EndHour);
+  EEPROM.update(MEMInterval,  interval);
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
@@ -599,22 +612,21 @@ void setInterval(String incoming)
 
 void SetWakePiTime(String NewTimeDuration)
 {
-  byte PiShutdownAlarm;
-  
+
   //Serial.println(" - New WakePi time = " + String(NewTimeDuration));
   if (NewTimeDuration.length() != 4) return;
 
-  WakePiHour     = (ValidateIncoming (WakePiHour,     NewTimeDuration.substring(0, 2).toInt(), 00, 25));
-  WakePiDuration = (ValidateIncoming (WakePiDuration, NewTimeDuration.substring(2, 4).toInt(), 05, 60));
+  WakePiHour     = (Validate (WakePiHour,     NewTimeDuration.substring(0, 2).toInt(), 00, 25));
+  WakePiDuration = (Validate (WakePiDuration, NewTimeDuration.substring(2, 4).toInt(), 05, 60));
 
-  EEPROM.write(MEMWakePiHour,     WakePiHour);
-  EEPROM.write(MEMWakePiDuration, WakePiDuration);
- 
+  EEPROM.update(MEMWakePiHour,     WakePiHour);
+  EEPROM.update(MEMWakePiDuration, WakePiDuration);
+
   SetAlarm2(HIGH);
 }
 
 
-int ValidateIncoming (int CurrentValue, int NewValue, int LowerValue, int UpperValue)
+int Validate (int CurrentValue, int NewValue, int LowerValue, int UpperValue)
 {
   if (NewValue > UpperValue)
   {
@@ -644,27 +656,35 @@ void DelaymS(int pauseFor)
 
 // Called once on boot and every hour thereafter, as Alarm2 fires
 // Also called by the Pi as a precursor to requesting the temps be fed back to it.
-void UpdateTempMinMax(String resetOption)
+void UpdateTempMinMax(String resetOption, int thisHour)
 {
   float tempy = rtc.temperature();
   tempy < 0 ? tempy -= 0.5 : tempy += 0.5; // Need to cater for negative temps. Round all numbers away from zero
-  int roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
-  int currentMin;
-  int currentMax;
+  int8_t roundedTemp = round(tempy*10)/10.0; // Rounds the temp to a whole digit
+  int8_t currentMin;
+  int8_t currentMax;
   EEPROM.get(MEMTempMin, currentMin);
   EEPROM.get(MEMTempMax, currentMax);
-  currentMin = ValidateIncoming (200  , currentMin, -200, 200);
-  currentMax = ValidateIncoming (-200 , currentMax, -200, 200);
+
   if (resetOption == "Min" || roundedTemp  < currentMin)
   {
-    EEPROM.put(MEMTempMin, roundedTemp);
+    EEPROM.update(MEMTempMin, roundedTemp);
     currentMin = roundedTemp;
   }
   if (resetOption == "Max" || roundedTemp  > currentMax)
   {
-    EEPROM.put(MEMTempMax, roundedTemp); 
+    EEPROM.update(MEMTempMax, roundedTemp);
     currentMax = roundedTemp;
   }
+
+  //Only update the hour-based readings if we've been called by the Alarm2 handler:
+  if (thisHour != -1)
+  {
+    //Serial.println("Alarm 2 temp read: Hour = " + String(thisHour) + ", temp = " + String(roundedTemp)  + "\r\n");
+    DailyTemps[thisHour] = roundedTemp;
+    EEPROM.update(MEM24Temp0 + thisHour, roundedTemp); // Back it up to EEPROM
+  }
+
   sprintf(TemperaturesString, "%d,%d,%d", roundedTemp, currentMax, currentMin);
   //Serial.println("Temps [current, max, min]: " + String(TemperaturesString) + "\r\n");
   return;
@@ -753,7 +773,7 @@ void receiveEvent(int howMany) {
     else if (incoming == "4")
     {
       //It wants to know the temperature values:
-      sprintf(sendToPi, TemperaturesString); 
+      sprintf(sendToPi, TemperaturesString);
     }
     else if (incoming == "5")
     {
@@ -764,6 +784,15 @@ void receiveEvent(int howMany) {
     {
       //It wants to know my version number:
       sprintf(sendToPi, version);
+    }
+    else if (incoming == "7")
+    {
+      //It wants to know the last 24 hours' temp's:
+      for (int i = 0; i <= 23; i++)
+      {
+        sendToPi[i] = DailyTemps[i];
+      }
+      sendToPi[24] = '\0'; //Perhaps a formality?
     }
     else
     {
@@ -815,8 +844,8 @@ void receiveEvent(int howMany) {
 // callback for sending data
 void sendData()
 {
-  //Serial.println(" - SENT = " + String(sendToPi));
-  Wire.write((byte *) &sendToPi, sizeof(sendToPi));
+  int sent = Wire.write((byte *) &sendToPi, 32);
+  //Serial.println(" - SENT = " + String(sent) + " bytes");
 }
 
 
@@ -854,10 +883,11 @@ void loop()
     //bitWrite(PORTD, LED_PIN, ON); //DEBUG: Turn the LED on. Remove this line when in operation to minimise current drain.
     //Serial.println( F(" - ALARM   fired"));
     printTime();
+    rtc.update();
     if (rtc.alarm1())
     {
       //Serial.println( F(" - ALARM 1 fired"));
-      todayAsBits = 0b0000001 << (rtc.getDay()); //Sunday = bit 1 to align with clock's day ordering
+      todayAsBits = 0b0000001 << (rtc.day()); //Sunday = bit 1 to align with clock's day ordering
       if ((todayAsBits & ShootDays) && (rtc.hour() >= StartHour))
       {
         //So it's a ShootDay and either before midnight on an STM shoot, or otherwise within the duration for a daytime shoot
@@ -887,10 +917,9 @@ void loop()
     if (rtc.alarm2())
     {
       //Serial.println( F(" - ALARM 2 fired"));
-      rtc.update();
       if (rtc.minute() == 0)
       {
-        UpdateTempMinMax("");  // Runs at the top of the hour, 24x7
+        UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -973,26 +1002,26 @@ void loop()
 
   if (getTempsFlag == true)
   {
-    UpdateTempMinMax("");
+    UpdateTempMinMax("", -1);
     getTempsFlag = false;
   }
 
   if (resetTempMinFlag == true)
   {
-    UpdateTempMinMax("Min");
+    UpdateTempMinMax("Min", -1);
     resetTempMinFlag = false;
   }
 
   if (resetTempMaxFlag == true)
   {
-    UpdateTempMinMax("Max");
+    UpdateTempMinMax("Max", -1);
     resetTempMaxFlag = false;
   }
 
   if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*. LOW means the Pi has gone to sleep
   {
     // Only remove power if we've prevously taken PI_SHUTDOWN (Pin 9) LOW *and* now PI_RUNNING has gone LOW:
-    if ((LastRunningState == HIGH) && (bitRead(PORTB, 1) == LOW)) 
+    if ((LastRunningState == HIGH) && (bitRead(PORTB, 1) == LOW))
     {
       //This is a falling edge - the Pi has just gone to sleep.
       //Serial.println(" - PI_RUNNING went LOW");
