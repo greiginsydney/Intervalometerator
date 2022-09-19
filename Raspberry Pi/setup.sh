@@ -46,8 +46,7 @@ install_apps ()
 	if [[ -f www/intvlm8r.py.new &&  -f www/intvlm8r.py ]];
 	then
 		echo ''
-		echo 'intvlm8r.py.new found. Looks like this is an upgrade.'
-		echo ''
+		echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
 
 		cp -fv www/intvlm8r.py www/intvlm8r.old
 		cp -fv www/intvlm8r.py.new www/intvlm8r.py
@@ -81,6 +80,10 @@ install_apps ()
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
 	else
+		echo ''
+		echo 'intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation.'
+		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+		
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
 		echo ''
 		echo '====== Select Upload/Transfer options ======='
