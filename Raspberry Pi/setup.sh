@@ -43,11 +43,16 @@ RESET="\033[0m"
 install_apps ()
 {
 
-	if [ -f www/intvlm8r.old ];
+	if [[ -f www/intvlm8r.py.new &&  -f www/intvlm8r.py ]];
 	then
 		echo ''
-		echo 'intvlm8r.old found. Looks like this is an upgrade.'
+		echo 'intvlm8r.py.new found. Looks like this is an upgrade.'
 		echo ''
+
+		cp -fv www/intvlm8r.py www/intvlm8r.old
+		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+		echo ''
+
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
 		then
 			installSftp=1
@@ -72,7 +77,7 @@ install_apps ()
 		else
 			installRsync=0
 		fi
-		
+
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
 	else
@@ -87,7 +92,7 @@ install_apps ()
 	fi
 	while true; do
 		echo ''
-		
+
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
 		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
@@ -148,32 +153,81 @@ install_apps ()
 		echo -e ""$GREEN"Installing dropbox"$RESET""
 		pip3 install dropbox
 	fi
-	
+
 	if [ $installGoogle -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
 		pip3 install -U pip google-api-python-client oauth2client
 	fi
-	
+
 	if [ $installRsync -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing sysrsync"$RESET""
 		pip3 install sysrsync
 	fi
-	
+
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
-	
-	# ================== START libgphoto & gphoto ================== 
-	echo -e ""$GREEN"libexif12, libgphoto2-6, libgphoto2-port12, libltdl7"$RESET""
-	apt install libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 -y
-	echo -e ""$GREEN"Installing libgphoto2-dev"$RESET""
-	apt-get install libgphoto2-dev -y
-	
+
+	# ================== START libgphoto ================== 
+	if ( apt list --manual-installed | grep -q libgphoto );
+	then
+		# Installed via apt = legacy. Uninstall
+		echo -e ""$YELLOW"Legacy libgphoto2 install detected. Purging"$RESET""
+		apt purge libexif12 libgphoto2-6 libgphoto2-port12 libltdl7 libgphoto2-dev -y
+	else
+		echo -e ""$GREEN"Legacy libgphoto2 install not found"$RESET""
+	fi
+
+	installLibgphoto2=0
+	echo -e ""$GREEN"Checking for installed and latest release versions of libgphoto2"$RESET""
+	latestLibgphoto2Rls=$(curl --silent "https://api.github.com/repos/gphoto/libgphoto2/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+	echo "Current     online version of libgphoto2 = $latestLibgphoto2Rls"
+	echo -n "Checking installed version of libgphoto2 "
+	set +e #Suspend the error trap
+	isLibgphoto2=$(pkg-config --modversion --silence-errors libgphoto2)
+	set -e #Resume the error trap
+
+	if [[ $isLibgphoto2 ]]; then
+		echo -e "\rCurrent  installed version of libgphoto2 = $isLibgphoto2"
+		if dpkg --compare-versions $isLibgphoto2 "lt" $latestLibgphoto2Rls ;
+		then
+			echo ''
+			echo -e ""$GREEN"Updating libgphoto2"$RESET""
+			installLibgphoto2=1
+		else
+			echo 'No libgphoto2 upgrade required'
+		fi
+	else
+		echo -e '= not found'
+		echo -e 'Installing libgphoto2'
+		installLibgphoto2=1
+	fi
+
+	if [ $installLibgphoto2 -eq 1 ];
+	then
+		echo -e ""$GREEN"Installing libgphoto2 pre-req's"$RESET""
+		apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
+
+		echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
+		git clone https://github.com/gphoto/libgphoto2.git
+		cd /home/${SUDO_USER}/libgphoto2
+		autoreconf --install --symlink
+		./configure
+		make
+		make install
+		ldconfig
+
+		echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
+		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
+		/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
+	fi
+	# =====================  END  libgphoto =========================
+	# ===================== START python-gphoto ===================== 
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
-	
+
 	echo -n "Checking installed version of python-gphoto2 "
 	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
@@ -188,15 +242,14 @@ install_apps ()
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
 		pip3 install -v gphoto2 --no-binary :all:
 	fi
-	# ================== END libgphoto & gphoto ==================
-	echo ''
+	# ================== END python-gphoto ==================
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
 	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
 	pip3 install ExifReader requests
-	
+
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
@@ -208,10 +261,9 @@ install_apps ()
 	apt-get autoremove -y
 	apt autoremove
 	apt-get clean
-	
+
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
-	echo ''
 	echo -e ""$GREEN"Enabling i2c"$RESET""
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo 'i2c-bcm2708 module already exists'
@@ -245,36 +297,44 @@ install_apps ()
 		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
 	fi
 	# -------------------------------------------------------------------------------------------------
-	echo ''
-	echo 'Creating gphoto2 shortcuts'
+	echo -e ""$GREEN"Creating gphoto2 shortcuts"$RESET""
 	whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
 	if [ ! -z "$whereisgphoto" ]; then
 		gphoto2="$whereisgphoto/gphoto2"
 		examples="$gphoto2/examples"
 		if [ -d  $gphoto2 ]; then
 			ln -sfnv "$gphoto2" /home/${SUDO_USER}/gphoto2
-			echo -e ""$GREEN"Created shortcut 'gphoto2' to point to '$gphoto2'"$RESET""
+			echo -e "Created shortcut 'gphoto2' to point to '$gphoto2'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 		fi
 		if [ -d  $examples ]; then
 			ln -sfnv "$examples" /home/${SUDO_USER}/examples
-			echo -e ""$GREEN"Created shortcut 'examples' to point to '$examples'"$RESET""
+			echo -e "Created shortcut 'examples' to point to '$examples'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2/examples to create shortcut"$RESET""
 		fi
 	else
 		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
-	echo ''
-	
+
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
 
 install_website ()
 {
-	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service")
+	# Check for the '-E' switch:
+	if env | grep -q 'HOME=/root';
+	then
+		echo -e "\nPlease re-run as 'sudo -E ./setup.sh web'"
+		echo ''
+		exit 1
+	else
+		echo -e ""$GREEN"Environment passed with '-E' switch"$RESET""
+	fi
+
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -316,25 +376,23 @@ install_website ()
 	then
 		mv -nv piTransfer.log ~/www/static/piTransfer.log # -n = "do not overwrite"
 	fi
-	
+
 	chown -R $SUDO_USER:www-data ${HOME}
 
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ''
-		echo 'intvlm8r.old found. Skipping the login prompt step.'
+		echo -e ""$GREEN"intvlm8r.old found. Skipping the login prompt step."$RESET""
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
-		echo ''
-		
+
 		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
 			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
-			echo 'intvlm8r.old found. Restored first login.'
+			echo -e ""$GREEN"intvlm8r.old found. Restored first login."$RESET""
 		else
 			echo 'Upgrade file found but the first login was not found/detected.'
 		fi
-		
+
 		if grep -q '^users.update' ~/www/intvlm8r.old;
 		then
 			#There are additional users we need to reinstate.
@@ -353,7 +411,7 @@ install_website ()
 				fi
 			done <~/www/intvlm8r.old
 		fi
-    
+
     		if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.old;
 		then
 			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
@@ -416,7 +474,7 @@ install_website ()
 			fi
 		fi
 	fi
-	
+
 	#If we have a new intvlm8r file, backup any existing intvlm8r (just in case this is an upgrade):
 	if [ -f intvlm8r ];
 	then
@@ -442,8 +500,6 @@ install_website ()
 		sed -i -E 's/^(\s*)#\s*(server_tokens off;)/\1\2/g' /etc/nginx/nginx.conf #Match on "<whitepace>#<whitepace>server_tokens off" and remove the "#"
 	fi
 
-	echo ''
-
 	#intvlm8r
 	if [ -f intvlm8r.service ];
 	then
@@ -455,7 +511,7 @@ install_website ()
 		fi
 	fi
 	#systemctl start intvlm8r - TEMPORARILY COMMENTED OUT FOR TESTING, PENDING DELETION (bugs2201)
-	echo 'Enabling intvlm8r'
+	echo -e ""$GREEN"Enabling intvlm8r"$RESET""
 	systemctl enable intvlm8r
 
 	if [ -f intvlm8r.logrotate ];
@@ -481,7 +537,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/cameraTransfer.service
-	echo 'Enabling cameraTransfer.service'
+	echo -e ""$GREEN"Enabling cameraTransfer.service"$RESET""
 	systemctl enable cameraTransfer.service
 
 	#Pi Transfer
@@ -495,7 +551,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/piTransfer.service
-	echo 'Enabling piTransfer.service'
+	echo -e ""$GREEN"Enabling piTransfer.service"$RESET""
 	systemctl enable piTransfer.service
 
 	#Celery
@@ -508,7 +564,7 @@ install_website ()
 			mv -fv celery.conf /etc/tmpfiles.d/celery.conf
 		fi
 	fi
-	
+
 	if [ -f celery ];
 	then
 		if cmp -s celery /etc/default/celery;
@@ -518,7 +574,7 @@ install_website ()
 			mv -fv celery /etc/default/celery
 		fi
 	fi
-	
+
 	if [ -f celery.service ];
 	then
 		if cmp -s celery.service /etc/systemd/system/celery.service;
@@ -529,7 +585,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/celery.service
-	echo 'Enabling celery.service'
+	echo -e ""$GREEN"Enabling celery.service"$RESET""
 	systemctl enable celery.service
 
 	#Redis
@@ -567,7 +623,7 @@ install_website ()
 	else
 		sed -i 's/^#\?supervised .*/supervised systemd/g' /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
 	fi
-	
+
 	#Redis is just a *little* too chatty by default:
 	if grep -q "^loglevel warning$" /etc/redis/redis.conf;
 	then
@@ -587,7 +643,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/heartbeat.service
-	echo 'Enabling heartbeat.service'
+	echo -e ""$GREEN"Enabling heartbeat.service"$RESET""
 	systemctl enable heartbeat.service
 
 	if [ -f heartbeat.timer ];
@@ -600,7 +656,7 @@ install_website ()
 		fi
 	fi
 	chmod 644 /etc/systemd/system/heartbeat.timer
-	echo 'Enabling heartbeat.timer'
+	echo -e ""$GREEN"Enabling heartbeat.timer"$RESET""
 	systemctl enable heartbeat.timer
 
 
@@ -656,8 +712,7 @@ install_website ()
 	#NTP
 	if [ -f www/intvlm8r.old ];
 	then
-		echo ''
-		echo 'intvlm8r.old found. Skipping the NTP prompt step.'
+		echo -e ""$GREEN"intvlm8r.old found. Skipping the NTP prompt step."$RESET""
 	else
 		timeTest
 		timeSync1
@@ -672,6 +727,55 @@ install_website ()
 		fi
 	fi
 	timeSync2
+
+	#Disable the daily auto-update process.
+	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
+	echo ''
+	apt-get remove unattended-upgrades -y
+
+	echo ''
+	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
+	then
+		echo "apt-daily.timer could not be found"
+	else
+		if ( systemctl is-enabled apt-daily.timer >/dev/null 2>&1 );
+		then
+			systemctl stop apt-daily.timer
+			systemctl disable apt-daily.timer
+			systemctl mask apt-daily.timer
+			echo -e ""$GREEN"Stopped and disabled apt-daily.timer"$RESET""
+		else
+			echo 'apt-daily.timer   already stopped and disabled'
+		fi
+	fi
+
+	if [[ $(systemctl status apt-daily.service | grep -Fq "could not be found") ]];
+	then
+		echo "apt-daily.service could not be found"
+	else
+		if ( systemctl is-enabled apt-daily.service >/dev/null 2>&1 );
+		then
+			echo 'apt-daily.service already disabled'
+		else
+			systemctl mask apt-daily.service
+			echo -e ""$GREEN"Stopped and disabled apt-daily.service"$RESET""
+		fi
+	fi
+
+	echo ''
+	# Block GVFS if found. (So far only found on desktop installs of the o/s - and one reason why I'm not supporting the desktop)
+	# References:
+	# https://www.reddit.com/r/linuxquestions/comments/gfi31i/can_gvfs_be_disabled_and_removed/
+	# https://github.com/gphoto/gphoto2/issues/181
+	if [ -f /usr/lib/gvfs/gvfs-gphoto2-volume-monitor ];
+	then
+		chmod -v -x /usr/lib/gvfs/gvfs-gphoto2-volume-monitor
+	fi
+	if [ -f /usr/lib/gvfs/gvfsd-gphoto2 ];
+	then
+		chmod -v -x /usr/lib/gvfs/gvfsd-gphoto2
+		echo ''
+	fi
 
 	# Check and reload services if required:
 	# TY Alexander Tolkachev & Sergi Mayordomo, https://serverfault.com/questions/855042/how-do-i-know-if-systemctl-daemon-reload-needs-to-be-run
@@ -695,7 +799,7 @@ install_website ()
 		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt
 	fi
 	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
-	
+
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
 	if  grep -Fq 'intervalometerator' '/boot/config.txt';
@@ -718,12 +822,12 @@ dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 dtoverlay=gpio-poweroff,gpiopin=27,active_low
 END
 	fi
-	
+
 	if [ -f www/intvlm8r.old ];
 	then
 		mv -fv www/intvlm8r.old www/intvlm8r.bak
 	fi
-	
+
 	# WiFi Power Save
 	# Disable WiFi power save mode:
 	if iw wlan0 get power_save | grep -q 'on';
@@ -740,7 +844,14 @@ END
 		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
 		echo -e ""$GREEN"WiFi power save mode disabled in /etc/rc.local"$RESET""
 	fi
-	
+
+	remoteit
+
+	if [ -f www/intvlm8r.py.new ];
+	then
+		rm -fv www/intvlm8r.py.new
+	fi
+
 	# Prepare for reboot/restart:
 	echo 'Exited install_website OK.'
 }
@@ -994,9 +1105,9 @@ unmake_ap ()
 		fi
 		break
 	done
-	
+
 	sed -i -E "s|^\s*country=.*|country=$newCountry|" /etc/wpa_supplicant/wpa_supplicant.conf
-	
+
 	set +e #Suspend the error trap
 	sed -i -E "s|^(\s*ssid=).*|\1\"$newSsid\"|" /etc/wpa_supplicant/wpa_supplicant.conf
 	if [[ "$?" -ne 0 ]];
@@ -1035,7 +1146,7 @@ END
 	then
 		sed -i -e "\$astatic domain_name_servers=192.168.0.1" '/etc/dhcpcd.conf';
 	fi
-	
+
 	wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
 	echo ""
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
@@ -1074,7 +1185,7 @@ END
 			fi
 			;;
 	esac
-	
+
 	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
 	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
 	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
@@ -1088,9 +1199,9 @@ timeTest ()
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
 	if [ $NTP = "ActiveState=active" ];
 	then
-		echo 'NTP is currently active. NTP is our master time source.'
+		echo -e ""$GREEN"NTP is currently active. NTP is our master time source."$RESET""
 	else
-		echo 'NTP is not active. The Arduino is our master time source.'
+		echo -e ""$GREEN"NTP is not active. The Arduino is our master time source."$RESET""
 	fi
 }
 
@@ -1105,13 +1216,13 @@ timeSync1 ()
 		(y|Y|"")
 			echo 'Enabling systemd-timesyncd'
 			systemctl enable systemd-timesyncd
-			echo 'Starting systemd-timesyncd'
+			echo -e ""$GREEN"Starting systemd-timesyncd"$RESET""
 			systemctl start systemd-timesyncd
 			;;
 		(*)
 			echo 'Disabling systemd-timesyncd'
 			systemctl disable systemd-timesyncd
-			echo 'Stopping systemd-timesyncd'
+			echo -e ""$GREEN"Stopping systemd-timesyncd"$RESET""
 			systemctl stop systemd-timesyncd
 			;;
 	esac
@@ -1123,7 +1234,7 @@ timeSync2 ()
 	NTP=$(systemctl show systemd-timesyncd -p ActiveState)
 	if [ $NTP = 'ActiveState=active' ];
 	then
-		echo 'NTP is active'
+		echo -e ""$GREEN"NTP is active"$RESET""
 		if  grep -q 'Requires=intvlm8r.service time-sync.target' /etc/systemd/system/setTime.service;
 		then
 			echo ' Requires time-sync.target suffix is already present'
@@ -1134,7 +1245,7 @@ timeSync2 ()
 		sed -i '/Before=time-sync.target/d' /etc/systemd/system/setTime.service #Delete time-sync.target
 		echo ' Deleted Before=time-sync.target'
 	else
-		echo 'NTP is not active'
+		echo -e ""$GREEN"NTP is not active"$RESET""
 		sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1/g' /etc/systemd/system/setTime.service ##Delete REQUIRES time-sync.target
 		echo ' Deleted Requires time-sync.target suffix'
 		if  grep -q 'Before=time-sync.target' /etc/systemd/system/setTime.service;
@@ -1180,7 +1291,7 @@ test_install ()
 	then
 		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
 		echo ''
-		echo -e 'If the Arduino is connected & programmed it will show as "04" in the top line below:\n'
+		echo 'If the Arduino is connected & programmed it will show as "04" in the top line below:'
 		i2cdetect -y -a 1 0x04 0x04
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
@@ -1196,8 +1307,7 @@ test_install ()
 	then
 		((ap_test=ap_test+2))
 	fi
-	[ -f /etc/hostapd/hostapd.conf ] && ((ap_test=ap_test+4))
-	
+	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
 	case $ap_test in
 		(0)
 			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
@@ -1221,30 +1331,53 @@ test_install ()
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
-	
+
 	if iw wlan0 get power_save | grep -q 'on';
 	then
 		echo -e ""$YELLOW"FAIL:"$RESET" WiFi power save is ON"
 	else
 		echo -e ""$GREEN"PASS:"$RESET" WiFi power save is OFF"
 	fi
-	echo ''	
-	systemctl is-active --quiet nginx    && echo -e ""$GREEN"PASS:"$RESET" nginx    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" nginx    service is dead"
-	systemctl is-active --quiet intvlm8r && echo -e ""$GREEN"PASS:"$RESET" intvlm8r service is running" || echo -e ""$YELLOW"FAIL:"$RESET" intvlm8r service is dead"
-	systemctl is-active --quiet celery   && echo -e ""$GREEN"PASS:"$RESET" celery   service is running" || echo -e ""$YELLOW"FAIL:"$RESET" celery   service is dead"
-	systemctl is-active --quiet redis    && echo -e ""$GREEN"PASS:"$RESET" redis    service is running" || echo -e ""$YELLOW"FAIL:"$RESET" redis    service is dead"
-	
-	if systemctl --all --type service | grep -Fq remoteit-headless ;
-	then
-		systemctl is-active --quiet remoteit-headless && echo -e ""$GREEN"PASS:"$RESET" remoteit service is running" || echo -e ""$YELLOW"FAIL:"$RESET" remoteit    service is dead"
-	else
-		echo -e ""$GREEN"PASS:"$RESET" remoteit service is not installed"
-	fi
 	echo ''
+	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx
+	systemctl is-active --quiet intvlm8r && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" intvlm8r || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" intvlm8r
+	systemctl is-active --quiet celery   && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" celery   || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" celery
+	systemctl is-active --quiet redis    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" redis    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" redis
 
-	matchRegex="\s*Names=(\w*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
-	oneShotList="setTime cameraTransfer piTransfer heartbeat.timer"
-	for service in $oneShotList; do
+	#remoteit
+	echo ''
+	set +e #Suspend the error trap
+	remoteit=$(dpkg -s remoteit 2> /dev/null)
+	set -e #Resume the error trap
+
+	if [[ $remoteit == *"install ok"* ]];
+	then
+		if systemctl is-active --quiet schannel;
+		then
+			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remoteit)"
+		else
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remoteit)"
+		fi
+
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+			then
+				echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+			else
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+			fi
+		else
+			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
+		fi
+
+	else
+		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
+	fi
+
+	matchRegex="\s*Names=([\.[:alnum:]-]*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
+	serviceList="setTime cameraTransfer piTransfer heartbeat.timer apt-daily.timer apt-daily.service"
+	for service in $serviceList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
 		then
@@ -1255,18 +1388,36 @@ test_install ()
 		fi
 		echo ''
 		echo -e "Service = $serviceName"
-
-		[ $serviceLoadState == 'loaded' ] && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET"" || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
-		if [ $serviceName == 'heartbeat' ] ;
-		then
-			[ $serviceActiveState == 'active' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
-		else
-			[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
-		fi
+		case "$serviceName" in
+			("heartbeat.timer")
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'active' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			("apt-daily.timer")
+				[ $serviceLoadState == 'masked' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			("apt-daily.service")
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ]   && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+			(*)
+				[ $serviceLoadState == 'loaded' ]     && echo -e "  LoadState   = "$GREEN"$serviceLoadState"$RESET""   || echo -e "  LoadState   = "$YELLOW"$serviceLoadState"$RESET""
+				[ $serviceActiveState == 'inactive' ] && echo -e "  ActiveState = "$GREEN"$serviceActiveState"$RESET"" || echo -e "  ActiveState = "$YELLOW"$serviceActiveState"$RESET""
+				;;
+		esac
 		[ $serviceSubState != 'failed' ] && echo -e "  SubState    = "$GREEN"$serviceSubState"$RESET"" || echo -e "  SubState    = "$YELLOW"$serviceSubState"$RESET""
 	done
-	
+
 	timeTest
+	echo ''
+
+	gvfsFiles="/usr/lib/gvfs/gvfsd-gphoto2 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor"
+	for gvfsFile in $gvfsFiles;
+	do
+		[ -x  $gvfsFile ] && ""$YELLOW"FAIL:"$RESET" %-41s is executable\n" $gvfsFile || printf ""$GREEN"PASS:"$RESET" %-41s is not executable or does not exist\n" $gvfsFile
+	done
+
 	echo ''
 }
 
@@ -1293,6 +1444,46 @@ test_os()
 		echo ''
 		exit
 	fi
+}
+
+
+remoteit()
+{
+	if [ -f /usr/lib/systemd/system/connectd.service ];
+	then
+		echo -e 'remoteit is installed'
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			#There's already a customised version of connectd.service
+			echo -e 'A copy of connectd.service already exists in /etc/systemd/system/'
+		else
+			cp -fv /usr/lib/systemd/system/connectd.service /etc/systemd/system/connectd.service
+		fi
+		#Modify the service to wait until celery is up:
+		if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+		then
+			echo 'After=celery.service suffix is already present'
+		else
+			sed -i -E 's/^(After=network.target rc-local.service)(.*)$/\1 celery.service/g' /etc/systemd/system/connectd.service #Add AFTER celery.service
+			echo "Added 'After=celery.service' suffix"
+			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
+		fi
+	else
+		echo -e 'remoteit is not installed'
+		if [ -f /etc/systemd/system/connectd.service ];
+		then
+			rm -f /etc/systemd/system/connectd.service;
+			echo 'Removed /etc/systemd/system/connectd.service'
+		fi
+	fi
+}
+
+
+# Here's where I test new bits when I'm working on the script.
+# Released versions of the script shouldn't have anything there. That's the plan anyway.
+dev()
+{
+	echo ''
 }
 
 
@@ -1360,11 +1551,17 @@ case "$1" in
 		timeSync1
 		timeSync2
 		;;
+	('remoteit')
+		remoteit
+		;;
 	('test')
 		test_install
 		;;
+	('dev')
+		dev
+		;;
 	('')
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test' or 'time' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test', 'time' or 'remoteit' after the script name\n"
 		exit 1
 		;;
 	(*)

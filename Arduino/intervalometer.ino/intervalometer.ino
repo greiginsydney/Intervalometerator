@@ -16,10 +16,9 @@ https://intvlm8r.com
 References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
-
 */
-//Last updated/changed in version:
-char version[6] = "4.5.0"; // **DEV**
+//Last updated/changed in version 4.5.0.
+char version[6] = "4.5.0";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -396,7 +395,7 @@ void SetAlarm2(bool reset)
     if (reset == HIGH)
     {
       // Reset/restart the Pi Shutdown timer. Either the real time or the PiDuration has changed, or the Pi's just woken up:
-      PiShutdownMinute = rtc.getMinute() + WakePiDuration + 1; // If rtc.secs=59 you're short-changed a minute, so I add a bonus one!
+      PiShutdownMinute = rtc.getMinute() + WakePiDuration + 1; // If rtc.secs=59 you're short-changed a minute, so I add a bonus one
       if (PiShutdownMinute >= 60)
       {
         PiShutdownMinute -= 60 ; // So shutdown will be in the NEXT hour. Save this value for later. Alarm2 will be at minute=0

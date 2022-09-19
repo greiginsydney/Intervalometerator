@@ -586,11 +586,6 @@ input[type=radio] {
 		align: right;
 	}
 
-	.alignright {
-		float: right;
-		width: 50%;
-	}
-
 	.alignright button {
 		float: right;
 		width: calc(40% * 100vw);

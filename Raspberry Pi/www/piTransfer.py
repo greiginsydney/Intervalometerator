@@ -19,6 +19,8 @@
 # This script is based on the FTP example from http://makble.com/upload-new-files-to-ftp-server-with-python
 # SFTP code from the paramiko project: https://github.com/paramiko/paramiko
 # Google Drive bits with thanks to @Jerbly: http://jeremyblythe.blogspot.com/2015/06/motion-google-drive-uploader-for-oauth.html
+# Dropbox 2022: https://github.com/dropbox/dropbox-sdk-python/blob/main/example/oauth/commandline-oauth-pkce.py
+#             & https://www.dropboxforum.com/t5/Dropbox-API-Support-Feedback/Oauth2-refresh-token-question-what-happens-when-the-refresh/td-p/486241
 
 
 import datetime
@@ -37,6 +39,7 @@ import time
 #(My attempts at lazy-loading and alternative test/load strategies failed.)
 try:
     import dropbox
+    from dropbox import DropboxOAuth2FlowNoRedirect
 except:
     pass
 try:
@@ -77,6 +80,7 @@ LOGFILE_DIR          = os.path.join(PI_USER_HOME, 'www/static')
 LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 KNOWN_HOSTS_FILE     = os.path.join(PI_USER_HOME, '.ssh/known_hosts')
 GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
+DROPBOX_TOKEN        = os.path.join(PI_USER_HOME , 'www/Dropbox_token.txt')
 
 # Paramiko client configuration
 sftpPort = 22
@@ -85,7 +89,7 @@ sftpPort = 22
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
-    try:
+    if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
         if sys.argv[1] == 'reauthGoogle':
@@ -94,8 +98,6 @@ def main(argv):
                 copyNow = True
             else:
                 return 0
-    except:
-        pass
 
     global deleteAfterTransfer  #Made global instead of passing this down from here to all the nested functions.
 
@@ -104,22 +106,22 @@ def main(argv):
         return
     config = configparser.ConfigParser(
         {
-        'tfrmethod'         : 'Off',
-        'ftpServer'         : '',
-        'ftpUser'           : '',
-        'ftpPassword'       : '',
-        'ftpRemoteFolder'   : '',
-        'sftpServer'        : '',
-        'sftpUser'          : '',
-        'sftpPassword'      : '',
-        'sftpRemoteFolder'  : '',
-        'googleRemoteFolder': '',
-        'dbx_token'         : '',
-        'rsyncUsername'     : '',
-        'rsyncHost'         : '',
-        'rsyncRemoteFolder' : '',
-        'transferDay'       : '',
-        'transferHour'      : '',
+        'tfrmethod'          : 'Off',
+        'ftpServer'          : '',
+        'ftpUser'            : '',
+        'ftpPassword'        : '',
+        'ftpRemoteFolder'    : '',
+        'sftpServer'         : '',
+        'sftpUser'           : '',
+        'sftpPassword'       : '',
+        'sftpRemoteFolder'   : '',
+        'googleRemoteFolder' : '',
+        'dbx_app_key'        : '',
+        'rsyncUsername'      : '',
+        'rsyncHost'          : '',
+        'rsyncRemoteFolder'  : '',
+        'transferDay'        : '',
+        'transferHour'       : '',
         'deleteAfterTransfer': False
         })
     config.read(INIFILE_NAME)
@@ -134,7 +136,7 @@ def main(argv):
         sftpPassword        = config.get('Transfer', 'sftpPassword')
         sftpRemoteFolder    = config.get('Transfer', 'sftpRemoteFolder')
         googleRemoteFolder  = config.get('Transfer', 'googleRemoteFolder')
-        dbx_token           = config.get('Transfer', 'dbx_token')
+        dbx_app_key         = config.get('Transfer', 'dbx_app_key')
         rsyncUsername       = config.get('Transfer', 'rsyncUsername')
         rsyncHost           = config.get('Transfer', 'rsyncHost')
         rsyncRemoteFolder   = config.get('Transfer', 'rsyncRemoteFolder')
@@ -145,6 +147,14 @@ def main(argv):
     except Exception as e:
         tfrMethod = 'Off' # If we hit an unknown exception, force tfrMethod=Off, because we can't be sure what triggered the error
         log(f'INI file error: {e}')
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'reauthDropbox':
+            returncode = reauthDropbox(dbx_app_key)
+            if returncode == 0:
+                copyNow = True
+            else:
+                return 0
 
     if (tfrMethod == 'Off'):
         log('STATUS: Upload aborted. tfrMethod=Off')
@@ -178,7 +188,7 @@ def main(argv):
         log(f'sftpServer={sftpServer}, sftpUser={sftpUser}, sftpPassword=<redacted>, sftpRemoteFolder={sftpRemoteFolder}')
         commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder)
     elif (tfrMethod == 'Dropbox'):
-        commenceDbx(dbx_token)
+        commenceDbx(dbx_app_key)
     elif (tfrMethod == 'Google Drive'):
         while '\\' in googleRemoteFolder:
             googleRemoteFolder = googleRemoteFolder.replace('\\', '/') # Escaping means the '\\' here is seen as a single backslash
@@ -300,9 +310,21 @@ def commenceFtp(ftpServer, ftpUser, ftpPassword, ftpRemoteFolder):
         pass
 
 
-def commenceDbx(token):
+def commenceDbx(app_key):
+    if os.path.isfile(DROPBOX_TOKEN):
+        try:
+            with open(DROPBOX_TOKEN, 'r') as f:
+                refresh_token = f.readline()
+        except Exception as e:
+            log(f'Exception reading Dropbox token: {e}')
+            log('STATUS: No Dropbox token found. Re-auth required')
+            return
+    else:
+        log('STATUS: No Dropbox token found. Re-auth required')
+        return
     try:
-        dbx = dropbox.Dropbox(token)
+        with dropbox.Dropbox(oauth2_refresh_token=refresh_token, app_key=app_key) as dbx:
+            dbx.users_get_current_account()
     except Exception as e:
         log(f'Exception signing in to Dropbox: {e}')
         log('STATUS: Exception signing in to Dropbox')
@@ -352,6 +374,41 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
     #log(f'Dropbox uploaded as {res.name.encode('utf8')})
     #log(f'Dropbox result = {res}')
     return res
+
+
+def reauthDropbox(APP_KEY):
+    log('Commencing Dropbox re-auth')
+    try:
+        auth_flow = DropboxOAuth2FlowNoRedirect(APP_KEY, use_pkce=True, token_access_type='offline')
+        auth_url = auth_flow.start()
+        print ('')
+        print ('The next step is to tell Dropbox it can trust the intvlm8r.')
+        print ('Copy this link to somewhere you can open it in a browser:')
+        print (auth_url)
+        print ('')
+        auth_code = input("Enter the auth code here: ").strip()
+        try:
+            oauth_result = auth_flow.finish(auth_code)
+        except Exception as e:
+            log('STATUS: Error in Dropbox re-auth')
+            log(f'Error in Dropbox re-auth : {e}')
+            return(1)
+        with open(DROPBOX_TOKEN, 'w') as f:
+            f.write(oauth_result.refresh_token)
+        log('Completed Dropbox re-auth')
+        print ('')
+        print ('Completed Dropbox re-auth OK.')
+        response = input("Shall we try uploading some images? [Y/n]: ")
+        response = response.lower()
+        if response == 'y' or response == '':
+            return 0
+    except Exception as e:
+        print ('')
+        print('Error in Dropbox re-auth. (See /home/pi/www/static/piTransfer.log for details)')
+        print ('')
+        log('STATUS: Error in Dropbox re-auth')
+        log(f'Error in Dropbox re-auth : {e}')
+    return 1
 
 
 def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
@@ -590,6 +647,10 @@ def reauthGoogle():
         try:
             storage = Storage(GOOGLE_CREDENTIALS)
             credentials = storage.get()
+            if credentials:
+                log ('Google re-auth found GOOGLE_CREDENTIALS')
+            else:
+                log ('Google re-auth did not find GOOGLE_CREDENTIALS')
             flow = client.flow_from_clientsecrets('client_secrets.json',
                 scope='https://www.googleapis.com/auth/drive',
                 redirect_uri='urn:ietf:wg:oauth:2.0:oob')
