@@ -20,6 +20,7 @@
 
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
+from packaging import version   # getArduinoVersion and related
 from PIL import Image           # For the camera page preview button
 from urllib.parse import urlparse, urljoin # Login
 import calendar
@@ -30,6 +31,7 @@ import importlib.util           # Testing installed packages
 import io                       # Camera preview
 import json
 import logging
+import math                     # Used for ceiling in /thermal calcs
 import os                       # Hostname
 import psutil
 import re                       # RegEx. Used in Copy Files & createDestFilename
@@ -143,7 +145,7 @@ def writeString(value, waitTime):
     return -1
 
 
-def readString(value, cacheRequest):
+def readFromArduino(value, dataType, cacheRequest):
     ascii = ord(value[0])
     if (cacheRequest == True):
         cached = cache.get(value)
@@ -154,22 +156,25 @@ def readString(value, cacheRequest):
             app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
     
-    status = ""    
+    status = ""
     app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
 
     for x in range(0, 2):
         try:
             array = bus.read_i2c_block_data(address, ascii, rxLength)
+            if dataType == "Binary":
+                status = array
+                break
             for i in range(len(array)):
                  if (array[i] == 0):
                      break
                  status += chr(array[i])
-            app.logger.debug(f'Status received was: >{status}<')
             break   # Break out of the retry loop if we get to here
         except Exception as e:
-            app.logger.debug(f'readString error: {e}')
+            app.logger.debug(f'readFromArduino error: {e}')
             time.sleep(1) # Wait a second before each retry
+    app.logger.debug(f'Status received was {dataType}: >{status}<')
 
     if (cacheRequest == True):
         cache.set(value, status, timeout = 0)
@@ -200,6 +205,18 @@ def getPiTemp():
     app.logger.debug(f'Pi temp = {temp}')
     return temp
 
+
+def getArduinoVersion(returnValue):
+    try:
+        rawArduinoVersion = str(readFromArduino("6", "String", False))
+        arduinoVersion = version.Version(rawArduinoVersion)  # This will throw if it's not a valid version
+        returnValue = arduinoVersion
+    except version.InvalidVersion as e:
+        app.logger.debug(f'getArduinoVersion: InvalidVersion error: {e}')
+    except Exception as e:
+        app.logger.debug(f'getArduinoVersion: Unexpected error: {e}')
+    app.logger.debug(f'getArduinoVersion returned {returnValue}')
+    return returnValue
 
 @app.context_processor
 def customisation():
@@ -323,7 +340,7 @@ def main():
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
 
     try:
-        arduinoStats = str(readString("2", False))
+        arduinoStats = str(readFromArduino("2", "String", False))
         if arduinoStats != "Unknown":
             lastShot= arduinoStats.split(":")[0]
             if lastShot != "19999":
@@ -473,7 +490,7 @@ def setArduinoDateTime():
 def getArduinoDate():
     formattedDate = 'Unknown'
     try:
-        rawDate = str(readString("0", False))
+        rawDate = str(readFromArduino("0", "String", False))
         if rawDate != 'Unknown':
             formattedDate = datetime.strptime(rawDate, '%Y%m%d').strftime('%Y %b %d')
         time.sleep(0.5);
@@ -485,7 +502,7 @@ def getArduinoDate():
 def getArduinoTime():
     formattedTime = ''
     try:
-        rawTime = str(readString("1", False))
+        rawTime = str(readFromArduino("1", "String", False))
         if rawTime != 'Unknown':
             formattedTime = rawTime[0:2] + ":" + rawTime[2:4] + ":" + rawTime[4:6]
         time.sleep(0.5);
@@ -765,7 +782,7 @@ def intervalometer():
     except Exception as e:
         app.logger.debug(f'Unknown camera error in intervalometer: {e}')
 
-    ArdInterval = str(readString("3", True))
+    ArdInterval = str(readFromArduino("3", "String", True))
     #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
     app.logger.debug(f'Int query returned: {ArdInterval}')
     if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
@@ -840,7 +857,7 @@ def transfer():
         'sftpPassword'          : '',
         'sftpRemoteFolder'      : '',
         'googleRemoteFolder'    : '',
-        'dbx_app_key'             : '',
+        'dbx_token'             : '',
         'rsyncUsername'         : '',
         'rsyncHost'             : '',
         'rsyncRemoteFolder'     : '',
@@ -866,7 +883,7 @@ def transfer():
         'sftpPassword'       : '',
         'sftpRemoteFolder'   : '',
         'googleRemoteFolder' : '',
-        'dbx_app_key'          : '',
+        'dbx_token'          : '',
         'rsyncUsername'      : '',
         'rsyncHost'          : '',
         'rsyncRemoteFolder'  : '',
@@ -891,7 +908,7 @@ def transfer():
         templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
         templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
         templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
-        templateData['dbx_app_key']          = config.get('Transfer', 'dbx_app_key')
+        templateData['dbx_token']          = config.get('Transfer', 'dbx_token')
         templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
         templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
         templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
@@ -907,7 +924,7 @@ def transfer():
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
 
-    rawWakePi = str(readString("5", True))
+    rawWakePi = str(readFromArduino("5", "String", True))
     if rawWakePi != "Unknown":
         templateData['wakePiTime']     = rawWakePi[0:2]
 
@@ -950,7 +967,7 @@ def transferPOST():
                 sftpRemoteFolder = reformatSlashes(str(request.form.get('sftpRemoteFolder')))
                 config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'Dropbox'):
-                config.set('Transfer', 'dbx_app_key', str(request.form.get('dbx_app_key') or ''))
+                config.set('Transfer', 'dbx_token', str(request.form.get('dbx_token') or ''))
             elif (request.form.get('tfrMethod') == 'Google Drive'):
                 googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
                 config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
@@ -1053,23 +1070,111 @@ def thermal():
         'arduinoTemp'    : 'Unknown',
         'arduinoMin'     : 'Unknown',
         'arduinoMax'     : 'Unknown',
-        'piTemp'         : 'Unknown'
+        'piTemp'         : 'Unknown',
+        'dayTempMax'     : '- ',
+        'dayTempMaxAt'   : '',
+        'dayTempMin'     : '- ',
+        'dayTempMinAt'   : '',
+        'dayTempMaxScale': 80,
+        'dayTempMinScale': -40,
+        'freezing'       : 0
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
-    if thermalUnits == 'Fahrenheit' : templateData['thermalUnits'] = "Fahrenheit"
+    if thermalUnits == 'Fahrenheit' :
+        templateData['thermalUnits'] = "Fahrenheit"
+        templateData['freezing'] = 32
+        freezing = 32
+    else:
+        thermalUnits = 'Celsius'   # Just in case the cookie doesn't exist.
+        templateData['freezing'] = 0
+        freezing = 0
 
     try:
         writeString("GT", 2) # Asks the Arduino to update its temperature string
-        temperatures = str(readString("4", False)) # Reads the resulting string, a csv array
-        templateData['arduinoTemp'] = temperatures.split(",")[0]
-        templateData['arduinoMin']  = temperatures.split(",")[2]
-        templateData['arduinoMax']  = temperatures.split(",")[1]
+        temperatures = str(readFromArduino("4", "String", False)) # Reads the resulting string, a csv array
+        if 'Unknown' not in temperatures:
+            templateData['arduinoTemp'] = temperatures.split(",")[0]
+            templateData['arduinoMin']  = temperatures.split(",")[2]
+            templateData['arduinoMax']  = temperatures.split(",")[1]
     except Exception as e:
-        app.logger.debug(f'Exception in /thermal: {e}')
+        app.logger.debug(f'GT exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
     
+    arduinoVersion = str(getArduinoVersion(None))
+    if version.parse(arduinoVersion) >=  version.parse("4.5.0"):
+        time.sleep(0.1)
+        Temps24 = []
+        try:
+            temperatures = readFromArduino("7", "Binary", False) # Reads 24 hours' worth of temp's as 24 bytes of binary data
+            app.logger.info(f'Type of temperatures is {type(temperatures)}')
+            app.logger.info(f'Type of temperatures[0] is {type(temperatures[0])} and value = {temperatures[0]}')
+            dayTempMax = -128
+            dayTempMin =  127
+            for i in range(24):
+                value = int.from_bytes((temperatures[i]).to_bytes(1, byteorder='little'), 'little', signed=True)
+                app.logger.info(f'Temp at {i} = {value} degrees')
+                Temps24.append({'hour' : str(i), 'temp' : convertTemp(value, thermalUnits)})
+                if value > dayTempMax:
+                    dayTempMax = value
+                    templateData['dayTempMaxAt'] = i
+                if value < dayTempMin:
+                    dayTempMin = value
+                    templateData['dayTempMinAt'] = i
+            templateData['dayTempMax']      = str(dayTempMax) # C/F conversion happens in the page
+            templateData['dayTempMin']      = str(dayTempMin) # Here I'm stamping the ACTUAL Min to the page for the table, but 
+                                                              # next I adjust it for "freezing", to set dayTempMinScale
+            if dayTempMin > freezing:
+                dayTempMin = freezing # Reset to 'freezing' for positive-days to ensure the scale is zero-referenced
+            dayTempMin = convertTemp(dayTempMin, thermalUnits)
+            dayTempMax = convertTemp(dayTempMax, thermalUnits)
+            dayTempMinScale = math.floor(dayTempMin/5)*5;                   # Rounds Min temp to nearest 5 so the table can auto-scale
+            dayTempMaxScale = max((freezing+10),math.ceil(dayTempMax/5)*5); # Rounds Max temp to nearest 5 so the table can auto-scale
+                                                                            # Wrapping in 'max' constrains lower result to a minimum positive excursion of 10 degrees,
+                                                                            # and also prevents a /0 error if the Arduino doesn't respond as expected.
+            # The graticule needs to step in 2's and 7's if F, not 0's and 5's:
+            if 'Fahrenheit' in thermalUnits:
+                if dayTempMinScale < 0:
+                    if dayTempMin >= (dayTempMinScale + 2):
+                        dayTempMinScale += 2
+                    else:
+                        dayTempMinScale -= 3
+                else:
+                    if dayTempMin >= (dayTempMinScale + 2):
+                        dayTempMinScale += 2
+                    else:
+                        dayTempMinScale -= 3
+                if dayTempMaxScale >= 0:
+                    if dayTempMax >= (dayTempMaxScale - 3):
+                        dayTempMaxScale += 2
+                    else:
+                        dayTempMaxScale -= 3
+                else:
+                    if dayTempMax >= (dayTempMaxScale + 3):
+                        dayTempMaxScale -= 2
+                    else:
+                        dayTempMaxScale += 3
+            if dayTempMinScale > freezing:
+                dayTempMinScale = freezing
+            templateData['dayTempMaxScale'] = dayTempMaxScale
+            templateData['dayTempMinScale'] = dayTempMinScale
+            
+            app.logger.info(f'Freezing = {freezing}, dayTempMaxScale / dayTempMinScale = {dayTempMaxScale} / {dayTempMinScale}')
+
+        except Exception as e:
+            app.logger.debug(f'Temps24 exception in /thermal: {e}')
+            for i in range(24):
+                Temps24.append({'hour' : str(i), 'temp' : freezing })
+        templateData.update({'Temps24' : Temps24})
+    else:
+        app.logger.debug(f'Arduino version is too old for Temps24 display in /thermal')
+    
     return render_template('thermal.html', **templateData)
+
+
+def convertTemp(temperature, units):
+    if "Celsius" in units: return temperature
+    return (int(round((temperature) * 9/5) + 32))
 
 
 @app.route("/thermal", methods = ['POST'])    # The thermal page's POST method
@@ -1299,7 +1404,7 @@ def system():
         tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
         if tempTime != '':
                 templateData['arduinoTime'] = tempTime
-        rawWakePi = str(readString("5", True))
+        rawWakePi = str(readFromArduino("5", "String", True))
         if rawWakePi != "Unknown":
             templateData['wakePiTime']     = rawWakePi[0:2]
             templateData['wakePiDuration'] = rawWakePi [2:4]
@@ -1415,7 +1520,7 @@ def systemPOST():
     return redirect(url_for('system'))
 
 
-def checkNTP(returnvalue):
+def checkNTP(returnValue):
     try:
         cmd = ['/bin/systemctl', 'is-active', 'systemd-timesyncd']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
@@ -1424,7 +1529,7 @@ def checkNTP(returnvalue):
             stdoutdata = stdoutdata.strip()
             if stdoutdata == 'active':
                 app.logger.info(f'systemd-timesyncd = {stdoutdata}. The Pi takes its time from NTP')
-                returnvalue = True
+                returnValue = True
             else:
                 app.logger.info(f'systemd-timesyncd = {stdoutdata}. The Pi does NOT take its time from NTP')
         if stderrdata:
@@ -1432,7 +1537,7 @@ def checkNTP(returnvalue):
             app.logger.debug(f'systemd-timesyncd error = {stderrdata}')
     except Exception as e:
         app.logger.debug(f'Unhandled systemd-timesyncd error: {e}')
-    return returnvalue
+    return returnValue
 
 
 def setTime(newTime):
@@ -1542,7 +1647,7 @@ def readRange ( camera, group, attribute ):
     return currentValue, options
 
 
-def getCameraTimeAndDate( camera, config, returnvalue ):
+def getCameraTimeAndDate( camera, config, returnValue ):
     try:
         # find the date/time setting config item and get it
         # name varies with camera driver
@@ -1557,18 +1662,18 @@ def getCameraTimeAndDate( camera, config, returnvalue ):
                 if widget_type == gp.GP_WIDGET_DATE:
                     raw_value = gp.check_result(
                         gp.gp_widget_get_value(datetime_config))
-                    returnvalue = datetime.fromtimestamp(raw_value).strftime('%Y %b %d %H:%M:%S')
+                    returnValue = datetime.fromtimestamp(raw_value).strftime('%Y %b %d %H:%M:%S')
                 else:
                     raw_value = gp.check_result(gp.gp_widget_get_value(datetime_config))
                     if fmt:
                         camera_time = datetime.strptime(raw_value, fmt)
                     else:
                         camera_time = datetime.utcfromtimestamp(float(raw_value))
-                    returnvalue = camera_time.isoformat(' ')
+                    returnValue = camera_time.isoformat(' ')
                 break
     except Exception as e:
         app.logger.debug(f'Error reading camera time and date: {e}')
-    return returnvalue
+    return returnValue
 
 
 def setCameraTimeAndDate(camera, config, newTimeDate):
@@ -2345,7 +2450,7 @@ def getShotsPerDay():
     """
     shotsPerDay = 0
     try:
-        ArdInterval = str(readString("3", True))
+        ArdInterval = str(readFromArduino("3", "String", True))
         #Returns a string that's <DAY> (a byte to be treated as a bit array of days) followed by 2-digit strings of <startHour>, <endHour> & <Interval>:
         if (ArdInterval != "Unknown") & (len(ArdInterval) == 7):
             startHour = int(ArdInterval[1:3])
