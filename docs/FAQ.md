@@ -103,6 +103,8 @@ The number after clear-space.py tells the script to keep deleting files until th
 
 The web interface only supports one copy (from the camera) and transfer (from the Pi) per day, but it's easy to add more by adding extra occurrences to the "crontable".
 
+> The only caveat here is that the Pi is set to "Always On" on the system maintenance page.
+
 Here's what the crontable looks like by default:
 
 ``` python
