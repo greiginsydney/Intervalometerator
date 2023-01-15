@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the latest [Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image.
+1. Prepare the memory card with the latest [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image.
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
