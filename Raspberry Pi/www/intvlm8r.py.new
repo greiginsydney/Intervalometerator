@@ -1687,6 +1687,7 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
         return True
     OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
     if OK >= gp.GP_OK:
+        app.logger.debug('Set camera time (opt 4)')
         sync_config.set_value(1)
         return True
     OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
