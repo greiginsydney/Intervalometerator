@@ -1103,7 +1103,7 @@ def thermal():
         app.logger.debug(f'GT exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
     
-    arduinoVersion = str(getArduinoVersion(None))
+    arduinoVersion = str(getArduinoVersion('0'))
     if version.parse(arduinoVersion) >=  version.parse("4.5.0"):
         time.sleep(0.1)
         Temps24 = []
