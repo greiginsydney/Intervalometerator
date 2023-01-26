@@ -9,6 +9,7 @@
 - [Can I pause the shooting schedule during the day (e.g. at lunchtime)?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-pause-the-shooting-schedule-during-the-day-eg-at-lunchtime)
 - [Does the intvlm8r support Daylight Saving Time?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#does-the-intvlm8r-support-daylight-saving-time)
 - [Can I install the intvlm8r under another user, not 'pi'?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-install-the-intvlm8r-under-another-user-not-pi)
+- [Can the intvlm8r connect to multiple WiFi networks?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#Can-the-intvlm8r-connect-to-multiple-WiFi-networks)
 
 <br>
 
@@ -131,7 +132,6 @@ Note the trick is the addition of the 'copyNow' switch which forces the script t
 
 > If you're using Nano as your editor, a quick way to copy a line is ^K then ^U. That deletes the line your cursor is on and reinstates it - but it leaves a copy on the 'clipboard' (to borrow a Windows term). Navigate to where you want the line copied and ^U again - but don't forget to change the time and add the copyNow switch.
 
-
 ## Can I pause the shooting schedule during the day (e.g. at lunchtime)?
 
 The browser interface and the underlying code in both the Pi and Arduino don't allow two time schedules per day, nor one schedule with a break for lunch, and it would require a significant re-write to accommodate this.
@@ -187,7 +187,30 @@ newusername  ALL=(ALL) NOPASSWD:ALL
 
 This lets 'newusername' execute ALL commands without needing to constantly re-type their password. I'd like to be able to tighten it up, but haven't been able to find the right command/syntax for the script to be able to run correctly - and it's not for a lack of trying.
 
+## Can the intvlm8r connect to multiple WiFi networks?
 
+Yes: this is a really useful way of being able to setup a new intvlm8r on your workbench and then take or ship it to site without needing to make further config changes.
+
+All you need to do is edit /etc/wpa_supplicant/wpa_supplicant.conf (`sudo nano /etc/wpa_supplicant/wpa_supplicant.conf`) and add the extra network(s), like shown in this example:
+
+~~~ bash
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+network={
+        ssid="myOfficeNetwork"
+        psk=myWiFiPassword!
+        priority=1
+}
+
+network={
+        ssid="myCaptureSiteNetwork"
+        psk=thisIsMyPassword
+        priority=4
+}
+~~~
+
+If you omit the 'priority' lines, both networks are deemed the same priority, and the Pi will use the one with the stronger signal. As shown here, if both networks are present, the "myCaptureSiteNetwork" will be used, as it has the numerically higher priority number.
 <br>
 <br>
 
