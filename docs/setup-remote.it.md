@@ -51,13 +51,13 @@ The intvlm8r PCB supplies 5V to the Raspberry Pi Zero via its GPIO pins, and the
 This socket is wired directly in parallel with the power pins on the GPIO, so instead of using it as an input, you can use it as an *output* by plugging the dongle into this socket (via another USB adapter).
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180677808-3810c9f2-5ec3-47cb-a1fc-650d1f395839.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/180677808-3810c9f2-5ec3-47cb-a1fc-650d1f395839.png" width="50%">
 </p>
 
 <br>
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180698157-cdb8fd3b-788c-4c0b-aaf8-af3bf3b67350.png" width="60%">
+<img src="https://user-images.githubusercontent.com/11004787/180698157-cdb8fd3b-788c-4c0b-aaf8-af3bf3b67350.png" width="50%">
 </p>
 
 
@@ -78,8 +78,14 @@ Cons:
 One contributor used a "MOSFET module" from eBay as a solid state relay. It's triggered by the Raspberry Pi's 5V power supply (using the same "PWR IN" USB socket described above) and switches a separate power supply for the dongle.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180699325-a131a63d-eb6b-4070-b585-18c2cda2c793.png" width="40%">
+<img src="https://user-images.githubusercontent.com/11004787/180699325-a131a63d-eb6b-4070-b585-18c2cda2c793.png" width="30%">
 </p>
+
+Here's a similar device on [Tindie](https://www.tindie.com/products/8086net/usb-power-switch/):
+<p align="center">
+<img src="https://user-images.githubusercontent.com/11004787/215303845-7d13e826-17cf-455f-be8c-82b95345eea5.png" width="30%">
+</p>
+
 
 Pros:
 - no need to modify the existing intvlm8r PCB
