@@ -57,7 +57,7 @@ install_apps ()
 		fi;
 		echo ''
 
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("paramiko"))';
 		then
 			installSftp=1
 		else
