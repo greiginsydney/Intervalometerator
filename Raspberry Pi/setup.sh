@@ -43,16 +43,21 @@ RESET="\033[0m"
 install_apps ()
 {
 
-	if [[ -f www/intvlm8r.py.new &&  -f www/intvlm8r.py ]];
+	if [[ -f www/intvlm8r.py ]];
 	then
 		echo ''
-		echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
-
-		cp -fv www/intvlm8r.py www/intvlm8r.old
-		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+		if [[ -f www/intvlm8r.py.new ]];
+		then
+			echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
+			cp -fv www/intvlm8r.py www/intvlm8r.old
+			cp -fv www/intvlm8r.py.new www/intvlm8r.py
+			
+		else
+			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
+		fi;
 		echo ''
 
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("libssl-dev"))';
+		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("paramiko"))';
 		then
 			installSftp=1
 		else
@@ -79,7 +84,8 @@ install_apps ()
 
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
-	else
+	elif [[ -f www/intvlm8r.py.new ]];
+	then
 		echo ''
 		echo 'intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation.'
 		cp -fv www/intvlm8r.py.new www/intvlm8r.py
@@ -92,6 +98,12 @@ install_apps ()
 		installDropbox=1
 		installGoogle=1
 		installRsync=1
+	else
+		echo ''
+		echo "Neither intvlm8r.py.new or intvlm8r.py found. Something's amiss. Are we in the right folder?"
+		echo 'Aborting.'
+		echo ''
+		exit 1
 	fi
 	while true; do
 		echo ''
@@ -124,8 +136,12 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing subversion"$RESET""
 	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
-	echo -e ""$GREEN"Installing python3-pip, python3-flask"$RESET""
-	apt-get install python3-pip python3-flask -y
+	echo -e ""$GREEN"Installing python3-pip"$RESET""
+	apt-get install python3-pip -y
+	echo -e ""$GREEN"Upgrading pip3"$RESET""
+	pip3 install --upgrade pip
+	echo -e ""$GREEN"Installing python3-flask"$RESET""
+	apt-get install python3-flask -y
 	echo -e ""$GREEN"Installing Werkzeug"$RESET""
 	pip3 install Werkzeug
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
@@ -147,8 +163,10 @@ install_apps ()
 		apt install krb5-config krb5-user -y
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
-		echo -e ""$GREEN"Installing bcrypt, pynacl, cryptography, gssapi, paramiko"$RESET""
-		pip3 install bcrypt pynacl cryptography gssapi paramiko
+		echo -e ""$GREEN"Installing bcrypt"$RESET""
+		pip3 install -U "bcrypt<4.0.0"
+		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
+		pip3 install pynacl cryptography gssapi paramiko
 	fi
 
 	if [ $installDropbox -eq 1 ];
