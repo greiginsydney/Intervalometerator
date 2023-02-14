@@ -845,6 +845,14 @@ dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low
 END
 	fi
 
+	if grep -q '^dtoverlay=gpio-poweroff' /boot/config.txt;
+	then
+		echo -e ""$YELLOW"'/boot/config.txt' contains legacy dtoverlay=gpio-poweroff. Updating.""$RESET"
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low/dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low/g' /boot/config.txt
+	else
+		echo "Skipped: '/boot/config.txt' does not contain legacy dtoverlay=gpio-poweroff."
+	fi
+
 	if [ -f www/intvlm8r.old ];
 	then
 		mv -fv www/intvlm8r.old www/intvlm8r.bak
