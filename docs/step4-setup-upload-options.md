@@ -253,13 +253,13 @@ Click 'Go to credentials' to move to the next step.
 
 19. The file will be called something like "client_secret_<gibberish>.apps.googleusercontent.com.json". Rename it to client_secrets.json.
 
-20. Copy the file to the Raspberry Pi. It needs to go in the '/home/pi/www' folder.
+20. Copy the file to the Raspberry Pi. It needs to go in the '/home/<YourUser>/www' folder. (This will normally be /home/pi/www.)
 
 21. SSH to the Raspberry Pi & login.
 
 22. Navigate to the www folder:
 ```text
-cd /home/pi/www
+cd ~/www
 ```
 
 23. Run the piTransfer script with the 'reauthGoogle' switch:
@@ -337,7 +337,7 @@ Shall we try uploading some images? [Y/n]:
 36. To initate a test transfer - which you can do at any time - run this command:
 
 ```text
-cd /home/pi/www
+cd ~/www
 python3 piTransfer.py copyNow
 ```
 
