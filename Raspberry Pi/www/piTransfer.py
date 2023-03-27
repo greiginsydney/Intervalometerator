@@ -371,6 +371,10 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
         log(f'Dropbox API error {err}')
         log('STATUS: Dropbox API error')
         return None
+    except Exception as e:
+        log(f'Unexpected Dropbox error: {e}')
+        log('STATUS: Exception uploading to Dropbox')
+        return None
     #log(f'Dropbox uploaded as {res.name.encode('utf8')})
     #log(f'Dropbox result = {res}')
     return res
