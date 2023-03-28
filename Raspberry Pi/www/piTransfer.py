@@ -373,8 +373,13 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
             mute=True)
     except ApiError as err:
-        log(f'Dropbox API error: {err}')
-        log('STATUS: Dropbox API error')
+        if (err.error.is_path() and
+            err.error.get_path().reason.is_insufficient_space()):
+            log('STATUS: Dropbox upload failed due to insufficient space')
+        else:
+            log(f'Dropbox API error {err}')
+            log(f'Dropbox API errormsg text {err.user_message_text}')
+            log('STATUS: Dropbox API error')
         return None
     except Exception as e:
         log(f'Unexpected Dropbox error: {e}')
