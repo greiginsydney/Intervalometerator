@@ -26,7 +26,7 @@ There's no special config required to upload to an (S)FTP site. All you need to 
 
 ## Dropbox
 
-NB: This process was last confirmed accurate in July 2022.
+NB: This process was last confirmed accurate in March 2023.
 
 1. Before you can use Dropbox, you need to have installed the Dropbox API at the setup stage. If you're not sure, browse to the /transfer page and open the "Upload method" pulldown. If Dropbox is greyed out and can't be selected, that option has not been installed. To install it, jump to step 32 of the [step1-setup-the-Pi.md](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step1-setup-the-Pi.md) process.
 
