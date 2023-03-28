@@ -151,7 +151,7 @@
 				<div class="alignleft">
 					<label for="tzOffsetValue">Timezone offset (hh:MM)</label></div>
 				</div>
-				<div class="alignright" id="now">
+				<div class="alignright">
 					<select name="tzOffsetValue" id="tzOffsetValue" title="The +/- offset from local time" onchange="newSelected(this.id)">
 					{% for tzOffsetHour in range (-120, -5, 5) %}
 						<option value="{{ tzOffsetHour / 10 }}">{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
@@ -295,6 +295,8 @@ piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
 var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
 
+var offsetSelected = document.getElementById("tzOffsetValue");
+
 function update_time()
 {
 	var refresh=1000; // Refresh rate in milliseconds
@@ -314,6 +316,15 @@ function sendTimeToServer()
 	var displayedDateTime = today.getFullYear() + ' ' + short_month[today.getMonth()] + ' ' + ('0' + (today.getDate())).slice(-2)
 	displayedDateTime += ' ' + ('0' + (today.getHours())).slice(-2) + ':' + ('0' + (today.getMinutes())).slice(-2) + ':' + ('0' + (today.getSeconds())).slice(-2);
 	document.getElementById("now").innerHTML = displayedDateTime;
+
+	//Recalculate for remote time:
+	var remoteTime = new Date();
+	var offsetMinutes = offsetSelected.options[offsetSelected.selectedIndex].value * 60;
+	//window.alert(offsetMinutes);
+	remoteTime.setTime(today.getTime() + (offsetMinutes * 60000)); // milli-seconds
+	var displayedRemoteDateTime = remoteTime.getFullYear() + ' ' + short_month[remoteTime.getMonth()] + ' ' + ('0' + (remoteTime.getDate())).slice(-2)
+	displayedRemoteDateTime += ' ' + ('0' + (remoteTime.getHours())).slice(-2) + ':' + ('0' + (remoteTime.getMinutes())).slice(-2) + ':' + ('0' + (remoteTime.getSeconds())).slice(-2);
+	document.getElementById("remoteTime").innerHTML = displayedRemoteDateTime;
 
 	update_time();
 	}
