@@ -306,28 +306,29 @@ function update_time()
 function sendTimeToServer()
 {
 	var today = new Date();
-	//This is what we send to the Pi & Arduino:
-	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
-	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
-	var dateTime = date + time;
-	document.forms["sendTime"]["SyncSystem"].value = dateTime;
-	
-	//This is what we display on-screen:
+	//Local time displayed on-screen:
 	var displayedDateTime = today.getFullYear() + ' ' + short_month[today.getMonth()] + ' ' + ('0' + (today.getDate())).slice(-2)
 	displayedDateTime += ' ' + ('0' + (today.getHours())).slice(-2) + ':' + ('0' + (today.getMinutes())).slice(-2) + ':' + ('0' + (today.getSeconds())).slice(-2);
 	document.getElementById("now").innerHTML = displayedDateTime;
 
 	//Recalculate for remote time:
-	var remoteTime = new Date();
-	var offsetMinutes = offsetSelected.options[offsetSelected.selectedIndex].value * 60;
+	var adjustedTime = new Date();
+	var offsetMinutes 
+	offsetMinutes = offsetSelected.options[offsetSelected.selectedIndex].value * 60;
 	//window.alert(offsetMinutes);
-	remoteTime.setTime(today.getTime() + (offsetMinutes * 60000)); // milli-seconds
-	var displayedRemoteDateTime = remoteTime.getFullYear() + ' ' + short_month[remoteTime.getMonth()] + ' ' + ('0' + (remoteTime.getDate())).slice(-2)
-	displayedRemoteDateTime += ' ' + ('0' + (remoteTime.getHours())).slice(-2) + ':' + ('0' + (remoteTime.getMinutes())).slice(-2) + ':' + ('0' + (remoteTime.getSeconds())).slice(-2);
-	document.getElementById("remoteTime").innerHTML = displayedRemoteDateTime;
+	adjustedTime.setTime(today.getTime() + (offsetMinutes * 60000)); // milli-seconds
+	var displayedRemoteDateTime = adjustedTime.getFullYear() + ' ' + short_month[adjustedTime.getMonth()] + ' ' + ('0' + (adjustedTime.getDate())).slice(-2)
+	displayedRemoteDateTime += ' ' + ('0' + (adjustedTime.getHours())).slice(-2) + ':' + ('0' + (adjustedTime.getMinutes())).slice(-2) + ':' + ('0' + (adjustedTime.getSeconds())).slice(-2);
+	document.getElementById("adjustedTime").innerHTML = displayedRemoteDateTime;
+
+	//This is what we send to the Pi, Arduino & camera:
+	var date = adjustedTime.getFullYear() + ('0' + (adjustedTime.getMonth()+1)).slice(-2) + ('0' + (adjustedTime.getDate())).slice(-2)
+	var time = ('0' + (adjustedTime.getHours())).slice(-2) + ('0' + (adjustedTime.getMinutes())).slice(-2) + ('0' + (adjustedTime.getSeconds())).slice(-2);
+	var dateTime = date + time;
+	document.forms["sendTime"]["SyncSystem"].value = dateTime;
 
 	update_time();
-	}
+}
 
 sendTimeToServer();
 
