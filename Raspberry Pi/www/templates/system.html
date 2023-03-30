@@ -154,11 +154,11 @@
 				<div class="alignright">
 					<select name="tzOffsetValue" id="tzOffsetValue" title="The +/- offset from local time" onchange="newSelected(this.id)">
 					{% for tzOffsetHour in range (-120, -5, 5) %}
-						<option value="{{ tzOffsetHour / 10 }}">{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
+						<option value="{{ tzOffsetHour / 10 }}"{{ ' SELECTED' if tzOffsetHour == tzOffset|float * 10 }}>{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
 					{% endfor %}
-						<option value="-0.5">-0:30</option>
+						<option value="-0.5"{{ ' SELECTED' if '-0.5' == tzOffset }}>-0:30</option>
 					{% for tzOffsetHour in range (0, 125, 5) %}
-						<option value="{{ tzOffsetHour / 10 }}">{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
+						<option value="{{ tzOffsetHour / 10 }}"{{ ' SELECTED' if tzOffsetHour == tzOffset|float * 10 }}>{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
 					{% endfor %}
 					</select>
 				</div>
