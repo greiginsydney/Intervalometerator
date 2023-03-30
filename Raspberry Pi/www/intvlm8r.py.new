@@ -1467,6 +1467,7 @@ def system():
 def systemPOST():
 
     app.logger.debug('This is the /system POST page')
+    res = make_response("")
 
     if 'submitLocation' in request.form:
         try:
@@ -1517,6 +1518,8 @@ def systemPOST():
                     camera.exit()
             except Exception as e:
                 app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
+        # Lastly here, let's set the cookie:
+        res.set_cookie('tzOffset', request.form.get('tzOffsetValue'), 365 * 7 * 24 * 60 * 60)
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
@@ -1526,7 +1529,8 @@ def systemPOST():
             pass
             #app.logger.debug(f'Button pressed but no reboot safe word - {REBOOT_SAFE_WORD}')
 
-    return redirect(url_for('system'))
+    res.headers['location'] = url_for('system')
+    return res, 302
 
 
 def checkNTP(returnValue):
