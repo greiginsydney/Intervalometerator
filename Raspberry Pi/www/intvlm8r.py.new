@@ -1378,7 +1378,8 @@ def system():
         'arduinoVersion'      : 'Unknown',
         'libgphoto2Version'   : 'Unknown',
         'pythonGphoto2Version': 'Unknown',
-        'cameraDateTime'      : 'Unknown'
+        'cameraDateTime'      : 'Unknown',
+        'tzOffset'            : '0'
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
@@ -1445,6 +1446,18 @@ def system():
             camera.exit()
     except Exception as e:
         app.logger.debug(f'system: Threw querying cameraDateTime: {e}')
+
+    try:
+        tzOffset = (request.cookies.get('tzOffset'))
+        app.logger.debug(f'system: tzOffset cookie = {tzOffset}')
+        if tzOffset == None or (not (all(ch in '1234567890-.' for ch in tzOffset))):
+            app.logger.debug(f'system: None or bad cookie: {tzOffset}')
+            templateData['tzOffset'] = '0'
+        else:
+            templateData['tzOffset'] = tzOffset
+    except:
+        templateData['tzOffset'] = '0'
+        app.logger.debug(f'system: Threw on bad Tz cookie: {tzOffset}')
 
     return render_template('system.html', **templateData)
 
