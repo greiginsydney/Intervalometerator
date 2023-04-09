@@ -29,7 +29,7 @@
 				<div class="alignleft">Thumbnail count:</div>
 				<div class="alignright">
 					<select name="thumbsCount" id="thumbsCount" title="How many thumbnails to show" onchange="newThumbsCount(this.id)">
-						{% for count in ['24','48','96','144'] %}
+						{% for count in ['0', '24','48','96','144'] %}
 							<option value="{{count}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{count}}</option>
 						{% endfor %}
 					</select>
