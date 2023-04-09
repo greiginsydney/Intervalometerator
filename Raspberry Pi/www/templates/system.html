@@ -206,6 +206,18 @@
 				</div>
 			</td>
 		</tr>
+		<tr id="altCameraTime">
+			<td class="noborder">
+				<div class="alignleft">&nbsp;</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="altCameraTimeMode" name="altCameraTimeMode" onchange="newSetTimeSelected(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+				<div class="alignright"><label for="altCameraTimeMode">Alt camera time mode:&nbsp;</label></div>
+			</td>
+		</tr>
 		<tr>
 			<td class="noborder">
 				<button name="SyncSystem" type="submit" class="hwbutton" id="setDateTimeButton" value="SetDateTime">Set date &amp; time</button>
@@ -287,6 +299,7 @@ document.getElementById("submitThumbsCount").disabled = true;
 document.getElementById("submitWakePi").disabled = true;
 document.getElementById("setDateTimeButton").disabled = true;
 document.getElementById("submitReboot").disabled = true;
+document.getElementById("altCameraTime").style.display = "none"; // Only ever visible after the user checks the camera time box
 
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
 var piHour = document.getElementById("wakePiTime");
@@ -379,7 +392,10 @@ function newSelected(id)
 function newSetTimeSelected(id)
 {
 	var option = document.getElementById(id);
-
+	var setCameraTime = document.getElementById("setCameraTime");
+	// Reveal/hide fields as appropriate:
+	document.getElementById("altCameraTime").style.display = (setCameraTime.checked != true) ? "none":"";
+	
 	if (option.checked == true)
 	{
 		SetTimeSelectionByte = SetTimeSelectionByte | SetTimeSelectionBits[id]; // Or turns the bit on
