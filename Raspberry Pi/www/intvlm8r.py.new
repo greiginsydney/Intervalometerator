@@ -572,8 +572,11 @@ def thumbnails():
     except Exception as e:
         app.logger.debug(f'Thumbs error: {e}')
 
-    if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
-        flash('Delete after transfer is active', 'info')
+    if ThumbsToShow == 0:
+        flash('Thumbnail generation disabled', 'info')
+    else:
+        if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
+            flash('Delete after transfer is active', 'info')
 
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
 
