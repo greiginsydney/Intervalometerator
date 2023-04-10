@@ -2304,6 +2304,9 @@ def copyNow(self):
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
     self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation'})
+    if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
+        app.logger.info('newThumbs returned - thumbnail creation skipped')
+        return {'status': 'Creation of thumbnail images skipped'}
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
