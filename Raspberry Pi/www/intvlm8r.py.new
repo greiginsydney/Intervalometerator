@@ -1511,6 +1511,10 @@ def systemPOST():
 
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
+        if (request.form.get('cameraTimeMode')):
+            cameraTimeMode = '1'
+        else:
+            cameraTimeMode = '0'
         app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
@@ -1523,7 +1527,7 @@ def systemPOST():
             try:
                 camera, context, config = connectCamera(1)
                 if camera:
-                    if setCameraTimeAndDate(camera, config, newTime):
+                    if setCameraTimeAndDate(camera, config, newTime, cameraTimeMode):
                         # apply the changed config
                         camera.set_config(config)
                     else:
@@ -1533,6 +1537,7 @@ def systemPOST():
                 app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
         # Lastly here, let's set the cookie:
         res.set_cookie('tzOffset', request.form.get('tzOffsetValue'), 365 * 7 * 24 * 60 * 60)
+        res.set_cookie('cameraTimeMode', cameraTimeMode, 365 * 7 * 24 * 60 * 60)
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
