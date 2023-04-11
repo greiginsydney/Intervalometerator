@@ -1382,7 +1382,8 @@ def system():
         'libgphoto2Version'   : 'Unknown',
         'pythonGphoto2Version': 'Unknown',
         'cameraDateTime'      : 'Unknown',
-        'tzOffset'            : '0'
+        'tzOffset'            : '0',
+        'cameraTimeMode'      : 0
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
@@ -1461,6 +1462,15 @@ def system():
     except:
         templateData['tzOffset'] = '0'
         app.logger.debug(f'system: Threw on bad Tz cookie: {tzOffset}')
+
+    try:
+        cameraTimeMode = request.cookies.get('cameraTimeMode')
+        if cameraTimeMode != '1':
+            cameraTimeMode = '0'
+    except:
+        cameraTimeMode = '0'
+        app.logger.debug(f'system: Threw on bad cameraTimeMode: {cameraTimeMode}')
+    templateData['cameraTimeMode'] = cameraTimeMode
 
     return render_template('system.html', **templateData)
 
