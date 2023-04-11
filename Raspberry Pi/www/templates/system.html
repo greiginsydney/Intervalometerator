@@ -211,11 +211,11 @@
 				<div class="alignleft">&nbsp;</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" id="altCameraTimeMode" name="altCameraTimeMode" onchange="newSetTimeSelected(this.id)"/>
+						<input type="checkbox" id="cameraTimeMode" name="cameraTimeMode" onchange="newSetTimeSelected(this.id)" {% if cameraTimeMode == '1' %} checked="checked"{% endif %}>
 						<span class="rememberme"></span>
 					</label>
 				</div>
-				<div class="alignright"><label for="altCameraTimeMode">Alt camera time mode:&nbsp;</label></div>
+				<div class="alignright"><label for="cameraTimeMode">Alt camera time mode:&nbsp;</label></div>
 			</td>
 		</tr>
 		<tr>
