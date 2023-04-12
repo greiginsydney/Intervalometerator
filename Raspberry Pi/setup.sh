@@ -96,7 +96,7 @@ install_apps ()
 		echo "An 'X' indicates the option will be installed"
 		installSftp=1
 		installDropbox=1
-		installGoogle=1
+		installGoogle=0
 		installRsync=1
 	else
 		echo ''
