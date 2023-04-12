@@ -1707,7 +1707,7 @@ def getCameraTimeAndDate( camera, config, returnValue ):
     return returnValue
 
 
-def setCameraTimeAndDate(camera, config, newTimeDate):
+def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     """
     Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
     """
@@ -1720,11 +1720,13 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
         epochTime = int(time.mktime(now))
         date_config.set_value(epochTime)
         return True
-    OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
-    if OK >= gp.GP_OK:
-        app.logger.debug('Set camera time (opt 4)')
-        sync_config.set_value(1)
-        return True
+    if cameraTimeMode != '1':
+        #Skip this option if the "Alt camera time mode" is selected on the /system page
+        OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
+        if OK >= gp.GP_OK:
+            app.logger.debug('Set camera time (opt 4)')
+            sync_config.set_value(1)
+            return True
     OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
     if OK >= gp.GP_OK:
         widget_type = date_config.get_type()
