@@ -129,6 +129,7 @@ for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
     if spec is None:
         app.logger.debug(f'{package_name} is not installed')
         hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
+    hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict['google'] # hard-codes Google onto the 'hidden' (actually 'disabled') list
 app.logger.debug(f'hiddenTransferOptions = {hiddenTransferOptions}')
 
 def writeString(value, waitTime):
