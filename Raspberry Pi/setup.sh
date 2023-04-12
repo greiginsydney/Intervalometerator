@@ -110,10 +110,11 @@ install_apps ()
 
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
-		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
+		#echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
 		echo "4. [$([[ installRsync   -eq 1 ]] && echo ''X'' || echo '' '')] rsync"
 		echo ''
-		echo 'Press 1, 2, 3 or 4 to toggle the selection.'
+		#echo 'Press 1, 2, 3 or 4 to toggle the selection.'
+		echo 'Press 1, 2 or 4 to toggle the selection.'
 		read -p 'Press return on its own to continue with the install ' response
 		case "$response" in
 			(1)
@@ -122,9 +123,9 @@ install_apps ()
 			(2)
 				installDropbox=$((1-installDropbox))
 				;;
-			(3)
-				installGoogle=$((1-installGoogle))
-				;;
+			#(3)
+			#	installGoogle=$((1-installGoogle))
+			#	;;
 			(4)
 				installRsync=$((1-installRsync))
 				;;
