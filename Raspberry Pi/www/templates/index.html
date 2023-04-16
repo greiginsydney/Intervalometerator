@@ -67,9 +67,19 @@
 <table id="progress">
 	{% if messages %}
 	<tr>
-		{% for category, message in messages %}
+		{% if messages | length > 1 %}
+		<td>
+			<select name="messages" id="messages" title="Messages" >
+			{% for category, message in (messages | unique) | sort(attribute=0, reverse=True) %}
+				<option class="centre-text{{ ' red' if category != 'info'}}" {{ ' SELECTED' if category != 'info'}} value="{{ message }}">{{ message }}</option>
+			{% endfor %}
+			</select>
+		</td>
+		{% else %}
+		{% for category, message in messages  %}
 		<td class="centre-text{{ ' red' if category != 'info'}}">{{ message }}</td>
 		{% endfor %}
+		{% endif %}
 	</tr>
 	{% elif not current_user.is_anonymous %}
 	<tr>
