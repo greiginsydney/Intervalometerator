@@ -130,8 +130,9 @@ function updateValues()
 		document.getElementById("arduinoMin").innerHTML = "{{ arduinoMin }} {% if arduinoMin != 'Unknown' %}&deg;C{% endif %}"
 		document.getElementById("arduinoMax").innerHTML = "{{ arduinoMax }} {% if arduinoMax != 'Unknown' %}&deg;C{% endif %}"
 		document.getElementById("piTemp").innerHTML = "{{ piTemp }} {% if piTemp != 'Unknown' %}&deg;C{% endif %}"
-		document.getElementById("dayTempMin").innerHTML = "{{ dayTempMin }} {% if dayTempMin != 'Unknown' %}&deg;C{% endif %}"
-		document.getElementById("dayTempMax").innerHTML = "{{ dayTempMax }} {% if dayTempMax != 'Unknown' %}&deg;C{% endif %}"
+		if (document.getElementById("dayTempMin") != null) { document.getElementById("dayTempMin").innerHTML = "{{ dayTempMin }} {% if dayTempMin != 'Unknown' %}&deg;C{% endif %}" }
+		if (document.getElementById("dayTempMax") != null) { document.getElementById("dayTempMax").innerHTML = "{{ dayTempMax }} {% if dayTempMax != 'Unknown' %}&deg;C{% endif %}" }
+		
 	}
 	else
 	{
@@ -139,8 +140,8 @@ function updateValues()
 		document.getElementById("arduinoMin").innerHTML = convertToF("{{ arduinoMin }}")
 		document.getElementById("arduinoMax").innerHTML = convertToF("{{ arduinoMax }}")
 		document.getElementById("piTemp").innerHTML = convertToF("{{ piTemp }}")
-		document.getElementById("dayTempMin").innerHTML = convertToF("{{ dayTempMin }}")
-		document.getElementById("dayTempMax").innerHTML = convertToF("{{ dayTempMax }}")
+		if (document.getElementById("dayTempMin") != null) { document.getElementById("dayTempMin").innerHTML = convertToF("{{ dayTempMin }}") }
+		if (document.getElementById("dayTempMax") != null) { document.getElementById("dayTempMax").innerHTML = convertToF("{{ dayTempMax }}") }
 	}
 }
 

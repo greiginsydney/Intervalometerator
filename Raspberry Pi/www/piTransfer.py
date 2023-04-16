@@ -40,6 +40,7 @@ import time
 try:
     import dropbox
     from dropbox import DropboxOAuth2FlowNoRedirect
+    from dropbox.exceptions import ApiError, AuthError
 except:
     pass
 try:
@@ -325,6 +326,10 @@ def commenceDbx(app_key):
     try:
         with dropbox.Dropbox(oauth2_refresh_token=refresh_token, app_key=app_key) as dbx:
             dbx.users_get_current_account()
+    except AuthError as err:
+        log(f'Dropbox Auth error: {err}')
+        log('STATUS: Invalid Dropbox access token')
+        return
     except Exception as e:
         log(f'Exception signing in to Dropbox: {e}')
         log('STATUS: Exception signing in to Dropbox')
@@ -367,9 +372,18 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             data, path, mode,
             client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
             mute=True)
-    except dropbox.exceptions.ApiError as err:
-        log(f'Dropbox API error {err}')
-        log('STATUS: Dropbox API error')
+    except ApiError as err:
+        if (err.error.is_path() and
+            err.error.get_path().reason.is_insufficient_space()):
+            log('STATUS: Dropbox upload failed due to insufficient space')
+        else:
+            log(f'Dropbox API error {err}')
+            log(f'Dropbox API errormsg text {err.user_message_text}')
+            log('STATUS: Dropbox API error')
+        return None
+    except Exception as e:
+        log(f'Unexpected Dropbox error: {e}')
+        log('STATUS: Exception uploading to Dropbox')
         return None
     #log(f'Dropbox uploaded as {res.name.encode('utf8')})
     #log(f'Dropbox result = {res}')

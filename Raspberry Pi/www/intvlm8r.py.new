@@ -129,6 +129,7 @@ for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
     if spec is None:
         app.logger.debug(f'{package_name} is not installed')
         hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
+    hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict['google'] # hard-codes Google onto the 'hidden' (actually 'disabled') list
 app.logger.debug(f'hiddenTransferOptions = {hiddenTransferOptions}')
 
 def writeString(value, waitTime):
@@ -572,8 +573,11 @@ def thumbnails():
     except Exception as e:
         app.logger.debug(f'Thumbs error: {e}')
 
-    if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
-        flash('Delete after transfer is active', 'info')
+    if ThumbsToShow == 0:
+        flash('Thumbnail generation disabled', 'info')
+    else:
+        if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
+            flash('Delete after transfer is active', 'info')
 
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
 
@@ -1378,7 +1382,9 @@ def system():
         'arduinoVersion'      : 'Unknown',
         'libgphoto2Version'   : 'Unknown',
         'pythonGphoto2Version': 'Unknown',
-        'cameraDateTime'      : 'Unknown'
+        'cameraDateTime'      : 'Unknown',
+        'tzOffset'            : '0',
+        'cameraTimeMode'      : 0
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
@@ -1446,6 +1452,27 @@ def system():
     except Exception as e:
         app.logger.debug(f'system: Threw querying cameraDateTime: {e}')
 
+    try:
+        tzOffset = (request.cookies.get('tzOffset'))
+        app.logger.debug(f'system: tzOffset cookie = {tzOffset}')
+        if tzOffset == None or (not (all(ch in '1234567890-.' for ch in tzOffset))):
+            app.logger.debug(f'system: None or bad cookie: {tzOffset}')
+            templateData['tzOffset'] = '0'
+        else:
+            templateData['tzOffset'] = tzOffset
+    except:
+        templateData['tzOffset'] = '0'
+        app.logger.debug(f'system: Threw on bad Tz cookie: {tzOffset}')
+
+    try:
+        cameraTimeMode = request.cookies.get('cameraTimeMode')
+        if cameraTimeMode != '1':
+            cameraTimeMode = '0'
+    except:
+        cameraTimeMode = '0'
+        app.logger.debug(f'system: Threw on bad cameraTimeMode: {cameraTimeMode}')
+    templateData['cameraTimeMode'] = cameraTimeMode
+
     return render_template('system.html', **templateData)
 
 
@@ -1454,6 +1481,7 @@ def system():
 def systemPOST():
 
     app.logger.debug('This is the /system POST page')
+    res = make_response("")
 
     if 'submitLocation' in request.form:
         try:
@@ -1484,6 +1512,10 @@ def systemPOST():
 
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
+        if (request.form.get('cameraTimeMode')):
+            cameraTimeMode = '1'
+        else:
+            cameraTimeMode = '0'
         app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
@@ -1496,7 +1528,7 @@ def systemPOST():
             try:
                 camera, context, config = connectCamera(1)
                 if camera:
-                    if setCameraTimeAndDate(camera, config, newTime):
+                    if setCameraTimeAndDate(camera, config, newTime, cameraTimeMode):
                         # apply the changed config
                         camera.set_config(config)
                     else:
@@ -1504,6 +1536,9 @@ def systemPOST():
                     camera.exit()
             except Exception as e:
                 app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
+        # Lastly here, let's set the cookie:
+        res.set_cookie('tzOffset', request.form.get('tzOffsetValue'), 365 * 7 * 24 * 60 * 60)
+        res.set_cookie('cameraTimeMode', cameraTimeMode, 365 * 7 * 24 * 60 * 60)
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
@@ -1513,7 +1548,8 @@ def systemPOST():
             pass
             #app.logger.debug(f'Button pressed but no reboot safe word - {REBOOT_SAFE_WORD}')
 
-    return redirect(url_for('system'))
+    res.headers['location'] = url_for('system')
+    return res, 302
 
 
 def checkNTP(returnValue):
@@ -1672,7 +1708,7 @@ def getCameraTimeAndDate( camera, config, returnValue ):
     return returnValue
 
 
-def setCameraTimeAndDate(camera, config, newTimeDate):
+def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     """
     Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
     """
@@ -1685,11 +1721,13 @@ def setCameraTimeAndDate(camera, config, newTimeDate):
         epochTime = int(time.mktime(now))
         date_config.set_value(epochTime)
         return True
-    OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
-    if OK >= gp.GP_OK:
-        app.logger.debug('Set camera time (opt 4)')
-        sync_config.set_value(1)
-        return True
+    if cameraTimeMode != '1':
+        #Skip this option if the "Alt camera time mode" is selected on the /system page
+        OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
+        if OK >= gp.GP_OK:
+            app.logger.debug('Set camera time (opt 4)')
+            sync_config.set_value(1)
+            return True
     OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
     if OK >= gp.GP_OK:
         widget_type = date_config.get_type()
@@ -2284,6 +2322,9 @@ def copyNow(self):
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
     self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation'})
+    if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
+        app.logger.info('newThumbs returned - thumbnail creation skipped')
+        return {'status': 'Creation of thumbnail images skipped'}
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)

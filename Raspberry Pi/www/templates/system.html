@@ -29,7 +29,7 @@
 				<div class="alignleft">Thumbnail count:</div>
 				<div class="alignright">
 					<select name="thumbsCount" id="thumbsCount" title="How many thumbnails to show" onchange="newThumbsCount(this.id)">
-						{% for count in ['24','48','96','144'] %}
+						{% for count in ['0', '24','48','96','144'] %}
 							<option value="{{count}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{count}}</option>
 						{% endfor %}
 					</select>
@@ -148,6 +148,30 @@
 		</tr>
 		<tr>
 			<td class="noborder">
+				<div class="alignleft">
+					<label for="tzOffsetValue">Timezone offset (hh:mm)</label></div>
+				</div>
+				<div class="alignright">
+					<select name="tzOffsetValue" id="tzOffsetValue" title="The +/- offset from local time" onchange="newSelected(this.id)">
+					{% for tzOffsetHour in range (-120, -5, 5) %}
+						<option value="{{ tzOffsetHour / 10 }}"{{ ' SELECTED' if tzOffsetHour == tzOffset|float * 10 }}>{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
+					{% endfor %}
+						<option value="-0.5"{{ ' SELECTED' if '-0.5' == tzOffset }}>-0:30</option>
+					{% for tzOffsetHour in range (0, 125, 5) %}
+						<option value="{{ tzOffsetHour / 10 }}"{{ ' SELECTED' if tzOffsetHour == tzOffset|float * 10 }}>{% if tzOffsetHour == 0 %}&nbsp;{% else %}+{% endif %}{{ (tzOffsetHour / 10)|int }}:{% if tzOffsetHour % 10 == 0 %}00{% else %}30{% endif %}</option>
+					{% endfor %}
+					</select>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder"> <!-- Adjusted local time (i.e., proposed remote time -->
+				<div class="alignleft">Adjusted date/time is</div>
+				<div class="alignright" id="adjustedTime"></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
 				<div class="alignleft"><label for="setArduinoTime">Set Arduino date/time:</label></div>
 				<div class="alignright">
 					<label class="loginChkbox">
@@ -180,6 +204,18 @@
 						<span class="rememberme"></span>
 					</label>
 				</div>
+			</td>
+		</tr>
+		<tr id="altCameraTime">
+			<td class="noborder">
+				<div class="alignleft">&nbsp;</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="cameraTimeMode" name="cameraTimeMode" onchange="newSetTimeSelected(this.id)" {% if cameraTimeMode == '1' %} checked="checked"{% endif %}>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+				<div class="alignright"><label for="cameraTimeMode">Alt camera time mode:&nbsp;</label></div>
 			</td>
 		</tr>
 		<tr>
@@ -263,6 +299,7 @@ document.getElementById("submitThumbsCount").disabled = true;
 document.getElementById("submitWakePi").disabled = true;
 document.getElementById("setDateTimeButton").disabled = true;
 document.getElementById("submitReboot").disabled = true;
+document.getElementById("altCameraTime").style.display = "none"; // Only ever visible after the user checks the camera time box
 
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
 var piHour = document.getElementById("wakePiTime");
@@ -270,6 +307,8 @@ var piMinutes = document.getElementById("piMinutes");
 piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
 var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+
+var offsetSelected = document.getElementById("tzOffsetValue");
 
 function update_time()
 {
@@ -280,19 +319,29 @@ function update_time()
 function sendTimeToServer()
 {
 	var today = new Date();
-	//This is what we send to the Pi & Arduino:
-	var date = today.getFullYear() + ('0' + (today.getMonth()+1)).slice(-2) + ('0' + (today.getDate())).slice(-2)
-	var time = ('0' + (today.getHours())).slice(-2) + ('0' + (today.getMinutes())).slice(-2) + ('0' + (today.getSeconds())).slice(-2);
-	var dateTime = date + time;
-	document.forms["sendTime"]["SyncSystem"].value = dateTime;
-	
-	//This is what we display on-screen:
+	//Local time displayed on-screen:
 	var displayedDateTime = today.getFullYear() + ' ' + short_month[today.getMonth()] + ' ' + ('0' + (today.getDate())).slice(-2)
 	displayedDateTime += ' ' + ('0' + (today.getHours())).slice(-2) + ':' + ('0' + (today.getMinutes())).slice(-2) + ':' + ('0' + (today.getSeconds())).slice(-2);
 	document.getElementById("now").innerHTML = displayedDateTime;
 
+	//Recalculate for remote time:
+	var adjustedTime = new Date();
+	var offsetMinutes 
+	offsetMinutes = offsetSelected.options[offsetSelected.selectedIndex].value * 60;
+	//window.alert(offsetMinutes);
+	adjustedTime.setTime(today.getTime() + (offsetMinutes * 60000)); // milli-seconds
+	var displayedRemoteDateTime = adjustedTime.getFullYear() + ' ' + short_month[adjustedTime.getMonth()] + ' ' + ('0' + (adjustedTime.getDate())).slice(-2)
+	displayedRemoteDateTime += ' ' + ('0' + (adjustedTime.getHours())).slice(-2) + ':' + ('0' + (adjustedTime.getMinutes())).slice(-2) + ':' + ('0' + (adjustedTime.getSeconds())).slice(-2);
+	document.getElementById("adjustedTime").innerHTML = displayedRemoteDateTime;
+
+	//This is what we send to the Pi, Arduino & camera:
+	var date = adjustedTime.getFullYear() + ('0' + (adjustedTime.getMonth()+1)).slice(-2) + ('0' + (adjustedTime.getDate())).slice(-2)
+	var time = ('0' + (adjustedTime.getHours())).slice(-2) + ('0' + (adjustedTime.getMinutes())).slice(-2) + ('0' + (adjustedTime.getSeconds())).slice(-2);
+	var dateTime = date + time;
+	document.forms["sendTime"]["SyncSystem"].value = dateTime;
+
 	update_time();
-	}
+}
 
 sendTimeToServer();
 
@@ -343,7 +392,10 @@ function newSelected(id)
 function newSetTimeSelected(id)
 {
 	var option = document.getElementById(id);
-
+	var setCameraTime = document.getElementById("setCameraTime");
+	// Reveal/hide fields as appropriate:
+	document.getElementById("altCameraTime").style.display = (setCameraTime.checked != true) ? "none":"";
+	
 	if (option.checked == true)
 	{
 		SetTimeSelectionByte = SetTimeSelectionByte | SetTimeSelectionBits[id]; // Or turns the bit on

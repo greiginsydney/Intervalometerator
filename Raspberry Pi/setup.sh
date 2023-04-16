@@ -96,7 +96,7 @@ install_apps ()
 		echo "An 'X' indicates the option will be installed"
 		installSftp=1
 		installDropbox=1
-		installGoogle=1
+		installGoogle=0
 		installRsync=1
 	else
 		echo ''
@@ -110,10 +110,11 @@ install_apps ()
 
 		echo "1. [$([[ installSftp    -eq 1 ]] && echo ''X'' || echo '' '')] SFTP"
 		echo "2. [$([[ installDropbox -eq 1 ]] && echo ''X'' || echo '' '')] Dropbox"
-		echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
+		#echo "3. [$([[ installGoogle  -eq 1 ]] && echo ''X'' || echo '' '')] Google Drive"
 		echo "4. [$([[ installRsync   -eq 1 ]] && echo ''X'' || echo '' '')] rsync"
 		echo ''
-		echo 'Press 1, 2, 3 or 4 to toggle the selection.'
+		#echo 'Press 1, 2, 3 or 4 to toggle the selection.'
+		echo 'Press 1, 2 or 4 to toggle the selection.'
 		read -p 'Press return on its own to continue with the install ' response
 		case "$response" in
 			(1)
@@ -122,9 +123,9 @@ install_apps ()
 			(2)
 				installDropbox=$((1-installDropbox))
 				;;
-			(3)
-				installGoogle=$((1-installGoogle))
-				;;
+			#(3)
+			#	installGoogle=$((1-installGoogle))
+			#	;;
 			(4)
 				installRsync=$((1-installRsync))
 				;;
@@ -840,10 +841,21 @@ dtparam=act_led_activelow=on
 dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 
 #Set GPIO27 to follow the running state: it's High while running and 0 when shutdown is complete. The Arduino will monitor this pin.
-dtoverlay=gpio-poweroff,gpiopin=27,active_low
+dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY
+#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 END
 	fi
 
+: '
+TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+	if grep -q '^dtoverlay=gpio-poweroff' /boot/config.txt;
+	then
+		echo -e ""$YELLOW"'/boot/config.txt' contains legacy dtoverlay=gpio-poweroff. Updating.""$RESET"
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low/dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low/g' /boot/config.txt
+	else
+		echo "Skipped: '/boot/config.txt' does not contain legacy 'dtoverlay=gpio-poweroff'"
+	fi
+'
 	if [ -f www/intvlm8r.old ];
 	then
 		mv -fv www/intvlm8r.old www/intvlm8r.bak
