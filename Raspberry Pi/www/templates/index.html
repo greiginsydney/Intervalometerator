@@ -94,6 +94,7 @@
 
 {% if not current_user.is_anonymous %}
 	<script>
+	updateMsgBackground()
 	pollStatus()
 	function pollStatus()
 	{
@@ -206,6 +207,13 @@
 		}
 		row[0].className = "white";
 		return true;
+	}
+
+	function updateMsgBackground()
+	{
+		var message = document.getElementById('prog_sel');
+		var rows = document.getElementById('progress').rows;
+		rows[0].className = message[0].className;
 	}
 
 	</script>
