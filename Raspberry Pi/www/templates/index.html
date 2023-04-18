@@ -68,10 +68,10 @@
 	{% if messages %}
 	<tr>
 		{% if messages | length > 1 %}
-		<td>
-			<select name="messages" id="messages" title="Messages" >
+		<td id="prog_td">
+			<select id="prog_sel" title="Messages" >
 			{% for category, message in (messages | unique) | sort(attribute=0, reverse=True) %}
-				<option class="centre-text{{ ' red' if category != 'info'}}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}">{{ message }}</option>
+				<option id="prog_opt" class="{{ ' red' if category != 'info'}}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
 			{% endfor %}
 			</select>
 		</td>
