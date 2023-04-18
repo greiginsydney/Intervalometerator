@@ -2415,7 +2415,9 @@ def getCeleryTasks():
         d = i.stats()
         if not d:
             app.logger.debug('getCeleryTasks reports no Celery workers running.')
-            flash('There are no Celery workers running', 'red')
+            if current_user.is_authenticated:
+                # Prevents leak of message if user=anon
+                flash('There are no Celery workers running', 'red')
             return
         # Show tasks that are currently active.
         activeTasks = i.active()
