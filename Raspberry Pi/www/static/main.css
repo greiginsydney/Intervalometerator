@@ -186,7 +186,7 @@ select#prog_sel {
 }
 
 option#prog_opt {
-	font-size: 16px;
+	font-size: 1.1em;
 }
 
 option#prog_opt:disabled {
