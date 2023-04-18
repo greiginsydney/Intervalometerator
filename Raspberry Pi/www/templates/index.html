@@ -63,8 +63,7 @@
 </div>
 <!--MENU ENDS -->
 </header>
-{% if not current_user.is_anonymous %}
-	{% with messages = get_flashed_messages(with_categories=true) %}
+{% with messages = get_flashed_messages(with_categories=true) %}
 	<table id="progress">
 		{% if messages %}
 		<tr>
@@ -83,13 +82,14 @@
 			{% endif %}
 		</tr>
 		{% else %}
+		{% if not current_user.is_anonymous %}
 		<tr>
 			<td class="centre-text">Background tasks idle</td>
 		</tr>
 		{% endif %}
+		{% endif %}
 	</table>
 	{% endwith %}
-{% endif %}
 
 {% block content %}
 {% endblock %}
