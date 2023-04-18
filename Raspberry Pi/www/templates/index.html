@@ -211,9 +211,12 @@
 
 	function updateMsgBackground()
 	{
-		var message = document.getElementById('prog_sel');
-		var rows = document.getElementById('progress').rows;
-		rows[0].className = message[0].className;
+		if (document.getElementById("prog_sel") != null)
+		{
+			var message = document.getElementById('prog_sel');
+			var rows = document.getElementById('progress').rows;
+			rows[0].className = message[0].className;
+		}
 	}
 
 	</script>
