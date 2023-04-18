@@ -577,7 +577,7 @@ def thumbnails():
         flash('Thumbnail generation disabled', 'info')
     else:
         if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
-            flash('Delete after transfer is active', 'info')
+            flash('Delete after transfer is active', 'orange')
 
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
 
