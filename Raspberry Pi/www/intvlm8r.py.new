@@ -285,7 +285,7 @@ def login():
                     return abort(400)
                 return redirect(next or url_for('main'))
     app.logger.debug(f"User '{username}' failed to login")
-    flash('Bad creds. Try again')
+    flash('Bad creds. Try again', 'red')
     return redirect(url_for('login'))
 
 
@@ -293,13 +293,13 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out')
+    flash('You have been logged out', 'info')
     return redirect(url_for('login'))
 
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    flash('You need to log in before you can access that page!')
+    flash('You need to log in before you can access that page!', 'red')
     return redirect(login_url(url_for('login'), request.url))
 
 
@@ -360,7 +360,7 @@ def main():
         if camera:
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
-                flash('No storage info available') # The memory card is missing or faulty
+                flash('No storage info available', 'red') # The memory card is missing or faulty
                 app.logger.debug('FATAL: Connected to camera OK but no camera storage info available')
             files = list_camera_files(camera)
             if not files:
@@ -424,7 +424,7 @@ def main():
             else:
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
     except Exception as e:
-        flash('Error talking to the Pi')
+        flash('Error talking to the Pi', 'red')
         app.logger.debug(f'Pi error: {e}')
         PI_PHOTO_COUNT = 0
     templateData['piLastImageFile'] = piLastImageFile
@@ -569,7 +569,7 @@ def thumbnails():
                 ThumbFileName = ThumbFileName.replace(PI_USER_HOME + '/', '')
                 ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
-            flash("There are no images on the Pi. Copy some from the Transfer page.")
+            flash('There are no images on the Pi. Copy some from the Transfer page.', 'info')
     except Exception as e:
         app.logger.debug(f'Thumbs error: {e}')
 
@@ -838,7 +838,7 @@ def intervalometerPOST():
         app.logger.debug(f'Detected a valid POST. Updated the interval to {newInterval}')
     else:
         app.logger.debug('Detected an *invalid* POST')
-        flash('Invalid data posted to the page')
+        flash('Invalid data posted to the page', 'red')
     return redirect(url_for('intervalometer'))
 
 
@@ -925,7 +925,7 @@ def transfer():
         templateData['renameString']       = config.get('Copy', 'renameString')
     except Exception as e:
         app.logger.debug(f'INI file error: {e}')
-        flash('Error reading from the Ini file')
+        flash('Error reading from the Ini file', 'red')
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
 
@@ -995,9 +995,9 @@ def transferPOST():
         except Exception as e:
             app.logger.debug(f'INI file error writing: {e}')
             if 'Permission denied' in str(e):
-                flash('Permission denied writing to the ini file')
+                flash('Permission denied writing to the ini file', 'red')
             else:
-                flash('Error writing to the Ini file')
+                flash('Error writing to the Ini file', 'red')
 
     return redirect(url_for('transfer'))
 
@@ -1254,9 +1254,9 @@ def monitoringPOST():
         except Exception as e:
             app.logger.debug(f'mon INI file error writing: {e}')
             if 'Permission denied' in str(e):
-                flash('Permission denied writing to the ini file')
+                flash('Permission denied writing to the ini file', 'red')
             else:
-                flash('Error writing to the Ini file')
+                flash('Error writing to the Ini file', 'red')
 
     return redirect(url_for('monitoring'))
 
@@ -2415,7 +2415,7 @@ def getCeleryTasks():
         d = i.stats()
         if not d:
             app.logger.debug('getCeleryTasks reports no Celery workers running.')
-            flash('There are no Celery workers running')
+            flash('There are no Celery workers running', 'red')
             return
         # Show tasks that are currently active.
         activeTasks = i.active()
@@ -2449,7 +2449,7 @@ def iniview():
                 iniEntries.append({'section': str(section_name), 'key': name, 'value': value })
     except Exception as e:
         app.logger.debug(f'iniview error: {e}')
-        flash('INI error')
+        flash('INI error', 'red')
     return render_template('iniview.html', iniEntries = iniEntries)
 
 
