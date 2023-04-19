@@ -1340,7 +1340,7 @@ test_install ()
 	then
 		((ap_test=ap_test+2))
 	fi
-	[ -f /etc/hostapd/hostapd.conf ] && $ap_test=$((ap_test+4))
+	[ -f /etc/hostapd/hostapd.conf ] && ap_test=$((ap_test+4))
 	case $ap_test in
 		(0)
 			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
