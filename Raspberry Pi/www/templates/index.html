@@ -63,7 +63,7 @@
 </div>
 <!--MENU ENDS -->
 </header>
-{% with messages = get_flashed_messages(with_categories=true) %}
+	{% with messages = get_flashed_messages(with_categories=true) %}
 	<table id="progress">
 		{% if messages %}
 		<tr>
@@ -115,7 +115,7 @@
 					var data = JSON.parse(this.response);
 					// update UI
 					col[0].innerHTML = data['status'];
-					row[0].className = "white";
+					row[0].className = data['statusColour'];
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
@@ -139,15 +139,15 @@
 				else
 				{
 					// We reached our target server, but it returned an error
-					col[0].innerHTML = "The Pi returned an error"
-					row[0].className = "orange";
+					col[0].innerHTML = 'The Pi returned an error';
+					row[0].className = 'orange';
 				}
 			};
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
-				col[0].innerHTML = "The Pi did not respond"
-				row[0].className = "orange";
+				col[0].innerHTML = 'The Pi did not respond';
+				row[0].className = 'orange';
 			}
 			request.send()
 		}
@@ -191,15 +191,15 @@
 			submitButton = document.activeElement;
 		};
 
-		if (submitButton.value == "preview")
+		if (submitButton.value == 'preview')
 		{
 			col[0].innerHTML = 'Preview photo requested';
 		}
-		else if (submitButton.value == "Reboot")
+		else if (submitButton.value == 'Reboot')
 		{
 			col[0].innerHTML = 'Reboot requested';
 		}
-		else if (submitButton.value == "hbnow")
+		else if (submitButton.value == 'hbnow')
 		{
 			col[0].innerHTML = 'Initiating heartbeat';
 		}
@@ -207,13 +207,13 @@
 		{
 			col[0].innerHTML = 'Applying changed settings';
 		}
-		row[0].className = "white";
+		row[0].className = 'white';
 		return true;
 	}
 
 	function updateMsgBackground()
 	{
-		if (document.getElementById("prog_sel") != null)
+		if (document.getElementById('prog_sel') != null)
 		{
 			var message = document.getElementById('prog_sel');
 			var rows = document.getElementById('progress').rows;
