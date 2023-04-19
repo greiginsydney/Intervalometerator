@@ -1044,7 +1044,7 @@ def trnTransferNow():
 @celery.task(time_limit=1800, bind=True)
 def transferNow(self):
     app.logger.info('TransferNow() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Preparing to transfer images'})
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to transfer images', 'statusColour': 'white'})
     try:
         errorMsg = 'out'
         cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
@@ -1060,9 +1060,11 @@ def transferNow(self):
     except Exception as e:
         app.logger.info(f'Unhandled transferNow error: {e}')
         errorMsg = ' unexpected'
-    
+
+    if errorMsg != 'out':
+        statusColour = 'red'
     statusMessage = (f'transferNow returned with{errorMsg} error')
-    return {'status': statusMessage}
+    return {'status': statusMessage, 'statusColour': statusColour}
 
 
 @app.route("/thermal")
@@ -1312,10 +1314,11 @@ def initiateHeartbeat(self):
     """
     This fn pings the heartbeat URL and logs the result to the 'hbResult' file
     """
-    self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat'})
+    self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat', 'statusColour': 'white'})
     url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
     resultText = 'Error'
     statusMessage = 'Unknown error'
+    statusColour = 'red'
     statusCode = 0
     if url:
         response   = None
@@ -1348,6 +1351,7 @@ def initiateHeartbeat(self):
                 if statusCode:
                     resultFile.write(f'{nowtime} ({statusCode})')
                     statusMessage = (f'Heartbeat reported success ({statusCode})')
+                    statusColour = 'white'
                 else:
                     resultFile.write(f'{nowtime} ({briefErrMsg})')
                     statusMessage = (f'Heartbeat reported failure: ({briefErrMsg})')
@@ -1356,7 +1360,7 @@ def initiateHeartbeat(self):
     else:
         app.logger.debug('initiateHeartbeat exited. No heartbeatUrl')
         statusMessage = 'Error: no heartbeat url'
-    return {'status': statusMessage, 'statusCode': statusCode}
+    return {'status': statusMessage, 'statusColour': statusColour, 'statusCode': statusCode}
 
 
 @app.route("/system")
@@ -2270,7 +2274,7 @@ def copyNow(self):
         if retries >= 6:
             #We've waited too long. Abort.
             app.logger.info(f'copyNow could not claim the USB device after {retries} attempts.')
-            return {'status': 'USB error'}
+            return {'status': 'USB error', 'statusColour': 'red'}
         try:
             app.logger.info('copyNow trying to init the camera')
             camera.init(context)
@@ -2283,7 +2287,7 @@ def copyNow(self):
         except Exception as e:
             app.logger.info(f'Unknown error in copyNow: {e}')
             continue
-    self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images', 'statusColour': 'white'})
     thisImage = 0
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
@@ -2297,7 +2301,7 @@ def copyNow(self):
             renameOnCopy = False
         while len(filesToCopy) > 0:
             try:
-                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
+                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy), 'statusColour': 'white'})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info(f'About to copy file: {thisFile}')
                 copyResult = copy_files(camera, thisFile, deleteAfterCopy, renameOnCopy, renameString)
@@ -2312,19 +2316,21 @@ def copyNow(self):
         app.logger.info(f'copyNow ended sad: {e}')
     if thisImage == 0:
         app.logger.info('copyNow reported there were no new images to copy')
-        statusMessage = "There were no new images to copy"
+        statusMessage = 'There were no new images to copy'
+        statusColour = 'white'
     else:
         statusMessage = (f'Copied {thisImage} images OK')
-    return {'status': statusMessage}
+        statusColour = 'white'
+    return {'status': statusMessage, 'statusColour': statusColour}
 
 
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation'})
+    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
     if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
         app.logger.info('newThumbs returned - thumbnail creation skipped')
-        return {'status': 'Creation of thumbnail images skipped'}
+        return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -2352,7 +2358,7 @@ def newThumbs(self):
 
         if thumbsToCreate >= 1:
             for loop in range(-1, (-1 * (thumbsToCreate + 1)), -1):
-                self.update_state(state='PROGRESS', meta={'status': 'Creating thumbnail ' + str(thumbsCreated + 1) + ' of ' + str(thumbsToCreate)})
+                self.update_state(state='PROGRESS', meta={'status': 'Creating thumbnail ' + str(thumbsCreated + 1) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
                 dest, alreadyExists = makeThumb(DifferenceList[loop]) #Create a thumb, and metadata for every image on the Pi
                 if (dest == None):
                     #Something went wrong
@@ -2360,7 +2366,7 @@ def newThumbs(self):
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate)})
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
                     app.logger.info(f'Thumb  of {DifferenceList[loop]} is {dest}')
                 else:
                     app.logger.info(f'Thumb for {dest} already exists')
@@ -2370,7 +2376,7 @@ def newThumbs(self):
         app.logger.info(f'newThumbs error: {e}')
     dedupeExifData()
     app.logger.info('newThumbs returned')
-    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
+    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK', 'statusColour': 'white'}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
@@ -2383,12 +2389,14 @@ def backgroundStatus(task_id):
         # job did not start yet
         response = {
             'state': task.state,
-            'status': 'Background task pending'
+            'status': 'Background task pending',
+            'statusColour': 'white'
         }
     elif task.state != 'FAILURE':
         response = {
             'state': task.state,
-            'status': task.info.get('status', '')
+            'status': task.info.get('status', ''),
+            'statusColour': task.info.get('statusColour', '')
         }
     else:
         # something went wrong in the background job
@@ -2396,6 +2404,7 @@ def backgroundStatus(task_id):
         response = {
             'state': task.state,
             'status': str(task.info),  # this is the exception raised
+            'statusColour': task.info.get('statusColour', '')
         }
     app.logger.debug('backgroundStatus returned')
     return jsonify(response)
