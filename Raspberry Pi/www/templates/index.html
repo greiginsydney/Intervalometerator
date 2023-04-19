@@ -63,14 +63,14 @@
 </div>
 <!--MENU ENDS -->
 </header>
-	{% with messages = get_flashed_messages(with_categories=true) %}
+	{% with messages = get_flashed_messages(with_categories=true) | unique | list %}
 	<table id="progress">
 		{% if messages %}
 		<tr>
 			{% if messages | length > 1 %}
 			<td id="prog_td">
 				<select id="prog_sel" title="Messages">
-				{% for category, message in (messages | unique) | sort(attribute=0, reverse=True) %}
+				{% for category, message in messages | sort(attribute=0, reverse=True) %}
 					<option id="prog_opt" class="centre-text {{ 'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
 				{% endfor %}
 				</select>
