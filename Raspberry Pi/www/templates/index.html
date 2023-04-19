@@ -119,11 +119,11 @@
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
-						if ((data['status']).toLowerCase().includes("heartbeat"))
+						if ((data['status']).toString().toLowerCase().includes('heartbeat'))
 						{
 							window.location.reload(false); //Reload the (Monitoring) page to update the Result field
 						}
-						else if ((data['status']).toLowerCase().includes("thumbnail images OK"))
+						else if ((data['status']).toString().toLowerCase().includes('thumbnail images OK'))
 						{
 							window.location.reload(false); //Reload the (Thumbnails) page to update the Result field
 						}
