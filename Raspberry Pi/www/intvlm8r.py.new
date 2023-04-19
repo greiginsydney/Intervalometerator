@@ -2395,17 +2395,23 @@ def backgroundStatus(task_id):
     elif task.state != 'FAILURE':
         response = {
             'state': task.state,
-            'status': task.info.get('status', ''),
-            'statusColour': task.info.get('statusColour', '')
+            'status': task.info.get('status', '')
         }
+        try:
+            response['statusColour'] = task.info.get('statusColour', '')
+        except Exception as e:
+            app.logger.info(f'backgroundStatus error 1. The task has no statusColour: {e}')
     else:
         # something went wrong in the background job
         app.logger.debug(f'Something went wrong in the background job: {task.info}')
         response = {
             'state': task.state,
-            'status': str(task.info),  # this is the exception raised
-            'statusColour': task.info.get('statusColour', '')
+            'status': str(task.info)  # this is the exception raised
         }
+        try:
+            response['statusColour'] = task.info.get('statusColour', '')
+        except Exception as e:
+            app.logger.info(f'backgroundStatus error 2. The task has no statusColour: {e}')
     app.logger.debug('backgroundStatus returned')
     return jsonify(response)
 
