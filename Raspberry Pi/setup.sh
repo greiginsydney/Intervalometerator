@@ -1357,7 +1357,13 @@ test_install ()
 		(4)
 			echo -e ""$YELLOW"FAIL:"$RESET" hostapd.conf is present but hostapd & dnsmasq are missing"
 			;;
-		(7)
+		(5)
+			echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 5"
+			;;
+		(6)
+			echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 6"
+			;;
+		(7)			
 			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
 			;;
 	esac
