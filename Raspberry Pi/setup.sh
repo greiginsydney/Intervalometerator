@@ -69,12 +69,12 @@ install_apps ()
 		else
 			installDropbox=0
 		fi
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("oauth2client"))';
-		then
-			installGoogle=1
-		else
-			installGoogle=0
-		fi
+		# if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("oauth2client"))';
+		# then
+		# 	installGoogle=1
+		# else
+		# 	installGoogle=0
+		# fi
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("sysrsync"))';
 		then
 			installRsync=1
