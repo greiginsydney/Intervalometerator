@@ -15,6 +15,7 @@
 /home/pi/www/gunicorn.error {}
 /var/log/celery/*.log {}
 /home/pi/heartbeat.log
+/home/pi/rsynclog.txt
 {
     size=100k
 }
