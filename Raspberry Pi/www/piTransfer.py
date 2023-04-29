@@ -719,7 +719,7 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             if not rsyncRemoteFolder.endswith('/'):
                 rsyncRemoteFolder += '/'
             destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
-            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', '--log-file=' + PI_USER_HOME + '/rsync.log', '--log-file-format=Copied %f', localPath, destination]
+            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', '--log-file=' + RSYNC_LOG_FILE, '--log-file-format=Copied %f', localPath, destination]
             result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
