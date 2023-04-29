@@ -82,6 +82,7 @@ LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 KNOWN_HOSTS_FILE     = os.path.join(PI_USER_HOME, '.ssh/known_hosts')
 GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
 DROPBOX_TOKEN        = os.path.join(PI_USER_HOME , 'www/Dropbox_token.txt')
+RSYNC_LOG_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.log')
 
 # Paramiko client configuration
 sftpPort = 22
