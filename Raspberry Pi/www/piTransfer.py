@@ -706,17 +706,19 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
     (r)syncs the Pi's photos/ folder with a remote location
     """
     log('Commencing rsync')
+    numFilesOK = cleanupRsync() #Safety net.
+    if numFilesOK != 0:
+        log(f'rsync cleaned {numFilesOK} files previously uploaded OK')
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
     numNewFiles = len(newFiles)
     if numNewFiles == 0:
         log('STATUS: No files to upload')
     else:
-        numFilesOK = 0
         localPath  = os.path.join(PI_PHOTO_DIR, 'DCIM')
         try:
             #Upload/dir-sync happens here
-            # if not rsyncRemoteFolder.startswith('/'):
-            #   rsyncRemoteFolder = '/' + rsyncRemoteFolder
+            #if not rsyncRemoteFolder.startswith('/'):
+            #    rsyncRemoteFolder = '/' + rsyncRemoteFolder
             if not rsyncRemoteFolder.endswith('/'):
                 rsyncRemoteFolder += '/'
             destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
@@ -739,19 +741,15 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             exitcode = result.wait()
             if exitcode == 0:
                 log('rsync exited cleanly')
-                uploadedList = stdoutdata.splitlines()
-                for uploadedFile in uploadedList:
-                    uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
-                    if os.path.isfile(uploadedFile):
-                        numFilesOK = uploadedOK(uploadedFile, numFilesOK)
-                log(f'STATUS: {numFilesOK} files uploaded OK')
             else:
-                log('rsync exited with a non-zero exitcode')
+                log(f'rsync exited with exitcode {exitcode}')
                 #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
+            numFilesOK = cleanupRsync()
+            log(f'STATUS: {numFilesOK} files uploaded OK')
         except Exception as e:
             log(f'Error uploading via rsync: {e}')
             log('STATUS: unhandled rsync error')
-    return
+    return 0
 
 
 def cleanupRsync():
