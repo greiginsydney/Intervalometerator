@@ -1270,23 +1270,23 @@ timeSync2 ()
 		echo -e ""$GREEN"NTP is active"$RESET""
 		if  grep -q 'Requires=intvlm8r.service time-sync.target' /etc/systemd/system/setTime.service;
 		then
-			echo ' Requires time-sync.target suffix is already present'
+			echo " 'Requires time-sync.target' suffix is already present"
 		else
 			sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1 time-sync.target/g' /etc/systemd/system/setTime.service #Add REQUIRES time-sync.target
-			echo ' Added Requires time-sync.target suffix'
+			echo " Added 'Requires time-sync.target' suffix"
 		fi
 		sed -i '/Before=time-sync.target/d' /etc/systemd/system/setTime.service #Delete time-sync.target
-		echo ' Deleted Before=time-sync.target'
+		echo " Deleted 'Before=time-sync.target'"
 	else
 		echo -e ""$GREEN"NTP is not active"$RESET""
 		sed -i -E 's/^(Requires=intvlm8r.service)(.*)$/\1/g' /etc/systemd/system/setTime.service ##Delete REQUIRES time-sync.target
-		echo ' Deleted Requires time-sync.target suffix'
+		echo " Deleted 'Requires time-sync.target' suffix"
 		if  grep -q 'Before=time-sync.target' /etc/systemd/system/setTime.service;
 		then
-			echo ' Before=time-sync.target is already present'
+			echo " 'Before=time-sync.target' is already present"
 		else
 			sed -i '/^Requires=intvlm8r.service.*/a Before=time-sync.target' /etc/systemd/system/setTime.service #Add Before
-			echo ' Added Before=time-sync.target'
+			echo " Added 'Before=time-sync.target'"
 		fi
 	fi
 	echo ''
@@ -1501,7 +1501,7 @@ remoteit()
 		#Modify the service to wait until celery is up:
 		if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
 		then
-			echo 'After=celery.service suffix is already present'
+			echo "'After=celery.service' suffix is already present"
 		else
 			sed -i -E 's/^(After=network.target rc-local.service)(.*)$/\1 celery.service/g' /etc/systemd/system/connectd.service #Add AFTER celery.service
 			echo "Added 'After=celery.service' suffix"
