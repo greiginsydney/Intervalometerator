@@ -749,7 +749,7 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                 #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
         except Exception as e:
             log(f'Error uploading via rsync: {e}')
-            log('STATUS: rsync error')
+            log('STATUS: unhandled rsync error')
     return
 
 
