@@ -83,6 +83,7 @@ KNOWN_HOSTS_FILE     = os.path.join(PI_USER_HOME, '.ssh/known_hosts')
 GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
 DROPBOX_TOKEN        = os.path.join(PI_USER_HOME , 'www/Dropbox_token.txt')
 RSYNC_LOG_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.log')
+RSYNC_TMP_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.tmp')
 
 # Paramiko client configuration
 sftpPort = 22
@@ -751,6 +752,42 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             log(f'Error uploading via rsync: {e}')
             log('STATUS: unhandled rsync error')
     return
+
+
+def cleanupRsync():
+    """
+    Called twice: first on entry to commenceRsync and again on exit.
+    The first pass is a safety net. If the Pi was previously shutdown while rsync was still running, files that HAD
+    been transferred won't have been added to the UPLOADED_PHOTOS_LIST, nor deleted if deleteAfterTransfer is active.
+    The second pass is upon the successful completion of an rsync upload.    """
+    log('cleanupRsync - entered')
+    numFilesOK = 0
+    try:
+        with open(RSYNC_LOG_FILE, "r") as logfile:
+            with open(RSYNC_TMP_FILE, "w") as tempfile:
+                for oneLine in logfile.readlines():
+                    index = oneLine.find('] Copied ')
+                    if index > 0:
+                        # Found a filename we've copied
+                        index += 9 # Increment the index to strip the '] Copied ' prefix
+                        uploadedFile = '/' + (oneLine[index:]).strip()
+                        if os.path.isfile(uploadedFile):
+                            #log(f' === uploadedFile = {uploadedFile}')
+                            # Helpfully, ".isfile" will be false if we've accidentally nominated a directory
+                            numFilesOK = uploadedOK(uploadedFile, numFilesOK)
+                    else:
+                        tempfile.write(oneLine)
+        try:
+            os.replace(RSYNC_TMP_FILE, RSYNC_LOG_FILE)
+        except Exception as e:
+            log(f'File replace exception: {e}')
+
+    except Exception as e:
+        #log(f'Exception deleting {filename} from  {PI_THUMBS_INFO_FILE}')
+        log(f'Exception: {e}')
+
+    log(f'cleanupRsync - exited. numFilesOK =  {numFilesOK}')
+    return numFilesOK
 
 
 def uploadedOK(filename, filecount):
