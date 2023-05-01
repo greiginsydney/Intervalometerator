@@ -719,7 +719,7 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             #Upload/dir-sync happens here
             #if not rsyncRemoteFolder.startswith('/'):
             #    rsyncRemoteFolder = '/' + rsyncRemoteFolder
-            if not rsyncRemoteFolder.endswith('/'):
+            if rsyncRemoteFolder and (not rsyncRemoteFolder.endswith('/')):
                 rsyncRemoteFolder += '/'
             destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
             cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', '--log-file=' + RSYNC_LOG_FILE, '--log-file-format=Copied %f', localPath, destination]
