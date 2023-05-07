@@ -735,6 +735,8 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                     log('STATUS: rsync host key verification failed')
                 elif 'Permission denied' in stderrdata:
                     log('STATUS: rsync error: permission denied')
+                elif 'No route to host' in stderrdata:
+                    log('STATUS: rsync error: No route to host')
                 else:
                     log('STATUS: rsync error')
             # wait until process is really terminated
