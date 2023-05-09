@@ -356,7 +356,7 @@ install_website ()
 		echo -e ""$GREEN"Environment passed with '-E' switch"$RESET""
 	fi
 
-	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service")
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service", "myIp.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -680,6 +680,20 @@ install_website ()
 	chmod 644 /etc/systemd/system/heartbeat.timer
 	echo -e ""$GREEN"Enabling heartbeat.timer"$RESET""
 	systemctl enable heartbeat.timer
+
+
+	if [ -f myIp.service ];
+	then
+		if cmp -s myIp.service /etc/systemd/system/myIp.service;
+		then
+			echo "Skipped: the file '/etc/systemd/system/myIp.service' already exists & the new version is unchanged" 
+		else
+			mv -fv myIp.service /etc/systemd/system/myIp.service
+		fi
+	fi
+	chmod 644 /etc/systemd/system/myIp.service
+	echo -e ""$GREEN"Enabling myIp.service"$RESET""
+	systemctl enable myIp.service
 
 
 	#Camera Transfer - Cron Job
