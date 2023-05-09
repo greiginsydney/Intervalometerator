@@ -1,0 +1,21 @@
+[Unit]
+Description = Show my IP address
+After = network-online.target
+Wants = network-online.target
+
+[Service]
+Type=oneshot
+User=pi
+Group=www-data
+WorkingDirectory=/home/pi/
+Environment="PATH=/home/pi/"
+# Wait 5s before starting the script:
+ExecStartPre=/bin/sleep 5
+ExecStart = /home/pi/myIp.sh
+TimeoutSec=0
+StandardOutput=tty
+StandardError=journal
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
