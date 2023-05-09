@@ -682,6 +682,10 @@ install_website ()
 	systemctl enable heartbeat.timer
 
 
+	if [ -f myIp.sh ];
+	then
+		chmod +x myIp.sh
+	fi
 	if [ -f myIp.service ];
 	then
 		if cmp -s myIp.service /etc/systemd/system/myIp.service;
