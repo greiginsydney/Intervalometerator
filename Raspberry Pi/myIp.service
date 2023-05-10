@@ -8,9 +8,8 @@ Type=oneshot
 User=pi
 Group=www-data
 WorkingDirectory=/home/pi/
-Environment="PATH=/home/pi/"
 # Wait 5s before starting the script:
-ExecStartPre=/bin/sleep 5
+# ExecStartPre=/bin/sleep 5
 ExecStart = /home/pi/myIp.sh
 TimeoutSec=0
 StandardOutput=tty
