@@ -1,5 +1,5 @@
 [Unit]
-Description = Show my IP address
+Description = myIp.service. Show my IP address
 After = network-online.target
 Wants = network-online.target
 
