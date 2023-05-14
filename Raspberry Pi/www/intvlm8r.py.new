@@ -423,6 +423,10 @@ def main():
                     piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
             else:
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
+            if ('/home/pi/photos/default_image.JPG' in FileList):
+                PI_PHOTO_COUNT -= 1
+                if (PI_PHOTO_COUNT == 0):
+                    piLastImage = 'n/a'
     except Exception as e:
         flash('Error talking to the Pi', 'red')
         app.logger.debug(f'Pi error: {e}')
