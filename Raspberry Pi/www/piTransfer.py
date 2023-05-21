@@ -406,6 +406,9 @@ def reauthDropbox(APP_KEY):
         try:
             oauth_result = auth_flow.finish(auth_code)
         except Exception as e:
+            print ('')
+            print(f'Error in Dropbox re-auth: {e}')
+            print ('')
             log('STATUS: Error in Dropbox re-auth')
             log(f'Error in Dropbox re-auth : {e}')
             return(1)
@@ -423,7 +426,7 @@ def reauthDropbox(APP_KEY):
         print('Error in Dropbox re-auth. (See /home/pi/www/static/piTransfer.log for details)')
         print ('')
         log('STATUS: Error in Dropbox re-auth')
-        log(f'Error in Dropbox re-auth : {e}')
+        log(f'Error in Dropbox re-auth: {e}')
     return 1
 
 
