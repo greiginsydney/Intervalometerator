@@ -1908,7 +1908,7 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
     try:
         imageFolderTree, originalFileName = os.path.split(imageFullFilename)
         fileName, fileExt = os.path.splitext(originalFileName)
-        dateStamp = datetime.fromtimestamp(os.path.getmtime(imageFullFilename))
+        dateStamp = datetime.fromtimestamp(os.path.getctime(imageFullFilename))
         #Populate the variables from the file's dateStamp:
         pcF = fileName                               #Filename
         pcY = dateStamp.strftime('%Y')               #Year (20xx)
