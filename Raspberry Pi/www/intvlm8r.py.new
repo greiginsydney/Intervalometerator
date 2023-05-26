@@ -1033,8 +1033,7 @@ def trnTransferNow():
     This page is called in the background by the 'Transfer now' button on the Transfer page.
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('trnTransferNow() entered')
-    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    app.logger.debug('trnTransferNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
         transferNow.si()
@@ -1275,8 +1274,7 @@ def monHbNow():
     This page is called in the background by the 'Heartbeat now' button on the Remote Monitoring page
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('monHbNow() entered')
-    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    app.logger.debug('monHbNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
         initiateHeartbeat.si()
@@ -2252,8 +2250,7 @@ def trnCopyNow():
     This page is called in the background by the 'Copy now' button on the Transfer page
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('trnCopyNow() entered')
-    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    app.logger.debug('trnCopyNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
         copyNow.si(),
