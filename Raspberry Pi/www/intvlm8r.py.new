@@ -1968,6 +1968,31 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
     return
 
 
+def getCreationTime(imageFullFilename):
+    '''
+    Called by renameFile to pull the datestamp of the photo's creation from its exifData.
+    Use PIL if it's a JPG, or the slower exifreader if it's anything else.
+    [See /var/log/celery/celery_worker.log for what happens here]
+    '''
+    try:
+        if imageFullFilename.endswith(RAWEXTENSIONS):
+            with open(imageFullFilename, 'rb') as photo:
+                tags = exifreader.process_file(photo) # Returns Exif
+                creation = str(tags['EXIF DateTimeOriginal'])
+        else:
+            img = Image.open(imageFullFilename)
+            exif = img.getexif()
+            creation = exif.get(36867) # 'DateTimeOriginal'. creation is a STRING
+        dateTimeOriginal = datetime.strptime(creation, '%Y:%m:%d %H:%M:%S')
+
+    except Exception as e:
+        app.logger.info(f'getCreationTime unhandled error: {e}')
+        return None
+
+    #app.logger.info(f'getCreationTime returned: {dateTimeOriginal}')
+    return dateTimeOriginal
+
+
 def makeThumb(imageFile):
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
