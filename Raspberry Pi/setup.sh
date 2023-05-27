@@ -265,12 +265,44 @@ install_apps ()
 		pip3 install -v gphoto2 --no-binary :all:
 	fi
 	# ================== END python-gphoto ==================
+	# ================ START image handling =================
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
 	pip3 install -v pillow --no-cache-dir
 	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
 	pip3 install ExifReader requests
+	echo -e ""$GREEN"Installing libraw-dev"$RESET""
+	apt install libraw-dev -y
+	echo -e ""$GREEN"Installing cython imageio"$RESET""
+	pip3 install cython imageio
+	# =================== END image handling ===================
+	# ====================== START rawpy =======================
+	installRawpy=0
+	echo -e ""$GREEN"Checking for installed and latest release versions of rawpy"$RESET""
+	latestRawpyRls=$(curl --silent "https://api.github.com/repos/letmaik/rawpy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+	echo "Current    online version of rawpy = $latestRawpyRls"
+	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+	if [[ $isRawpy && ($isRawpy != "(none)") ]]; then
+		echo -e "\rCurrent installed version of rawpy = $isRawpy"
+		if [[ $isRawpy != $latestRawpyRls ]]; then
+			echo -e ""$GREEN"Updating rawpy"$RESET""
+			installRawpy=1
+		else
+			echo 'No rawpy upgrade required'
+		fi
+	else
+		echo -e '= not found'
+		echo -e 'Installing rawpy'
+		installRawpy=1
+	fi
+
+	if [ $installRawpy -eq 1 ];
+	then
+		echo -e ""$GREEN"Installing rawpy from GitHub"$RESET""
+		pip install "git+https://github.com/letmaik/rawpy.git@v$latestRawpyRls"
+	fi
+	# ======================== END rawpy ========================
 
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
