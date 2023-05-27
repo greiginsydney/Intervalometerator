@@ -51,7 +51,7 @@ install_apps ()
 			echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
 			cp -fv www/intvlm8r.py www/intvlm8r.old
 			cp -fv www/intvlm8r.py.new www/intvlm8r.py
-			
+
 		else
 			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
 		fi;
@@ -89,7 +89,7 @@ install_apps ()
 		echo ''
 		echo 'intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation.'
 		cp -fv www/intvlm8r.py.new www/intvlm8r.py
-		
+
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
 		echo ''
 		echo '====== Select Upload/Transfer options ======='
@@ -191,7 +191,7 @@ install_apps ()
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
 
-	# ================== START libgphoto ================== 
+	# ================== START libgphoto ==================
 	if ( apt list --manual-installed | grep -q libgphoto );
 	then
 		# Installed via apt = legacy. Uninstall
@@ -240,17 +240,17 @@ install_apps ()
 		make install
 		ldconfig
 
-		echo -e ""$GREEN"Generate udev rules for the camera"$RESET"" 
+		echo -e ""$GREEN"Generate udev rules for the camera"$RESET""
 		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
 		/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
 	fi
 	# =====================  END  libgphoto =========================
-	# ===================== START python-gphoto ===================== 
+	# ===================== START python-gphoto =====================
 	echo -e ""$GREEN"Checking for installed and latest release versions of python-gphoto2"$RESET""
 	latestPythonGphotoRls=$(curl --silent "https://pypi.org/pypi/gphoto2/json" | jq  -r '.info.version ')
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
 
-	echo -n "Checking installed version of python-gphoto2 "
+	echo -n "Checking installed version of python-gphoto2"
 	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
 		echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
@@ -548,7 +548,7 @@ install_website ()
 
 	# Suppress server details in HTML headers:
 	if grep -q "^\s*server_tokens off;$" /etc/nginx/nginx.conf;
-	then 
+	then
 		echo "Skipped: '/etc/nginx/nginx.conf' already contains 'server_tokens off'"
 	else
 		sed -i -E 's/^(\s*)#\s*(server_tokens off;)/\1\2/g' /etc/nginx/nginx.conf #Match on "<whitepace>#<whitepace>server_tokens off" and remove the "#"
@@ -633,7 +633,7 @@ install_website ()
 	then
 		if cmp -s celery.service /etc/systemd/system/celery.service;
 		then
-			echo "Skipped: the file '/etc/systemd/system/celery.service' already exists & the new version is unchanged" 
+			echo "Skipped: the file '/etc/systemd/system/celery.service' already exists & the new version is unchanged"
 		else
 			mv -fv celery.service /etc/systemd/system/celery.service
 		fi
@@ -649,7 +649,7 @@ install_website ()
 	else
 		#OK, as we're going to insert a new line, let's make sure another inappropriate line doesn't already exist:
 		if grep -q "^ExecStartPost" /etc/systemd/system/redis.service;
-		then 
+		then
 			sed -i --follow-symlinks 's|^ExecStartPost.*|ExecStartPost=/bin/sleep 1|g' /etc/systemd/system/redis.service
 		else
 			#NO? OK, then just insert the new line:
@@ -665,14 +665,14 @@ install_website ()
 	fi
 
 	if grep -q "^daemonize yes$" /etc/redis/redis.conf;
-	then 
+	then
 		echo "Skipped: '/etc/redis/redis.conf' already contains 'daemonize yes'"
 	else
 		sed -i 's/^\s*#*\s*daemonize .*/daemonize yes/g' /etc/redis/redis.conf #Match on "daemonize <anything>" whether commented-out or not, and replace the line.
 	fi
 
 	if grep -q "^supervised systemd$" /etc/redis/redis.conf;
-	then 
+	then
 		echo "Skipped: '/etc/redis/redis.conf' already contains 'supervised systemd'"
 	else
 		sed -i 's/^#\?supervised .*/supervised systemd/g' /etc/redis/redis.conf #Match on "supervised <anything>" whether commented-out or not, and replace the line.
@@ -691,7 +691,7 @@ install_website ()
 	then
 		if cmp -s heartbeat.service /etc/systemd/system/heartbeat.service;
 		then
-			echo "Skipped: the file '/etc/systemd/system/heartbeat.service' already exists & the new version is unchanged" 
+			echo "Skipped: the file '/etc/systemd/system/heartbeat.service' already exists & the new version is unchanged"
 		else
 			mv -fv heartbeat.service /etc/systemd/system/heartbeat.service
 		fi
@@ -704,7 +704,7 @@ install_website ()
 	then
 		if cmp -s heartbeat.timer /etc/systemd/system/heartbeat.timer;
 		then
-			echo "Skipped: the file '/etc/systemd/system/heartbeat.timer' already exists & the new version is unchanged" 
+			echo "Skipped: the file '/etc/systemd/system/heartbeat.timer' already exists & the new version is unchanged"
 		else
 			mv -fv heartbeat.timer /etc/systemd/system/heartbeat.timer
 		fi
@@ -722,7 +722,7 @@ install_website ()
 	then
 		if cmp -s myIp.service /etc/systemd/system/myIp.service;
 		then
-			echo "Skipped: the file '/etc/systemd/system/myIp.service' already exists & the new version is unchanged" 
+			echo "Skipped: the file '/etc/systemd/system/myIp.service' already exists & the new version is unchanged"
 		else
 			mv -fv myIp.service /etc/systemd/system/myIp.service
 		fi
@@ -769,7 +769,7 @@ install_website ()
 	then
 	    echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-	    sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime. 
+	    sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime.
  	    echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
 	    crontab -u $SUDO_USER cronTemp #install new cron file
 	    echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
@@ -793,7 +793,7 @@ install_website ()
 	then
 		if cmp -s setTime.service /etc/systemd/system/setTime.service;
 		then
-			echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged" 
+			echo "Skipped: the file '/etc/systemd/system/setTime.service' already exists & the new version is unchanged"
 		else
 			mv -fv setTime.service /etc/systemd/system/setTime.service
 		fi
@@ -1047,7 +1047,7 @@ make_ap ()
 		wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
 		sed -i -E "s/^\s*#*\s*(interface wlan0.*)/\1/" /etc/dhcpcd.conf #Un-comment if present but inactive
 		# The following lines all search the file for lines AFTER the appearance of "interface wlan0"
-		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static\s*ip_address=)(.*)/\  \1\2/" /etc/dhcpcd.conf 
+		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static\s*ip_address=)(.*)/\  \1\2/" /etc/dhcpcd.conf
 		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static routers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "routers"
 		sed -i -E "$wlanLine,$ s/^\s*#*\s*(static domain_name_servers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "domain_name_servers"
 		#Look anywhere in the file for this one. Its position is not critical (although it's probably at the end anyway).
@@ -1244,7 +1244,7 @@ END
 			read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
 			read -e -i "$oldRouter" -p         'Set the Router IP                       : ' router
 			read -e -i "$oldDnsServers" -p     'Set the DNS Server(s) (space-delimited) : ' DnsServers
-			
+
 			cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 			#Paste in the new settings
 			sed -i -E "s/^#+(interface wlan0.*)/\1/" /etc/dhcpcd.conf
@@ -1259,7 +1259,7 @@ END
 				# Comment out the wlan0 lines:
 				sed -i -E 's/^(interface wlan0\s*)/##\1/' /etc/dhcpcd.conf
 				# https://unix.stackexchange.com/questions/285160/how-to-edit-next-line-after-pattern-using-sed
-				sed -i -E "$wlanLine,$ s/^\s*(static\s*ip_address=)(.*)/##  \1\2/" /etc/dhcpcd.conf 
+				sed -i -E "$wlanLine,$ s/^\s*(static\s*ip_address=)(.*)/##  \1\2/" /etc/dhcpcd.conf
 				sed -i -E "$wlanLine,$ s/^\s*(static routers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "routers"
 				sed -i -E "$wlanLine,$ s/^\s*(static domain_name_servers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "domain_name_servers"
 				sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
@@ -1413,7 +1413,7 @@ test_install ()
 		(6)
 			echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 6"
 			;;
-		(7)			
+		(7)
 			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
 			;;
 	esac
