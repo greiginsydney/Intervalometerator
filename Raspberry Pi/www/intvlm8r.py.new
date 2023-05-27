@@ -1908,7 +1908,12 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
     try:
         imageFolderTree, originalFileName = os.path.split(imageFullFilename)
         fileName, fileExt = os.path.splitext(originalFileName)
+        
+        #Read the creationTime from Exif. If that fails, default to the file creation datestamp
+        #dateStamp = getCreationTime(imageFullFilename)
+        #if not dateStamp:
         dateStamp = datetime.fromtimestamp(os.path.getctime(imageFullFilename))
+        
         #Populate the variables from the file's dateStamp:
         pcF = fileName                               #Filename
         pcY = dateStamp.strftime('%Y')               #Year (20xx)
@@ -1973,6 +1978,7 @@ def getCreationTime(imageFullFilename):
     Called by renameFile to pull the datestamp of the photo's creation from its exifData.
     Use PIL if it's a JPG, or the slower exifreader if it's anything else.
     [See /var/log/celery/celery_worker.log for what happens here]
+    ** Not currently in use. I wrote this BEFORE finding the 'getctime' fix...
     '''
     try:
         if imageFullFilename.endswith(RAWEXTENSIONS):
