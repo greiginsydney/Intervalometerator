@@ -2000,6 +2000,11 @@ def getCreationTime(imageFullFilename):
 
 
 def makeThumb(imageFile):
+    """
+    Upgraded to use rawpy 27th May 2023. References:
+    https://github.com/letmaik/rawpy
+    https://github.com/letmaik/rawpy/issues/147#issuecomment-1398974494
+    """
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
@@ -2016,13 +2021,21 @@ def makeThumb(imageFile):
                 previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
                 if not os.path.isfile(previewfilename):
                     try:
-                        with Image.open(imageFile) as preview:
-                            try:
-                                preview.save(previewfilename, "JPEG")
-                            except Exception as e:
-                                app.logger.info(f'makeThumb preview save error: {e}')
+                        with rawpy.imread(imageFile) as raw:
+                            # raises rawpy.LibRawNoThumbnailError if thumbnail missing
+                            # raises rawpy.LibRawUnsupportedThumbnailError if unsupported format
+                            thumb = raw.extract_thumb()
+                        if thumb.format == rawpy.ThumbFormat.JPEG:
+                            # thumb.data is already in JPEG format, save as-is
+                            with open(previewfilename, 'wb') as f:
+                                f.write(thumb.data)
+                        elif thumb.format == rawpy.ThumbFormat.BITMAP:
+                            # thumb.data is an RGB numpy array, convert with imageio
+                            imageio.imsave(previewfilename, thumb.data)
+                        else:
+                            app.logger.info("makeThumb - rawpy wasn't able to make a preview")
                     except Exception as e:
-                        app.logger.info(f'makeThumb preview open error: {e}')
+                        app.logger.info(f'makeThumb preview unhandled error: {e}')
             try:
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
