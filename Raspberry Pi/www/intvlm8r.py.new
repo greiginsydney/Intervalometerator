@@ -21,22 +21,24 @@
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
-from PIL import Image           # For the camera page preview button
+from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
 import calendar
-import configparser             # For the ini file (used by the Transfer page)
-import exifreader               # For thumbnails
-import fnmatch                  # Used for testing filenames
+import configparser             # Ini file
+import exifreader               # Thumbnails
+import fnmatch                  # Testing filenames
+import imageio                  # Thumbnails
 import importlib.util           # Testing installed packages
 import io                       # Camera preview
 import json
 import logging
-import math                     # Used for ceiling in /thermal calcs
+import math                     # Ceiling in /thermal calcs
 import os                       # Hostname
 import psutil
+import rawpy                    # Thumbnails
 import re                       # RegEx. Used in Copy Files & createDestFilename
 import requests                 # Heartbeat
-from smbus2 import SMBus        # For I2C
+from smbus2 import SMBus        # I2C
 import socket                   # Heartbeating error trap
 import struct
 import subprocess
