@@ -17,7 +17,7 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
 */
-//Last updated/changed in version 4.5.4: added 'shutdown in' and 'extend'
+//Last updated/changed in version 4.5.4: added 'shutdown in' and 'extend'. Changed default Pi run time to 'always on'
 char version[6] = "4.5.4";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
@@ -89,7 +89,7 @@ byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot 
 byte   StartHour = 00;          // Default start hour.
 byte   EndHour   = 23;          // Default end hour.
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
-byte   WakePiHour = 14;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
+byte   WakePiHour = 25;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down.
 
