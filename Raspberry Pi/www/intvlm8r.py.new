@@ -1534,6 +1534,10 @@ def systemPOST():
         writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}", 1)
         cache.delete("5")   # Flush the previously cached value
 
+    if 'extend' in request.form:
+        app.logger.debug('Yes we got the EXTEND button')
+        writeString('EX', 1)
+    
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
         if (request.form.get('cameraTimeMode')):
