@@ -1428,7 +1428,7 @@ def system():
             templateData['wakePiTime']     = wakePiTime
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
-                templateData['piShutdownIn'] = str(readFromArduino("9", "String", True))
+                templateData['piShutdownIn'] = str(readFromArduino("9", "String", False))
     except Exception as e:
         app.logger.debug(f'system: Threw querying Arduino DateTime: {e}')
 
