@@ -1852,6 +1852,10 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
     dest = os.path.join(dest, imageFileName)
     app.logger.debug(f'Copying {imageToCopy} --> {dest}')
     try:
+        imageMtime = get_camera_file_info(camera, imageToCopy).file.mtime
+        imageTimestamp = datetime.utcfromtimestamp(imageMtime).astimezone()
+        imageTimestamp = imageTimestamp.replace(tzinfo=timezone.utc)
+        imageMtime = int(imageTimestamp.strftime('%s'))
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
         file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
@@ -1862,6 +1866,7 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
             return -1 #Abort
         copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
         if (copyOK >= gp.GP_OK):
+            os.utime(dest, (imageMtime, imageMtime)) #Update mtime with the value from the camera
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
                 app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
