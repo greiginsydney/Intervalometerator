@@ -1917,7 +1917,7 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
         #Read the creationTime from Exif. If that fails, default to the file creation datestamp
         #dateStamp = getCreationTime(imageFullFilename)
         #if not dateStamp:
-        dateStamp = datetime.fromtimestamp(os.path.getctime(imageFullFilename))
+        dateStamp = datetime.fromtimestamp(os.path.getmtime(imageFullFilename))
         
         #Populate the variables from the file's dateStamp:
         pcF = fileName                               #Filename
