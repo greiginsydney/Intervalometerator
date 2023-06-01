@@ -112,6 +112,14 @@
 				</div>
 			</td>
 		</tr>
+		{% if wakePiTime != "25" %}
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Pi shutting down in (minutes):</div>
+				<div class="alignright">{{ piShutdownIn }}</div>
+			</td>
+		</tr>
+		{% endif %}
 		<tr>
 			<td class="noborder">
 				<button name="wakePi" id="submitWakePi" type="submit" class="hwbutton" value="wakePi">Submit</button>
