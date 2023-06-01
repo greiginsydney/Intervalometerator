@@ -1386,6 +1386,7 @@ def system():
         'piSpaceFree'         : 'Unknown',
         'wakePiTime'          : '',
         'wakePiDuration'      : '',
+        'piShutdownIn'        : '',
         'rebootSafeWord'      : REBOOT_SAFE_WORD,
         'intvlm8rVersion'     : 'Unknown',
         'arduinoVersion'      : 'Unknown',
@@ -1423,8 +1424,11 @@ def system():
                 templateData['arduinoTime'] = tempTime
         rawWakePi = str(readFromArduino("5", "String", True))
         if rawWakePi != "Unknown":
-            templateData['wakePiTime']     = rawWakePi[0:2]
+            wakePiTime                     = rawWakePi[0:2]
+            templateData['wakePiTime']     = wakePiTime
             templateData['wakePiDuration'] = rawWakePi [2:4]
+            if wakePiTime != "25":
+                templateData['piShutdownIn'] = str(readFromArduino("9", "String", True))
     except Exception as e:
         app.logger.debug(f'system: Threw querying Arduino DateTime: {e}')
 
