@@ -129,9 +129,15 @@
 			</td>
 		</tr>
 		<tr{% if '2018' in piDateTime %} class="red"{% endif %}>
-			<td>
+			<td class="noborder">
 				<div class="alignleft">Pi date/time:</div>
 				<div class="alignright">{{ piDateTime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Pi timezone:</div>
+				<div class="alignright">{{ piTimezone }}</div>
 			</td>
 		</tr>
 		<tr>
