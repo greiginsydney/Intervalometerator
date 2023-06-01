@@ -163,6 +163,38 @@ input[type=radio] {
 
 /* End: General CSS */
 /* ---------------------------------------------------------*/
+/* Start: Progress table */
+
+td#prog_td {
+	padding: 0px;
+}
+
+select#prog_sel {
+	border: none;
+	outline: none;
+	width: 100%;
+	background-color: transparent;
+	text-overflow: ellipsis;
+
+	-webkit-appearance: auto;
+	-moz-appearance: auto;
+	appearance: auto;
+	
+	/* -moz-box-sizing: border-box; */
+	/* -webkit-box-sizing: border-box; */
+	/* box-sizing: border-box; */
+}
+
+option#prog_opt {
+	font-size: 1.1em;
+}
+
+option#prog_opt:disabled {
+	color: #010101;
+}
+
+/* Start: End progresstable */
+/* ---------------------------------------------------------*/
 /* Start: checkbox */
 
 /* The loginChkbox */

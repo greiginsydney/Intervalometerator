@@ -82,6 +82,8 @@ LOGFILE_NAME         = os.path.join(LOGFILE_DIR, 'piTransfer.log')
 KNOWN_HOSTS_FILE     = os.path.join(PI_USER_HOME, '.ssh/known_hosts')
 GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
 DROPBOX_TOKEN        = os.path.join(PI_USER_HOME , 'www/Dropbox_token.txt')
+RSYNC_LOG_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.log')
+RSYNC_TMP_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.tmp')
 
 # Paramiko client configuration
 sftpPort = 22
@@ -404,6 +406,9 @@ def reauthDropbox(APP_KEY):
         try:
             oauth_result = auth_flow.finish(auth_code)
         except Exception as e:
+            print ('')
+            print(f'Error in Dropbox re-auth: {e}')
+            print ('')
             log('STATUS: Error in Dropbox re-auth')
             log(f'Error in Dropbox re-auth : {e}')
             return(1)
@@ -421,7 +426,7 @@ def reauthDropbox(APP_KEY):
         print('Error in Dropbox re-auth. (See /home/pi/www/static/piTransfer.log for details)')
         print ('')
         log('STATUS: Error in Dropbox re-auth')
-        log(f'Error in Dropbox re-auth : {e}')
+        log(f'Error in Dropbox re-auth: {e}')
     return 1
 
 
@@ -704,21 +709,23 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
     (r)syncs the Pi's photos/ folder with a remote location
     """
     log('Commencing rsync')
+    numFilesOK = cleanupRsync() #Safety net.
+    if numFilesOK != 0:
+        log(f'rsync cleaned {numFilesOK} files previously uploaded OK')
     newFiles = list_New_Images(PI_PHOTO_DIR, UPLOADED_PHOTOS_LIST)
     numNewFiles = len(newFiles)
     if numNewFiles == 0:
         log('STATUS: No files to upload')
     else:
-        numFilesOK = 0
         localPath  = os.path.join(PI_PHOTO_DIR, 'DCIM')
         try:
             #Upload/dir-sync happens here
-            if not rsyncRemoteFolder.startswith('/'):
-                rsyncRemoteFolder = '/' + rsyncRemoteFolder
-            if not rsyncRemoteFolder.endswith('/'):
+            #if not rsyncRemoteFolder.startswith('/'):
+            #    rsyncRemoteFolder = '/' + rsyncRemoteFolder
+            if rsyncRemoteFolder and (not rsyncRemoteFolder.endswith('/')):
                 rsyncRemoteFolder += '/'
             destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
-            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', localPath, destination]
+            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', '--log-file=' + RSYNC_LOG_FILE, '--log-file-format=Copied %f', localPath, destination]
             result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
             (stdoutdata, stderrdata) = result.communicate()
             if stdoutdata:
@@ -731,25 +738,59 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                     log('STATUS: rsync host key verification failed')
                 elif 'Permission denied' in stderrdata:
                     log('STATUS: rsync error: permission denied')
+                elif 'No route to host' in stderrdata:
+                    log('STATUS: rsync error: No route to host')
                 else:
                     log('STATUS: rsync error')
             # wait until process is really terminated
             exitcode = result.wait()
             if exitcode == 0:
                 log('rsync exited cleanly')
-                uploadedList = stdoutdata.splitlines()
-                for uploadedFile in uploadedList:
-                    uploadedFile = os.path.join(PI_PHOTO_DIR, uploadedFile)
-                    if os.path.isfile(uploadedFile):
-                        numFilesOK = uploadedOK(uploadedFile, numFilesOK)
-                log(f'STATUS: {numFilesOK} files uploaded OK')
             else:
-                log('rsync exited with a non-zero exitcode')
+                log(f'rsync exited with exitcode {exitcode}')
                 #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
+            numFilesOK = cleanupRsync()
+            log(f'STATUS: {numFilesOK} files uploaded OK')
         except Exception as e:
             log(f'Error uploading via rsync: {e}')
-            log('STATUS: rsync error')
-    return
+            log('STATUS: unhandled rsync error')
+    return 0
+
+
+def cleanupRsync():
+    """
+    Called twice: first on entry to commenceRsync and again on exit.
+    The first pass is a safety net. If the Pi was previously shutdown while rsync was still running, files that HAD
+    been transferred won't have been added to the UPLOADED_PHOTOS_LIST, nor deleted if deleteAfterTransfer is active.
+    The second pass is upon the successful completion of an rsync upload.    """
+    log('cleanupRsync - entered')
+    numFilesOK = 0
+    try:
+        with open(RSYNC_LOG_FILE, "r") as logfile:
+            with open(RSYNC_TMP_FILE, "w") as tempfile:
+                for oneLine in logfile.readlines():
+                    index = oneLine.find('] Copied ')
+                    if index > 0:
+                        # Found a filename we've copied
+                        index += 9 # Increment the index to strip the '] Copied ' prefix
+                        uploadedFile = '/' + (oneLine[index:]).strip()
+                        if os.path.isfile(uploadedFile):
+                            #log(f' === uploadedFile = {uploadedFile}')
+                            # Helpfully, ".isfile" will be false if we've accidentally nominated a directory
+                            numFilesOK = uploadedOK(uploadedFile, numFilesOK)
+                    else:
+                        tempfile.write(oneLine)
+        try:
+            os.replace(RSYNC_TMP_FILE, RSYNC_LOG_FILE)
+        except Exception as e:
+            log(f'File replace exception: {e}')
+
+    except Exception as e:
+        #log(f'Exception deleting {filename} from  {PI_THUMBS_INFO_FILE}')
+        log(f'Exception: {e}')
+
+    log(f'cleanupRsync - exited. numFilesOK =  {numFilesOK}')
+    return numFilesOK
 
 
 def uploadedOK(filename, filecount):

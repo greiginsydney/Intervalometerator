@@ -63,27 +63,40 @@
 </div>
 <!--MENU ENDS -->
 </header>
-{% with messages = get_flashed_messages(with_categories=true) %}
-<table id="progress">
-	{% if messages %}
-	<tr>
-		{% for category, message in messages %}
-		<td class="centre-text{{ ' red' if category != 'info'}}">{{ message }}</td>
-		{% endfor %}
-	</tr>
-	{% elif not current_user.is_anonymous %}
-	<tr>
-		<td class="centre-text">Background tasks idle</td>
-	</tr>
-	{% endif %}
-</table>
-{% endwith %}
+	{% with messages = get_flashed_messages(with_categories=true) | unique | list %}
+	<table id="progress">
+		{% if messages %}
+		<tr>
+			{% if messages | length > 1 %}
+			<td id="prog_td">
+				<select id="prog_sel" title="Messages">
+				{% for category, message in messages | sort(attribute=0, reverse=True) %}
+					<option id="prog_opt" class="centre-text {{ 'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
+				{% endfor %}
+				</select>
+			</td>
+			{% else %}
+			{% for category, message in messages  %}
+			<td class="centre-text {{ 'white' if category == 'info' else category }}">{{ message }}</td>
+			{% endfor %}
+			{% endif %}
+		</tr>
+		{% else %}
+		{% if not current_user.is_anonymous %}
+		<tr>
+			<td class="centre-text">Background tasks idle</td>
+		</tr>
+		{% endif %}
+		{% endif %}
+	</table>
+	{% endwith %}
 
 {% block content %}
 {% endblock %}
 
 {% if not current_user.is_anonymous %}
 	<script>
+	updateMsgBackground()
 	pollStatus()
 	function pollStatus()
 	{
@@ -102,15 +115,15 @@
 					var data = JSON.parse(this.response);
 					// update UI
 					col[0].innerHTML = data['status'];
-					row[0].className = "white";
+					row[0].className = data['statusColour'];
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
-						if ((data['status']).toLowerCase().includes("heartbeat"))
+						if ((data['status']).toString().toLowerCase().includes('heartbeat'))
 						{
 							window.location.reload(false); //Reload the (Monitoring) page to update the Result field
 						}
-						else if ((data['status']).toLowerCase().includes("thumbnail images OK"))
+						else if ((data['status']).toString().toLowerCase().includes('thumbnail images ok'))
 						{
 							window.location.reload(false); //Reload the (Thumbnails) page to update the Result field
 						}
@@ -126,15 +139,15 @@
 				else
 				{
 					// We reached our target server, but it returned an error
-					col[0].innerHTML = "The Pi returned an error"
-					row[0].className = "orange";
+					col[0].innerHTML = 'The Pi returned an error';
+					row[0].className = 'orange';
 				}
 			};
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
-				col[0].innerHTML = "The Pi did not respond"
-				row[0].className = "orange";
+				col[0].innerHTML = 'The Pi did not respond';
+				row[0].className = 'orange';
 			}
 			request.send()
 		}
@@ -178,15 +191,15 @@
 			submitButton = document.activeElement;
 		};
 
-		if (submitButton.value == "preview")
+		if (submitButton.value == 'preview')
 		{
 			col[0].innerHTML = 'Preview photo requested';
 		}
-		else if (submitButton.value == "Reboot")
+		else if (submitButton.value == 'Reboot')
 		{
 			col[0].innerHTML = 'Reboot requested';
 		}
-		else if (submitButton.value == "hbnow")
+		else if (submitButton.value == 'hbnow')
 		{
 			col[0].innerHTML = 'Initiating heartbeat';
 		}
@@ -194,8 +207,18 @@
 		{
 			col[0].innerHTML = 'Applying changed settings';
 		}
-		row[0].className = "white";
+		row[0].className = 'white';
 		return true;
+	}
+
+	function updateMsgBackground()
+	{
+		if (document.getElementById('prog_sel') != null)
+		{
+			var message = document.getElementById('prog_sel');
+			var rows = document.getElementById('progress').rows;
+			rows[0].className = message[0].className;
+		}
 	}
 
 	</script>

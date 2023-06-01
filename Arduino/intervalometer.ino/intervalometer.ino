@@ -18,7 +18,7 @@ References:
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
 */
 //Last updated/changed in version 4.5.0.
-char version[6] = "4.5.2";
+char version[6] = "4.5.3";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi

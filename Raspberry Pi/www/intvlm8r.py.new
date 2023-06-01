@@ -21,22 +21,23 @@
 from datetime import timedelta, datetime
 from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
-from PIL import Image           # For the camera page preview button
+from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
-import calendar
-import configparser             # For the ini file (used by the Transfer page)
-import exifreader               # For thumbnails
-import fnmatch                  # Used for testing filenames
+import configparser             # Ini file
+import exifreader               # Thumbnails
+import fnmatch                  # Testing filenames
+import imageio                  # Thumbnails
 import importlib.util           # Testing installed packages
 import io                       # Camera preview
 import json
 import logging
-import math                     # Used for ceiling in /thermal calcs
+import math                     # Ceiling in /thermal calcs
 import os                       # Hostname
 import psutil
+import rawpy                    # Thumbnails
 import re                       # RegEx. Used in Copy Files & createDestFilename
 import requests                 # Heartbeat
-from smbus2 import SMBus        # For I2C
+from smbus2 import SMBus        # I2C
 import socket                   # Heartbeating error trap
 import struct
 import subprocess
@@ -285,7 +286,7 @@ def login():
                     return abort(400)
                 return redirect(next or url_for('main'))
     app.logger.debug(f"User '{username}' failed to login")
-    flash('Bad creds. Try again')
+    flash('Bad creds. Try again', 'red')
     return redirect(url_for('login'))
 
 
@@ -293,13 +294,13 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out')
+    flash('You have been logged out', 'info')
     return redirect(url_for('login'))
 
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    flash('You need to log in before you can access that page!')
+    flash('You need to log in before you can access that page!', 'red')
     return redirect(login_url(url_for('login'), request.url))
 
 
@@ -360,7 +361,7 @@ def main():
         if camera:
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
-                flash('No storage info available') # The memory card is missing or faulty
+                flash('No storage info available', 'red') # The memory card is missing or faulty
                 app.logger.debug('FATAL: Connected to camera OK but no camera storage info available')
             files = list_camera_files(camera)
             if not files:
@@ -423,8 +424,12 @@ def main():
                     piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
             else:
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
+            if ('/home/pi/photos/default_image.JPG' in FileList):
+                PI_PHOTO_COUNT -= 1
+                if (PI_PHOTO_COUNT == 0):
+                    piLastImage = 'n/a'
     except Exception as e:
-        flash('Error talking to the Pi')
+        flash('Error talking to the Pi', 'red')
         app.logger.debug(f'Pi error: {e}')
         PI_PHOTO_COUNT = 0
     templateData['piLastImageFile'] = piLastImageFile
@@ -569,7 +574,7 @@ def thumbnails():
                 ThumbFileName = ThumbFileName.replace(PI_USER_HOME + '/', '')
                 ThumbFiles.append({'PreviewImage': str(PreviewFileName), 'ThumbImage': str(ThumbFileName), 'TimeStamp': thumbTimeStamp, 'Info': thumbInfo })
         else:
-            flash("There are no images on the Pi. Copy some from the Transfer page.")
+            flash('There are no images on the Pi. Copy some from the Transfer page.', 'info')
     except Exception as e:
         app.logger.debug(f'Thumbs error: {e}')
 
@@ -577,7 +582,7 @@ def thumbnails():
         flash('Thumbnail generation disabled', 'info')
     else:
         if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
-            flash('Delete after transfer is active', 'info')
+            flash('Delete after transfer is active', 'orange')
 
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
 
@@ -611,7 +616,7 @@ def camera():
 
     args = request.args.to_dict()
     if args.get('preview'):
-        cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(calendar.timegm(time.gmtime())) #Adds a unique suffix so the browser always downloads the file
+        cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
     if args.get('wakeCamera'):
         writeString("WC", 2) # Sends the WAKE command to the Arduino
@@ -838,7 +843,7 @@ def intervalometerPOST():
         app.logger.debug(f'Detected a valid POST. Updated the interval to {newInterval}')
     else:
         app.logger.debug('Detected an *invalid* POST')
-        flash('Invalid data posted to the page')
+        flash('Invalid data posted to the page', 'red')
     return redirect(url_for('intervalometer'))
 
 
@@ -925,7 +930,7 @@ def transfer():
         templateData['renameString']       = config.get('Copy', 'renameString')
     except Exception as e:
         app.logger.debug(f'INI file error: {e}')
-        flash('Error reading from the Ini file')
+        flash('Error reading from the Ini file', 'red')
 
     templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
 
@@ -995,9 +1000,9 @@ def transferPOST():
         except Exception as e:
             app.logger.debug(f'INI file error writing: {e}')
             if 'Permission denied' in str(e):
-                flash('Permission denied writing to the ini file')
+                flash('Permission denied writing to the ini file', 'red')
             else:
-                flash('Error writing to the Ini file')
+                flash('Error writing to the Ini file', 'red')
 
     return redirect(url_for('transfer'))
 
@@ -1029,8 +1034,7 @@ def trnTransferNow():
     This page is called in the background by the 'Transfer now' button on the Transfer page.
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('trnTransferNow() entered')
-    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    app.logger.debug('trnTransferNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
         transferNow.si()
@@ -1044,9 +1048,10 @@ def trnTransferNow():
 @celery.task(time_limit=1800, bind=True)
 def transferNow(self):
     app.logger.info('TransferNow() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Preparing to transfer images'})
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to transfer images', 'statusColour': 'white'})
+    errorMsg = 'out'
+    statusColour = 'white'
     try:
-        errorMsg = 'out'
         cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
@@ -1060,9 +1065,11 @@ def transferNow(self):
     except Exception as e:
         app.logger.info(f'Unhandled transferNow error: {e}')
         errorMsg = ' unexpected'
-    
+
+    if errorMsg != 'out':
+        statusColour = 'red'
     statusMessage = (f'transferNow returned with{errorMsg} error')
-    return {'status': statusMessage}
+    return {'status': statusMessage, 'statusColour': statusColour}
 
 
 @app.route("/thermal")
@@ -1254,9 +1261,9 @@ def monitoringPOST():
         except Exception as e:
             app.logger.debug(f'mon INI file error writing: {e}')
             if 'Permission denied' in str(e):
-                flash('Permission denied writing to the ini file')
+                flash('Permission denied writing to the ini file', 'red')
             else:
-                flash('Error writing to the Ini file')
+                flash('Error writing to the Ini file', 'red')
 
     return redirect(url_for('monitoring'))
 
@@ -1268,8 +1275,7 @@ def monHbNow():
     This page is called in the background by the 'Heartbeat now' button on the Remote Monitoring page
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('monHbNow() entered')
-    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    app.logger.debug('monHbNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
         initiateHeartbeat.si()
@@ -1312,10 +1318,11 @@ def initiateHeartbeat(self):
     """
     This fn pings the heartbeat URL and logs the result to the 'hbResult' file
     """
-    self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat'})
+    self.update_state(state='PROGRESS', meta={'status': 'Initiating heartbeat', 'statusColour': 'white'})
     url = getIni('Monitoring', 'heartbeatUrl', 'string', None)
     resultText = 'Error'
     statusMessage = 'Unknown error'
+    statusColour = 'red'
     statusCode = 0
     if url:
         response   = None
@@ -1348,6 +1355,7 @@ def initiateHeartbeat(self):
                 if statusCode:
                     resultFile.write(f'{nowtime} ({statusCode})')
                     statusMessage = (f'Heartbeat reported success ({statusCode})')
+                    statusColour = 'white'
                 else:
                     resultFile.write(f'{nowtime} ({briefErrMsg})')
                     statusMessage = (f'Heartbeat reported failure: ({briefErrMsg})')
@@ -1356,7 +1364,7 @@ def initiateHeartbeat(self):
     else:
         app.logger.debug('initiateHeartbeat exited. No heartbeatUrl')
         statusMessage = 'Error: no heartbeat url'
-    return {'status': statusMessage, 'statusCode': statusCode}
+    return {'status': statusMessage, 'statusColour': statusColour, 'statusCode': statusCode}
 
 
 @app.route("/system")
@@ -1857,8 +1865,12 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
                 app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
             if (renameOnCopy == True):
                 renameFile(dest, renameString, deleteAfterCopy)
+        else:
+            app.logger.info(f"copy_files: image {dest} did not return 'GP_OK'")
+            return 1
     except Exception as e:
         app.logger.info(f'Exception in copy_files: {e}')
+        return 1
     return 0
 
 
@@ -1901,7 +1913,12 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
     try:
         imageFolderTree, originalFileName = os.path.split(imageFullFilename)
         fileName, fileExt = os.path.splitext(originalFileName)
+        
+        #Read the creationTime from Exif. If that fails, default to the file creation datestamp
+        #dateStamp = getCreationTime(imageFullFilename)
+        #if not dateStamp:
         dateStamp = datetime.fromtimestamp(os.path.getmtime(imageFullFilename))
+        
         #Populate the variables from the file's dateStamp:
         pcF = fileName                               #Filename
         pcY = dateStamp.strftime('%Y')               #Year (20xx)
@@ -1961,7 +1978,38 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
     return
 
 
+def getCreationTime(imageFullFilename):
+    '''
+    Called by renameFile to pull the datestamp of the photo's creation from its exifData.
+    Use PIL if it's a JPG, or the slower exifreader if it's anything else.
+    [See /var/log/celery/celery_worker.log for what happens here]
+    ** Not currently in use. I wrote this BEFORE finding the 'getctime' fix...
+    '''
+    try:
+        if imageFullFilename.endswith(RAWEXTENSIONS):
+            with open(imageFullFilename, 'rb') as photo:
+                tags = exifreader.process_file(photo) # Returns Exif
+                creation = str(tags['EXIF DateTimeOriginal'])
+        else:
+            img = Image.open(imageFullFilename)
+            exif = img.getexif()
+            creation = exif.get(36867) # 'DateTimeOriginal'. creation is a STRING
+        dateTimeOriginal = datetime.strptime(creation, '%Y:%m:%d %H:%M:%S')
+
+    except Exception as e:
+        app.logger.info(f'getCreationTime unhandled error: {e}')
+        return None
+
+    #app.logger.info(f'getCreationTime returned: {dateTimeOriginal}')
+    return dateTimeOriginal
+
+
 def makeThumb(imageFile):
+    """
+    Upgraded to use rawpy 27th May 2023. References:
+    https://github.com/letmaik/rawpy
+    https://github.com/letmaik/rawpy/issues/147#issuecomment-1398974494
+    """
     try:
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
         _, imageFileName = os.path.split(imageFile)
@@ -1978,13 +2026,21 @@ def makeThumb(imageFile):
                 previewfilename = createDestFilename(imageFile, PI_PREVIEW_DIR, '-preview')
                 if not os.path.isfile(previewfilename):
                     try:
-                        with Image.open(imageFile) as preview:
-                            try:
-                                preview.save(previewfilename, "JPEG")
-                            except Exception as e:
-                                app.logger.info(f'makeThumb preview save error: {e}')
+                        with rawpy.imread(imageFile) as raw:
+                            # raises rawpy.LibRawNoThumbnailError if thumbnail missing
+                            # raises rawpy.LibRawUnsupportedThumbnailError if unsupported format
+                            thumb = raw.extract_thumb()
+                        if thumb.format == rawpy.ThumbFormat.JPEG:
+                            # thumb.data is already in JPEG format, save as-is
+                            with open(previewfilename, 'wb') as f:
+                                f.write(thumb.data)
+                        elif thumb.format == rawpy.ThumbFormat.BITMAP:
+                            # thumb.data is an RGB numpy array, convert with imageio
+                            imageio.imsave(previewfilename, thumb.data)
+                        else:
+                            app.logger.info("makeThumb - rawpy wasn't able to make a preview")
                     except Exception as e:
-                        app.logger.info(f'makeThumb preview open error: {e}')
+                        app.logger.info(f'makeThumb preview unhandled error: {e}')
             try:
                 with Image.open(imageFile) as thumb:
                     thumb.thumbnail((160, 160), Image.ANTIALIAS)
@@ -2243,8 +2299,7 @@ def trnCopyNow():
     This page is called in the background by the 'Copy now' button on the Transfer page
     It kicks off the background task, and returns the taskID so its progress can be followed
     """
-    app.logger.debug('trnCopyNow() entered')
-    app.logger.debug('[See /var/log/celery/celery_worker.log for what happens here]')
+    app.logger.debug('trnCopyNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [
         copyNow.si(),
@@ -2270,7 +2325,7 @@ def copyNow(self):
         if retries >= 6:
             #We've waited too long. Abort.
             app.logger.info(f'copyNow could not claim the USB device after {retries} attempts.')
-            return {'status': 'USB error'}
+            return {'status': 'USB error', 'statusColour': 'red'}
         try:
             app.logger.info('copyNow trying to init the camera')
             camera.init(context)
@@ -2283,7 +2338,7 @@ def copyNow(self):
         except Exception as e:
             app.logger.info(f'Unknown error in copyNow: {e}')
             continue
-    self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images'})
+    self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images', 'statusColour': 'white'})
     thisImage = 0
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
@@ -2297,7 +2352,7 @@ def copyNow(self):
             renameOnCopy = False
         while len(filesToCopy) > 0:
             try:
-                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy)})
+                self.update_state(state='PROGRESS', meta={'status': 'Copying image ' + str(thisImage + 1) + ' of ' + str(numberToCopy), 'statusColour': 'white'})
                 thisFile = filesToCopy.pop(0)
                 app.logger.info(f'About to copy file: {thisFile}')
                 copyResult = copy_files(camera, thisFile, deleteAfterCopy, renameOnCopy, renameString)
@@ -2312,19 +2367,21 @@ def copyNow(self):
         app.logger.info(f'copyNow ended sad: {e}')
     if thisImage == 0:
         app.logger.info('copyNow reported there were no new images to copy')
-        statusMessage = "There were no new images to copy"
+        statusMessage = 'There were no new images to copy'
+        statusColour = 'white'
     else:
         statusMessage = (f'Copied {thisImage} images OK')
-    return {'status': statusMessage}
+        statusColour = 'white'
+    return {'status': statusMessage, 'statusColour': statusColour}
 
 
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation'})
+    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
     if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
         app.logger.info('newThumbs returned - thumbnail creation skipped')
-        return {'status': 'Creation of thumbnail images skipped'}
+        return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -2352,7 +2409,7 @@ def newThumbs(self):
 
         if thumbsToCreate >= 1:
             for loop in range(-1, (-1 * (thumbsToCreate + 1)), -1):
-                self.update_state(state='PROGRESS', meta={'status': 'Creating thumbnail ' + str(thumbsCreated + 1) + ' of ' + str(thumbsToCreate)})
+                self.update_state(state='PROGRESS', meta={'status': 'Creating thumbnail ' + str(thumbsCreated + 1) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
                 dest, alreadyExists = makeThumb(DifferenceList[loop]) #Create a thumb, and metadata for every image on the Pi
                 if (dest == None):
                     #Something went wrong
@@ -2360,7 +2417,7 @@ def newThumbs(self):
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate)})
+                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
                     app.logger.info(f'Thumb  of {DifferenceList[loop]} is {dest}')
                 else:
                     app.logger.info(f'Thumb for {dest} already exists')
@@ -2370,7 +2427,7 @@ def newThumbs(self):
         app.logger.info(f'newThumbs error: {e}')
     dedupeExifData()
     app.logger.info('newThumbs returned')
-    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK'}
+    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK', 'statusColour': 'white'}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
@@ -2383,20 +2440,29 @@ def backgroundStatus(task_id):
         # job did not start yet
         response = {
             'state': task.state,
-            'status': 'Background task pending'
+            'status': 'Background task pending',
+            'statusColour': 'white'
         }
     elif task.state != 'FAILURE':
         response = {
             'state': task.state,
             'status': task.info.get('status', '')
         }
+        try:
+            response['statusColour'] = task.info.get('statusColour', '')
+        except Exception as e:
+            app.logger.info(f'backgroundStatus error 1. The task has no statusColour: {e}')
     else:
         # something went wrong in the background job
         app.logger.debug(f'Something went wrong in the background job: {task.info}')
         response = {
             'state': task.state,
-            'status': str(task.info),  # this is the exception raised
+            'status': str(task.info)  # this is the exception raised
         }
+        try:
+            response['statusColour'] = task.info.get('statusColour', '')
+        except Exception as e:
+            app.logger.info(f'backgroundStatus error 2. The task has no statusColour: {e}')
     app.logger.debug('backgroundStatus returned')
     return jsonify(response)
 
@@ -2415,7 +2481,9 @@ def getCeleryTasks():
         d = i.stats()
         if not d:
             app.logger.debug('getCeleryTasks reports no Celery workers running.')
-            flash('There are no Celery workers running')
+            if current_user.is_authenticated:
+                # Prevents leak of message if user=anon
+                flash('There are no Celery workers running', 'red')
             return
         # Show tasks that are currently active.
         activeTasks = i.active()
@@ -2449,7 +2517,7 @@ def iniview():
                 iniEntries.append({'section': str(section_name), 'key': name, 'value': value })
     except Exception as e:
         app.logger.debug(f'iniview error: {e}')
-        flash('INI error')
+        flash('INI error', 'red')
     return render_template('iniview.html', iniEntries = iniEntries)
 
 
