@@ -1376,6 +1376,7 @@ def system():
         'arduinoDate'         : 'Unknown',
         'arduinoTime'         : '',
         'piDateTime'          : 'Unknown',
+        'piTimezone'          : 'Unknown',
         'piNtp'               : '',
         'piHostname'          : 'Unknown',
         'piUptime'            : 'Unknown',
@@ -1428,6 +1429,7 @@ def system():
         app.logger.debug(f'system: Threw querying Arduino DateTime: {e}')
 
     templateData['piDateTime'] = datetime.now().strftime('%Y %b %d %H:%M:%S') #2019 Mar 08 13:06:03
+    templateData['piTimezone'] = datetime.now().astimezone().tzname()
     templateData['piNtp'] = checkNTP(None)
 
     try:
