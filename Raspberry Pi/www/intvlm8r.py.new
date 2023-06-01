@@ -23,7 +23,6 @@ from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
 from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
-import calendar
 import configparser             # Ini file
 import exifreader               # Thumbnails
 import fnmatch                  # Testing filenames
@@ -617,7 +616,7 @@ def camera():
 
     args = request.args.to_dict()
     if args.get('preview'):
-        cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(calendar.timegm(time.gmtime())) #Adds a unique suffix so the browser always downloads the file
+        cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
     if args.get('wakeCamera'):
         writeString("WC", 2) # Sends the WAKE command to the Arduino
