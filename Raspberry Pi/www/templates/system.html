@@ -113,7 +113,7 @@
 			</td>
 		</tr>
 		{% if wakePiTime != "25" %}
-		<tr>
+		<tr id="piShutdown">
 			<td class="noborder">
 				<div class="alignleft">Pi shutting down in (minutes):</div>
 				<div class="alignright">{{ piShutdownIn }}</div>
@@ -318,6 +318,7 @@ document.getElementById("altCameraTime").style.display = "none"; // Only ever vi
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
 var piHour = document.getElementById("wakePiTime");
 var piMinutes = document.getElementById("piMinutes");
+var piShutdown = document.getElementById("piShutdown");
 piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
 var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
@@ -391,6 +392,7 @@ function newSelected(id)
 	var option = document.getElementById(id);
 	// Reveal/hide fields as appropriate:
 	piMinutes.style.display = (piHour.value == "25") ? "none":"";
+	if (document.getElementById("piShutdown") != null) { piShutdown.style.display = (piHour.value == "25") ? "none":""; }
 
 	if (!option.options[option.selectedIndex].defaultSelected)
 	{
