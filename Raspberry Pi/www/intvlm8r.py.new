@@ -1429,13 +1429,10 @@ def system():
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
                 shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
-                app.logger.debug(f'system: shutdownAt1: {shutdownAt}')
                 if tempTime != '':
                     shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                    app.logger.debug(f'system: shutdownAt2: {shutdownAt}')
                     if shutdownAt < 0:
                         shutdownAt += 60
-                        app.logger.debug(f'system: shutdownAt3: {shutdownAt}')
                     templateData['piShutdownIn'] = shutdownAt
                 else:
                     templateData['piShutdownIn'] = 'Unknown'
