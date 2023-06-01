@@ -17,8 +17,8 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
 */
-//Last updated/changed in version 4.5.0.
-char version[6] = "4.5.3";
+//Last updated/changed in version 4.5.4: added 'shutdown in' and 'extend'
+char version[6] = "4.5.4";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -78,6 +78,7 @@ volatile bool   resetArduinoFlag = false; //
 volatile bool   resetTempMinFlag = false; //
 volatile bool   resetTempMaxFlag = false; //
 volatile bool   getTempsFlag     = false; //
+volatile bool   resetAlarm2Flag  = false; //
 
 bool   LastRunningState = LOW;  // Used in loop() to tell for a falling Edge of the Pi state
 bool   LastMaintState = HIGH;   // Used in loop() to tell if the maint/debug jumper has been removed
@@ -793,6 +794,21 @@ void receiveEvent(int howMany) {
       }
       sendToPi[24] = '\0'; //Perhaps a formality?
     }
+    else if (incoming == "8")
+    {
+      // TODO
+      //It wants to know the last 24 hours' voltages:
+      //for (int i = 0; i <= 23; i++)
+      //{
+      //   sendToPi[i] = DailyTemps[i];
+      //}
+      sendToPi[24] = '\0'; //Perhaps a formality?
+    }
+    else if (incoming == "9")
+    {
+      //It wants to know how long until shutdown:
+      sprintf(sendToPi, "%02d", PiShutdownMinute);
+    }
     else
     {
       //Unknown request:
@@ -836,6 +852,10 @@ void receiveEvent(int howMany) {
   else if (incoming == "RX")
   {
     resetTempMaxFlag = true;
+  }
+  else if (incoming == "EX")
+  {
+    resetAlarm2Flag = true;
   }
 }
 
@@ -1016,6 +1036,13 @@ void loop()
     UpdateTempMinMax("Max", -1);
     resetTempMaxFlag = false;
   }
+
+  if (resetAlarm2Flag == true)
+  {
+    SetAlarm2(HIGH);
+    resetAlarm2Flag = false;
+  }
+  
 
   if (bitRead(PINB, 0) == LOW) //PI_RUNNING (Pin 8) is read as PORTB bit *0*. LOW means the Pi has gone to sleep
   {
