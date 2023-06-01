@@ -1865,8 +1865,12 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
                 app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
             if (renameOnCopy == True):
                 renameFile(dest, renameString, deleteAfterCopy)
+        else:
+            app.logger.info(f"copy_files: image {dest} did not return 'GP_OK'")
+            return 1
     except Exception as e:
         app.logger.info(f'Exception in copy_files: {e}')
+        return 1
     return 0
 
 
