@@ -44,46 +44,6 @@
 	</table>
 </form>
 
-<table>
-	<tr>
-		<td>
-			<div class="alignleft">Pi model:</div>
-			<div class="alignright">{{ piModel }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi os version:</div>
-			<div class="alignright">{{ piLinuxVer }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi os 'bitness':</div>
-			<div class="alignright">{{ piBitness }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi hostname:</div>
-			<div class="alignright">{{ piHostname }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi available storage:</div>
-			<div class="alignright">{{ piSpaceFree }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi uptime:</div>
-			<div class="alignright">{{ piUptime }}</div>
-		</td>
-	</tr>
-</table>
-
-
 <form name="PiEnable" method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
@@ -268,6 +228,45 @@
 		</tr>
 	</table>
 </form>
+
+<table>
+	<tr>
+		<td>
+			<div class="alignleft">Pi model:</div>
+			<div class="alignright">{{ piModel }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi os version:</div>
+			<div class="alignright">{{ piLinuxVer }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi os 'bitness':</div>
+			<div class="alignright">{{ piBitness }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi hostname:</div>
+			<div class="alignright">{{ piHostname }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi available storage:</div>
+			<div class="alignright">{{ piSpaceFree }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi uptime:</div>
+			<div class="alignright">{{ piUptime }}</div>
+		</td>
+	</tr>
+</table>
 
 <table >
 	<tr>
