@@ -96,6 +96,56 @@
 		</tr>
 	</table>
 	{% endif %}
+	
+	<table>
+		<tr>
+			<th>Battery Voltage</th>
+		</tr>
+		<tr>
+			<td class="nopadding">
+				<div class="metercontainer">
+					<ul class="timeline">
+						{% for voltageReading in voltageReadings %}
+						<li>
+							<a title="{{ voltageReading['voltage'] }}V">
+								<span class="label">{{ voltageReading['hour'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format ((voltageReading['voltage']|float) * 100 / 18) }}%
+									{%- if   VHiAlarm != 0 and ((voltageReading['voltage']|float) >= VHiAlarm) %}; background: #ff4d4d;
+									{%- elif VLoAlarm != 0 and ((voltageReading['voltage']|float) <+ VLoAlarm) %}; background: #ffc266;
+									{%- endif %}">{{ voltageReading['voltage'] }}</span>
+							</a>
+						</li>
+						{% endfor %}
+					</ul>
+					<div class="meterscale">
+						{% if VHiAlarm != 0 %}
+						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (100 - ((VHiAlarm * 100) / 18)) }}%;"><span>VHi</span></div>
+						{% endif %}
+						{% if VLoAlarm != 0 %}
+						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (100 - ((VLoAlarm * 100) / 18)) }}%;"><span>VLo</span></div>
+						{% endif %}
+					</div>
+					<div class="graticule">
+						{% for i in range(2,19,2) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / 18)) }}%;"><span>{{ i }}V</span></div>
+						{% endfor %}
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage maximum{% if vMaxAt != '' %} (at {{ '%02d:00' % vMaxAt }}){% endif %}:</div>
+				<div class="alignright" >{{ vMax }}V</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage minimum{% if vMinAt != '' %} (at {{ '%02d:00' % vMinAt }}){% endif %}:</div>
+				<div class="alignright" >{{ vMin }}V</div>
+			</td>
+		</tr>
+	</table>
 </form>
 
 
