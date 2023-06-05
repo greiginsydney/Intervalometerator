@@ -107,10 +107,10 @@
 				<div class="metercontainer">
 					<ul class="timeline">
 						{% for voltageReading in voltageReadings %}
-						<li>
+						<li style="height: 90%">
 							<a title="{{ voltageReading['voltage'] }}V">
 								<span class="label">{{ voltageReading['hour'] }}</span>
-								<span class="count" style="height: {{ '%0.2f'| format ((voltageReading['voltage']|float) * 100 / 18) }}%
+								<span class="count" style="height: {{ '%0.2f'| format ((voltageReading['voltage']|float) * 100 / vFSD) }}%
 									{%- if   VHiAlarm != 0 and ((voltageReading['voltage']|float) >= VHiAlarm) %}; background: #ff4d4d;
 									{%- elif VLoAlarm != 0 and ((voltageReading['voltage']|float) <= VLoAlarm) %}; background: #ffc266;
 									{%- endif %}">{{ voltageReading['voltage'] }}</span>
@@ -120,15 +120,15 @@
 					</ul>
 					<div class="meterscale">
 						{% if VHiAlarm != 0 %}
-						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (100 - ((VHiAlarm * 100) / 18)) }}%;"><span>VHi</span></div>
+						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (90 - ((VHiAlarm * 90) / vFSD)) }}%;"><span>VHi</span></div>
 						{% endif %}
 						{% if VLoAlarm != 0 %}
-						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (100 - ((VLoAlarm * 100) / 18)) }}%;"><span>VLo</span></div>
+						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (90 - ((VLoAlarm * 90) / vFSD)) }}%;"><span>VLo</span></div>
 						{% endif %}
 					</div>
 					<div class="graticule">
-						{% for i in range(2,19,2) %}
-						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((i * 100) / 18)) }}%;"><span>{{ i }}V</span></div>
+						{% for i in range(0,19,2) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}V</span></div>
 						{% endfor %}
 					</div>
 				</div>
