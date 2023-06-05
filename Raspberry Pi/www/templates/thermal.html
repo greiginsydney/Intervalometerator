@@ -105,6 +105,19 @@
 		<tr>
 			<td class="nopadding">
 				<div class="metercontainer">
+					<div class="graticule">
+						{% for i in range(0,19,2) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}V</span></div>
+						{% endfor %}
+					</div>
+					<div class="meterscale">
+						{% if VHiAlarm != 0 %}
+						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (90 - ((VHiAlarm * 90) / vFSD)) }}%;"><span>VHi</span></div>
+						{% endif %}
+						{% if VLoAlarm != 0 %}
+						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (90 - ((VLoAlarm * 90) / vFSD)) }}%;"><span>VLo</span></div>
+						{% endif %}
+					</div>
 					<ul class="timeline">
 						{% for voltageReading in voltageReadings %}
 						<li style="height: 90%">
@@ -118,19 +131,6 @@
 						</li>
 						{% endfor %}
 					</ul>
-					<div class="meterscale">
-						{% if VHiAlarm != 0 %}
-						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (90 - ((VHiAlarm * 90) / vFSD)) }}%;"><span>VHi</span></div>
-						{% endif %}
-						{% if VLoAlarm != 0 %}
-						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (90 - ((VLoAlarm * 90) / vFSD)) }}%;"><span>VLo</span></div>
-						{% endif %}
-					</div>
-					<div class="graticule">
-						{% for i in range(0,19,2) %}
-						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}V</span></div>
-						{% endfor %}
-					</div>
 				</div>
 			</td>
 		</tr>
