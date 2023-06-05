@@ -112,7 +112,7 @@
 								<span class="label">{{ voltageReading['hour'] }}</span>
 								<span class="count" style="height: {{ '%0.2f'| format ((voltageReading['voltage']|float) * 100 / 18) }}%
 									{%- if   VHiAlarm != 0 and ((voltageReading['voltage']|float) >= VHiAlarm) %}; background: #ff4d4d;
-									{%- elif VLoAlarm != 0 and ((voltageReading['voltage']|float) <+ VLoAlarm) %}; background: #ffc266;
+									{%- elif VLoAlarm != 0 and ((voltageReading['voltage']|float) <= VLoAlarm) %}; background: #ffc266;
 									{%- endif %}">{{ voltageReading['voltage'] }}</span>
 							</a>
 						</li>
