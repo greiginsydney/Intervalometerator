@@ -1095,8 +1095,8 @@ def thermal():
         'vMaxAt'         : '',
         'vMin'           : '- ',
         'vMinAt'         : '',
-        'VHiAlarm'       : 15,
-        'VLoAlarm'       : 10,
+        'VHiAlarm'       : 0,
+        'VLoAlarm'       : 0,
         'vFSD'           : 18 #A constant to feed to the page & use for valculations
         }
 
@@ -1221,6 +1221,8 @@ def thermal():
             for i in range(24):
                 voltageReadings.append({'hour' : str(i), 'voltage' : '0'})
         templateData.update({'voltageReadings' : voltageReadings})
+        templateData['VHiAlarm'] = getIni('Thresholds', 'voltage_high', 'int', '14')
+        templateData['VLoAlarm'] = getIni('Thresholds', 'voltage_low', 'int', '9')
     # End volts24
 
     return render_template('thermal.html', **templateData)
