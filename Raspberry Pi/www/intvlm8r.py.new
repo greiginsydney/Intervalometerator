@@ -1199,7 +1199,9 @@ def thermal():
             # It appears formatted correctly?? Loop through to decode, correct and capture max/min values
             app.logger.info("Voltage array is GOOD")
             vMax = 0
+            vMaxAt = 0
             vMin = 180
+            vMinAt = 0
             for i in range(24):
                 thisHour = ord(batteryVoltageArray[i]) - 10
                 #app.logger.info('Battery voltage at {0} = {1}V'.format(i, thisHour))
