@@ -1131,17 +1131,21 @@ def thermal():
             app.logger.info(f'Type of temperatures is {type(temperatures)}')
             app.logger.info(f'Type of temperatures[0] is {type(temperatures[0])} and value = {temperatures[0]}')
             dayTempMax = -128
+            dayTempMaxAt = 0
             dayTempMin =  127
+            dayTempMinAt = 0
             for i in range(24):
                 value = int.from_bytes((temperatures[i]).to_bytes(1, byteorder='little'), 'little', signed=True)
                 app.logger.info(f'Temp at {i} = {value} degrees')
                 Temps24.append({'hour' : str(i), 'temp' : convertTemp(value, thermalUnits)})
                 if value > dayTempMax:
                     dayTempMax = value
-                    templateData['dayTempMaxAt'] = i
+                    dayTempMaxAt = i
                 if value < dayTempMin:
                     dayTempMin = value
-                    templateData['dayTempMinAt'] = i
+                    dayTempMinAt = i
+            templateData['dayTempMaxAt'] = dayTempMaxAt
+            templateData['dayTempMinAt'] = dayTempMinAt
             templateData['dayTempMax']      = str(dayTempMax) # C/F conversion happens in the page
             templateData['dayTempMin']      = str(dayTempMin) # Here I'm stamping the ACTUAL Min to the page for the table, but 
                                                               # next I adjust it for "freezing", to set dayTempMinScale
