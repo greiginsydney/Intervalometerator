@@ -106,7 +106,7 @@
 			<td class="nopadding">
 				<div class="metercontainer">
 					<div class="graticule">
-						{% for i in range(0,19,2) %}
+						{% for i in range(0,vFSD + 1,2) %}
 						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}V</span></div>
 						{% endfor %}
 					</div>
