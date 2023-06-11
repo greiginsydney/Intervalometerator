@@ -10,6 +10,7 @@
 - [Does the intvlm8r support Daylight Saving Time?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#does-the-intvlm8r-support-daylight-saving-time)
 - [Can I install the intvlm8r under another user, not 'pi'?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#can-i-install-the-intvlm8r-under-another-user-not-pi)
 - [Can the intvlm8r connect to multiple WiFi networks?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#Can-the-intvlm8r-connect-to-multiple-WiFi-networks)
+- [Why can't I set the camera's time correctly?](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md#Why-cant-I-set-the-cameras-time-correctly)
 
 <br>
 
@@ -29,6 +30,10 @@ pi@Model3B:~ $
 
 The alternative is to manually edit the main python script (`sudo nano ~/www/intvlm8r.py`). Around line 75 is "# Our user database".
 
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
+
 ## How can I add more users to the list of website logins?
 
 This is done by adding new lines to the main python script (`sudo nano ~/www/intvlm8r.py`). Around line 75 is "# Our user database".
@@ -42,6 +47,9 @@ users = {'admin': {'password': 'password'}}
 users.update({'superuser': {'password': 'godmode'}})
 users.update({'someoneElse': {'password': 'rand0mCharact3rs'}})
 ```
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## Can I move the intvlm8r off port 80 or 443?
 
@@ -60,6 +68,9 @@ server {
     }
 }
 ```
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## My camera and/or Pi are running low on storage. How can I delete old images?
 
@@ -99,6 +110,9 @@ sudo python3 clear-space.py 95
 (Change `/home/pi` to your username if you've not installed the intvlm8r as 'pi').
 
 The number after clear-space.py tells the script to keep deleting files until that percentage of space is free.
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## Can I copy/transfer images more than once per day?
 
@@ -131,6 +145,9 @@ pi@Model3B:~ $ crontab -l
 Note the trick is the addition of the 'copyNow' switch which forces the script to always copy/transfer, ignoring the value set in the web interface and read from the ini file.
 
 > If you're using Nano as your editor, a quick way to copy a line is ^K then ^U. That deletes the line your cursor is on and reinstates it - but it leaves a copy on the 'clipboard' (to borrow a Windows term). Navigate to where you want the line copied and ^U again - but don't forget to change the time and add the copyNow switch.
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## Can I pause the shooting schedule during the day (e.g. at lunchtime)?
 
@@ -153,6 +170,9 @@ The "lunchtime kludge" is commented-out by default. If you want to pause shootin
 If you only want to break for an hour, you can delete the `nextHour = 13;` line altogether and leave the nextShot minute at 59. If you only want a 30 minute lunch, delete the `nextHour = 13;` line (or leave it commented-out), change `nextShot` to 29, and the shooting schedule will recommence from 30 minutes past the current hour.
 
 > This code runs at the start of the lunch break and tricks the intvlm8r into thinking it's already taken the shots that it would have during lunch. It then sets the next alarm time - the next shot to be taken - for the time immediately after lunch.
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## Does the intvlm8r support Daylight Saving Time?
 
@@ -174,6 +194,9 @@ If the Pi is set to always run, a cron job that fires every day at midnight will
 2021/06/14 00:00:02 This is what I received: <p>Set Arduino datetime to 20210614000002</p>
 2021/06/14 00:00:02 New Arduino time is 20210614000002
 ```
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## Can I install the intvlm8r under another user, not 'pi'?
 
@@ -186,6 +209,10 @@ newusername  ALL=(ALL) NOPASSWD:ALL
 ```
 
 This lets 'newusername' execute ALL commands without needing to constantly re-type their password. I'd like to be able to tighten it up, but haven't been able to find the right command/syntax for the script to be able to run correctly - and it's not for a lack of trying.
+
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
 ## Can the intvlm8r connect to multiple WiFi networks?
 
@@ -212,6 +239,26 @@ network={
 
 If you omit the 'priority' lines, both networks are deemed the same priority, and the Pi will use the one with the stronger signal. As shown here, if both networks are present, the "myCaptureSiteNetwork" will be used, as it has the numerically higher priority number.
 <br>
-<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
+
+## Why can't I set the camera's time correctly?
+
+You're not alone in finding this a challenge. The interaction of gphoto2, your camera, and the timezone set in the Pi can sometimes make it difficult to have the camera correctly reflect your local time.
+
+![image](https://github.com/greiginsydney/Intervalometerator/assets/11004787/dbc6039b-d2d0-45db-a09a-0564f62c77be)
+
+When you check "Set camera date/time", the new time and date that are sent to the camera depend on how the camera and gphoto2 interact.
+
+Canon cameras usually accept two methods, and the default method passes the Pi's time to the camera, _but as UTC instead of the local timezone_ and any timezone offset you specify on the page is ignored.
+
+Selecting "Alt camera time mode" always passes the "adjusted date/time" to the camera, but sometimes this doesn't apply correctly and a whacky date - maybe decades out - is returned.
+
+If neither of the above two methods work, here's another you can try:
+1. Set the Pi's time to the required value for the camera, adjusting the timezone offset as required;
+2. Set the camera's time with only the "Set camera date/time" checkbox selected;
+3. If that's successful, reset the Pi back to your correct time.
+
+If you're still having no luck, please raise an [issue](https://github.com/greiginsydney/Intervalometerator/issues) and I'll work with you to find a resolution. (Have you checked the camera's firmware is the latest version?)
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
