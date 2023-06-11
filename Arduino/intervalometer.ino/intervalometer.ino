@@ -60,8 +60,6 @@ char version[6] = "4.5.4";
 #define MEMTempMax    0x08  // "
 #define MEM24Temp0    0x09  // Saved value for midnight.
 #define MEM24Temp23   0x20  // Not actually used in code: it's here for me to know the last memory location I've used
-#define MEM24Volt0    0x21  // Saved value for midnight.
-#define MEM24Volt23   0x38  // Not actually used in code: it's here for me to know the last memory location I've used
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -170,22 +168,14 @@ void setup()
     WakePiHour     = EEPROM.read(MEMWakePiHour);
     WakePiDuration = EEPROM.read(MEMWakePiDuration);
 
-    byte voltageValid;
     for (int i = 0; i <= 23; i++)
     {
       // Temperature readings:
       DailyTemps[i] = EEPROM.read(MEM24Temp0 + i);
       //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
 
-      // Voltage readings:
-      voltageValid = EEPROM.read(MEM24Volt0 + i);
-      //Ensure the voltages we read from EEPROM are within the allowed range:
-      if ((voltageValid < 10) || (voltageValid > 190))
-      {
-        voltageValid = 10;
-        EEPROM.write(MEM24Volt0 + i, byte(10)); // Repair broken memory location
-      }
-      VoltageString[i] = voltageValid;
+      // Initialise all the voltage readings to 0V:
+      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println( F("Values from EEPROM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
@@ -222,7 +212,8 @@ void setup()
   }
 
   UpdateTempMinMax("", -1); //Reset or initialise the temperature readings on boot
-
+  readVbatteryFlag = true;  // Take a battery reading on boot
+ 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
 
@@ -715,6 +706,46 @@ void UpdateTempMinMax(String resetOption, int thisHour)
 }
 
 
+// Called repeatedly at the top of every hour to read the battery voltage
+// Loops 8 times, each time reading the battery voltage. On the last loop it averages the values, stores the result in an array, and resets its flags.
+void UpdateVoltage()
+{
+  #ifdef V_SENSE_PIN
+    if (VoltageReadingCounter < 8)
+    {
+      VoltageReading += analogRead(V_SENSE_PIN);
+      Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
+      VoltageReadingCounter += 1;
+      //DelaymS (1000);
+    }
+    else
+    {
+      int thisHour = rtc.getHour();
+      float averageVolts = VoltageReading / 8;            // Average the 8 different readings
+      VoltageReading = (int)((averageVolts * 183) / 1023); // Convert 0-1023 to 0-"180" (18.0) Volts. (We'll add the decimal in the Pi)
+      VoltageReading += 10;                                // Add an offset to allow transfer as bytes. (Preventing 0v being NULL is the issue addressed here).
+      //Clamp valid voltages to a range of 0-18.0V (even though a reading anywhere near zero isn't possible)
+      if ((VoltageReading < 10) || (VoltageReading > 190))
+      {
+        VoltageReading = 10;
+        Serial.println( "YESSS!! Trapped an invalid voltage read at hour = " + String(thisHour));
+      }
+      VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
+      //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
+      Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
+      //Serial.println("Voltage string     = " + String(VoltageString));
+      Serial.println("Voltage string len = " + String(strlen(VoltageString)));
+      
+      readVbatteryFlag = false;  // OK, all done, reset the flag.
+      VoltageReading = 0;
+      VoltageReadingCounter = 0; // Reset the counter for next time.
+    }
+  #else
+    readVbatteryFlag = false;  // Nothing to do here. Reset the flag.
+  #endif
+}
+
+
 void softReset()
 {
   asm volatile ("  jmp 0");
@@ -962,6 +993,7 @@ void loop()
       if (rtc.minute() == 0)
       {
         UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
+        readVbatteryFlag = HIGH;           //Trigger the battery reading process
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -1058,6 +1090,11 @@ void loop()
   {
     UpdateTempMinMax("Max", -1);
     resetTempMaxFlag = false;
+  }
+
+  if (readVbatteryFlag == true)
+  {
+    UpdateVoltage();
   }
 
   if (resetAlarm2Flag == true)
