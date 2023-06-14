@@ -251,16 +251,18 @@ install_apps ()
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
 
 	echo -n "Checking installed version of python-gphoto2"
-	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
-	if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
-		echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
+	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+		if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
 		if [[ $isGphoto != $latestPythonGphotoRls ]]; then
+			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
 			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
 		else
+			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo 'No python-gphoto2 upgrade required'
 		fi
 	else
+		echo -e "\rCurrent installed version of python-gphoto2 = None"
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
 		pip3 install -v gphoto2 --no-binary :all:
 	fi
