@@ -296,7 +296,7 @@ install_apps ()
 		fi
 	else
 		echo -e "\rCurrent installed version of rawpy = None"
-		echo -e 'Installing rawpy'
+		echo -e ""$GREEN"Installing rawpy"$RESET""
 		installRawpy=1
 	fi
 
