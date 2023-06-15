@@ -284,7 +284,7 @@ install_apps ()
 	echo -e ""$GREEN"Checking for installed and latest release versions of rawpy"$RESET""
 	latestRawpyRls=$(curl --silent "https://api.github.com/repos/letmaik/rawpy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
 	echo "Current    online version of rawpy = $latestRawpyRls"
-	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isRawpy && ($isRawpy != "(none)") ]]; then
 		echo -e "\rCurrent installed version of rawpy = $isRawpy"
 		if [[ $isRawpy != $latestRawpyRls ]]; then
@@ -294,7 +294,7 @@ install_apps ()
 			echo 'No rawpy upgrade required'
 		fi
 	else
-		echo -e '= not found'
+		echo -e "\rCurrent installed version of rawpy = None"
 		echo -e 'Installing rawpy'
 		installRawpy=1
 	fi
