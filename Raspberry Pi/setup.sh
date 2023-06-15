@@ -221,8 +221,9 @@ install_apps ()
 			echo 'No libgphoto2 upgrade required'
 		fi
 	else
-		echo -e '= not found'
-		echo -e 'Installing libgphoto2'
+		echo -e "\rCurrent  installed version of libgphoto2 = None"
+		echo ''
+		echo -e ""$GREEN"Installing libgphoto2"$RESET""
 		installLibgphoto2=1
 	fi
 
