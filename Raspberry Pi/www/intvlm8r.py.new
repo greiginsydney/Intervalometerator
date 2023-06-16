@@ -2414,6 +2414,7 @@ def copyNow(self):
             continue
     self.update_state(state='PROGRESS', meta={'status': 'Preparing to copy images', 'statusColour': 'white'})
     thisImage = 0
+    errorFlag = 0
     filesToCopy = files_to_copy(camera)
     if filesToCopy:
         numberToCopy = len(filesToCopy)
@@ -2432,19 +2433,37 @@ def copyNow(self):
                 copyResult = copy_files(camera, thisFile, deleteAfterCopy, renameOnCopy, renameString)
                 if copyResult == 0:
                     thisImage += 1
+                elif copyResult == -1:
+                    #Fatal - out of drive space.
+                    errorFlag = -1
+                    break
+                else:
+                    errorFlag = 1
             except Exception as e:
                 app.logger.info(f'Unknown error in copyNow: {e}')
     try:
         camera.exit()
-        app.logger.info('copyNow ended happily')
+        app.logger.info('copyNow ended without fatal exception')
     except Exception as e:
-        app.logger.info(f'copyNow ended sad: {e}')
-    if thisImage == 0:
+        app.logger.info(f'copyNow ended with unhandled exception: {e}')
+    if thisImage == 1:
+        imageString = "image"
+    else:
+        imageString = "images"
+    if errorFlag == -1:
+        app.logger.info('copyNow reported fatal: out of drive space')
+        statusMessage = 'Out of drive space'
+        statusColour = 'red'
+    elif errorFlag == 1:
+        app.logger.info('copyNow reported 1 or more errors')
+        statusMessage = (f'Errors reported. Copied {thisImage} {imageString} OK')
+        statusColour = 'orange'
+    elif thisImage == 0:
         app.logger.info('copyNow reported there were no new images to copy')
         statusMessage = 'There were no new images to copy'
         statusColour = 'white'
     else:
-        statusMessage = (f'Copied {thisImage} images OK')
+        statusMessage = (f'Copied {thisImage} {imageString} OK')
         statusColour = 'white'
     return {'status': statusMessage, 'statusColour': statusColour}
 
