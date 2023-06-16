@@ -18,7 +18,7 @@
 
 
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
 from PIL import Image           # Camera page preview button
