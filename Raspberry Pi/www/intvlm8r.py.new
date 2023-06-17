@@ -157,7 +157,7 @@ def readFromArduino(value, dataType, cacheRequest):
         else:
             app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
-    
+
     status = ""
     app.logger.debug(f'ASCII = {ascii}')
     rxLength = 32
@@ -338,7 +338,7 @@ def main():
         return redirect(url_for('main'))
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-        
+
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
 
@@ -879,7 +879,7 @@ def transfer():
         'piTransferLogLink'     : '',
         'hiddenTransferOptions' : hiddenTransferOptions,
         'renameOnCopy'          : 'Off',
-        'renameString'          : '' 
+        'renameString'          : ''
     }
     config = configparser.ConfigParser(
         {
@@ -1120,7 +1120,7 @@ def thermal():
     except Exception as e:
         app.logger.debug(f'GT exception in /thermal: {e}')
     templateData['piTemp'] = getPiTemp()
-    
+
     arduinoVersion = str(getArduinoVersion('0'))
     # Start Temps24
     if version.parse(arduinoVersion) >=  version.parse("4.5.0"):
@@ -1147,7 +1147,7 @@ def thermal():
             templateData['dayTempMaxAt'] = dayTempMaxAt
             templateData['dayTempMinAt'] = dayTempMinAt
             templateData['dayTempMax']      = str(dayTempMax) # C/F conversion happens in the page
-            templateData['dayTempMin']      = str(dayTempMin) # Here I'm stamping the ACTUAL Min to the page for the table, but 
+            templateData['dayTempMin']      = str(dayTempMin) # Here I'm stamping the ACTUAL Min to the page for the table, but
                                                               # next I adjust it for "freezing", to set dayTempMinScale
             if dayTempMin > freezing:
                 dayTempMin = freezing # Reset to 'freezing' for positive-days to ensure the scale is zero-referenced
@@ -1183,7 +1183,7 @@ def thermal():
                 dayTempMinScale = freezing
             templateData['dayTempMaxScale'] = dayTempMaxScale
             templateData['dayTempMinScale'] = dayTempMinScale
-            
+
             app.logger.info(f'Freezing = {freezing}, dayTempMaxScale / dayTempMinScale = {dayTempMaxScale} / {dayTempMinScale}')
 
         except Exception as e:
@@ -1349,7 +1349,7 @@ def heartbeatCronJob():
         initiateHeartbeat.si()
     ]
     chain(*tasks).apply_async()
-    
+
     #Make two attempts at heartbeating:
     for i in range(2):
         task = chain(*tasks).apply_async()
@@ -1449,7 +1449,7 @@ def system():
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-    
+
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1583,7 +1583,7 @@ def systemPOST():
     if 'extend' in request.form:
         app.logger.debug('Yes we got the EXTEND button')
         writeString('EX', 1)
-    
+
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
         if (request.form.get('cameraTimeMode')):
@@ -1987,12 +1987,12 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
     try:
         imageFolderTree, originalFileName = os.path.split(imageFullFilename)
         fileName, fileExt = os.path.splitext(originalFileName)
-        
+
         #Read the creationTime from Exif. If that fails, default to the file creation datestamp
         #dateStamp = getCreationTime(imageFullFilename)
         #if not dateStamp:
         dateStamp = datetime.fromtimestamp(os.path.getmtime(imageFullFilename))
-        
+
         #Populate the variables from the file's dateStamp:
         pcF = fileName                               #Filename
         pcY = dateStamp.strftime('%Y')               #Year (20xx)
@@ -2593,7 +2593,7 @@ def getCeleryTasks():
     except Exception as e:
         app.logger.debug(f'getCeleryTasks exception: {e}')
 
-        
+
 @app.route("/iniview")
 @login_required
 def iniview():
