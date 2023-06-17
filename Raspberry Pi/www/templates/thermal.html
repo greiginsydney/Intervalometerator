@@ -137,13 +137,13 @@
 		<tr>
 			<td>
 				<div class="alignleft">Voltage maximum{% if vMaxAt != '' %} (at {{ '%02d:00' % vMaxAt }}){% endif %}:</div>
-				<div class="alignright" >{{ vMax }}V</div>
+				<div class="alignright" >{{ vMax }}{% if vMax != 'Unknown' %}V{% endif %}</div>
 			</td>
 		</tr>
 		<tr>
 			<td>
 				<div class="alignleft">Voltage minimum{% if vMinAt != '' %} (at {{ '%02d:00' % vMinAt }}){% endif %}:</div>
-				<div class="alignright" >{{ vMin }}V</div>
+				<div class="alignright" >{{ vMin }}{% if vMin != 'Unknown' %}V{% endif %}</div>
 			</td>
 		</tr>
 	</table>
