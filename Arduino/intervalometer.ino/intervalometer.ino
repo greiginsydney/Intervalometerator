@@ -42,6 +42,9 @@ char version[6] = "4.5.4";
 #define PI_RUNNING      8 // The Pi takes this High when it's running (input)
 #define PI_SHUTDOWN     9 // Take low to initiate a shutdown in the Pi
 #define MAINT_PIN      14 // Take low to enable Maintenance Mode (D14 = A0 = PC0)
+//#define              15 // Analog input, reads battery voltage (D15 = A1 = PC1)
+                          // Commented-out until the battery hardware is finalised
+                          // Spare ADCs: A6 = 20, A7 = 21
 
 #define DS3234_REGISTER_CONTROL 0x0E
 #define DS3234_REGISTER_STATUS  0x0F
@@ -86,6 +89,7 @@ volatile bool   resetAlarm2Flag  = false; //
 bool   LastRunningState = LOW;  // Used in loop() to tell for a falling Edge of the Pi state
 bool   LastMaintState = HIGH;   // Used in loop() to tell if the maint/debug jumper has been removed
 bool   LastRtcIrqState = LOW;   // Used in loop() to help protect against "stuck" issues
+bool   readVbatteryFlag = LOW;  // Used in loop() to trigger a battery read
 
 byte   ShootDays = 0b11111110;  // Default shoot days (Mon-Sun). Only used if we power up with a flat clock battery
 byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot today
@@ -95,6 +99,7 @@ byte   interval  = 15;          // Default spacing between photos. Defaults to a
 byte   WakePiHour = 25;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down
+byte   VoltageReadingCounter=0; // A global, so the asynch voltmeter loop knows how many times it's been called.
 
 String newTimeDate = "";        // A new time and date sent by the Pi
 String newInterval = "";        // A new interval sent by the Pi
@@ -108,6 +113,8 @@ char TemperaturesString[16];    // Sent to the Pi. Is "<CurrentTemp>,<MaxTemp>,<
 
 int8_t DailyTemps[25];          // 24 temperature readings, one per hour. The offset is the reading for that hour. A signed byte
 char VoltageString[24];         // Twenty-four hours' worth of readings, indexed by the hour. The value is the voltage * 10. (e.g. 12.0V is saved as "120")
+
+int  VoltageReading = 0;        // This is the sum of the 8 voltage readings taken, to be averaged and converted to a byte
 
 //////////////////////////////////
 //            SETUP             //
@@ -173,9 +180,6 @@ void setup()
       // Temperature readings:
       DailyTemps[i] = EEPROM.read(MEM24Temp0 + i);
       //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
-
-      // Initialise all the voltage readings to 0V:
-      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println( F("Values from EEPROM are: "));
     //Serial.println( "  start hour = " + String(StartHour));
@@ -205,15 +209,14 @@ void setup()
     {
       // TODO: Do we need to initialise the temperature EPROM values here too?
       DailyTemps[i] = (int8_t)-128;
-      EEPROM.write(MEM24Volt0 + i, 10);
       VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
-  UpdateTempMinMax("", -1); //Reset or initialise the temperature readings on boot
+  UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
   readVbatteryFlag = true;  // Take a battery reading on boot
- 
+
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
 
@@ -728,7 +731,7 @@ void UpdateVoltage()
       if ((VoltageReading < 10) || (VoltageReading > 190))
       {
         VoltageReading = 10;
-        Serial.println( "YESSS!! Trapped an invalid voltage read at hour = " + String(thisHour));
+        Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
       }
       VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
       //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
@@ -741,7 +744,7 @@ void UpdateVoltage()
       VoltageReadingCounter = 0; // Reset the counter for next time.
     }
   #else
-    readVbatteryFlag = false;  // Nothing to do here. Reset the flag.
+    readVbatteryFlag = false;    // Nothing to do here. Reset the flag.
   #endif
 }
 
