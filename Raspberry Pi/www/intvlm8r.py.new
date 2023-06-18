@@ -1200,7 +1200,7 @@ def thermal():
         if version.parse(arduinoVersion) >=  version.parse("4.5.4"):
             batteryVoltageArray = readFromArduino("8", "String", False)  # All 24 voltage readings (offset by 10) as a string of bytes
             voltageReadings = []                        # A list that stores all 24 voltage readings for the page to render
-            if len(batteryVoltageArray) == 24:
+            if (ord(batteryVoltageArray[0]) != 255) and (len(batteryVoltageArray) == 24):
                 # It appears formatted correctly?? Loop through to decode, correct and capture max/min values
                 app.logger.info("Voltage array is GOOD")
                 vMax = 0
