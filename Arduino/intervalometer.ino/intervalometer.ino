@@ -42,7 +42,7 @@ char version[6] = "4.5.4";
 #define PI_RUNNING      8 // The Pi takes this High when it's running (input)
 #define PI_SHUTDOWN     9 // Take low to initiate a shutdown in the Pi
 #define MAINT_PIN      14 // Take low to enable Maintenance Mode (D14 = A0 = PC0)
-//#define              15 // Analog input, reads battery voltage (D15 = A1 = PC1)
+//#define V_SENSE_PIN    15 // Analog input, reads battery voltage (D15 = A1 = PC1)
                           // Commented-out until the battery hardware is finalised
                           // Spare ADCs: A6 = 20, A7 = 21
 
