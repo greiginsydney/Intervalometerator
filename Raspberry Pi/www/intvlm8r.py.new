@@ -1485,9 +1485,9 @@ def system():
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
                     if 0 <= shutdownAt <= 61:
                         if tempTime != '':
+                            shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.                            
                             shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                            shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.
-                            if shutdownAt < 0:
+                            if shutdownAt < 1:
                                 shutdownAt += 60
                             templateData['piShutdownIn'] = shutdownAt
                         else:
