@@ -1438,7 +1438,6 @@ def system():
         'piSpaceFree'         : 'Unknown',
         'wakePiTime'          : '',
         'wakePiDuration'      : '',
-        'piShutdownIn'        : 'Unknown',
         'rebootSafeWord'      : REBOOT_SAFE_WORD,
         'intvlm8rVersion'     : 'Unknown',
         'arduinoVersion'      : 'Unknown',
@@ -1452,7 +1451,9 @@ def system():
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-
+    
+    arduinoVersion = str(getArduinoVersion('0'))
+    
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1480,13 +1481,16 @@ def system():
             templateData['wakePiTime']     = wakePiTime
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
-                shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
-                if 0 <= shutdownAt <= 61:                
-                    if tempTime != '':
-                        shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                        if shutdownAt < 0:
-                            shutdownAt += 60
-                        templateData['piShutdownIn'] = shutdownAt
+                if version.parse(arduinoVersion) >=  version.parse("4.5.4"):
+                    shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
+                    if 0 <= shutdownAt <= 61:
+                        if tempTime != '':
+                            shutdownAt = shutdownAt - int(tempTime.split(":")[1])
+                            if shutdownAt < 0:
+                                shutdownAt += 60
+                            templateData['piShutdownIn'] = shutdownAt
+                        else:
+                            templateData['piShutdownIn'] = 'Unknown'
                     else:
                         templateData['piShutdownIn'] = 'Unknown'
     except Exception as e:
@@ -1515,7 +1519,7 @@ def system():
     except Exception as e:
         app.logger.debug(f'system: Unexpected error querying version info: {e}')
 
-    templateData['arduinoVersion'] = str(getArduinoVersion('Unknown'))
+    templateData['arduinoVersion'] = 'Unknown' if (str(arduinoVersion) == '0') else str(arduinoVersion)
 
     try:
         if not config:
@@ -1548,7 +1552,6 @@ def system():
     templateData['cameraTimeMode'] = cameraTimeMode
 
     return render_template('system.html', **templateData)
-
 
 @app.route("/system", methods = ['POST'])    # The system page's POST method
 @login_required
