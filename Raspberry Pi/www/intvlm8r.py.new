@@ -1438,7 +1438,7 @@ def system():
         'piSpaceFree'         : 'Unknown',
         'wakePiTime'          : '',
         'wakePiDuration'      : '',
-        'piShutdownIn'        : '',
+        'piShutdownIn'        : 'Unknown',
         'rebootSafeWord'      : REBOOT_SAFE_WORD,
         'intvlm8rVersion'     : 'Unknown',
         'arduinoVersion'      : 'Unknown',
@@ -1481,13 +1481,14 @@ def system():
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
                 shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
-                if tempTime != '':
-                    shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                    if shutdownAt < 0:
-                        shutdownAt += 60
-                    templateData['piShutdownIn'] = shutdownAt
-                else:
-                    templateData['piShutdownIn'] = 'Unknown'
+                if 0 <= shutdownAt <= 61:                
+                    if tempTime != '':
+                        shutdownAt = shutdownAt - int(tempTime.split(":")[1])
+                        if shutdownAt < 0:
+                            shutdownAt += 60
+                        templateData['piShutdownIn'] = shutdownAt
+                    else:
+                        templateData['piShutdownIn'] = 'Unknown'
     except Exception as e:
         app.logger.debug(f'system: Threw querying Arduino DateTime: {e}')
 
