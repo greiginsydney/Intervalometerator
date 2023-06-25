@@ -1475,7 +1475,7 @@ def system():
         tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
         if tempTime != '':
                 templateData['arduinoTime'] = tempTime
-        rawWakePi = str(readFromArduino("5", "String", True))
+        rawWakePi = str(readFromArduino("5", "String", False))
         if rawWakePi != "Unknown":
             wakePiTime                     = rawWakePi[0:2]
             templateData['wakePiTime']     = wakePiTime
