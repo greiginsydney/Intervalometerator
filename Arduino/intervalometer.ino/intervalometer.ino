@@ -725,7 +725,7 @@ void UpdateVoltage()
     {
       int thisHour = rtc.getHour();
       float averageVolts = VoltageReading / 8;            // Average the 8 different readings
-      VoltageReading = (int)((averageVolts * 183) / 1023); // Convert 0-1023 to 0-"180" (18.0) Volts. (We'll add the decimal in the Pi)
+      VoltageReading = (int)((averageVolts * 183) / 1024); // Convert 0-1023 to 0-"180" (18.0) Volts. (We'll add the decimal in the Pi)
       VoltageReading += 10;                                // Add an offset to allow transfer as bytes. (Preventing 0v being NULL is the issue addressed here).
       //Clamp valid voltages to a range of 0-18.0V (even though a reading anywhere near zero isn't possible)
       if ((VoltageReading < 10) || (VoltageReading > 190))
