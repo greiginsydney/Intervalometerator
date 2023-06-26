@@ -193,7 +193,7 @@ pi@BlackPCB:~
 3. As you can see in the above, the key has been saved in /home/pi/.ssh/ as id_rsa. This command will copy it to the remote server:
 
 ```bash
-ssh-copy-id -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10 -f
+ssh-copy-id -f -i ~/.ssh/id_rsa.pub rsyncuser@10.10.10.10
 ```
  
 (Don't forget to change the username from 'rsyncuser' and the IP address to those of your rsync login and host.)
