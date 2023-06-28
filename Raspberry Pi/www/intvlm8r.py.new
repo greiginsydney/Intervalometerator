@@ -2036,7 +2036,7 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
                         #This is a safety net.
                         #You MIGHT be deliberately doing this (say, sequentially numbering all the files in a given year-month-day-hour), but...
                         # if we get to 1000 I'm going to abort, otherwise we risk looping here forever.
-                        app.logger.info(f'renameFile safety net fired renaming file {imageFullFilename} to {renameString}')
+                        app.logger.info(f'renameFile safety net fired renaming file {imageFullFilename} to {renameString}.{fileExt}')
                         safetyNet = True
                         break
                     suffix += 1 #Increment the suffix and loop.
