@@ -367,8 +367,12 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             if overwrite
             else dropbox.files.WriteMode.add)
     mtime = os.path.getmtime(fullname)
-    with open(fullname, 'rb') as f:
-        data = f.read()
+    try:
+        with open(fullname, 'rb') as f:
+            data = f.read()
+    except Exception as e:
+        log(f'Dropbox file not found error: {e}')
+        return None
     try:
         res = dbx.files_upload(
             data, path, mode,
