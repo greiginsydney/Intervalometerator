@@ -371,7 +371,7 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
         with open(fullname, 'rb') as f:
             data = f.read()
     except Exception as e:
-        log(f'Dropbox file not found error: {e}')
+        log(f'Dropbox file error: {e}')
         return None
     try:
         res = dbx.files_upload(
