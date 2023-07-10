@@ -1481,7 +1481,7 @@ def system():
             templateData['wakePiTime']     = wakePiTime
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
-                if version.parse(arduinoVersion) >=  version.parse("4.5.4"):
+                if version.parse(arduinoVersion) >=  version.parse("4.5.5"):
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
                     if 0 <= shutdownAt <= 61:
                         if tempTime != '':
