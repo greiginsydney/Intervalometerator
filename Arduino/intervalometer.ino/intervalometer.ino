@@ -615,7 +615,7 @@ void setInterval(String incoming)
   ShootDays = incoming.charAt(0);
   StartHour = (Validate (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
   EndHour   = (Validate (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
-  interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 60));
+  interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 90));
 
   EEPROM.update(MEMShootDays, ShootDays);
   EEPROM.update(MEMStartHour, StartHour);
