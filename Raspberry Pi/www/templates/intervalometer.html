@@ -49,12 +49,18 @@
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Interval (minutes):</div>
+				<div class="alignleft">Interval:</div>
 				<div class="alignright">
 					<select name="interval" id="interval" title="Select the interval between shots" onchange="newSelected(this.id)">
 						<option class="hidden" disabled selected> -- choose -- </option>
+						{% if shootFast is defined %}
+							{% for intv in ['103','104','105','106','110','115','120','130'] %}
+							<option value="{{intv}}"{% if intv == piInterval %} SELECTED{% endif %}>{{'%02d'| format((intv | int) - 100)}} s</option>
+							{% endfor %}
+							<option disabled>──────────</option>
+						{% endif %}
 						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
-							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}}</option>
+							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}} m</option>
 						{% endfor %}
 					</select>
 				</div>
