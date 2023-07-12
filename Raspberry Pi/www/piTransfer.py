@@ -398,6 +398,15 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
 
 def reauthDropbox(APP_KEY):
     log('Commencing Dropbox re-auth')
+    if not APP_KEY.strip():
+        log('Dropbox re-auth aborted: APP_KEY is blank')
+        print ('')
+        print('Dropbox re-auth aborted: APP_KEY is blank')
+        print ('Browse to the /transfer page, select Dropbox as the Upload method, paste the app key value & Apply')
+        print ('See the documentation for more information:')
+        print ('https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-setup-upload-options.md#dropbox')
+        print ('')
+        return 1
     try:
         auth_flow = DropboxOAuth2FlowNoRedirect(APP_KEY, use_pkce=True, token_access_type='offline')
         auth_url = auth_flow.start()
