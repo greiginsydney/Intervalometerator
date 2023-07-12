@@ -1925,12 +1925,11 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
     app.logger.debug(f'Copying {imageToCopy} --> {dest}')
     try:
         imageMtime = get_camera_file_info(camera, imageToCopy).file.mtime
-        app.logger.info(f'imageMtime = {imageMtime}')
         #This is ugly. The epoc time that comes from the camera is *assumed* to be GMT, where this is not necessarily the case:
         imageTimestamp = datetime.utcfromtimestamp(imageMtime).astimezone()
         imageTimestamp = imageTimestamp.replace(tzinfo=timezone.utc)
         imageMtime = int(imageTimestamp.strftime('%s'))
-        app.logger.info(f'imageMtime is of type {type(imageMtime)}')
+        app.logger.info(f'imageMtime {imageMtime} is of type {type(imageMtime)}')
         camera_file = gp.check_result(gp.gp_camera_file_get(
             camera, sourceFolderTree, imageFileName, gp.GP_FILE_TYPE_NORMAL))
         file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
