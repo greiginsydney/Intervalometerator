@@ -762,7 +762,8 @@ def intervalometer():
         'availableShots'   : 'Unknown',
         'piAvailableShots' : 'Unknown',
         'daysFreeWarn'     : '0',
-        'daysFreeAlarm'    : '0'
+        'daysFreeAlarm'    : '0',
+        'shootFast'        : '1'
     }
     app.logger.debug('This is a GET to Intervalometer')
 
