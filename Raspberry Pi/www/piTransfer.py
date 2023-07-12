@@ -367,8 +367,12 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
             if overwrite
             else dropbox.files.WriteMode.add)
     mtime = os.path.getmtime(fullname)
-    with open(fullname, 'rb') as f:
-        data = f.read()
+    try:
+        with open(fullname, 'rb') as f:
+            data = f.read()
+    except Exception as e:
+        log(f'Dropbox file error: {e}')
+        return None
     try:
         res = dbx.files_upload(
             data, path, mode,
@@ -387,13 +391,22 @@ def dbx_upload(dbx, fullname, folder, subfolder, name, overwrite=True):
         log(f'Unexpected Dropbox error: {e}')
         log('STATUS: Exception uploading to Dropbox')
         return None
-    #log(f'Dropbox uploaded as {res.name.encode('utf8')})
+    #log(f"Dropbox uploaded as {res.name.encode('utf8')}")
     #log(f'Dropbox result = {res}')
     return res
 
 
 def reauthDropbox(APP_KEY):
     log('Commencing Dropbox re-auth')
+    if not APP_KEY.strip():
+        log('Dropbox re-auth aborted: APP_KEY is blank')
+        print ('')
+        print('Dropbox re-auth aborted: APP_KEY is blank')
+        print ('Browse to the /transfer page, select Dropbox as the Upload method, paste the app key value & Apply')
+        print ('See the documentation for more information:')
+        print ('https://github.com/greiginsydney/Intervalometerator/blob/master/docs/step4-setup-upload-options.md#dropbox')
+        print ('')
+        return 1
     try:
         auth_flow = DropboxOAuth2FlowNoRedirect(APP_KEY, use_pkce=True, token_access_type='offline')
         auth_url = auth_flow.start()

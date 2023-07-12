@@ -44,46 +44,6 @@
 	</table>
 </form>
 
-<table>
-	<tr>
-		<td>
-			<div class="alignleft">Pi model:</div>
-			<div class="alignright">{{ piModel }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi os version:</div>
-			<div class="alignright">{{ piLinuxVer }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi os 'bitness':</div>
-			<div class="alignright">{{ piBitness }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi hostname:</div>
-			<div class="alignright">{{ piHostname }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi available storage:</div>
-			<div class="alignright">{{ piSpaceFree }}</div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div class="alignleft">Pi uptime:</div>
-			<div class="alignright">{{ piUptime }}</div>
-		</td>
-	</tr>
-</table>
-
-
 <form name="PiEnable" method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr>
@@ -112,6 +72,15 @@
 				</div>
 			</td>
 		</tr>
+		{% if (wakePiTime != "25") and (piShutdownIn is defined) %}
+		<tr id="piShutdown">
+			<td class="noborder">
+				<div class="alignleft">Pi shutting down in (minutes):</div>
+				<div class="alignright">{{ piShutdownIn }}<button class="resetbutton" type="submit" name="extend" id="extend">Extend</button>
+				</div>
+			</td>
+		</tr>
+		{% endif %}
 		<tr>
 			<td class="noborder">
 				<button name="wakePi" id="submitWakePi" type="submit" class="hwbutton" value="wakePi">Submit</button>
@@ -129,9 +98,15 @@
 			</td>
 		</tr>
 		<tr{% if '2018' in piDateTime %} class="red"{% endif %}>
-			<td>
+			<td class="noborder">
 				<div class="alignleft">Pi date/time:</div>
 				<div class="alignright">{{ piDateTime }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="noborder">
+				<div class="alignleft">Pi timezone:</div>
+				<div class="alignright">{{ piTimezone }}</div>
 			</td>
 		</tr>
 		<tr>
@@ -254,6 +229,45 @@
 	</table>
 </form>
 
+<table>
+	<tr>
+		<td>
+			<div class="alignleft">Pi model:</div>
+			<div class="alignright">{{ piModel }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi os version:</div>
+			<div class="alignright">{{ piLinuxVer }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi os 'bitness':</div>
+			<div class="alignright">{{ piBitness }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi hostname:</div>
+			<div class="alignright">{{ piHostname }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi available storage:</div>
+			<div class="alignright">{{ piSpaceFree }}</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="alignleft">Pi uptime:</div>
+			<div class="alignright">{{ piUptime }}</div>
+		</td>
+	</tr>
+</table>
+
 <table >
 	<tr>
 		<td>
@@ -304,6 +318,7 @@ document.getElementById("altCameraTime").style.display = "none"; // Only ever vi
 // This reveals or suppresses the "Pi on for (minutes)" row if piHour = "Always On"
 var piHour = document.getElementById("wakePiTime");
 var piMinutes = document.getElementById("piMinutes");
+var piShutdown = document.getElementById("piShutdown");
 piMinutes.style.display = (piHour.value == "25") ? "none":"";
 
 var short_month = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
@@ -377,6 +392,7 @@ function newSelected(id)
 	var option = document.getElementById(id);
 	// Reveal/hide fields as appropriate:
 	piMinutes.style.display = (piHour.value == "25") ? "none":"";
+	if (document.getElementById("piShutdown") != null) { piShutdown.style.display = (piHour.value == "25") ? "none":""; }
 
 	if (!option.options[option.selectedIndex].defaultSelected)
 	{

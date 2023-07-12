@@ -96,6 +96,58 @@
 		</tr>
 	</table>
 	{% endif %}
+	
+	{% if voltageReadings is defined %}
+	<table>
+		<tr>
+			<th>Battery Voltage</th>
+		</tr>
+		<tr>
+			<td class="nopadding">
+				<div class="metercontainer">
+					<div class="graticule">
+						{% for i in range(0,vFSD + 1,2) %}
+						<div class="vScale" style="height: {{ '%0.2f'| format (100 - ((loop.index / loop.length) * 100)) }}%;"><span>{{ i }}V</span></div>
+						{% endfor %}
+					</div>
+					<div class="meterscale">
+						{% if VHiAlarm != 0 %}
+						<div class="redLimit vLimits"    style="height: {{ '%0.2f'| format (90 - ((VHiAlarm * 90) / vFSD)) }}%;"><span>VHi</span></div>
+						{% endif %}
+						{% if VLoAlarm != 0 %}
+						<div class="orangeLimit vLimits" style="height: {{ '%0.2f'| format (90 - ((VLoAlarm * 90) / vFSD)) }}%;"><span>VLo</span></div>
+						{% endif %}
+					</div>
+					<ul class="timeline">
+						{% for voltageReading in voltageReadings %}
+						<li style="height: 90%">
+							<a title="{{ voltageReading['voltage'] }}V">
+								<span class="label">{{ voltageReading['hour'] }}</span>
+								<span class="count" style="height: {{ '%0.2f'| format ((voltageReading['voltage']|float) * 100 / vFSD) }}%
+									{%- if   VHiAlarm != 0 and ((voltageReading['voltage']|float) >= VHiAlarm) %}; background: #ff4d4d;
+									{%- elif VLoAlarm != 0 and ((voltageReading['voltage']|float) <= VLoAlarm) %}; background: #ffc266;
+									{%- endif %}">{{ voltageReading['voltage'] }}</span>
+							</a>
+						</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage maximum{% if vMaxAt != '' %} (at {{ '%02d:00' % vMaxAt }}){% endif %}:</div>
+				<div class="alignright" >{{ vMax }}{% if vMax != 'Unknown' %}V{% endif %}</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="alignleft">Voltage minimum{% if vMinAt != '' %} (at {{ '%02d:00' % vMinAt }}){% endif %}:</div>
+				<div class="alignright" >{{ vMin }}{% if vMin != 'Unknown' %}V{% endif %}</div>
+			</td>
+		</tr>
+	</table>
+	{% endif %}
 </form>
 
 

@@ -221,8 +221,9 @@ install_apps ()
 			echo 'No libgphoto2 upgrade required'
 		fi
 	else
-		echo -e '= not found'
-		echo -e 'Installing libgphoto2'
+		echo -e "\rCurrent  installed version of libgphoto2 = None"
+		echo ''
+		echo -e ""$GREEN"Installing libgphoto2"$RESET""
 		installLibgphoto2=1
 	fi
 
@@ -251,16 +252,18 @@ install_apps ()
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
 
 	echo -n "Checking installed version of python-gphoto2"
-	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
-	if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
-		echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
+	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+		if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
 		if [[ $isGphoto != $latestPythonGphotoRls ]]; then
+			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
 			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
 		else
+			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo 'No python-gphoto2 upgrade required'
 		fi
 	else
+		echo -e "\rCurrent installed version of python-gphoto2 = None"
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
 		pip3 install -v gphoto2 --no-binary :all:
 	fi
@@ -282,7 +285,7 @@ install_apps ()
 	echo -e ""$GREEN"Checking for installed and latest release versions of rawpy"$RESET""
 	latestRawpyRls=$(curl --silent "https://api.github.com/repos/letmaik/rawpy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
 	echo "Current    online version of rawpy = $latestRawpyRls"
-	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isRawpy && ($isRawpy != "(none)") ]]; then
 		echo -e "\rCurrent installed version of rawpy = $isRawpy"
 		if [[ $isRawpy != $latestRawpyRls ]]; then
@@ -292,8 +295,8 @@ install_apps ()
 			echo 'No rawpy upgrade required'
 		fi
 	else
-		echo -e '= not found'
-		echo -e 'Installing rawpy'
+		echo -e "\rCurrent installed version of rawpy = None"
+		echo -e ""$GREEN"Installing rawpy"$RESET""
 		installRawpy=1
 	fi
 
