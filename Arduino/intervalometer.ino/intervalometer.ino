@@ -17,11 +17,9 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
 */
-// Last updated/changed in version 4.5.4:
-// - added 'shutdown in' and 'extend'
-// - changed default Pi run time to 'always on'
-// - added voltmeter code from legacy 'vm' branch & refined/updated
-char version[6] = "4.5.4";
+// Last updated/changed in version 4.5.5:
+// - added 'shootFast'
+char version[6] = "4.5.5";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
