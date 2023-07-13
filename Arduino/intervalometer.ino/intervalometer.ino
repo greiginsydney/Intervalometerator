@@ -290,7 +290,7 @@ void SetAlarm1()
 
   if (tempInterval > 60)
   {
-    tempInterval = 1; //If shootFast, we set alarm 1 for is every minute
+    tempInterval = 1; //If shootFast, we set alarm 1 for every minute
   }
  
   do
