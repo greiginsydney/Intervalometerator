@@ -274,6 +274,8 @@ void SetAlarm1()
 {
   //printTime();
 
+  byte tempInterval = interval; //Global 'interval' might also include the offset 'shootFast' values we need to retain and handle carefully
+ 
   byte nextDay  = rtc.getDay();
   byte nextShot = rtc.getMinute();
   byte nextHour = rtc.getHour();
@@ -286,10 +288,15 @@ void SetAlarm1()
   //     nextShot = 59;
   //  }
 
+  if (tempInterval > 60)
+  {
+    tempInterval = 1; //If shootFast, we set alarm 1 for is every minute
+  }
+ 
   do
   {
     nextShot++;
-  } while (nextShot % interval != 0);
+  } while (nextShot % tempInterval != 0);
 
   if (nextShot >= 60) // Correct for wrapping around the hour
   {
