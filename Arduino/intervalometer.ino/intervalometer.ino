@@ -627,10 +627,20 @@ void setInterval(String incoming)
   EndHour   = (Validate (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
   interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 90));
 
-  EEPROM.update(MEMShootDays, ShootDays);
-  EEPROM.update(MEMStartHour, StartHour);
-  EEPROM.update(MEMEndHour,   EndHour);
-  EEPROM.update(MEMInterval,  interval);
+  if (interval > 60)
+  {
+    shootFastInterval = interval - 60;
+  }
+  else
+  {
+    shootFastInterval = 0;
+  }
+
+  EEPROM.update(MEMShootDays,          ShootDays);
+  EEPROM.update(MEMStartHour,          StartHour);
+  EEPROM.update(MEMEndHour,            EndHour);
+  EEPROM.update(MEMInterval,           interval);
+  EEPROM.update(MEMShootFastInterval,  shootFastInterval);
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
