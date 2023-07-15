@@ -995,6 +995,10 @@ void loop()
       {
         //So it's a ShootDay and either before midnight on an STM shoot, or otherwise within the duration for a daytime shoot
         TakePhoto();
+        if (interval > 60)
+        {
+          shootFast = true;
+        }
       }
       else if ((StartHour > EndHour) && (rtc.hour() < EndHour))
       {
@@ -1004,6 +1008,10 @@ void loop()
         if (yesterdayAsBits & ShootDays)
         {
           TakePhoto();
+          if (interval > 60)
+          {
+            shootFast = true;
+          }
         }
         else
         {
