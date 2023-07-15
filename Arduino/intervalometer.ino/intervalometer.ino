@@ -61,7 +61,6 @@ char version[6] = "4.5.5";
 #define MEMTempMax           0x08  // "
 #define MEM24Temp0           0x09  // Saved value for midnight.
 #define MEM24Temp23          0x20  // Not actually used in code: it's here for me to know the last memory location I've used
-#define MEMShootFastInterval 0x21
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -169,7 +168,6 @@ void setup()
     //Serial.println( F("HEALTHY"));
     FlashLed(4); //Healthy boot
     interval          = EEPROM.read(MEMInterval);
-    shootFastInterval = EEPROM.read(MEMInterval);
     ShootDays         = EEPROM.read(MEMShootDays);
     StartHour         = EEPROM.read(MEMStartHour);
     EndHour           = EEPROM.read(MEMEndHour);
@@ -186,7 +184,6 @@ void setup()
     //Serial.println( "  start hour         = " + String(StartHour));
     //Serial.println( "  end hour           = " + String(EndHour));
     //Serial.println( "  interval           = " + String(interval));
-    //Serial.println( "  shootFast interval = " + String(shootFastInterval));
   }
   else
   {
@@ -201,7 +198,6 @@ void setup()
     EEPROM.update(MEMStartHour, StartHour);
     EEPROM.update(MEMEndHour, EndHour);
     EEPROM.update(MEMInterval, interval);
-    EEPROM.update(MEMShootFastInterval, shootFastInterval);
     EEPROM.update(MEMWakePiHour, WakePiHour);
     EEPROM.update(MEMWakePiDuration, WakePiDuration);
     EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
@@ -215,6 +211,15 @@ void setup()
       VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
+  }
+
+  if (interval > 60)
+  {
+    shootFastInterval = interval - 60;
+  }
+  else
+  {
+    shootFastInterval = 0;
   }
 
   UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
