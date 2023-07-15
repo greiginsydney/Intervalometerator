@@ -944,6 +944,8 @@ void loop()
   // - continuously, whenever the Pi is powered-up
   // ... otherwise we go back to sleep at the end of the loop and wait for the next interrupt
 
+  static bool   prevShootFast = false;
+ 
   //Debug loop: Toggle the LED each pass through here (if we're awake)
   if (bitRead(PINC, 0) == LOW) // A0, the Maint header is read as PORTC bit *0*
   {
@@ -1025,6 +1027,23 @@ void loop()
     ALARM = false;
   }
 
+  if (shootFast == true)
+  {
+    if (lastShootFast = false)
+    {
+      // We have to fire a minute-long sequence of shots
+      lastShootFast = true;
+    }
+  }
+  else
+  {
+    if (lastShootFast = true)
+    {
+      // We're done
+      lastShootFast = false;
+    }
+  }
+ 
   if (setTimeDateFlag == true)
   {
     setTimeDate(newTimeDate);
