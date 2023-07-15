@@ -50,17 +50,18 @@ char version[6] = "4.5.5";
 //////////////////////////////////
 //   EEPROM memory allocations  //
 //////////////////////////////////
-#define MEMInterval   0x00
-#define MEMAlarm2     0x01
-#define MEMShootDays  0x02
-#define MEMStartHour  0x03
-#define MEMEndHour    0x04
-#define MEMWakePiHour 0x05
-#define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  // Changed from int (2 bytes) to int8_t (1 byte - signed) in 4.5.0
-#define MEMTempMax    0x08  // "
-#define MEM24Temp0    0x09  // Saved value for midnight.
-#define MEM24Temp23   0x20  // Not actually used in code: it's here for me to know the last memory location I've used
+#define MEMInterval          0x00
+#define MEMAlarm2            0x01
+#define MEMShootDays         0x02
+#define MEMStartHour         0x03
+#define MEMEndHour           0x04
+#define MEMWakePiHour        0x05
+#define MEMWakePiDuration    0x06
+#define MEMTempMin           0x07  // Changed from int (2 bytes) to int8_t (1 byte - signed) in 4.5.0
+#define MEMTempMax           0x08  // "
+#define MEM24Temp0           0x09  // Saved value for midnight.
+#define MEM24Temp23          0x20  // Not actually used in code: it's here for me to know the last memory location I've used
+#define MEMShootFastInterval 0x21
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -94,6 +95,7 @@ byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot 
 byte   StartHour = 00;          // Default start hour
 byte   EndHour   = 23;          // Default end hour
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
+byte   shootFastInterval = 0;   // Spacing between photos when in 'shootFast' mode, multiple shots per minute
 byte   WakePiHour = 25;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down
@@ -166,12 +168,13 @@ void setup()
   {
     //Serial.println( F("HEALTHY"));
     FlashLed(4); //Healthy boot
-    interval       = EEPROM.read(MEMInterval);
-    ShootDays      = EEPROM.read(MEMShootDays);
-    StartHour      = EEPROM.read(MEMStartHour);
-    EndHour        = EEPROM.read(MEMEndHour);
-    WakePiHour     = EEPROM.read(MEMWakePiHour);
-    WakePiDuration = EEPROM.read(MEMWakePiDuration);
+    interval          = EEPROM.read(MEMInterval);
+    shootFastInterval = EEPROM.read(MEMInterval);
+    ShootDays         = EEPROM.read(MEMShootDays);
+    StartHour         = EEPROM.read(MEMStartHour);
+    EndHour           = EEPROM.read(MEMEndHour);
+    WakePiHour        = EEPROM.read(MEMWakePiHour);
+    WakePiDuration    = EEPROM.read(MEMWakePiDuration);
 
     for (int i = 0; i <= 23; i++)
     {
@@ -180,9 +183,10 @@ void setup()
       //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
     }
     //Serial.println( F("Values from EEPROM are: "));
-    //Serial.println( "  start hour = " + String(StartHour));
-    //Serial.println( "  end hour   = " + String(EndHour));
-    //Serial.println( "  interval   = " + String(interval));
+    //Serial.println( "  start hour         = " + String(StartHour));
+    //Serial.println( "  end hour           = " + String(EndHour));
+    //Serial.println( "  interval           = " + String(interval));
+    //Serial.println( "  shootFast interval = " + String(shootFastInterval));
   }
   else
   {
@@ -197,6 +201,7 @@ void setup()
     EEPROM.update(MEMStartHour, StartHour);
     EEPROM.update(MEMEndHour, EndHour);
     EEPROM.update(MEMInterval, interval);
+    EEPROM.update(MEMShootFastInterval, shootFastInterval);
     EEPROM.update(MEMWakePiHour, WakePiHour);
     EEPROM.update(MEMWakePiDuration, WakePiDuration);
     EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
