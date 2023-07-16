@@ -166,7 +166,7 @@ input[type=radio] {
 /* Start: Progress table */
 
 td#prog_td {
-	padding: 0px;
+	padding: 4px 4px 4px 4px;
 }
 
 select#prog_sel {
