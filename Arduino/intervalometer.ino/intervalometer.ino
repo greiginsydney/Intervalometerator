@@ -966,7 +966,6 @@ void loop()
   // - continuously, whenever the Pi is powered-up
   // ... otherwise we go back to sleep at the end of the loop and wait for the next interrupt
 
-  static byte          lastShootFastCount = 0;    // Used to detect if we need to start/reset the sfTimer
   static unsigned long sfTimerStart;              // This is the time at which the last shootFast photo was taken
  
   //Debug loop: Toggle the LED each pass through here (if we're awake)
@@ -1001,6 +1000,7 @@ void loop()
         if (interval > 60)
         {
           //Serial.println( F(" - shootFast triggered"));
+          sfTimerStart = millis(); // Start the timer
           shootFastCount = 60 / (interval - 60);
           shootFastCount -= 1; // Decrement for the one we just took. Elsewhere, loop() will do the rest.
         }
@@ -1016,6 +1016,7 @@ void loop()
           if (interval > 60)
           {
             //Serial.println( F(" - shootFast triggered"));
+            sfTimerStart = millis(); // Start the timer 
             shootFastCount = 60 / (interval - 60);
             shootFastCount -= 1; // Decrement for the one we just took. Elsewhere, loop() will do the rest.
           }
@@ -1064,18 +1065,16 @@ void loop()
 
   if (shootFastCount > 0)
   {
-    if (shootFastCount != lastShootFastCount)
-    {
-      //Serial.println( F(" - shootFast timer restarted"));
-      //Serial.println(" - shootFastInterval = " + String(shootFastInterval));
-      sfTimerStart = millis();
-      lastShootFastCount = shootFastCount;
-    }
     if ((millis() - sfTimerStart) > long(shootFastInterval * 1000))
     {
+      sfTimerStart = millis(); // Restart for next shot
       TakePhoto();
       shootFastCount -= 1;
     }
+  }
+  else
+  {
+    shootFastCount = 0; // Just in case it's somehow < 0
   }
  
   if (setTimeDateFlag == true)
@@ -1199,7 +1198,7 @@ void loop()
   // - made any changes pushed via the Pi
   // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
 
-  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (shootFast == false))
+  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (shootFastCount == 0))
   {
     // The Pi is powered-off. It's safe for us to sleep
     //Serial.println( F(" - About to sleep"));
