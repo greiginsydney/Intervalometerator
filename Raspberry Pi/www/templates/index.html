@@ -71,20 +71,20 @@
 			<td id="prog_td">
 				<select id="prog_sel" title="Messages">
 				{% for category, message in messages | sort(attribute=0, reverse=True) %}
-					<option class="centre-text {{ 'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
+					<option class="{{ 'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
 				{% endfor %}
 				</select>
 			</td>
 			{% else %}
 			{% for category, message in messages  %}
-			<td class="centre-text {{ 'white' if category == 'info' else category }}">{{ message }}</td>
+			<td class="{{ 'white' if category == 'info' else category }}">{{ message }}</td>
 			{% endfor %}
 			{% endif %}
 		</tr>
 		{% else %}
 		{% if not current_user.is_anonymous %}
 		<tr>
-			<td class="centre-text">Background tasks idle</td>
+			<td>Background tasks idle</td>
 		</tr>
 		{% endif %}
 		{% endif %}
