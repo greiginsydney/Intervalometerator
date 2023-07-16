@@ -77,14 +77,14 @@
 			</td>
 			{% else %}
 			{% for category, message in messages  %}
-			<td class="{{ 'white' if category == 'info' else category }}">{{ message }}</td>
+			<td id="prog_td" class="{{ 'white' if category == 'info' else category }}">{{ message }}</td>
 			{% endfor %}
 			{% endif %}
 		</tr>
 		{% else %}
 		{% if not current_user.is_anonymous %}
 		<tr>
-			<td>Background tasks idle</td>
+			<td id="prog_td">Background tasks idle</td>
 		</tr>
 		{% endif %}
 		{% endif %}
