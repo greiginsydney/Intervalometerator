@@ -118,8 +118,8 @@ var SelectionBits = new Array();
 	SelectionBits["interval"]  =  8;
 
 // Run when the form first loads:
-lightButtons(); 
-calculateShots() 
+lightButtons();
+calculateShots()
 
 function newSelected(id)
 {
@@ -187,7 +187,7 @@ function calculateCameraDays(_shotsperday)
 	var availableShots = "{{ availableShots }}";
 	if (availableShots != "Unknown" && availableShots != "Not available")
 	{
-		var result = ~~(availableShots / _shotsperday); 
+		var result = ~~(availableShots / _shotsperday);
 		if (_shotsperday == 0)
 		{
 			daysincamera.innerHTML = "n/a";
@@ -212,7 +212,7 @@ function calculatePiDays(_shotsperday)
 	var piAvailableShots = "{{ piAvailableShots }}";
 	if (piAvailableShots != "Unknown" && piAvailableShots != "Not available")
 	{
-		var result = ~~(piAvailableShots / _shotsperday); 
+		var result = ~~(piAvailableShots / _shotsperday);
 		if (_shotsperday == 0)
 		{
 			daysinpi.innerHTML = "n/a";
@@ -260,7 +260,7 @@ function lightButtons()
 	{
 		document.getElementById("apply").disabled  = false;
 	}
-	
+
 	// Block Apply if startHour==endHour
 	if (startHour.value == endHour.value)
 	{
