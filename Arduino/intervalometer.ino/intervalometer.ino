@@ -95,6 +95,7 @@ byte   StartHour = 00;          // Default start hour
 byte   EndHour   = 23;          // Default end hour
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
 byte   shootFastInterval = 0;   // Spacing between photos when in 'shootFast' mode, multiple shots per minute
+byte   shootFastCount = 0;      // The number of shots remaining in this 'shootFast' interval (this minute). (Global so it can be killed by setInterval if necessary)
 byte   WakePiHour = 25;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down
@@ -639,6 +640,7 @@ void setInterval(String incoming)
   else
   {
     shootFastInterval = 0;
+    shootFastCount    = 0; // Kills any shootFast sequence underway
   }
 
   EEPROM.update(MEMShootDays,          ShootDays);
@@ -964,7 +966,8 @@ void loop()
   // - continuously, whenever the Pi is powered-up
   // ... otherwise we go back to sleep at the end of the loop and wait for the next interrupt
 
-  static bool   prevShootFast = false;
+  static byte          lastShootFastCount = 0;    // Used to detect if we need to start/reset the sfTimer
+  static unsigned long sfTimerStart;              // This is the time at which the last shootFast photo was taken
  
   //Debug loop: Toggle the LED each pass through here (if we're awake)
   if (bitRead(PINC, 0) == LOW) // A0, the Maint header is read as PORTC bit *0*
@@ -997,7 +1000,9 @@ void loop()
         TakePhoto();
         if (interval > 60)
         {
-          shootFast = true;
+          //Serial.println( F(" - shootFast triggered"));
+          shootFastCount = 60 / (interval - 60);
+          shootFastCount -= 1; // Decrement for the one we just took. Elsewhere, loop() will do the rest.
         }
       }
       else if ((StartHour > EndHour) && (rtc.hour() < EndHour))
@@ -1010,7 +1015,9 @@ void loop()
           TakePhoto();
           if (interval > 60)
           {
-            shootFast = true;
+            //Serial.println( F(" - shootFast triggered"));
+            shootFastCount = 60 / (interval - 60);
+            shootFastCount -= 1; // Decrement for the one we just took. Elsewhere, loop() will do the rest.
           }
         }
         else
@@ -1055,20 +1062,19 @@ void loop()
     ALARM = false;
   }
 
-  if (shootFast == true)
+  if (shootFastCount > 0)
   {
-    if (lastShootFast = false)
+    if (shootFastCount != lastShootFastCount)
     {
-      // We have to fire a minute-long sequence of shots
-      lastShootFast = true;
+      //Serial.println( F(" - shootFast timer restarted"));
+      //Serial.println(" - shootFastInterval = " + String(shootFastInterval));
+      sfTimerStart = millis();
+      lastShootFastCount = shootFastCount;
     }
-  }
-  else
-  {
-    if (lastShootFast = true)
+    if ((millis() - sfTimerStart) > long(shootFastInterval * 1000))
     {
-      // We're done
-      lastShootFast = false;
+      TakePhoto();
+      shootFastCount -= 1;
     }
   }
  
