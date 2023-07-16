@@ -185,7 +185,7 @@ select#prog_sel {
 	/* box-sizing: border-box; */
 }
 
-option#prog_opt {
+table#progress .option {
 	font-size: 1.1em;
 }
 
