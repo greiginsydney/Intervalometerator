@@ -160,13 +160,24 @@ function newDaySelected()
 
 function calculateShots()
 {
-	var result = ((parseInt(endHour.value) - parseInt(startHour.value)) * (60 / parseInt(interval.value)));
+	var shotsPerHour;
+	var interval_value = parseInt(interval.value);
+	if (interval_value > 60)
+	{
+		shotsPerHour = 60 * (interval_value - 60)
+	}
+	else
+	{
+		shotsPerHour = (60 / interval_value)
+	}
+
+	var result = ((parseInt(endHour.value) - parseInt(startHour.value)) * shotsPerHour);
 	if (result == result) // A value that is NotANumber(NaN) != itself
 	{
 		// So we know the numbers are valid
 		if (result < 0 ) // We need to correct for the wrap-around midnight
 		{
-			result = ((parseInt(endHour.value) - parseInt(startHour.value) + 24) * (60 / parseInt(interval.value)));
+			result = ((parseInt(endHour.value) - parseInt(startHour.value) + 24) * shotsPerHour);
 		}
 		shotsperday.innerHTML = result;
 		calculateCameraDays(result);
