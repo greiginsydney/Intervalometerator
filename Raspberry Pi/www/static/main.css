@@ -175,6 +175,7 @@ select#prog_sel {
 	width: 100%;
 	background-color: transparent;
 	text-overflow: ellipsis;
+	text-align: center;
 
 	-webkit-appearance: auto;
 	-moz-appearance: auto;
