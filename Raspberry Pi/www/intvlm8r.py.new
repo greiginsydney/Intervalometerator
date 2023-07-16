@@ -762,8 +762,7 @@ def intervalometer():
         'availableShots'   : 'Unknown',
         'piAvailableShots' : 'Unknown',
         'daysFreeWarn'     : '0',
-        'daysFreeAlarm'    : '0',
-        'shootFast'        : '1'
+        'daysFreeAlarm'    : '0'
     }
     app.logger.debug('This is a GET to Intervalometer')
 
@@ -811,6 +810,10 @@ def intervalometer():
     templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
+
+    arduinoVersion = str(getArduinoVersion('0'))
+    if version.parse(arduinoVersion) >=  version.parse("4.6.0"):
+        templateData.update({'shootFast' : 1})
 
     return render_template('intervalometer.html', **templateData)
 
