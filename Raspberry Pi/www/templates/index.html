@@ -115,7 +115,7 @@
 					var data = JSON.parse(this.response);
 					// update UI
 					col[0].innerHTML = data['status'];
-					row[0].className = data['statusColour'];
+					col[0].className = data['statusColour'];
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
@@ -140,14 +140,14 @@
 				{
 					// We reached our target server, but it returned an error
 					col[0].innerHTML = 'The Pi returned an error';
-					row[0].className = 'orange';
+					col[0].className = 'orange';
 				}
 			};
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
 				col[0].innerHTML = 'The Pi did not respond';
-				row[0].className = 'orange';
+				col[0].className = 'orange';
 			}
 			request.send()
 		}
@@ -207,7 +207,7 @@
 		{
 			col[0].innerHTML = 'Applying changed settings';
 		}
-		row[0].className = 'white';
+		col[0].className = 'white';
 		return true;
 	}
 
