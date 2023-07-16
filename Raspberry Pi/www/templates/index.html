@@ -71,13 +71,13 @@
 			<td id="prog_td">
 				<select id="prog_sel" title="Messages">
 				{% for category, message in messages | sort(attribute=0, reverse=True) %}
-					<option class="{{ 'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
+					<option class="{{'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
 				{% endfor %}
 				</select>
 			</td>
 			{% else %}
 			{% for category, message in messages  %}
-			<td id="prog_td" class="{{ 'white' if category == 'info' else category }}">{{ message }}</td>
+			<td id="prog_td" class="{{'white' if category == 'info' else category }}">{{ message }}</td>
 			{% endfor %}
 			{% endif %}
 		</tr>
