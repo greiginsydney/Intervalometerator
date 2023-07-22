@@ -73,7 +73,7 @@ install_apps ()
 		# then
 		# 	installGoogle=1
 		# else
-		# 	installGoogle=0
+		installGoogle=0
 		# fi
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("sysrsync"))';
 		then
