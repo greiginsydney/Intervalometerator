@@ -1397,6 +1397,8 @@ test_install ()
 	case $ap_test in
 		(0)
 			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
+   			ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
+			echo -e "      It will attempt to connect as a client to: $ssid"
 			;;
 		(1)
 			echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
