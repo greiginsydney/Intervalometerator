@@ -1426,8 +1426,19 @@ test_install ()
 		(7)
 			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
    			myWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
-      			myWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)		
-	 		echo -e "      Look for network: $myWifiSsid, using channel $myWifiChannel"
+			if [ -z "$myWifiSsid" ];
+			then
+				echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/hostapd/hostapd.conf"
+			else
+				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $myWifiSsid"
+			fi
+			myWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
+			if [ -z "$myWifiChannel" ];
+			then
+				echo -e ""$YELLOW"FAIL:"$RESET" A Wi-Fi channel was expected but not found in /etc/hostapd/hostapd.conf"
+			else
+				echo -e ""$GREEN"PASS:"$RESET" It's using channel $myWifiChannel"
+			fi
 			;;
 	esac
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
