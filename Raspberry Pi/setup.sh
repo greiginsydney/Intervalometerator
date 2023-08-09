@@ -1396,9 +1396,14 @@ test_install ()
 	[ -f /etc/hostapd/hostapd.conf ] && ap_test=$((ap_test+4))
 	case $ap_test in
 		(0)
-			echo -e ""$GREEN"PASS:"$RESET" The Pi is NOT an AP"
-   			ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
-			echo -e "      It will attempt to connect as a client to: $ssid"
+			echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
+			ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
+			if [ -z "$ssid" ];
+			then
+				echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/wpa_supplicant/wpa_supplicant.conf"
+			else
+				echo -e ""$GREEN"PASS:"$RESET" It will attempt to connect to this/these SSIDs: $ssid"
+			fi
 			;;
 		(1)
 			echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
