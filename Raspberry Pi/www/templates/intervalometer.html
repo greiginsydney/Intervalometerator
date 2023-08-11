@@ -60,7 +60,7 @@
 							<option disabled>──────────</option>
 						{% endif %}
 						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
-							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}} {{ 'minute' if loop.first == true else 'minutes'}}</option>
+							<option class="white" value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}} {{ 'minute' if loop.first == true else 'minutes'}}</option>
 						{% endfor %}
 					</select>
 				</div>
