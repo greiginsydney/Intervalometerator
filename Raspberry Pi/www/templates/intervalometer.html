@@ -55,12 +55,12 @@
 						<option class="hidden" disabled selected> -- choose -- </option>
 						{% if shootFast is defined %}
 							{% for intv in ['63','64','65','66','70','72','75','80','90'] %}
-							<option class="orange" value="{{intv}}"{% if intv == piInterval %} SELECTED{% endif %}>{{'%02d'| format((intv | int) - 60)}} s</option>
+							<option class="orange" value="{{intv}}"{% if intv == piInterval %} SELECTED{% endif %}>{{'%02d'| format((intv | int) - 60)}} seconds</option>
 							{% endfor %}
 							<option disabled>──────────</option>
 						{% endif %}
 						{% for int in ['01','02','03','04','05','06','10','12','15','20','30','60'] %}
-							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}} m</option>
+							<option value="{{int}}"{% if int == piInterval %} SELECTED{% endif %}>{{int}} {{ 'minute' if loop.first == true else 'minutes'}}</option>
 						{% endfor %}
 					</select>
 				</div>
