@@ -119,7 +119,8 @@ var SelectionBits = new Array();
 
 // Run when the form first loads:
 lightButtons();
-calculateShots()
+calculateShots();
+intervalHighlighting();
 
 function newSelected(id)
 {
@@ -130,10 +131,28 @@ function newSelected(id)
 	}
 	else
 	{
-		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+	}
+	// Add/remove interval highlight if required:
+	if (option.id == 'interval')
+	{
+		intervalHighlighting()
 	}
 	lightButtons();
 	calculateShots();
+}
+
+function intervalHighlighting()
+{
+	var intvSelect = document.getElementById("interval");
+	if (parseInt(intvSelect.options[intvSelect.selectedIndex].value) > 60)
+	{
+		intvSelect.className = 'orange';
+	}
+	else
+	{
+		intvSelect.className = 'white';
+	}
 }
 
 function newDaySelected()
