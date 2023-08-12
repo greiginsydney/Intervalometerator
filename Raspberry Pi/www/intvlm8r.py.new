@@ -1489,12 +1489,10 @@ def system():
             if wakePiTime != "25":
                 if version.parse(arduinoVersion) >=  version.parse(SHOW_SHUTDOWN_IN):
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
-                    if 0 <= shutdownAt <= 61:
+                    if 0 <= shutdownAt <= 119:
                         if tempTime != '':
                             shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.                            
                             shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                            if shutdownAt < 1:
-                                shutdownAt += 60
                             templateData['piShutdownIn'] = shutdownAt
                         else:
                             templateData['piShutdownIn'] = 'Unknown'
