@@ -1001,7 +1001,7 @@ void loop()
       if (rtc.minute() == 0)
       {
         UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
-        readVbatteryFlag = HIGH;           //Trigger the battery reading process
+        readVbatteryFlag = HIGH;           // Trigger the battery reading process
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -1017,7 +1017,7 @@ void loop()
           //Serial.println(" - ALARM 2 fired @ PiShutdownMinute " + String(rtc.hour()) + ":" + String(rtc.minute()) + ".");
           //Serial.println( F(" - Initiated a Pi shutdown"));
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
-          PiShutdownMinute = 61;  // Reset to an invalid value.
+          PiShutdownMinute = 0;           // Reset to the top of the hour.
         }
       }
       SetAlarm2(LOW);
@@ -1055,13 +1055,13 @@ void loop()
   {
     FlashLed(2);
     //Serial.println( F(" - WAKE PI fired"));
-    LastRunningState = LOW; //This serves to extend the run timer if the Pi is already running when this fires.
+    LastRunningState = LOW; // This serves to extend the run timer if the Pi is already running when this fires.
                             // It's both a feature and also a safety-net to make sure the shutdown timer is set.
     digitalWrite(PI_SHUTDOWN, HIGH); // Make sure the shutdown pin is high before we turn it on
     digitalWrite(PI_POWER, HIGH); // Turn the Pi on.
     //Serial.println( F("The Pi has just been powered on"));
-    WakePi = false; //We can reset the flag now.
-    SLEEP = false;  //We won't sleep while the Pi is on.
+    WakePi = false; // We can reset the flag now.
+    SLEEP = false;  // We won't sleep while the Pi is on.
   }
 
   if (resetArduinoFlag == true)
@@ -1077,7 +1077,7 @@ void loop()
       //Serial.println( F(" - Resetting the Arduino"));
       resetArduinoFlag = false;
       digitalWrite(PI_POWER, LOW); // Turn the Pi off. May be redundant, but as softReset is ambiguous, best be on the safe side.
-      DelaymS(1000); //Just to be sure the above has 'taken'
+      DelaymS(1000);               //Just to be sure the above has 'taken'
       softReset();
     }
   }
