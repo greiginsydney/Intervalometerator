@@ -271,7 +271,7 @@ As the project is presented, this LED lights when the Arduino is awake, but only
 
 The custom PCB for the project is available on eBay. It measures 135x76mm.
 
-- [eBay](https://www.ebay.com.au/itm/265702592959)
+- [eBay](https://www.ebay.com.au/itm/266371793739)
 
     $AUD15.00</br>
     $USD10.00
