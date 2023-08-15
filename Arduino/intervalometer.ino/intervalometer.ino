@@ -722,7 +722,7 @@ void UpdateVoltage()
     if (VoltageReadingCounter < 8)
     {
       VoltageReading += analogRead(V_SENSE_PIN);
-      Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
+      //Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
       VoltageReadingCounter += 1;
       //DelaymS (1000);
     }
@@ -736,13 +736,13 @@ void UpdateVoltage()
       if ((VoltageReading < 10) || (VoltageReading > 190))
       {
         VoltageReading = 10;
-        Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
+        //Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
       }
       VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
       //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
-      Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
+      //Serial.println("Hour = " + String(thisHour) + ". Final Voltage read @  " is " + String(VoltageReading) + " Volts. (Subtract 10 and move the decimal place)");
       //Serial.println("Voltage string     = " + String(VoltageString));
-      Serial.println("Voltage string len = " + String(strlen(VoltageString)));
+      //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
       
       readVbatteryFlag = false;  // OK, all done, reset the flag.
       VoltageReading = 0;
