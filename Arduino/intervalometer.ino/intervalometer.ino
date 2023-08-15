@@ -740,7 +740,7 @@ void UpdateVoltage()
       }
       VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
       //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
-      //Serial.println("Hour = " + String(thisHour) + ". Final Voltage read @  " is " + String(VoltageReading) + " Volts. (Subtract 10 and move the decimal place)");
+      //Serial.println("Hour = " + String(thisHour) + ". Final Voltage read is " + String(VoltageReading) + " Volts. (Subtract 10 and move the decimal place)");
       //Serial.println("Voltage string     = " + String(VoltageString));
       //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
       
