@@ -426,7 +426,7 @@ void SetAlarm2(bool reset)
     else
     {
       // "reset == LOW" *only* fires at the top of the hour
-      if (PiShutdownMinute >= 60)
+      if ((PiShutdownMinute >= 60) && (PiShutdownMinute < 120))
       {
         // We're now in the 'next hour' referred to above. Set alarm2
         PiShutdownMinute -= 60;
@@ -1017,7 +1017,7 @@ void loop()
           //Serial.println(" - ALARM 2 fired @ PiShutdownMinute " + String(rtc.hour()) + ":" + String(rtc.minute()) + ".");
           //Serial.println( F(" - Initiated a Pi shutdown"));
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
-          PiShutdownMinute = 0;           // Reset to the top of the hour.
+          PiShutdownMinute = 120;         // Reset to an invalid/magic number.
         }
       }
       SetAlarm2(LOW);
@@ -1143,8 +1143,12 @@ void loop()
   //By the time we reach this point through the loop we'll have:
   // - taken any photo that's required
   // - serviced any housekeeping alarm
-  // - made any changes pushed via the Pi
-  // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
+  // - actioned any changes pushed via the Pi
+  // ... so now provided: 
+  //    - the Pi isn't running, 
+  //    - ALARM isn't still set
+  //    - we're not still mid-way through a voltage reading loop
+  //   ... we can sleep!
 
   if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (readVbatteryFlag == false))
   {
