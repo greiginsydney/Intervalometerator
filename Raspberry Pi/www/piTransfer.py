@@ -753,6 +753,8 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                     log('STATUS: rsync error: permission denied')
                 elif 'No route to host' in stderrdata:
                     log('STATUS: rsync error: No route to host')
+                elif 'Network is unreachable' in stderrdata:
+                    log('STATUS: rsync error: Network is unreachable')
                 else:
                     log('STATUS: rsync error')
             # wait until process is really terminated
