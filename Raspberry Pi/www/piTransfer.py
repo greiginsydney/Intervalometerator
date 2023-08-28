@@ -759,13 +759,13 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
                     log('STATUS: rsync error')
             # wait until process is really terminated
             exitcode = result.wait()
+            numFilesOK = cleanupRsync()
             if exitcode == 0:
                 log('rsync exited cleanly')
+                log(f'STATUS: {numFilesOK} files uploaded OK')
             else:
                 log(f'rsync exited with exitcode {exitcode}')
                 #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
-            numFilesOK = cleanupRsync()
-            log(f'STATUS: {numFilesOK} files uploaded OK')
         except Exception as e:
             log(f'Error uploading via rsync: {e}')
             log('STATUS: unhandled rsync error')
