@@ -747,14 +747,21 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
             if stderrdata:
                 stderrdata = stderrdata.strip()
                 log(f"rsync err'd with stderrdata = {stderrdata}")
-                if 'Host key verification failed' in stderrdata:
+                stderrdata = stderrdata.splitlines()[0] #Discard all but the first line of any multi-line error message
+                # These known errors end with a final colon followed by the error cause:
+                # "ssh: connect to host <IP/hostname> port <nn>: <Error Message>"
+                # "rsync: mkdir "/BadPath" failed: Permission denied (13)
+                if 'ssh: connect to host' in stderrdata or 'rsync: mkdir' in stderrdata:
+                    errMessageStarts = stderrdata.rfind(":")
+                    if errMessageStarts > 0:
+                        errMessageStarts += 1   # Increment to strip the colon from the resulting message
+                        log(f'STATUS: rsync error:{stderrdata[errMessageStarts:]}')
+                    else:
+                        log('STATUS: rsync error')
+                elif 'Host key verification failed' in stderrdata:
                     log('STATUS: rsync host key verification failed')
                 elif 'Permission denied' in stderrdata:
                     log('STATUS: rsync error: permission denied')
-                elif 'No route to host' in stderrdata:
-                    log('STATUS: rsync error: No route to host')
-                elif 'Network is unreachable' in stderrdata:
-                    log('STATUS: rsync error: Network is unreachable')
                 else:
                     log('STATUS: rsync error')
             # wait until process is really terminated
