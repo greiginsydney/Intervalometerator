@@ -1,0 +1,18 @@
+{% extends "index.html" %}
+{% block content %}
+
+	<table>
+	{% for dataVal in networkData %}
+		<tr>
+			{% if dataVal['key'] == '' and dataVal['value'] == '' %}
+			<th>{{ dataVal['section'] }} </th>
+			{% else %}
+			<td{{ (' class="green"'| safe) if ((dataVal['key'] == 'isup') and (dataVal['value'] == 'True'))}}>
+				<div class="alignleft">{{ dataVal['key'] }}</div>
+				<div class="alignright">{{ dataVal['value'] }}</div>
+			</td>
+			{% endif %}
+		</tr>
+	{% endfor %}
+	</table>
+{% endblock %}
