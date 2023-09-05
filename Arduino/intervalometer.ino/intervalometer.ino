@@ -19,6 +19,7 @@ References:
 */
 // Last updated/changed in version 4.5.5:
 // - rejigged 'shutdown in' and related alarm2 code
+// - updated voltmeter array initialisation
 // - prevented sleep if voltmeter still running
 char version[6] = "4.5.5";
 /*****************************************************************************/
@@ -200,7 +201,7 @@ void setup()
     EEPROM.update(MEMInterval, interval);
     EEPROM.update(MEMWakePiHour, WakePiHour);
     EEPROM.update(MEMWakePiDuration, WakePiDuration);
-    EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMin, (int8_t)127); // Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.update(MEMTempMax, (int8_t)-128);
 
     //Initalise the voltmeter EEPROM and array to zeroes:
@@ -208,12 +209,21 @@ void setup()
     {
       // TODO: Do we need to initialise the temperature EPROM values here too?
       DailyTemps[i] = (int8_t)-128;
-      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
   UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
+
+  //Initalise the VM array:
+  for (int i = 0; i <= 23; i++)
+  {
+    #ifdef V_SENSE_PIN
+      VoltageString[i] = byte(10); // Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
+    #else
+      VoltageString[i] = byte(255); // Load the array with a magic number. The Pi will read this as "vm not equipped" and suppress the display.
+    #endif
+  }
   readVbatteryFlag = true;  // Take a battery reading on boot
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
