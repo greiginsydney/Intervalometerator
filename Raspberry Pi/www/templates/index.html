@@ -71,20 +71,20 @@
 			<td id="prog_td">
 				<select id="prog_sel" title="Messages">
 				{% for category, message in messages | sort(attribute=0, reverse=True) %}
-					<option class="{{'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
+					<option id="prog_opt" class="centre-text {{ 'white' if category == 'info' else category }}"{{ ' SELECTED' if loop.first == true }} value="{{ message }}" DISABLED>{{ message }}</option>
 				{% endfor %}
 				</select>
 			</td>
 			{% else %}
 			{% for category, message in messages  %}
-			<td id="prog_td" class="{{'white' if category == 'info' else category }}">{{ message }}</td>
+			<td class="centre-text {{ 'white' if category == 'info' else category }}">{{ message }}</td>
 			{% endfor %}
 			{% endif %}
 		</tr>
 		{% else %}
 		{% if not current_user.is_anonymous %}
 		<tr>
-			<td id="prog_td">Background tasks idle</td>
+			<td class="centre-text">Background tasks idle</td>
 		</tr>
 		{% endif %}
 		{% endif %}
@@ -115,7 +115,7 @@
 					var data = JSON.parse(this.response);
 					// update UI
 					col[0].innerHTML = data['status'];
-					col[0].className = data['statusColour'];
+					row[0].className = data['statusColour'];
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
@@ -140,14 +140,14 @@
 				{
 					// We reached our target server, but it returned an error
 					col[0].innerHTML = 'The Pi returned an error';
-					col[0].className = 'orange';
+					row[0].className = 'orange';
 				}
 			};
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
 				col[0].innerHTML = 'The Pi did not respond';
-				col[0].className = 'orange';
+				row[0].className = 'orange';
 			}
 			request.send()
 		}
@@ -207,7 +207,7 @@
 		{
 			col[0].innerHTML = 'Applying changed settings';
 		}
-		col[0].className = 'white';
+		row[0].className = 'white';
 		return true;
 	}
 
