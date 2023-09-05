@@ -233,6 +233,7 @@ install_apps ()
 		apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
 
 		echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
+  		rm -rf /home/${SUDO_USER}/libgphoto2
 		git clone https://github.com/gphoto/libgphoto2.git
 		cd /home/${SUDO_USER}/libgphoto2
 		autoreconf --install --symlink
