@@ -2646,16 +2646,37 @@ def network():
             networkData.append({'section': interface, 'key': 'isup', 'value': isup })
             if 'wlan' in interface and isup == 'True':
                 # Add the SSID and related data before the IP values
-                pass
+                ssid = 'Unknown'
+                try:
+                    cmd = ['/usr/sbin/iwgetid', '-r']
+                    result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+                    (stdoutdata, stderrdata) = result.communicate()
+                    if stdoutdata:
+                        ssid = stdoutdata.strip()
+                    if stderrdata:
+                        stderrdata = stderrdata.strip()
+                        app.logger.info(f'network iwgetid stderrdata error = {stderrdata}')
+                except Exception as e:
+                    app.logger.debug(f'network iwgetid unknown error: {e}')
+                networkData.append({'section': interface, 'key': 'ssid', 'value': ssid })
             ipList = interfaces[interface]
             for type in ipList:
                 app.logger.debug(f'network says type is {type}')
+                # if 'AddressFamily.AF_INET' not in getattr(type, family):
+                #    
                 for ipvalue in type._fields:
                     networkData.append({'section': interface, 'key': ipvalue, 'value': getattr(type, ipvalue) })
             for field in statsTuple._fields:
                 if field in 'isup':
                     continue # Skip it - we pulled it earlier
                 networkData.append({'section': interface, 'key': field, 'value': getattr(statsTuple, field) })
+        # Loop through the interfaces again, pulling out the WiFi ones. 
+        # Now scan & display any available WiFi networks.
+        for interface in interfaces.keys():
+            if 'wlan' not in interface:
+                continue
+            #iwlist [wlan0] scan.
+            networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
     except Exception as e:
         app.logger.debug(f'network error: {e}')
         flash('Unknown error', 'red')
