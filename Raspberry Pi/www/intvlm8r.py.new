@@ -430,6 +430,7 @@ def main():
                     piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
                     piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
             else:
+                # piLastImageFile = 'default_image.JPG' # Uncomment this line to prevent a high-res image being shown on the home page. (Only happens if thumbs=0)
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
             if ('/home/pi/photos/default_image.JPG' in FileList):
                 PI_PHOTO_COUNT -= 1
