@@ -2651,15 +2651,20 @@ def network():
                 networkData.append({'section': interface, 'key': 'ssid', 'value': ssid })
             ipList = interfaces[interface]
             for type in ipList:
-                app.logger.debug(f'network says type is {type}')
-                # if 'AddressFamily.AF_INET' not in getattr(type, family):
-                #    
+                app.logger.info(f'network says type is {type}')
+                if type.family != socket.AF_INET:
+                    # Suppress display of IPv6 and others
+                    continue
                 for ipvalue in type._fields:
+                    if ('family') in ipvalue:
+                        # Suppress display of unwanted values
+                        continue
+                    #app.logger.info(f'ipvalue = {ipvalue}')
                     networkData.append({'section': interface, 'key': ipvalue, 'value': getattr(type, ipvalue) })
             for field in statsTuple._fields:
                 if field in 'isup':
                     continue # Skip it - we pulled it earlier
-                networkData.append({'section': interface, 'key': field, 'value': getattr(statsTuple, field) })
+                networkData.append({'section': interface, 'key': field, 'value': (getattr(statsTuple, field)) })
         # Loop through the interfaces again, pulling out the WiFi ones. 
         # Now scan & display any available WiFi networks.
         for interface in interfaces.keys():
