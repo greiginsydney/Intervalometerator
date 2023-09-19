@@ -2667,13 +2667,14 @@ def network():
                 if field in 'isup':
                     continue # Skip it - we pulled it earlier
                 networkData.append({'section': interface, 'key': field, 'value': (getattr(statsTuple, field)) })
+
         # Loop through the interfaces again, pulling out the WiFi ones. 
         # Now scan & display any available WiFi networks.
-        for interface in interfaces.keys():
-            if 'wlan' not in interface:
-                continue
+        #for interface in interfaces.keys():
+        #    if 'wlan' not in interface:
+        #        continue
             #iwlist [wlan0] scan.
-            networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+        #    networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
     except Exception as e:
         app.logger.debug(f'network error: {e}')
         flash('Unknown error', 'red')
