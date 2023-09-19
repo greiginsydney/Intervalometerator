@@ -2653,7 +2653,7 @@ def network():
                 networkData.append({'section': interface, 'key': 'ssid', 'value': ssid })
             ipList = interfaces[interface]
             for type in ipList:
-                app.logger.info(f'network says type is {type}')
+                # app.logger.info(f'network says type is {type}')
                 if type.family != socket.AF_INET:
                     # Suppress display of IPv6 and others
                     continue
@@ -2661,7 +2661,7 @@ def network():
                     if ('family') in ipvalue:
                         # Suppress display of unwanted values
                         continue
-                    #app.logger.info(f'ipvalue = {ipvalue}')
+                    # app.logger.info(f'ipvalue = {ipvalue}')
                     networkData.append({'section': interface, 'key': ipvalue, 'value': getattr(type, ipvalue) })
             for field in statsTuple._fields:
                 if field in 'isup':
