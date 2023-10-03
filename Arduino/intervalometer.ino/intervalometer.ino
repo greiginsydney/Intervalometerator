@@ -204,7 +204,7 @@ void setup()
     EEPROM.update(MEMTempMin, (int8_t)127); // Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.update(MEMTempMax, (int8_t)-128);
 
-    //Initalise the voltmeter EEPROM and array to zeroes:
+    // Initalise the temperature array to dummy values:
     for (int i = 0; i <= 23; i++)
     {
       // TODO: Do we need to initialise the temperature EPROM values here too?
