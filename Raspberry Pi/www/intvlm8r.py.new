@@ -1552,10 +1552,11 @@ def system():
 
     try:
         cameraTimeMode = request.cookies.get('cameraTimeMode')
-        if cameraTimeMode != '1':
-            cameraTimeMode = '0'
+        if (cameraTimeMode == None) or (cameraTimeMode not in ['1','2','3','4','5']):
+            app.logger.debug(f'system: Bad camera time mode: {cameraTimeMode}')
+            cameraTimeMode = '1'
     except:
-        cameraTimeMode = '0'
+        cameraTimeMode = '1'
         app.logger.debug(f'system: Threw on bad cameraTimeMode: {cameraTimeMode}')
     templateData['cameraTimeMode'] = cameraTimeMode
 
