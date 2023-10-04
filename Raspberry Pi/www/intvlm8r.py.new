@@ -1605,8 +1605,6 @@ def systemPOST():
         cameraTimeMode = request.form.get('cameraTimeMode')
         if cameraTimeMode not in ['1','2','3','4','5']:
                 cameraTimeMode = '1'
-        else:
-            cameraTimeMode = '1'
         app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
