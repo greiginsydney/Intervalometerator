@@ -1812,7 +1812,7 @@ def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     if cameraTimeMode in ['1', '2']:
         OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
         if OK >= gp.GP_OK:
-            app.logger.debug('cameraTimeMode = {cameraTimeMode}. \'datetimeutc\' used. piUtcOffset = {piUtcOffset}')
+            app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'datetimeutc\' used. piUtcOffset = {piUtcOffset}')
             now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
             epochTime = int(time.mktime(now)) + piUtcOffset
             date_config.set_value(epochTime)
@@ -1820,7 +1820,7 @@ def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     if cameraTimeMode in ['1', '3']:
         OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
         if OK >= gp.GP_OK:
-            app.logger.debug('cameraTimeMode = {cameraTimeMode}. \'syncdatetime\' used')
+            app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'syncdatetime\' used')
             sync_config.set_value(1)
             return True
     if cameraTimeMode in ['1', '3', '4']:
@@ -1828,13 +1828,13 @@ def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
         if OK >= gp.GP_OK:
             widget_type = date_config.get_type()
             if widget_type == gp.GP_WIDGET_DATE:
-                app.logger.debug('cameraTimeMode = {cameraTimeMode}. \'GP_WIDGET_DATE\' used. piUtcOffset = {piUtcOffset}')
+                app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'GP_WIDGET_DATE\' used. piUtcOffset = {piUtcOffset}')
                 now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
                 epochTime = int(time.mktime(now)) + piUtcOffset
-                app.logger.debug('epochTime = {0}'.format(epochTime))
+                app.logger.debug(f'epochTime = {0}'.format(epochTime))
                 date_config.set_value(epochTime)
             else:
-                app.logger.debug('cameraTimeMode = {cameraTimeMode}. \'GP_WIDGET_DATE\' ELSE used. piUtcOffset = {piUtcOffset}')
+                app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'GP_WIDGET_DATE\' ELSE used. piUtcOffset = {piUtcOffset}')
                 now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
                 newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
                 date_config.set_value(newNow)
