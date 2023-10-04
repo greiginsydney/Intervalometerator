@@ -1821,7 +1821,7 @@ def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
             app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'syncdatetime\' used')
             sync_config.set_value(1)
             return True
-    if cameraTimeMode in ['1', '3', '4']:
+    if cameraTimeMode in ['1', '4', '5']:
         OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
         if OK >= gp.GP_OK:
             widget_type = date_config.get_type()
