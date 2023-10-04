@@ -185,12 +185,13 @@
 			<td class="noborder">
 				<div class="alignleft">&nbsp;</div>
 				<div class="alignright">
-					<label class="loginChkbox">
-						<input type="checkbox" id="cameraTimeMode" name="cameraTimeMode" onchange="newSetTimeSelected(this.id)" {% if cameraTimeMode == '1' %} checked="checked"{% endif %}>
-						<span class="rememberme"></span>
-					</label>
+					<select name="cameraTimeMode" id="cameraTimeMode" title="Setting the camera's time is so unpredictable">
+						{% for timeOption in ['auto', 'auto (local time)', 'sync Pi time','datetime (UTC)','datetime (local)'] %}
+							<option value="{{ loop.index }}"{{ ' SELECTED' if loop.index == (cameraTimeMode | int) }}>{{timeOption}}</option>
+						{% endfor %}
+					</select>
 				</div>
-				<div class="alignright"><label for="cameraTimeMode">Alt camera time mode:&nbsp;</label></div>
+				<div class="alignright"><label for="cameraTimeMode">Camera time options&nbsp;</label></div>
 			</td>
 		</tr>
 		<tr>
