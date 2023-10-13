@@ -1,6 +1,6 @@
 # Shopping List
 
-All components were sourced in Sydney, Australia through 2018 & 2019. We won't anticipate you'll have too many problems sourcing these items.
+All components were sourced in Sydney, Australia through 2023. We won't anticipate you'll have too many problems sourcing these items.
 
 Notes:
 - All pricing shown here is approximate, and excludes shipping costs.
