@@ -269,7 +269,8 @@ As the project is presented, this LED lights when the Arduino is awake, but only
 
 #### Custom PCB
 
-The custom PCB for the project is available on eBay. It measures 135x76mm.
+~~The custom PCB for the project is available on eBay. It measures 135x76mm.~~
+Currently out of stock: more are on their way, due Octob er 2023.
 
 - [eBay](https://www.ebay.com.au/itm/266371793739)
 
@@ -277,8 +278,7 @@ The custom PCB for the project is available on eBay. It measures 135x76mm.
     $USD10.00
 
 
-#### ~~A fully populated and programmed board is available too: [https://www.ebay.com.au/itm/265512922630](https://www.ebay.com.au/itm/265512922630)~~
-The assembled PCB is currently not available due to the global component shortage. The DS3234 real-time clock is expected back in stock in the second half of CY23, and populated intvlm8r PCBs will be restored ASAP.
+#### A fully populated and programmed board is available too: [https://www.ebay.com.au/itm/265512922630](https://www.ebay.com.au/itm/266454263566)
 
 #### Veroboard (alternative PCB)
 
