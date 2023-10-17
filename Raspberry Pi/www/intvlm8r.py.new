@@ -1552,11 +1552,10 @@ def system():
 
     try:
         cameraTimeMode = request.cookies.get('cameraTimeMode')
-        if (cameraTimeMode == None) or (cameraTimeMode not in ['1','2','3','4','5','6']:
-            app.logger.debug(f'system: Bad camera time mode: {cameraTimeMode}')
-            cameraTimeMode = '1'
+        if cameraTimeMode != '1':
+            cameraTimeMode = '0'
     except:
-        cameraTimeMode = '1'
+        cameraTimeMode = '0'
         app.logger.debug(f'system: Threw on bad cameraTimeMode: {cameraTimeMode}')
     templateData['cameraTimeMode'] = cameraTimeMode
 
@@ -1602,9 +1601,10 @@ def systemPOST():
 
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
-        cameraTimeMode = request.form.get('cameraTimeMode')
-        if cameraTimeMode not in ['1','2','3','4','5','6']:
-                cameraTimeMode = '1'
+        if (request.form.get('cameraTimeMode')):
+            cameraTimeMode = '1'
+        else:
+            cameraTimeMode = '0'
         app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
@@ -1625,9 +1625,9 @@ def systemPOST():
                     camera.exit()
             except Exception as e:
                 app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
-        # Lastly here, let's set the cookies:
+        # Lastly here, let's set the cookie:
         res.set_cookie('tzOffset', request.form.get('tzOffsetValue'), 365 * 7 * 24 * 60 * 60)
-        res.set_cookie('cameraTimeMode', request.form.get('cameraTimeMode'), 365 * 7 * 24 * 60 * 60)
+        res.set_cookie('cameraTimeMode', cameraTimeMode, 365 * 7 * 24 * 60 * 60)
 
     if 'Reboot' in request.form:
         if str(request.form.get('rebootString')) == REBOOT_SAFE_WORD:
@@ -1801,43 +1801,37 @@ def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     """
     Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
     """
-    if cameraTimeMode in ['2', '5']:
-        piUtcOffset = time.timezone
-    else:
-        piUtcOffset = 0
     abilities = camera.get_abilities()
     # get configuration tree
-    if cameraTimeMode in ['1', '2']:
-        OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
-        if OK >= gp.GP_OK:
-            app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'datetimeutc\' used. piUtcOffset = {piUtcOffset}')
-            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-            epochTime = int(time.mktime(now)) + piUtcOffset
-            date_config.set_value(epochTime)
-            return True
-    if cameraTimeMode in ['1', '3']:
+    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
+    if OK >= gp.GP_OK:
+        app.logger.debug('Set camera time (opt 1)')
+        now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+        epochTime = int(time.mktime(now))
+        date_config.set_value(epochTime)
+        return True
+    if cameraTimeMode != '1':
+        #Skip this option if the "Alt camera time mode" is selected on the /system page
         OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
         if OK >= gp.GP_OK:
-            app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'syncdatetime\' used')
+            app.logger.debug('Set camera time (opt 4)')
             sync_config.set_value(1)
             return True
-    if cameraTimeMode in ['1', '4', '5']:
-        OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
-        if OK >= gp.GP_OK:
-            widget_type = date_config.get_type()
-            if widget_type == gp.GP_WIDGET_DATE:
-                app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'GP_WIDGET_DATE\' used. piUtcOffset = {piUtcOffset}')
-                now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-                epochTime = int(time.mktime(now)) + piUtcOffset
-                app.logger.debug(f'epochTime = {0}'.format(epochTime))
-                date_config.set_value(epochTime)
-            else:
-                app.logger.debug(f'cameraTimeMode = {cameraTimeMode}. \'GP_WIDGET_DATE\' ELSE used. piUtcOffset = {piUtcOffset}')
-                now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-                newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
-                date_config.set_value(newNow)
-            return True
-
+    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
+    if OK >= gp.GP_OK:
+        widget_type = date_config.get_type()
+        if widget_type == gp.GP_WIDGET_DATE:
+            app.logger.debug('Set camera time (opt 2)')
+            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            epochTime = int(time.mktime(now))
+            app.logger.debug('epochTime = {0}'.format(epochTime))
+            date_config.set_value(epochTime)
+        else:
+            app.logger.debug('Set camera time (opt 3)')
+            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+            newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
+            date_config.set_value(newNow)
+        return True
     app.logger.debug('Failed to set camera time')
     return False
 
