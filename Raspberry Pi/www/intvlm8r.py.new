@@ -462,6 +462,18 @@ def main():
     return render_template('main.html', **templateData)
 
 
+@app.route("/", methods = ['POST'])
+@login_required
+def mainPOST():
+    """
+    Just wake the camera and return to main
+    Purely so we can capture the 'wake camera' button for the progress message
+    """
+    writeString("WC", 2) # Sends the WAKE command to the Arduino
+    app.logger.debug('main page POSTed the camera wake command')
+    return redirect(url_for('main'))
+
+
 @app.route("/getTime")
 def getTime():
     """
