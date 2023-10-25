@@ -17,11 +17,11 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
 */
-// Last updated/changed in version 4.5.4:
-// - added 'shutdown in' and 'extend'
-// - changed default Pi run time to 'always on'
-// - added voltmeter code from legacy 'vm' branch & refined/updated
-char version[6] = "4.5.4";
+// Last updated/changed in version 4.5.5:
+// - rejigged 'shutdown in' and related alarm2 code
+// - updated voltmeter array initialisation
+// - prevented sleep if voltmeter still running
+char version[6] = "4.5.5";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -201,20 +201,29 @@ void setup()
     EEPROM.update(MEMInterval, interval);
     EEPROM.update(MEMWakePiHour, WakePiHour);
     EEPROM.update(MEMWakePiDuration, WakePiDuration);
-    EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMin, (int8_t)127); // Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.update(MEMTempMax, (int8_t)-128);
 
-    //Initalise the voltmeter EEPROM and array to zeroes:
+    // Initalise the temperature array to dummy values:
     for (int i = 0; i <= 23; i++)
     {
       // TODO: Do we need to initialise the temperature EPROM values here too?
       DailyTemps[i] = (int8_t)-128;
-      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
 
   UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
+
+  //Initalise the VM array:
+  for (int i = 0; i <= 23; i++)
+  {
+    #ifdef V_SENSE_PIN
+      VoltageString[i] = byte(10); // Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
+    #else
+      VoltageString[i] = byte(255); // Load the array with a magic number. The Pi will read this as "vm not equipped" and suppress the display.
+    #endif
+  }
   readVbatteryFlag = true;  // Take a battery reading on boot
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
@@ -415,18 +424,23 @@ void SetAlarm2(bool reset)
     {
       // Reset/restart the Pi Shutdown timer. Either the real time or the PiDuration has changed, or the Pi's just woken up:
       PiShutdownMinute = rtc.getMinute() + WakePiDuration + 1; // If rtc.secs=59 you're short-changed a minute, so I add a bonus one
-      if (PiShutdownMinute >= 60)
-      {
-        PiShutdownMinute -= 60 ; // So shutdown will be in the NEXT hour. Save this value for later. Alarm2 will be at minute=0
-      }
-      else
+      if (PiShutdownMinute < 60)
       {
         AlarmMinute = PiShutdownMinute; // Shutdown is in THIS hour. Set this minute as the alarm2 time.
       }
+      // If PiShutdownMinute >= 60, shutdown is in the NEXT hour, so we won't set this time yet.
+      // I'm using Alarm2 for two things: "top of the hour" events, AND the PiShutdown timer.
+      // The default value of AlarmMinute is left = 0.
     }
     else
     {
-      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; } // We're now in the 'next hour' referred to above. Set alarm2
+      // "reset == LOW" *only* fires at the top of the hour
+      if ((PiShutdownMinute >= 60) && (PiShutdownMinute < 120))
+      {
+        // We're now in the 'next hour' referred to above. Set alarm2
+        PiShutdownMinute -= 60;
+        AlarmMinute = PiShutdownMinute;
+      }
       // Else it defaults to 0.
     }
   }
@@ -717,7 +731,7 @@ void UpdateVoltage()
     if (VoltageReadingCounter < 8)
     {
       VoltageReading += analogRead(V_SENSE_PIN);
-      Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
+      //Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
       VoltageReadingCounter += 1;
       //DelaymS (1000);
     }
@@ -731,13 +745,13 @@ void UpdateVoltage()
       if ((VoltageReading < 10) || (VoltageReading > 190))
       {
         VoltageReading = 10;
-        Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
+        //Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
       }
       VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
       //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
-      Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
+      //Serial.println("Hour = " + String(thisHour) + ". Final Voltage read is " + String(VoltageReading) + " Volts. (Subtract 10 and move the decimal place)");
       //Serial.println("Voltage string     = " + String(VoltageString));
-      Serial.println("Voltage string len = " + String(strlen(VoltageString)));
+      //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
       
       readVbatteryFlag = false;  // OK, all done, reset the flag.
       VoltageReading = 0;
@@ -996,7 +1010,7 @@ void loop()
       if (rtc.minute() == 0)
       {
         UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
-        readVbatteryFlag = HIGH;           //Trigger the battery reading process
+        readVbatteryFlag = HIGH;           // Trigger the battery reading process
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -1012,7 +1026,7 @@ void loop()
           //Serial.println(" - ALARM 2 fired @ PiShutdownMinute " + String(rtc.hour()) + ":" + String(rtc.minute()) + ".");
           //Serial.println( F(" - Initiated a Pi shutdown"));
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
-          PiShutdownMinute = 61;  // Reset to an invalid value.
+          PiShutdownMinute = 120;         // Reset to an invalid/magic number.
         }
       }
       SetAlarm2(LOW);
@@ -1050,13 +1064,13 @@ void loop()
   {
     FlashLed(2);
     //Serial.println( F(" - WAKE PI fired"));
-    LastRunningState = LOW; //This serves to extend the run timer if the Pi is already running when this fires.
+    LastRunningState = LOW; // This serves to extend the run timer if the Pi is already running when this fires.
                             // It's both a feature and also a safety-net to make sure the shutdown timer is set.
     digitalWrite(PI_SHUTDOWN, HIGH); // Make sure the shutdown pin is high before we turn it on
     digitalWrite(PI_POWER, HIGH); // Turn the Pi on.
     //Serial.println( F("The Pi has just been powered on"));
-    WakePi = false; //We can reset the flag now.
-    SLEEP = false;  //We won't sleep while the Pi is on.
+    WakePi = false; // We can reset the flag now.
+    SLEEP = false;  // We won't sleep while the Pi is on.
   }
 
   if (resetArduinoFlag == true)
@@ -1072,7 +1086,7 @@ void loop()
       //Serial.println( F(" - Resetting the Arduino"));
       resetArduinoFlag = false;
       digitalWrite(PI_POWER, LOW); // Turn the Pi off. May be redundant, but as softReset is ambiguous, best be on the safe side.
-      DelaymS(1000); //Just to be sure the above has 'taken'
+      DelaymS(1000);               //Just to be sure the above has 'taken'
       softReset();
     }
   }
@@ -1138,10 +1152,14 @@ void loop()
   //By the time we reach this point through the loop we'll have:
   // - taken any photo that's required
   // - serviced any housekeeping alarm
-  // - made any changes pushed via the Pi
-  // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
+  // - actioned any changes pushed via the Pi
+  // ... so now provided: 
+  //    - the Pi isn't running, 
+  //    - ALARM isn't still set
+  //    - we're not still mid-way through a voltage reading loop
+  //   ... we can sleep!
 
-  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false))
+  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (readVbatteryFlag == false))
   {
     // The Pi is powered-off. It's safe for us to sleep
     //Serial.println( F(" - About to sleep"));

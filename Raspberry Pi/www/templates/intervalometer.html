@@ -242,6 +242,10 @@ function checkThresholds(thisRow, thisValue)
 	{
 		rowId.className = "";
 	}
+	if (rowValue.innerHTML == 0)
+	{
+		rowValue.innerHTML = "< 1"
+	}
 }
 
 function lightButtons()

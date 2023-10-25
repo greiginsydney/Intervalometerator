@@ -18,6 +18,7 @@
 
 
 
+from collections import namedtuple # used by psutil on the /network page
 from datetime import timedelta, datetime, timezone
 from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
@@ -28,6 +29,7 @@ import exifreader               # Thumbnails
 import fnmatch                  # Testing filenames
 import imageio                  # Thumbnails
 import importlib.util           # Testing installed packages
+import inspect
 import io                       # Camera preview
 import json
 import logging
@@ -97,6 +99,12 @@ REBOOT_SAFE_WORD = 'seeyasoon'
 HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
 PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
+
+# /////// VERSION-RELATED STATICS ////////
+# UI components (features) will display if the Arduino is running this version or later:
+SHOW_TEMPS24     = "4.5.0"
+SHOW_VOLTS24     = "4.5.4"
+SHOW_SHUTDOWN_IN = "4.5.5"
 
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
@@ -423,6 +431,7 @@ def main():
                     piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
                     piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
             else:
+                # piLastImageFile = 'default_image.JPG' # Uncomment this line to prevent a high-res image being shown on the home page. (Only happens if thumbs=0)
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
             if ('/home/pi/photos/default_image.JPG' in FileList):
                 PI_PHOTO_COUNT -= 1
@@ -1123,7 +1132,7 @@ def thermal():
 
     arduinoVersion = str(getArduinoVersion('0'))
     # Start Temps24
-    if version.parse(arduinoVersion) >=  version.parse("4.5.0"):
+    if version.parse(arduinoVersion) >=  version.parse(SHOW_TEMPS24):
         time.sleep(0.1)
         Temps24 = []
         try:
@@ -1197,7 +1206,7 @@ def thermal():
     # ---------------------------------------------------------------
     # Start Volts24
     try:
-        if version.parse(arduinoVersion) >=  version.parse("4.5.4"):
+        if version.parse(arduinoVersion) >=  version.parse(SHOW_VOLTS24):
             batteryVoltageArray = readFromArduino("8", "String", False)  # All 24 voltage readings (offset by 10) as a string of bytes
             voltageReadings = []                        # A list that stores all 24 voltage readings for the page to render
             if (ord(batteryVoltageArray[0]) != 255) and (len(batteryVoltageArray) == 24):
@@ -1481,14 +1490,12 @@ def system():
             templateData['wakePiTime']     = wakePiTime
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
-                if version.parse(arduinoVersion) >=  version.parse("4.5.5"):
+                if version.parse(arduinoVersion) >=  version.parse(SHOW_SHUTDOWN_IN):
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
-                    if 0 <= shutdownAt <= 61:
+                    if 0 <= shutdownAt <= 119:
                         if tempTime != '':
                             shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.                            
                             shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                            if shutdownAt < 1:
-                                shutdownAt += 60
                             templateData['piShutdownIn'] = shutdownAt
                         else:
                             templateData['piShutdownIn'] = 'Unknown'
@@ -2619,6 +2626,78 @@ def iniview():
         app.logger.debug(f'iniview error: {e}')
         flash('INI error', 'red')
     return render_template('iniview.html', iniEntries = iniEntries)
+
+
+@app.route("/network")
+@login_required
+def network():
+    """
+    A 'hidden' page (not in the main menu) that displays wifi & wired networking stats and diagnostic information
+    """
+    networkData = []
+    try:
+        interfaces = psutil.net_if_addrs()
+        ifstats = psutil.net_if_stats()
+        networkData.append({'section': 'Network interfaces', 'key': '', 'value': '' })
+        for interface in interfaces.keys():
+            if interface in 'lo':
+                continue
+            networkData.append({'section': interface, 'key': '', 'value': '' })
+            statsTuple = ifstats[interface]
+            isup = str(getattr(statsTuple, 'isup'))
+            networkData.append({'section': interface, 'key': 'isup', 'value': isup })
+            if 'wlan' in interface and isup == 'True':
+                # Add the SSID and related data before the IP values
+                cmd = ['/usr/sbin/iwgetid', '-r']
+                ssid = runSubprocess(cmd, 'Unknown')
+                networkData.append({'section': interface, 'key': 'ssid', 'value': ssid })
+            ipList = interfaces[interface]
+            for type in ipList:
+                # app.logger.info(f'network says type is {type}')
+                if type.family != socket.AF_INET:
+                    # Suppress display of IPv6 and others
+                    continue
+                for ipvalue in type._fields:
+                    if ('family') in ipvalue:
+                        # Suppress display of unwanted values
+                        continue
+                    # app.logger.info(f'ipvalue = {ipvalue}')
+                    networkData.append({'section': interface, 'key': ipvalue, 'value': getattr(type, ipvalue) })
+            for field in statsTuple._fields:
+                if field in 'isup':
+                    continue # Skip it - we pulled it earlier
+                networkData.append({'section': interface, 'key': field, 'value': (getattr(statsTuple, field)) })
+
+        # Loop through the interfaces again, pulling out the WiFi ones. 
+        # Now scan & display any available WiFi networks.
+        #for interface in interfaces.keys():
+        #    if 'wlan' not in interface:
+        #        continue
+            #iwlist [wlan0] scan.
+        #    networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+    except Exception as e:
+        app.logger.debug(f'network error: {e}')
+        flash('Unknown error', 'red')
+    return render_template('network.html', networkData = networkData)
+
+
+def runSubprocess(cmd, returnValue=None):
+    """
+    Accepts a command to run & returns the outcome (if successful).
+    On error, logs the resulting 'stderrdata' and sends back the provided returnValue
+    """
+    calledBy = inspect.stack()[1][3]
+    try:
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            returnValue = stdoutdata.strip()
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.debug(f'{calledBy} called runSubprocess which returned errdata: {e}')
+    except Exception as e:
+        app.logger.debug(f'{calledBy} called runSubprocess which threw: {e}')
+    return returnValue
 
 
 def reformatSlashes(folder):

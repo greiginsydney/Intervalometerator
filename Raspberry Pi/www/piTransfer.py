@@ -731,42 +731,56 @@ def commenceRsync(rsyncUsername, rsyncHost, rsyncRemoteFolder):
         log('STATUS: No files to upload')
     else:
         localPath  = os.path.join(PI_PHOTO_DIR, 'DCIM')
-        try:
-            #Upload/dir-sync happens here
-            #if not rsyncRemoteFolder.startswith('/'):
-            #    rsyncRemoteFolder = '/' + rsyncRemoteFolder
-            if rsyncRemoteFolder and (not rsyncRemoteFolder.endswith('/')):
-                rsyncRemoteFolder += '/'
-            destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
-            cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', '--log-file=' + RSYNC_LOG_FILE, '--log-file-format=Copied %f', localPath, destination]
-            result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
-            (stdoutdata, stderrdata) = result.communicate()
-            if stdoutdata:
-                stdoutdata = stdoutdata.strip()
-                #log(f'rsync stdoutdata = {stdoutdata}.')
-            if stderrdata:
-                stderrdata = stderrdata.strip()
-                log(f"rsync err'd with stderrdata = {stderrdata}")
-                if 'Host key verification failed' in stderrdata:
-                    log('STATUS: rsync host key verification failed')
-                elif 'Permission denied' in stderrdata:
-                    log('STATUS: rsync error: permission denied')
-                elif 'No route to host' in stderrdata:
-                    log('STATUS: rsync error: No route to host')
+        for retries in range(2):
+            try:
+                log(f'rsync retries = {retries}.') # Temp TEST logging line
+                #Upload/dir-sync happens here
+                #if not rsyncRemoteFolder.startswith('/'):
+                #    rsyncRemoteFolder = '/' + rsyncRemoteFolder
+                if rsyncRemoteFolder and (not rsyncRemoteFolder.endswith('/')):
+                    rsyncRemoteFolder += '/'
+                destination = rsyncUsername + '@' + rsyncHost + ':' + rsyncRemoteFolder
+                cmd = ['/usr/bin/rsync', '-avz', '--rsh=/usr/bin/ssh', '--log-file=' + RSYNC_LOG_FILE, '--log-file-format=Copied %f', localPath, destination]
+                result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+                (stdoutdata, stderrdata) = result.communicate()
+                if stdoutdata:
+                    stdoutdata = stdoutdata.strip()
+                    #log(f'rsync stdoutdata = {stdoutdata}.')
+                if stderrdata:
+                    stderrdata = stderrdata.strip()
+                    log(f"rsync err'd with stderrdata = {stderrdata}")
+                    stderrdata = stderrdata.splitlines()[0] #Discard all but the first line of any multi-line error message
+                    # These known errors end with a final colon followed by the error cause:
+                    # "ssh: connect to host <IP/hostname> port <nn>: <Error Message>"
+                    # "rsync: mkdir "/BadPath" failed: Permission denied (13)
+                    if 'ssh: connect to host' in stderrdata or 'rsync: mkdir' in stderrdata:
+                        errMessageStarts = stderrdata.rfind(":")
+                        if errMessageStarts > 0:
+                            errMessageStarts += 1   # Increment to strip the colon from the resulting message
+                            log(f'STATUS: rsync error:{stderrdata[errMessageStarts:]}')
+                        else:
+                            log('STATUS: rsync error')
+                    elif 'Host key verification failed' in stderrdata:
+                        log('STATUS: rsync host key verification failed')
+                        break
+                    elif 'Permission denied' in stderrdata:
+                        log('STATUS: rsync error: permission denied')
+                        break
+                    else:
+                        log('STATUS: rsync error')
+                # wait until process is really terminated
+                exitcode = result.wait()
+                numFilesOK = cleanupRsync()
+                if exitcode == 0:
+                    log('rsync exited cleanly')
+                    log(f'STATUS: {numFilesOK} files uploaded OK')
+                    break
                 else:
-                    log('STATUS: rsync error')
-            # wait until process is really terminated
-            exitcode = result.wait()
-            if exitcode == 0:
-                log('rsync exited cleanly')
-            else:
-                log(f'rsync exited with exitcode {exitcode}')
-                #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
-            numFilesOK = cleanupRsync()
-            log(f'STATUS: {numFilesOK} files uploaded OK')
-        except Exception as e:
-            log(f'Error uploading via rsync: {e}')
-            log('STATUS: unhandled rsync error')
+                    log(f'rsync exited with exitcode {exitcode}')
+                    #log('STATUS: rsync error') - I assume this is not needed, as a non-zero error would have populated stderrdata
+            except Exception as e:
+                log(f'Error uploading via rsync: {e}')
+                log('STATUS: unhandled rsync error')
     return 0
 
 
