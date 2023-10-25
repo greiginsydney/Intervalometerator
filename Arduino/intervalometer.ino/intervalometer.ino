@@ -204,12 +204,11 @@ void setup()
     EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
     EEPROM.update(MEMTempMax, (int8_t)-128);
 
-    //Initalise the voltmeter EEPROM and array to zeroes:
+    //Initalise the temperature array to dummy values:
     for (int i = 0; i <= 23; i++)
     {
       // TODO: Do we need to initialise the temperature EPROM values here too?
       DailyTemps[i] = (int8_t)-128;
-      VoltageString[i] = byte(10); //Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
     }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
   }
@@ -224,6 +223,16 @@ void setup()
   }
 
   UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
+  
+  //Initalise the VM array:
+  for (int i = 0; i <= 23; i++)
+  {
+    #ifdef V_SENSE_PIN
+      VoltageString[i] = byte(10); // Flush the array. "10" is our zero value. The offset will be corrected in the Pi.
+    #else
+      VoltageString[i] = byte(255); // Load the array with a magic number. The Pi will read this as "vm not equipped" and suppress the display.
+    #endif
+  }
   readVbatteryFlag = true;  // Take a battery reading on boot
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
@@ -631,7 +640,7 @@ void setInterval(String incoming)
   ShootDays = incoming.charAt(0);
   StartHour = (Validate (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
   EndHour   = (Validate (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
-  interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 90));
+  interval  = (Validate (interval,     incoming.substring(5, 7).toInt(), 00, 90));
 
   if (interval > 60)
   {
@@ -963,6 +972,7 @@ void loop()
   // - on power-up
   // - when the RTC fires an alarm, and then stays looping until the alarm flag is reset
   // - when the "wake Pi" reed switch is detected, which triggers the Pi to turn on
+  // - as long as shootFastCount > 0 
   // - continuously, whenever the Pi is powered-up
   // ... otherwise we go back to sleep at the end of the loop and wait for the next interrupt
 
@@ -1039,7 +1049,7 @@ void loop()
       if (rtc.minute() == 0)
       {
         UpdateTempMinMax("", rtc.hour());  // Runs at the top of the hour, 24x7
-        readVbatteryFlag = HIGH;           //Trigger the battery reading process
+        readVbatteryFlag = HIGH;           // Trigger the battery reading process
       }
       if ((rtc.minute() == 0) && (rtc.hour() == WakePiHour))
       {
@@ -1055,7 +1065,7 @@ void loop()
           //Serial.println(" - ALARM 2 fired @ PiShutdownMinute " + String(rtc.hour()) + ":" + String(rtc.minute()) + ".");
           //Serial.println( F(" - Initiated a Pi shutdown"));
           digitalWrite(PI_SHUTDOWN, LOW); // Instruct the Pi to shutdown
-          PiShutdownMinute = 61;  // Reset to an invalid value.
+          PiShutdownMinute = 120;         // Reset to an invalid/magic number.
         }
       }
       SetAlarm2(LOW);
@@ -1107,13 +1117,13 @@ void loop()
   {
     FlashLed(2);
     //Serial.println( F(" - WAKE PI fired"));
-    LastRunningState = LOW; //This serves to extend the run timer if the Pi is already running when this fires.
+    LastRunningState = LOW; // This serves to extend the run timer if the Pi is already running when this fires.
                             // It's both a feature and also a safety-net to make sure the shutdown timer is set.
     digitalWrite(PI_SHUTDOWN, HIGH); // Make sure the shutdown pin is high before we turn it on
     digitalWrite(PI_POWER, HIGH); // Turn the Pi on.
     //Serial.println( F("The Pi has just been powered on"));
-    WakePi = false; //We can reset the flag now.
-    SLEEP = false;  //We won't sleep while the Pi is on.
+    WakePi = false; // We can reset the flag now.
+    SLEEP = false;  // We won't sleep while the Pi is on.
   }
 
   if (resetArduinoFlag == true)
@@ -1129,7 +1139,7 @@ void loop()
       //Serial.println( F(" - Resetting the Arduino"));
       resetArduinoFlag = false;
       digitalWrite(PI_POWER, LOW); // Turn the Pi off. May be redundant, but as softReset is ambiguous, best be on the safe side.
-      DelaymS(1000); //Just to be sure the above has 'taken'
+      DelaymS(1000);               // Just to be sure the above has 'taken'
       softReset();
     }
   }
@@ -1183,8 +1193,8 @@ void loop()
   {
     if (LastRunningState == LOW)
     {
-      //This is a rising edge - the Pi's just woken up.
-      //Set alarm2 in readiness to put it to sleep:
+      // This is a rising edge - the Pi's just woken up.
+      // Set alarm2 in readiness to put it to sleep:
       //Serial.println("LastRunningState WAS low, and PI_RUNNING went HIGH. The Pi has just woken up");
       SetAlarm2(HIGH);
       LastRunningState = HIGH;
@@ -1195,8 +1205,12 @@ void loop()
   //By the time we reach this point through the loop we'll have:
   // - taken any photo that's required
   // - serviced any housekeeping alarm
-  // - made any changes pushed via the Pi
-  // .. so now provided the Pi isn't running and ALARM isn't still set, we can sleep!
+  // - actioned any changes pushed via the Pi
+  // ... so now provided: 
+  //    - the Pi isn't running, 
+  //    - ALARM isn't still set,
+  //    - we're not still mid-way through a voltage reading loop
+  //   ... we can sleep!
 
   if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (shootFastCount == 0))
   {
