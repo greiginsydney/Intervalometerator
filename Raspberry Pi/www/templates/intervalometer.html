@@ -48,7 +48,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td>
+			<td class="noborder">
 				<div class="alignleft">Interval:</div>
 				<div class="alignright">
 					<select name="interval" id="interval" title="Select the interval between shots" onchange="newSelected(this.id)">
@@ -128,6 +128,7 @@ var SelectionBits = new Array();
 lightButtons();
 calculateShots();
 intervalHighlighting();
+
 shootFastWarning.style.display = (interval.value <= 60) ? "none":"";
 
 function newSelected(id)
@@ -142,12 +143,13 @@ function newSelected(id)
 	{
 		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
 	}
-	// Add/remove interval highlight if required:
-	if (id == 'interval')
+
+	if (id == "interval")
 	{
-		intervalHighlighting();
-		shootFastWarning.style.display = (option.value <= 60) ? "none":"";
+		intervalHighlighting(); // Add/remove interval highlight if required
+		shootFastWarning.style.display = (option.value <= 60) ? "none":""; // Display/hide shootFastWarning
 	}
+
 	lightButtons();
 	calculateShots();
 }
@@ -191,6 +193,7 @@ function calculateShots()
 {
 	var shotsPerHour;
 	var interval_value = parseInt(interval.value);
+
 	if (interval_value > 60)
 	{
 		shotsPerHour = 60 * (60 / (interval_value - 60))
@@ -287,6 +290,10 @@ function checkThresholds(thisRow, thisValue)
 	else
 	{
 		rowId.className = "";
+	}
+	if (rowValue.innerHTML == 0)
+	{
+		rowValue.innerHTML = "< 1"
 	}
 }
 
