@@ -331,12 +331,6 @@ def main():
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
-    args = request.args.to_dict()
-    if args.get('wakeCamera'):
-        writeString("WC", 2) # Sends the WAKE command to the Arduino
-        app.logger.debug('Returned after detecting camera wake command')
-        return redirect(url_for('main'))
-
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
 
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
