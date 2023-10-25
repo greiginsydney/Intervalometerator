@@ -68,6 +68,12 @@
 		</tr>
 	</table>
 
+	<table>
+	<tr id="shootFastWarning">
+			<td class="noborder orange">Fast shooting may exceed the intvlm8r's ability to copy or upload all images. It will also significantly increase power consumption.</td>
+		</tr>
+	</table>
+
 	<table class="noborder">
 		<tr>
 			<td>
@@ -108,6 +114,7 @@ var interval     = document.getElementById("interval");
 var shotsperday  = document.getElementById("shotsperday")
 var daysincamera = document.getElementById("daysincamera")
 var daysinpi     = document.getElementById("daysinpi")
+var shootFastWarning = document.getElementById("shootFastWarning")
 
 var numDaysSelected = 1;
 var SelectionByte = 0;
@@ -121,6 +128,7 @@ var SelectionBits = new Array();
 lightButtons();
 calculateShots();
 intervalHighlighting();
+shootFastWarning.style.display = (interval.value <= 60) ? "none":"";
 
 function newSelected(id)
 {
