@@ -108,13 +108,13 @@
 
 <script>
 
-var startHour    = document.getElementById("startHour");
-var endHour      = document.getElementById("endHour");
-var interval     = document.getElementById("interval");
-var shotsperday  = document.getElementById("shotsperday")
-var daysincamera = document.getElementById("daysincamera")
-var daysinpi     = document.getElementById("daysinpi")
-var shootFastWarning = document.getElementById("shootFastWarning")
+var startHour        = document.getElementById("startHour");
+var endHour          = document.getElementById("endHour");
+var interval         = document.getElementById("interval");
+var shotsperday      = document.getElementById("shotsperday");
+var daysincamera     = document.getElementById("daysincamera");
+var daysinpi         = document.getElementById("daysinpi");
+var shootFastWarning = document.getElementById("shootFastWarning");
 
 var numDaysSelected = 1;
 var SelectionByte = 0;
@@ -132,6 +132,7 @@ shootFastWarning.style.display = (interval.value <= 60) ? "none":"";
 
 function newSelected(id)
 {
+	var shootFastWarning = document.getElementById("shootFastWarning");
 	var option = document.getElementById(id);
 	if (!option.options[option.selectedIndex].defaultSelected)
 	{
@@ -142,9 +143,10 @@ function newSelected(id)
 		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
 	}
 	// Add/remove interval highlight if required:
-	if (option.id == 'interval')
+	if (id == 'interval')
 	{
-		intervalHighlighting()
+		intervalHighlighting();
+		shootFastWarning.style.display = (option.value <= 60) ? "none":"";
 	}
 	lightButtons();
 	calculateShots();
