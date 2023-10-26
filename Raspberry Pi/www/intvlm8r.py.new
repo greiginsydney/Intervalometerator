@@ -624,11 +624,6 @@ def camera():
     if args.get('preview'):
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
-    if args.get('wakeCamera'):
-        writeString("WC", 2) # Sends the WAKE command to the Arduino
-        app.logger.debug('Returned after detecting camera wake command')
-        return redirect(url_for('camera'))
-
     try:
         camera, context, config = connectCamera(1)
         if camera:
