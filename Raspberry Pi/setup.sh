@@ -1442,33 +1442,68 @@ test_install ()
 	remoteit=$(dpkg -s remoteit 2> /dev/null)
 	set -e #Resume the error trap
 
+	remoteit_version=0
 	if [[ $remoteit == *"install ok"* ]];
 	then
+		if [ -f /usr/lib/systemd/system/connectd.service ];
+		then
+			((remoteit_version=remoteit_version+1))
+		fi
+		if [ -f /usr/lib/systemd/system/remoteit-refresh.service ];
+		then
+			((remoteit_version=remoteit_version+2))
+		fi
+		case $remoteit_version in
+			(0)
+				echo -e ""$YELLOW"FAIL:"$RESET" remote.it is installed, with NEITHER legacy nor 2023 services detected. Try a reinstall?"
+				;;
+			(1)
+				echo -e ""$GREEN"PASS:"$RESET" remote.it is installed - legacy config (uses connectd.service)"
+				;;
+			(2)
+				echo -e ""$GREEN"PASS:"$RESET" remote.it is installed - 2023 config (uses remoteit-refresh.service)"
+				;;
+			(3)
+				echo -e ""$YELLOW"FAIL:"$RESET" remote.it is installed, with conflicting config detected (legacy + 2023 services)"
+				;;
+		esac
+
 		if systemctl is-active --quiet schannel;
 		then
-			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remoteit)"
+			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remote.it)"
 		else
-			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remoteit)"
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remote.it)"
 		fi
 
-		if [ -f /etc/systemd/system/connectd.service ];
+		# Test health of a legacy config:
+		if [[ $remoteit_version == 1 ]];
 		then
-			if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+			if [ -f /etc/systemd/system/connectd.service ];
 			then
-				echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+				if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+				then
+					echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+				else
+					echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+				fi
 			else
-				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 			fi
-		else
-			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 		fi
-
+		
+		# Test health of a 2023 config:
+		# If present, the service name will be injected into the start of the service list, so it displays first, retaining the correct context.
+		
 	else
-		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
+		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed"
 	fi
 
 	matchRegex="\s*Names=([\.[:alnum:]-]*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
 	serviceList="setTime cameraTransfer piTransfer heartbeat.timer apt-daily.timer apt-daily.service"
+	if [[ $remoteit_version == 2 ]];
+	then
+		serviceList="remoteit-refresh.service ${serviceList}"
+	fi
 	for service in $serviceList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
