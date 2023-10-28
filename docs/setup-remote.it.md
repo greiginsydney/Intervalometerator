@@ -100,14 +100,14 @@ Cons:
 
 ## install remote.it
 
-**This process was last confirmed accurate on July 25th, 2022.**
+**This process was last confirmed accurate on October 29th, 2023.**
 
 1. Visit [remote.it's homepage](https://www.remote.it/) and click the blue "Get Started" button in the top right. Follow your nose to create a new login.
 2. Login.
-3. Click the blue "+" button in the top left, then select "Raspberry Pi" from the popup menu:
+3. Click the blue "+" button in the top left, then select "Raspberry Pi":
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180705819-941aba10-6217-4717-98d0-0d51b8f8239a.png" width="40%">
+  <img src="https:///github.com/greiginsydney/Intervalometerator/assets/11004787/1d9a363f-d09b-428d-9286-11ca33003adf" width="40%">
 </p>
 
 4. Use the highlighted icon to copy the registration text to the clipboard:
@@ -129,7 +129,7 @@ This process installs Remote.it on the Pi which then launches and establishes th
 6. If the previous step completes successfully, your remote.it webpage will update with the details of the new device:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180712194-4fe88e21-f9cf-40a0-bb82-634daf9a291c.png" width="80%">
+<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/b603b99f-ad11-4861-b039-2c3766fb5b40" width="80%">
 </p>
 
 7. Congratulations. So far so good. Next is to add a web (http) "service". This enables you to launch a web-session to the intvlm8r's website. Click the highlighted "+", then click Save to accept the defaults:
