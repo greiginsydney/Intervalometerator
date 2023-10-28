@@ -1578,7 +1578,7 @@ remoteit()
 {
 	if [ -f /usr/lib/systemd/system/connectd.service ];
 	then
-		echo -e 'remoteit is installed'
+		echo -e ""$GREEN"PASS:"$RESET" remote.it   is   installed - legacy version"
 		if [ -f /etc/systemd/system/connectd.service ];
 		then
 			#There's already a customised version of connectd.service
@@ -1596,12 +1596,18 @@ remoteit()
 			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
 		fi
 	else
-		echo -e 'remoteit is not installed'
+		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed - legacy version"
 		if [ -f /etc/systemd/system/connectd.service ];
 		then
 			rm -f /etc/systemd/system/connectd.service;
 			echo 'Removed /etc/systemd/system/connectd.service'
 		fi
+	fi
+	if [ -f /usr/lib/systemd/system/remoteit-refresh.service ];
+	then
+		echo -e ""$GREEN"PASS:"$RESET" remote.it   is   installed - current (2023) version"
+	else
+		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed - current (2023) version"
 	fi
 }
 
