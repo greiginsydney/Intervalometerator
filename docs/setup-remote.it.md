@@ -107,8 +107,11 @@ Cons:
 3. Click the blue "+" button in the top left, then select "Raspberry Pi":
 
 <p align="center">
-  <img src="https:///github.com/greiginsydney/Intervalometerator/assets/11004787/1d9a363f-d09b-428d-9286-11ca33003adf" width="40%">
+  <img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/07304308-80c9-4802-9c4c-5b9835a9f9a5" width="40%">
 </p>
+
+
+
 
 4. Use the highlighted icon to copy the registration text to the clipboard:
 
@@ -116,7 +119,7 @@ Cons:
 <img src="https://user-images.githubusercontent.com/11004787/180706135-611dad5b-9661-4dc3-b412-aa533b75ef4f.png" width="60%">
 </p>
 
-Leave the browser window open.
+Leave the browser window open - we're not finished with it yet.
 
 5. Paste the above registration text into an SSH session to the Raspberry Pi and hit return:
 
@@ -132,24 +135,21 @@ This process installs Remote.it on the Pi which then launches and establishes th
 <img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/b603b99f-ad11-4861-b039-2c3766fb5b40" width="80%">
 </p>
 
-7. Congratulations. So far so good. Next is to add a web (http) "service". This enables you to launch a web-session to the intvlm8r's website. Click the highlighted "+", then click Save to accept the defaults:
+7. Congratulations. So far so good. By default, remote.it creates an SSH "service", so you have command-line access to the Pi. Next is to add a web (http) service. This enables you to launch a web-session to the intvlm8r's website. Click the highlighted "+", then click Save to accept the defaults:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180708852-0ca88325-877b-4705-9212-8105de781176.png" width="80%">
+<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/ef08a45b-2182-460a-a195-cf7331880d42" width="80%">
 </p>
 
-8. The default remote.it install process **breaks** the intvlm8r, so we need to run the install script to fix this. Execute `sudo -E ./setup.sh remoteit`:
+(If you've already put an SSH certificate on the Pi, you might choose HTTPS instead here.)
+
+8. To double-check we're good to proceed, execute the install script with the "remoteit" switch `sudo -E ./setup.sh remoteit`. The output should include the following:
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180711369-358c61f4-56f8-47db-816d-2454ab7f0665.png" width="80%">
+<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/7d7b3a9a-4388-477d-98fa-a4c71d6f1594" width="80%">
 </p>
 
-9. To double-check we're good to proceed, execute the install script with the "test" switch `sudo -E ./setup.sh test`. The output should include the following:
-
-<p align="center">
-<img src="https://user-images.githubusercontent.com/11004787/180711278-59c5fcfa-0cae-494d-856d-132a253f4ea8.png" width="80%">
-</p>
-
+(If you're still running the legacy version, you probably should upgrade. That process is documented here: https://support.remote.it/hc/en-us/articles/360051668711-Updating-the-remoteit-or-connectd-packages-using-a-remote-it-SSH-connection.)
 <br>
 
 [Top](#setup-remoteit)
