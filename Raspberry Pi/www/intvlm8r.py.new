@@ -2631,6 +2631,59 @@ def iniview():
     return render_template('iniview.html', iniEntries = iniEntries)
 
 
+@app.route("/network")
+@login_required
+def network():
+    """
+    A 'hidden' page (not in the main menu) that displays wifi & wired networking stats and diagnostic information
+    """
+    networkData = []
+    try:
+        interfaces = psutil.net_if_addrs()
+        ifstats = psutil.net_if_stats()
+        networkData.append({'section': 'Network interfaces', 'key': '', 'value': '' })
+        for interface in interfaces.keys():
+            if interface in 'lo':
+                continue
+            networkData.append({'section': interface, 'key': '', 'value': '' })
+            statsTuple = ifstats[interface]
+            isup = str(getattr(statsTuple, 'isup'))
+            networkData.append({'section': interface, 'key': 'isup', 'value': isup })
+            if 'wlan' in interface and isup == 'True':
+                # Add the SSID and related data before the IP values
+                cmd = ['/usr/sbin/iwgetid', '-r']
+                ssid = runSubprocess(cmd, 'Unknown')
+                networkData.append({'section': interface, 'key': 'ssid', 'value': ssid })
+            ipList = interfaces[interface]
+            for type in ipList:
+                # app.logger.info(f'network says type is {type}')
+                if type.family != socket.AF_INET:
+                    # Suppress display of IPv6 and others
+                    continue
+                for ipvalue in type._fields:
+                    if ('family') in ipvalue:
+                        # Suppress display of unwanted values
+                        continue
+                    # app.logger.info(f'ipvalue = {ipvalue}')
+                    networkData.append({'section': interface, 'key': ipvalue, 'value': getattr(type, ipvalue) })
+            for field in statsTuple._fields:
+                if field in 'isup':
+                    continue # Skip it - we pulled it earlier
+                networkData.append({'section': interface, 'key': field, 'value': (getattr(statsTuple, field)) })
+
+        # Loop through the interfaces again, pulling out the WiFi ones. 
+        # Now scan & display any available WiFi networks.
+        #for interface in interfaces.keys():
+        #    if 'wlan' not in interface:
+        #        continue
+            #iwlist [wlan0] scan.
+        #    networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+    except Exception as e:
+        app.logger.debug(f'network error: {e}')
+        flash('Unknown error', 'red')
+    return render_template('network.html', networkData = networkData)
+
+
 def reformatSlashes(folder):
     """
     Reformat the user's remote folder value:
