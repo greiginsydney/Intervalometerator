@@ -2686,6 +2686,25 @@ def network():
     return render_template('network.html', networkData = networkData)
 
 
+def runSubprocess(cmd, returnValue=None):
+    """
+    Accepts a command to run & returns the outcome (if successful).
+    On error, logs the resulting 'stderrdata' and sends back the provided returnValue
+    """
+    calledBy = inspect.stack()[1][3]
+    try:
+        result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
+        (stdoutdata, stderrdata) = result.communicate()
+        if stdoutdata:
+            returnValue = stdoutdata.strip()
+        if stderrdata:
+            stderrdata = stderrdata.strip()
+            app.logger.debug(f'{calledBy} called runSubprocess which returned errdata: {stderrdata}')
+    except Exception as e:
+        app.logger.debug(f'{calledBy} called runSubprocess which threw: {e}')
+    return returnValue
+
+
 def reformatSlashes(folder):
     """
     Reformat the user's remote folder value:
