@@ -29,6 +29,7 @@ import exifreader               # Thumbnails
 import fnmatch                  # Testing filenames
 import imageio                  # Thumbnails
 import importlib.util           # Testing installed packages
+import inspect                  # /network page
 import io                       # Camera preview
 import json
 import logging
