@@ -165,7 +165,8 @@ install_apps ()
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
 		echo -e ""$GREEN"Installing bcrypt"$RESET""
-		pip3 install -U "bcrypt<4.0.0"
+		# pip3 install -U "bcrypt<4.0.0" See issue #129
+		pip3 install -U bcrypt
 		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
 		pip3 install pynacl cryptography gssapi paramiko
 	fi
