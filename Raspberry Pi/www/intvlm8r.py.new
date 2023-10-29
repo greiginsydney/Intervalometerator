@@ -18,6 +18,7 @@
 
 
 
+from collections import namedtuple # used by psutil on the /network page
 from datetime import timedelta, datetime, timezone
 from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
