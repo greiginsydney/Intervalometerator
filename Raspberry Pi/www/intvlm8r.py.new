@@ -2673,17 +2673,86 @@ def network():
                     continue # Skip it - we pulled it earlier
                 networkData.append({'section': interface, 'key': field, 'value': (getattr(statsTuple, field)) })
 
-        # Loop through the interfaces again, pulling out the WiFi ones. 
-        # Now scan & display any available WiFi networks.
-        #for interface in interfaces.keys():
-        #    if 'wlan' not in interface:
-        #        continue
-            #iwlist [wlan0] scan.
-        #    networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+        # Loop through the interfaces again, pulling out the WiFi ones.
+        for interface in interfaces.keys():
+            if 'wlan' not in interface:
+                continue
+            # Now scan & display any available WiFi networks.
+            wifi_data = scan_wifi_networks(interface)
+            networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+            networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': wifi_data })
     except Exception as e:
         app.logger.debug(f'network error: {e}')
         flash('Unknown error', 'red')
     return render_template('network.html', networkData = networkData)
+
+
+def scan_wifi_networks(interface):
+    """
+    Scans the nearby WiFi networks and displays the results.
+ 
+    A hybrid of:
+    https://github.com/Xilef12000/RPi0w-wifi-catcher/blob/main/iwlist.py
+    
+    Returns:
+    - list of dictionaries:
+        A list of dictionaries containing the details of each WiFi network.
+        Each dictionary contains the following keys:
+        - 'SSID': The name of the WiFi network.
+        - 'BSSID': The MAC address of the WiFi network.
+        - 'Signal': The signal strength of the WiFi network in dBm.
+        - 'Channel': The channel number of the WiFi network.
+    """
+ 
+    # Run the command to scan for nearby WiFi networks using the 'iwlist' command.
+    # The output will be in the form of a byte string.
+    cmd = (f'/usr/bin/sudo /usr/sbin/iwlist {interface} scan')
+    output = os.popen(cmd).read()
+    # Split the output into lines.
+    networks = output.split('    Cell ')
+    # Initialize an empty list to store each WiFi network's details.
+    wifi_networks = []
+    
+    for network in networks:
+        lines = network.split('\n')
+        # Iterate over the lines to extract the WiFi network details.
+        for line in lines:
+            line = line.strip()
+            # Check if the line contains the SSID (network name).
+            if 'ESSID' in line:
+                # Extract the SSID from the line.
+                ssid = line.split(':')[1].strip().strip('"')
+                # Initialize a dictionary to store the details of the WiFi network.
+                wifi_network = {'SSID': ssid}
+        
+        # Iterate over the lines to extract the WiFi network details.
+        for line in lines:
+            line = line.strip()
+            # Check if the line contains the BSSID (MAC address).
+            if 'Address' in line:
+                # Extract the BSSID from the line.
+                bssid = line.split()[3]
+                # Add the BSSID to the dictionary.
+                wifi_network['BSSID'] = bssid
+            # Check if the line contains the signal strength.
+            elif 'Signal level' in line:
+                # Extract the signal strength from the line.
+                signal = line.split('=')[2]#.split()[0]
+                # Add the signal strength to the dictionary.
+                wifi_network['Signal'] = signal
+                quality = line.split('=')[1].split()[0]
+                # Add the signal strength to the dictionary.
+                wifi_network['Quality'] = quality
+            # Check if the line contains the channel number.
+            elif 'Channel:' in line:
+                # Extract the channel number from the line.
+                channel = line.split(':')[1]
+                # Add the channel number to the dictionary.
+                wifi_network['Channel'] = channel
+                # Add the dictionary to the list of WiFi networks.
+                wifi_networks.append(wifi_network)
+    # Return the list of WiFi networks.
+    return wifi_networks
 
 
 def runSubprocess(cmd, returnValue=None):
