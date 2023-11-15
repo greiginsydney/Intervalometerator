@@ -27,11 +27,19 @@
 			<div class="content">
 			<table class="embedded">
 		{% else %}
-				<td class="noborder">
+			<td class="noborder">
+			{% if dataVal['key'] == 'Quality' %}
+				<fieldset>
+				<label>Quality</label>
+				<div class="alignright">{{ dataVal['value'] }}/70</div>
+				<span><meter max="70" value="{{ dataVal['value'] }}"></meter></span>
+				</fieldset>
+			{% else %}
 				<div class="alignleft">{{ dataVal['key'] }}</div>
 				<div class="alignright">{{ dataVal['value'] }}</div>
-				</td>
-				</tr>
+			{% endif %}
+			</td>
+			</tr>
 			</tr>
 			{% if loop.nextitem is defined %}
 				{% if loop.nextitem['key'] == 'SSID' or loop.nextitem['key'] == '' %}
