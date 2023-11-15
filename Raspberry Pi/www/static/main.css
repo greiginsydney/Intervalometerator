@@ -641,6 +641,45 @@ table .embedded {
 
 /* End: Collapsible table text */
 /* ---------------------------------------------------------*/
+/* Start: WiFi meter */
+
+label{ float: left; }
+
+span
+{
+	display: block;
+	overflow: hidden;
+	padding-right: 5px;
+	padding-left: 10px;
+}
+	   
+span > meter{ width: 100%; }
+
+fieldset {
+	margin: 0;
+	padding: 0;
+	border-style: none;
+}
+
+meter {
+}
+
+meter::-webkit-meter-bar {
+  /* box-shadow: 0 5px 5px -5px #999 inset; */
+  background: none; /* Required to get rid of the default background property */
+  background-image: linear-gradient(to right, red,yellow,green);
+  background-size: 100% 100%;
+}
+
+/* meter::-webkit-meter-optimum-value { */
+  /* /* box-shadow: 0 5px 5px -5px #999 inset; */ */
+  /* background: none; /* Required to get rid of the default background property */ */
+  /* background-image: linear-gradient(to right, red,yellow,green); */
+  /* background-size: 100% 100%; */
+/* } */
+
+/* End: WiFi meter */
+/* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
 @media screen and (max-height: 700px) {
