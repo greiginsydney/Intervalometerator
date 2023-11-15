@@ -2746,7 +2746,7 @@ def scan_wifi_networks(interface):
                 signal = line.split('=')[2]#.split()[0]
                 # Add the signal strength to the dictionary.
                 wifi_network['Signal'] = signal
-                quality = line.split('=')[1].split()[0]
+                quality = line.split('=')[1].split('/')[0]
                 # Add the signal strength to the dictionary.
                 wifi_network['Quality'] = quality
             # Check if the line contains the channel number.
