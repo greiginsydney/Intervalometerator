@@ -2640,6 +2640,7 @@ def network():
     A 'hidden' page (not in the main menu) that displays wifi & wired networking stats and diagnostic information
     """
     networkData = []
+    wifiData = []
     try:
         interfaces = psutil.net_if_addrs()
         ifstats = psutil.net_if_stats()
@@ -2679,12 +2680,17 @@ def network():
                 continue
             # Now scan & display any available WiFi networks.
             wifi_data = scan_wifi_networks(interface)
-            networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
-            networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': wifi_data })
+            wifiData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+            wifiData.append({'section': interface, 'key': '', 'value': '' })
+            if len(wifi_data) == 0:
+                wifiData.append({'section': interface, 'key': '', 'value': 'none found' })
+            for i in range(len(wifi_data)):
+                for key in wifi_data[i]:
+                    wifiData.append({'section': interface, 'key': key, 'value': wifi_data[i][key] })
     except Exception as e:
         app.logger.debug(f'network error: {e}')
         flash('Unknown error', 'red')
-    return render_template('network.html', networkData = networkData)
+    return render_template('network.html', networkData = networkData, wifiData = wifiData)
 
 
 def scan_wifi_networks(interface):
