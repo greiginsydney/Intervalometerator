@@ -594,6 +594,53 @@ option#prog_opt:disabled {
 
 /* End: Environmental page graphs */
 /* ---------------------------------------------------------*/
+/* Start: Collapsible table text */
+
+table .embedded {
+	border-collapse: collapse;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+.collapsible {
+  background-color: #CCC;
+  color: blue;
+  cursor: pointer;
+  padding: 10px;
+  margin: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  border-radius: 0px;
+}
+
+.active, .collapsible:hover {
+  background-color: #AAA;
+}
+
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: white;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+.content {
+  padding: 0;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+
+/* End: Collapsible table text */
+/* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
 @media screen and (max-height: 700px) {
