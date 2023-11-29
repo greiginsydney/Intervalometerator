@@ -31,8 +31,13 @@
 			{% if dataVal['key'] == 'Quality' %}
 				<fieldset>
 				<label>Quality</label>
+				{% set qual = ((dataVal['value'] | int / 70 ) * 100) | round | int %}
 				<div class="alignright">{{ dataVal['value'] }}/70</div>
-				<span><meter max="70" value="{{ dataVal['value'] }}"></meter></span>
+				<span>
+					<div class="meter-gauge">
+						<span style="width: {{ 100 - qual }}%;"></span>
+					</div>
+				</span>
 				</fieldset>
 			{% else %}
 				<div class="alignleft">{{ dataVal['key'] }}</div>
