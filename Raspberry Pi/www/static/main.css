@@ -652,8 +652,8 @@ span
 	padding-right: 5px;
 	padding-left: 10px;
 }
-	   
-span > meter{ width: 100%; }
+
+span > div{ width: 100%; }
 
 fieldset {
 	margin: 0;
@@ -661,22 +661,24 @@ fieldset {
 	border-style: none;
 }
 
-meter {
+.meter-gauge {
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	background-image: linear-gradient(to right, red, orange, yellow, limegreen);
+	height: 25px;
+	display: block;
 }
 
-meter::-webkit-meter-bar {
-  /* box-shadow: 0 5px 5px -5px #999 inset; */
-  background: none; /* Required to get rid of the default background property */
-  background-image: linear-gradient(to right, red,yellow,green);
-  background-size: 100% 100%;
+.meter-gauge > span {
+	height: inherit;
+	background-color: #ccc;
+	background-size: 100% 100%;
+	display: block;
+	text-indent: -9999px;
+	float: right;
+	padding: 0;
 }
 
-/* meter::-webkit-meter-optimum-value { */
-  /* /* box-shadow: 0 5px 5px -5px #999 inset; */ */
-  /* background: none; /* Required to get rid of the default background property */ */
-  /* background-image: linear-gradient(to right, red,yellow,green); */
-  /* background-size: 100% 100%; */
-/* } */
 
 /* End: WiFi meter */
 /* ---------------------------------------------------------*/
