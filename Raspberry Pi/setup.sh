@@ -242,6 +242,8 @@ install_apps ()
 		make install
 		ldconfig
 
+  		cd /home/${SUDO_USER}/
+
 		echo -e ""$GREEN"Generate udev rules for the camera"$RESET""
 		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
 		/usr/local/lib/libgphoto2/print-camera-list udev-rules version 201 group plugdev mode 0660 | sudo tee /etc/udev/rules.d/90-libgphoto2.rules
