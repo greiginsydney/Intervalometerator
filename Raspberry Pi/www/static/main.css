@@ -645,8 +645,7 @@ table .embedded {
 
 label{ float: left; }
 
-span
-{
+.embedded span {
 	display: block;
 	overflow: hidden;
 	padding-right: 5px;
