@@ -20,7 +20,8 @@
 	{% for dataVal in wifiData %}
 		<tr>
 		{% if dataVal['key'] == '' and dataVal['value'] == '' %}
-			<th>{{ dataVal['section'] }} </th>
+			<th>{{ dataVal['section'] }}</th>
+		</tr>
 		{% elif dataVal['key'] == 'SSID' %}
 			<td class="noborder">
 			<button type="button" class="collapsible">{{ dataVal['value'] }}</button>
@@ -30,33 +31,35 @@
 			<td class="noborder">
 			{% if dataVal['key'] == 'Quality' %}
 				<fieldset>
-				<label>Quality</label>
-				{% set qual = ((dataVal['value'] | int / 70 ) * 100) | round | int %}
-				<div class="alignright">{{ dataVal['value'] }}/70</div>
-				<span>
-					<div class="meter-gauge">
-						<span style="width: {{ 100 - qual }}%;"></span>
-					</div>
-				</span>
+					<label>Quality</label>
+					{% set qual = ((dataVal['value'] | int / 70 ) * 100) | round | int %}
+					<div class="alignright">{{ dataVal['value'] }}/70</div>
+					<span>
+						<div class="meter-gauge">
+							<span style="width: {{ 100 - qual }}%;"></span>
+						</div>
+					</span>
 				</fieldset>
+				</td>
+				</tr>
 			{% else %}
 				<div class="alignleft">{{ dataVal['key'] }}</div>
 				<div class="alignright">{{ dataVal['value'] }}</div>
+				</td>
 			{% endif %}
-			</td>
-			</tr>
-			</tr>
-			{% if loop.nextitem is defined %}
+			{%- if loop.nextitem is defined %}
 				{% if loop.nextitem['key'] == 'SSID' or loop.nextitem['key'] == '' %}
 				</table>
 				</div>
+				</td>
 				{% endif %}
 			{% else %}
 				</table>
 				</div>
+				</td>
 			{% endif %}
-		{% endif %}
 		</tr>
+		{% endif %}
 	{% endfor %}
 	</table>
 
