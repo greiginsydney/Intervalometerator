@@ -328,7 +328,7 @@ install_apps ()
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo 'i2c-bcm2708 module already exists'
 	else
-		echo ' adding i2c-bcm2708 to /etc/modules/'
+		echo 'adding i2c-bcm2708 to /etc/modules/'
 		echo 'i2c-bcm2708' >> /etc/modules
 	fi
 	if grep -q 'i2c-dev' /etc/modules; then
@@ -354,7 +354,7 @@ install_apps ()
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 	else
-		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
+		echo '/etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo -e ""$GREEN"Creating gphoto2 shortcuts"$RESET""
