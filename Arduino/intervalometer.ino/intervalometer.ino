@@ -444,18 +444,23 @@ void SetAlarm2(bool reset)
     {
       // Reset/restart the Pi Shutdown timer. Either the real time or the PiDuration has changed, or the Pi's just woken up:
       PiShutdownMinute = rtc.getMinute() + WakePiDuration + 1; // If rtc.secs=59 you're short-changed a minute, so I add a bonus one
-      if (PiShutdownMinute >= 60)
-      {
-        PiShutdownMinute -= 60 ; // So shutdown will be in the NEXT hour. Save this value for later. Alarm2 will be at minute=0
-      }
-      else
+      if (PiShutdownMinute < 60)
       {
         AlarmMinute = PiShutdownMinute; // Shutdown is in THIS hour. Set this minute as the alarm2 time.
       }
+      // If PiShutdownMinute >= 60, shutdown is in the NEXT hour, so we won't set this time yet.
+      // I'm using Alarm2 for two things: "top of the hour" events, AND the PiShutdown timer.
+      // The default value of AlarmMinute is left = 0.
     }
     else
     {
-      if (PiShutdownMinute < 60) { AlarmMinute = PiShutdownMinute; } // We're now in the 'next hour' referred to above. Set alarm2
+      // "reset == LOW" *only* fires at the top of the hour
+      if ((PiShutdownMinute >= 60) && (PiShutdownMinute < 120))
+      {
+        // We're now in the 'next hour' referred to above. Set alarm2
+        PiShutdownMinute -= 60;
+        AlarmMinute = PiShutdownMinute;
+      }
       // Else it defaults to 0.
     }
   }
