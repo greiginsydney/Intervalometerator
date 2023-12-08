@@ -170,6 +170,7 @@ void setup()
     //Serial.println( F("HEALTHY"));
     FlashLed(4); //Healthy boot
     interval          = EEPROM.read(MEMInterval);
+    shootFastInterval = EEPROM.read(MEMShootFastInterval);
     ShootDays         = EEPROM.read(MEMShootDays);
     StartHour         = EEPROM.read(MEMStartHour);
     EndHour           = EEPROM.read(MEMEndHour);
@@ -197,14 +198,15 @@ void setup()
     rtc.set24Hour(); // Force 24-hour mode to be sure (even though that's its default anyway)
     // Default to 12:00:01 pm, January 1, 2018:
     setTimeDate("20180101120001");
-    EEPROM.update(MEMShootDays, ShootDays);
-    EEPROM.update(MEMStartHour, StartHour);
-    EEPROM.update(MEMEndHour, EndHour);
-    EEPROM.update(MEMInterval, interval);
-    EEPROM.update(MEMWakePiHour, WakePiHour);
-    EEPROM.update(MEMWakePiDuration, WakePiDuration);
-    EEPROM.update(MEMTempMin, (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.update(MEMTempMax, (int8_t)-128);
+    EEPROM.update(MEMShootDays,         ShootDays);
+    EEPROM.update(MEMStartHour,         StartHour);
+    EEPROM.update(MEMEndHour,           EndHour);
+    EEPROM.update(MEMInterval,          interval);
+    EEPROM.update(MEMShootFastInterval, shootFastInterval);
+    EEPROM.update(MEMWakePiHour,        WakePiHour);
+    EEPROM.update(MEMWakePiDuration,    WakePiDuration);
+    EEPROM.update(MEMTempMin,           (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMax,           (int8_t)-128);
 
     //Initalise the temperature array to dummy values:
     for (int i = 0; i <= 23; i++)
