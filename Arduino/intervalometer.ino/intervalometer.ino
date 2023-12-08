@@ -334,7 +334,7 @@ void SetAlarm1()
   if (StartHour < EndHour)
   {
     //Normal daytime shoot, or 24hr operation
-    //Serial.println("Trad daytime shoot");
+    //Serial.println( F("Trad daytime shoot"));
     if (nextHour < StartHour)
     {
       //We haven't yet started for the day:
@@ -350,23 +350,23 @@ void SetAlarm1()
     }
     else
     {
-      //Serial.println(" - we're in the shooting window. (Daytime shoot)");
+      //Serial.println( F(" - we're in the shooting window. (Daytime shoot)"));
     }
   }
   else
   {
     //Shoot through midnight
-    //Serial.println("STM");
+    //Serial.println( F("STM"));
     if ((nextHour >= EndHour) && (nextHour < StartHour))
     {
         //We haven't yet started for the day:
-        //Serial.println(" - we haven't started for the day yet");
+        //Serial.println( F(" - we haven't started for the day yet"));
         nextHour = StartHour;
         nextShot = 0;
     }
     else
     {
-      //Serial.println(" - we're in the shooting window - STM");
+      //Serial.println( F(" - we're in the shooting window - STM"));
     }
   }
 
@@ -383,14 +383,14 @@ void SetAlarm1()
     if (StartHour > EndHour)
     {
       //STM
-      //Serial.println("STM in the day calculation");
+      //Serial.println( F("STM in the day calculation"));
       if (nextHour < EndHour)
       {
         //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
         //Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
         if (prevShootDay & ShootDays)
         {
-          //Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
+          //Serial.println( F(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n"));
           break;
         }
         else
@@ -762,7 +762,7 @@ void UpdateVoltage()
     if (VoltageReadingCounter < 8)
     {
       VoltageReading += analogRead(V_SENSE_PIN);
-      Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
+      //Serial.println("Voltage read #" + String(VoltageReadingCounter) + " = " + String(VoltageReading));
       VoltageReadingCounter += 1;
       //DelaymS (1000);
     }
@@ -776,13 +776,13 @@ void UpdateVoltage()
       if ((VoltageReading < 10) || (VoltageReading > 190))
       {
         VoltageReading = 10;
-        Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
+        //Serial.println( "YES!! Trapped an invalid voltage read at hour = " + String(thisHour));
       }
       VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
       //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
-      Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
+      //Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
       //Serial.println("Voltage string     = " + String(VoltageString));
-      Serial.println("Voltage string len = " + String(strlen(VoltageString)));
+      //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
       
       readVbatteryFlag = false;  // OK, all done, reset the flag.
       VoltageReading = 0;
@@ -1189,8 +1189,8 @@ void loop()
     if ((LastRunningState == HIGH) && (bitRead(PORTB, 1) == LOW))
     {
       //This is a falling edge - the Pi has just gone to sleep.
-      //Serial.println(" - PI_RUNNING went LOW");
-      //Serial.println("LastRunningState WAS high, and PI_RUNNING went LOW. (The Pi has gone to sleep)");
+      //Serial.println( F(" - PI_RUNNING went LOW"));
+      //Serial.println( F("LastRunningState WAS high, and PI_RUNNING went LOW. (The Pi has gone to sleep)"));
       DelaymS(2000); //Just to be sure
       digitalWrite(PI_POWER, LOW);    // Turn the Pi off.
       digitalWrite(PI_SHUTDOWN, LOW); // This should already be low.
@@ -1204,7 +1204,7 @@ void loop()
     {
       // This is a rising edge - the Pi's just woken up.
       // Set alarm2 in readiness to put it to sleep:
-      //Serial.println("LastRunningState WAS low, and PI_RUNNING went HIGH. The Pi has just woken up");
+      //Serial.println( F("LastRunningState WAS low, and PI_RUNNING went HIGH. The Pi has just woken up"));
       SetAlarm2(HIGH);
       LastRunningState = HIGH;
     }
