@@ -346,7 +346,14 @@ def main():
                 templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
             nextShot = arduinoStats.split(":")[1]
             if nextShot != "19999":
-                templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+                ArdInterval = str(readFromArduino("3", "String", False))
+                interval  = int(ArdInterval[5:7])
+                if interval > 60:
+                    # shootFast
+                    sfInterval = str(interval - 60)
+                    templateData['arduinoNextShot'] = "(every " + sfInterval + "s) " + arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+                else:
+                    templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
     except Exception as e:
         app.logger.debug(f'Time template error in /home: {e}')
 
