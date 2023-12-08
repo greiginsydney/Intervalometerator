@@ -183,9 +183,10 @@ void setup()
       //Serial.println( "  Temp[" + String(i) + "] = " + String(DailyTemps[i]));
     }
     //Serial.println( F("Values from EEPROM are: "));
-    //Serial.println( "  start hour         = " + String(StartHour));
-    //Serial.println( "  end hour           = " + String(EndHour));
-    //Serial.println( "  interval           = " + String(interval));
+    //Serial.println( "  start hour = " + String(StartHour));
+    //Serial.println( "  end hour   = " + String(EndHour));
+    //Serial.println( "  interval   = " + String(interval));
+    //Serial.println( "  wakePi     = " + String(WakePiHour) + " and run for " + String(WakePiDuration) + " minutes.");
   }
   else
   {
