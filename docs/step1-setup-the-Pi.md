@@ -3,9 +3,14 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the latest [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image.
+1. Prepare the memory card with the "Bullseye" [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. (Support for "Bookworm" will be added in the next update).
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
+
+![image](https://github.com/greiginsydney/Intervalometerator/assets/11004787/833fe4b4-9bf7-4104-bc66-2d94b66a9666)
+
+![image](https://github.com/greiginsydney/Intervalometerator/assets/11004787/5d7d7834-5338-47cd-a854-106022fadd67)
+
 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
 3. The boot process ends at a login screen. The default credentials are `pi` / `raspberry`.
