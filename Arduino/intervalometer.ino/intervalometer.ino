@@ -61,6 +61,7 @@ char version[6] = "4.6.0";
 #define MEMTempMax           0x08  // "
 #define MEM24Temp0           0x09  // Saved value for midnight.
 #define MEM24Temp23          0x20  // Not actually used in code: it's here for me to know the last memory location I've used
+#define MEMShootFastInterval 0x21
 
 //////////////////////////////////
 //          I2C SETUP           //
