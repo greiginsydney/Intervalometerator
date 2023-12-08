@@ -658,8 +658,8 @@ void setInterval(String incoming)
   else
   {
     shootFastInterval = 0;
-    shootFastCount    = 0; // Kills any shootFast sequence underway
   }
+  shootFastCount = 0; // Kill any shootFast sequence underway
 
   EEPROM.update(MEMShootDays,          ShootDays);
   EEPROM.update(MEMStartHour,          StartHour);
