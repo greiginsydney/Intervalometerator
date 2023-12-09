@@ -61,7 +61,6 @@ char version[6] = "4.6.0";
 #define MEMTempMax           0x08  // "
 #define MEM24Temp0           0x09  // Saved value for midnight.
 #define MEM24Temp23          0x20  // Not actually used in code: it's here for me to know the last memory location I've used
-#define MEMShootFastInterval 0x21
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -169,13 +168,12 @@ void setup()
   {
     //Serial.println( F("HEALTHY"));
     FlashLed(4); //Healthy boot
-    interval          = EEPROM.read(MEMInterval);
-    shootFastInterval = EEPROM.read(MEMShootFastInterval);
-    ShootDays         = EEPROM.read(MEMShootDays);
-    StartHour         = EEPROM.read(MEMStartHour);
-    EndHour           = EEPROM.read(MEMEndHour);
-    WakePiHour        = EEPROM.read(MEMWakePiHour);
-    WakePiDuration    = EEPROM.read(MEMWakePiDuration);
+    interval       = EEPROM.read(MEMInterval);
+    ShootDays      = EEPROM.read(MEMShootDays);
+    StartHour      = EEPROM.read(MEMStartHour);
+    EndHour        = EEPROM.read(MEMEndHour);
+    WakePiHour     = EEPROM.read(MEMWakePiHour);
+    WakePiDuration = EEPROM.read(MEMWakePiDuration);
 
     for (int i = 0; i <= 23; i++)
     {
@@ -198,15 +196,14 @@ void setup()
     rtc.set24Hour(); // Force 24-hour mode to be sure (even though that's its default anyway)
     // Default to 12:00:01 pm, January 1, 2018:
     setTimeDate("20180101120001");
-    EEPROM.update(MEMShootDays,         ShootDays);
-    EEPROM.update(MEMStartHour,         StartHour);
-    EEPROM.update(MEMEndHour,           EndHour);
-    EEPROM.update(MEMInterval,          interval);
-    EEPROM.update(MEMShootFastInterval, shootFastInterval);
-    EEPROM.update(MEMWakePiHour,        WakePiHour);
-    EEPROM.update(MEMWakePiDuration,    WakePiDuration);
-    EEPROM.update(MEMTempMin,           (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.update(MEMTempMax,           (int8_t)-128);
+    EEPROM.update(MEMShootDays,      ShootDays);
+    EEPROM.update(MEMStartHour,      StartHour);
+    EEPROM.update(MEMEndHour,        EndHour);
+    EEPROM.update(MEMInterval,       interval);
+    EEPROM.update(MEMWakePiHour,     WakePiHour);
+    EEPROM.update(MEMWakePiDuration, WakePiDuration);
+    EEPROM.update(MEMTempMin,        (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMax,        (int8_t)-128);
 
     //Initalise the temperature array to dummy values:
     for (int i = 0; i <= 23; i++)
@@ -661,11 +658,10 @@ void setInterval(String incoming)
   }
   shootFastCount = 0; // Kill any shootFast sequence underway
 
-  EEPROM.update(MEMShootDays,          ShootDays);
-  EEPROM.update(MEMStartHour,          StartHour);
-  EEPROM.update(MEMEndHour,            EndHour);
-  EEPROM.update(MEMInterval,           interval);
-  EEPROM.update(MEMShootFastInterval,  shootFastInterval);
+  EEPROM.update(MEMShootDays, ShootDays);
+  EEPROM.update(MEMStartHour, StartHour);
+  EEPROM.update(MEMEndHour,   EndHour);
+  EEPROM.update(MEMInterval,  interval);
 
   //This is prepared as a string here in preparation for the next time the Pi requests confirmation:
   sprintf(Intervalstring, "%c%02d%02d%02d", ShootDays, StartHour, EndHour, interval);
