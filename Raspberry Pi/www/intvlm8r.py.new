@@ -104,6 +104,12 @@ HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
 PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
 
+# /////// VERSION-RELATED STATICS ////////
+# UI components (features) will display if the Arduino is running this version or later:
+SHOW_TEMPS24     = "4.5.0"
+SHOW_VOLTS24     = "4.5.4"
+SHOW_SHUTDOWN_IN = "4.5.5"
+
 # Our user database:
 #users = {'admin': {'password': '### Paste the hash of the password here. See the Setup docs ###'}}
 users = {'admin': {'password': 'password'}}
@@ -430,6 +436,7 @@ def main():
                     piLastImageFile = 'thumbs/' + piLastImageFileAsJpg.replace((PI_PHOTO_DIR  + "/"), "")
                     piLastImageFile = piLastImageFile.replace(".JPG", "-thumb.JPG")
             else:
+                # piLastImageFile = 'default_image.JPG' # Uncomment this line to prevent a high-res image being shown on the home page. (Only happens if thumbs=0)
                 piLastImageFile = 'photos/' + piLastImageFile.replace((PI_PHOTO_DIR  + "/"), "")
             if ('/home/pi/photos/default_image.JPG' in FileList):
                 PI_PHOTO_COUNT -= 1
@@ -1146,7 +1153,7 @@ def thermal():
 
     arduinoVersion = str(getArduinoVersion('0'))
     # Start Temps24
-    if version.parse(arduinoVersion) >=  version.parse("4.5.0"):
+    if version.parse(arduinoVersion) >=  version.parse(SHOW_TEMPS24):
         time.sleep(0.1)
         Temps24 = []
         try:
@@ -1220,7 +1227,7 @@ def thermal():
     # ---------------------------------------------------------------
     # Start Volts24
     try:
-        if version.parse(arduinoVersion) >=  version.parse("4.5.4"):
+        if version.parse(arduinoVersion) >=  version.parse(SHOW_VOLTS24):
             batteryVoltageArray = readFromArduino("8", "String", False)  # All 24 voltage readings (offset by 10) as a string of bytes
             voltageReadings = []                        # A list that stores all 24 voltage readings for the page to render
             if (ord(batteryVoltageArray[0]) != 255) and (len(batteryVoltageArray) == 24):
@@ -1504,14 +1511,12 @@ def system():
             templateData['wakePiTime']     = wakePiTime
             templateData['wakePiDuration'] = rawWakePi [2:4]
             if wakePiTime != "25":
-                if version.parse(arduinoVersion) >=  version.parse("4.5.5"):
+                if version.parse(arduinoVersion) >=  version.parse(SHOW_SHUTDOWN_IN):
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
-                    if 0 <= shutdownAt <= 61:
+                    if 0 <= shutdownAt <= 119:
                         if tempTime != '':
                             shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.                            
                             shutdownAt = shutdownAt - int(tempTime.split(":")[1])
-                            if shutdownAt < 1:
-                                shutdownAt += 60
                             templateData['piShutdownIn'] = shutdownAt
                         else:
                             templateData['piShutdownIn'] = 'Unknown'

@@ -224,7 +224,7 @@ void setup()
   }
 
   UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
-  
+
   //Initalise the VM array:
   for (int i = 0; i <= 23; i++)
   {
@@ -776,7 +776,7 @@ void UpdateVoltage()
       }
       VoltageString[thisHour] = byte(VoltageReading);      // Insert this voltage reading in the array
       //EEPROM.write(MEM24Volt0 + thisHour, byte(VoltageReading));
-      //Serial.println("Final Voltage read = " + String(VoltageReading) + " Volts");
+      //Serial.println("Hour = " + String(thisHour) + ". Final Voltage read is " + String(VoltageReading) + " Volts. (Subtract 10 and move the decimal place)");
       //Serial.println("Voltage string     = " + String(VoltageString));
       //Serial.println("Voltage string len = " + String(strlen(VoltageString)));
       
@@ -1211,13 +1211,14 @@ void loop()
   // - taken any photo that's required
   // - serviced any housekeeping alarm
   // - actioned any changes pushed via the Pi
-  // ... so now provided: 
+  // So now provided: 
   //    - the Pi isn't running, 
   //    - ALARM isn't still set,
-  //    - we're not still mid-way through a voltage reading loop
+  //    - we're not still mid-way through a voltage reading loop,
+  //    - or have shootFast images still to take
   //   ... we can sleep!
 
-  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (shootFastCount == 0))
+  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (readVbatteryFlag == false) && (shootFastCount == 0))
   {
     // The Pi is powered-off. It's safe for us to sleep
     //Serial.println( F(" - About to sleep"));

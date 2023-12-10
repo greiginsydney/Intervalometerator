@@ -166,7 +166,7 @@ input[type=radio] {
 /* Start: Progress table */
 
 td#prog_td {
-	padding: 0px;
+	padding: 4px 4px 4px 4px;
 }
 
 select#prog_sel {
@@ -175,6 +175,7 @@ select#prog_sel {
 	width: 100%;
 	background-color: transparent;
 	text-overflow: ellipsis;
+	text-align: center;
 
 	-webkit-appearance: auto;
 	-moz-appearance: auto;
@@ -185,7 +186,7 @@ select#prog_sel {
 	/* box-sizing: border-box; */
 }
 
-option#prog_opt {
+table#progress .option {
 	font-size: 1.1em;
 }
 
