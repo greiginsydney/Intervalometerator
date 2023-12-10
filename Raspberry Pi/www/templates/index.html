@@ -16,18 +16,19 @@
 <div class="container">
 <table class="top-header noborder">
 	<tr>
-		<td width="15%" ></td>
-		<td ><h1>Intervalometerator</h1></td>
+		<td width="15%"></td>
+		<td><h1>Intervalometerator</h1></td>
 		<td width="15%" class="hamburger" onclick="openNav()">&#9776;</td>
 	</tr>
 	<tr>
-		<td width="15%" ></td>
+		<td width="15%"></td>
 		{% if current_user.is_authenticated %}
-			<td ><h2>{{ locationName }}</h2></td>
+			<td><h2>{{ locationName }}</h2></td>
 		{% else %}
 			<td ><h2>&nbsp;</h2></td>
 		{% endif %}
-	</td>
+		</td>
+	</tr>
 </table>
 <!-- MENU STARTS -->
 <div class="menu">
@@ -94,6 +95,8 @@
 {% block content %}
 {% endblock %}
 
+<br>
+	
 {% if not current_user.is_anonymous %}
 	<script>
 	updateMsgBackground()
@@ -191,21 +194,25 @@
 			submitButton = document.activeElement;
 		};
 
-		if (submitButton.value == 'preview')
+		switch (submitButton.value)
 		{
-			col[0].innerHTML = 'Preview photo requested';
-		}
-		else if (submitButton.value == 'Reboot')
-		{
-			col[0].innerHTML = 'Reboot requested';
-		}
-		else if (submitButton.value == 'hbnow')
-		{
-			col[0].innerHTML = 'Initiating heartbeat';
-		}
-		else
-		{
-			col[0].innerHTML = 'Applying changed settings';
+			case 'preview':
+				col[0].innerHTML = 'Preview photo requested';
+				break;
+			case 'Reboot':
+				col[0].innerHTML = 'Reboot requested';
+				break;
+			case 'hbnow':
+				col[0].innerHTML = 'Initiating heartbeat';
+				break;
+			case 'wake':
+				col[0].innerHTML = 'Trying to wake the camera';
+				break;
+			case 'tfrClear':
+				col[0].innerHTML = 'Clearing the log file';
+				break;
+			default:
+				col[0].innerHTML = 'Applying changed settings';
 		}
 		row[0].className = 'white';
 		return true;
@@ -223,5 +230,6 @@
 
 	</script>
 {% endif %}
+</div>
 </body>
 </html>

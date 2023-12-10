@@ -24,7 +24,7 @@
 	</tr>
 </table> 
 
-<form method="get">
+<form method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		{% if fileCount != "Unknown" %}
 			<tr>
@@ -48,7 +48,7 @@
 			{% endif %}
 				<td>
 					<div class="alignleft">Available shots (days):</div>
-					<div class="alignright">{{ availableShots }} ({{ cameraDaysFree }})</div>
+					<div class="alignright">{{ availableShots }} ({{ '&lt;1'|safe if (cameraDaysFree|int == 0) else cameraDaysFree }})</div>
 				</td>
 			</tr>
 			<tr {{ 'class="red"'| safe if cameraBattery == "Low" }}>
@@ -66,7 +66,7 @@
 			</tr>
 			<tr class="noborder">
 				<td>
-					<button name="wakeCamera" type="submit" class="hwbutton" value="1">Wake the camera</button>
+					<button name="wakeCamera" type="submit" class="hwbutton" value="wake">Wake the camera</button>
 				</td>
 			</tr>
 		{% endif %}
@@ -95,7 +95,7 @@
 	{% endif %}
 		<td>
 			<div class="alignleft">Pi storage free (days):</div>
-			<div class="alignright">{{ piSpaceFree }} ({{ piDaysFree }})</div>
+			<div class="alignright">{{ piSpaceFree }} ({{ '&lt;1'|safe if (piDaysFree|int == 0) else piDaysFree }})</div>
 		</td>
 	</tr>
 </table>

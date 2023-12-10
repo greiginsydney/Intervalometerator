@@ -25,18 +25,16 @@ from packaging import version   # getArduinoVersion and related
 from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
 import configparser             # Ini file
-import exifreader               # Thumbnails
 import fnmatch                  # Testing filenames
-import imageio                  # Thumbnails
+import gphoto2 as gp
 import importlib.util           # Testing installed packages
-import inspect
+import inspect                  # /network page
 import io                       # Camera preview
 import json
 import logging
 import math                     # Ceiling in /thermal calcs
 import os                       # Hostname
 import psutil
-import rawpy                    # Thumbnails
 import re                       # RegEx. Used in Copy Files & createDestFilename
 import requests                 # Heartbeat
 from smbus2 import SMBus        # I2C
@@ -46,7 +44,13 @@ import subprocess
 import sys
 import time
 
-import gphoto2 as gp
+# Protect against missing components (specific to thumbs)
+try:
+    import exifreader           # Thumbnails
+    import imageio              # Thumbnails
+    import rawpy                # Thumbnails
+except:
+    pass                        # I can't log anything here because logging hasn't been initiated yet
 
 from werkzeug.security import check_password_hash
 
@@ -339,12 +343,6 @@ def main():
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
-    args = request.args.to_dict()
-    if args.get('wakeCamera'):
-        writeString("WC", 2) # Sends the WAKE command to the Arduino
-        app.logger.debug('Returned after detecting camera wake command')
-        return redirect(url_for('main'))
-
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
 
     templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
@@ -358,7 +356,14 @@ def main():
                 templateData['arduinoLastShot'] = arduinoDoW[int(lastShot[0:1])] + " " + lastShot[1:3]+ ":" + lastShot[3:5]
             nextShot = arduinoStats.split(":")[1]
             if nextShot != "19999":
-                templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+                ArdInterval = str(readFromArduino("3", "String", False))
+                interval  = int(ArdInterval[5:7])
+                if interval > 60:
+                    # shootFast
+                    sfInterval = str(interval - 60)
+                    templateData['arduinoNextShot'] = "(every " + sfInterval + "s) " + arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
+                else:
+                    templateData['arduinoNextShot'] = arduinoDoW[int(nextShot[0:1])] + " " + nextShot[1:3]+ ":" + nextShot[3:5]
     except Exception as e:
         app.logger.debug(f'Time template error in /home: {e}')
 
@@ -469,6 +474,18 @@ def main():
     except Exception as e:
         app.logger.debug(f'Exception reading STATUS in piTransfer.log file: {e}')
     return render_template('main.html', **templateData)
+
+
+@app.route("/", methods = ['POST'])
+@login_required
+def mainPOST():
+    """
+    Just wake the camera and return to main
+    Purely so we can capture the 'wake camera' button for the progress message
+    """
+    writeString("WC", 2) # Sends the WAKE command to the Arduino
+    app.logger.debug('main page POSTed the camera wake command')
+    return redirect(url_for('main'))
 
 
 @app.route("/getTime")
@@ -627,11 +644,6 @@ def camera():
     if args.get('preview'):
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
-    if args.get('wakeCamera'):
-        writeString("WC", 2) # Sends the WAKE command to the Arduino
-        app.logger.debug('Returned after detecting camera wake command')
-        return redirect(url_for('camera'))
-
     try:
         camera, context, config = connectCamera(1)
         if camera:
@@ -707,52 +719,57 @@ def cameraPOST():
     This page is where you manage all the camera settings
     """
     preview = None
-    try:
-        camera, context, config = connectCamera(1)
-        if camera:
-            if request.form['CamSubmit'] == 'apply':
-                app.logger.debug('-- Camera Apply selected')
-                cameraMfr = request.form.get('cameraMfr')
-                app.logger.debug(f'cameraMfr = {cameraMfr}')
-                if cameraMfr == 'Canon':
-                    #This *does* write a new setting to the camera:
-                    node = config.get_child_by_name('imageformat') #
-                    node.set_value(str(request.form.get('img')))
-                    if (request.form.get('aperture') != None):
-                        node = config.get_child_by_name('aperture')
-                        node.set_value(str(request.form.get('aperture')))
-                elif cameraMfr == 'Nikon':
-                    #This *does* write a new setting to the camera:
-                    node = config.get_child_by_name('imagequality') #
-                    node.set_value(str(request.form.get('img')))
-                    if (request.form.get('aperture') != None):
-                        node = config.get_child_by_name('f-number')
-                        node.set_value(str(request.form.get('aperture')))
-                else:
-                    pass
-                # Don't bother sending any of the "read only" settings:
-                if (request.form.get('wb') != None):
-                    node = config.get_child_by_name('whitebalance')
-                    node.set_value(str(request.form.get('wb')))
-                if (request.form.get('iso') != None):
-                    node = config.get_child_by_name('iso')
-                    node.set_value(str(request.form.get('iso')))
-                if (request.form.get('shutter') != None):
-                    node = config.get_child_by_name('shutterspeed')
-                    node.set_value(str(request.form.get('shutter')))
-                if (request.form.get('exp') != None):
-                    node = config.get_child_by_name('exposurecompensation')
-                    node.set_value(str(request.form.get('exp')))
-                camera.set_config(config, context)
+    
+    if request.form['wakeCamera'] == 'wake':
+        writeString("WC", 2) # Sends the WAKE command to the Arduino
+        app.logger.debug('camera page POSTed the camera wake command')
+    else:
+        try:
+            camera, context, config = connectCamera(1)
+            if camera:
+                if request.form['CamSubmit'] == 'apply':
+                    app.logger.debug('-- Camera Apply selected')
+                    cameraMfr = request.form.get('cameraMfr')
+                    app.logger.debug(f'cameraMfr = {cameraMfr}')
+                    if cameraMfr == 'Canon':
+                        #This *does* write a new setting to the camera:
+                        node = config.get_child_by_name('imageformat') #
+                        node.set_value(str(request.form.get('img')))
+                        if (request.form.get('aperture') != None):
+                            node = config.get_child_by_name('aperture')
+                            node.set_value(str(request.form.get('aperture')))
+                    elif cameraMfr == 'Nikon':
+                        #This *does* write a new setting to the camera:
+                        node = config.get_child_by_name('imagequality') #
+                        node.set_value(str(request.form.get('img')))
+                        if (request.form.get('aperture') != None):
+                            node = config.get_child_by_name('f-number')
+                            node.set_value(str(request.form.get('aperture')))
+                    else:
+                        pass
+                    # Don't bother sending any of the "read only" settings:
+                    if (request.form.get('wb') != None):
+                        node = config.get_child_by_name('whitebalance')
+                        node.set_value(str(request.form.get('wb')))
+                    if (request.form.get('iso') != None):
+                        node = config.get_child_by_name('iso')
+                        node.set_value(str(request.form.get('iso')))
+                    if (request.form.get('shutter') != None):
+                        node = config.get_child_by_name('shutterspeed')
+                        node.set_value(str(request.form.get('shutter')))
+                    if (request.form.get('exp') != None):
+                        node = config.get_child_by_name('exposurecompensation')
+                        node.set_value(str(request.form.get('exp')))
+                    camera.set_config(config, context)
 
-            if request.form['CamSubmit'] == 'preview':
-                app.logger.debug('-- Camera Preview selected')
-                getPreviewImage(camera, config)
-                preview = 1
+                if request.form['CamSubmit'] == 'preview':
+                    app.logger.debug('-- Camera Preview selected')
+                    getPreviewImage(camera, config)
+                    preview = 1
 
-            camera.exit()
-    except Exception as e:
-        app.logger.debug(f'Unknown camera POST error: {e}')
+                camera.exit()
+        except Exception as e:
+            app.logger.debug(f'Unknown camera POST error: {e}')
 
     return redirect(url_for('camera', preview = preview))
 
@@ -819,6 +836,10 @@ def intervalometer():
     templateData['piAvailableShots'] = str(round(piBytesFree / largestImageSize))
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
+
+    arduinoVersion = str(getArduinoVersion('0'))
+    if version.parse(arduinoVersion) >=  version.parse("4.6.0"):
+        templateData.update({'shootFast' : 1})
 
     return render_template('intervalometer.html', **templateData)
 
@@ -2635,6 +2656,7 @@ def network():
     A 'hidden' page (not in the main menu) that displays wifi & wired networking stats and diagnostic information
     """
     networkData = []
+    wifiData = []
     try:
         interfaces = psutil.net_if_addrs()
         ifstats = psutil.net_if_stats()
@@ -2668,17 +2690,91 @@ def network():
                     continue # Skip it - we pulled it earlier
                 networkData.append({'section': interface, 'key': field, 'value': (getattr(statsTuple, field)) })
 
-        # Loop through the interfaces again, pulling out the WiFi ones. 
-        # Now scan & display any available WiFi networks.
-        #for interface in interfaces.keys():
-        #    if 'wlan' not in interface:
-        #        continue
-            #iwlist [wlan0] scan.
-        #    networkData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+        # Loop through the interfaces again, pulling out the WiFi ones.
+        for interface in interfaces.keys():
+            if 'wlan' not in interface:
+                continue
+            # Now scan & display any available WiFi networks.
+            wifi_data = scan_wifi_networks(interface)
+            wifiData.append({'section': 'Available WiFi networks', 'key': '', 'value': '' })
+            wifiData.append({'section': interface, 'key': '', 'value': '' })
+            if len(wifi_data) == 0:
+                wifiData.append({'section': interface, 'key': '', 'value': 'none found' })
+            for i in range(len(wifi_data)):
+                for key in wifi_data[i]:
+                    wifiData.append({'section': interface, 'key': key, 'value': wifi_data[i][key] })
     except Exception as e:
         app.logger.debug(f'network error: {e}')
         flash('Unknown error', 'red')
-    return render_template('network.html', networkData = networkData)
+    return render_template('network.html', networkData = networkData, wifiData = wifiData)
+
+
+def scan_wifi_networks(interface):
+    """
+    Scans the nearby WiFi networks and displays the results.
+ 
+    A hybrid of:
+    https://github.com/Xilef12000/RPi0w-wifi-catcher/blob/main/iwlist.py
+    
+    Returns:
+    - list of dictionaries:
+        A list of dictionaries containing the details of each WiFi network.
+        Each dictionary contains the following keys:
+        - 'SSID': The name of the WiFi network.
+        - 'BSSID': The MAC address of the WiFi network.
+        - 'Signal': The signal strength of the WiFi network in dBm.
+        - 'Channel': The channel number of the WiFi network.
+    """
+ 
+    # Run the command to scan for nearby WiFi networks using the 'iwlist' command.
+    # The output will be in the form of a byte string.
+    cmd = (f'/usr/bin/sudo /usr/sbin/iwlist {interface} scan')
+    output = os.popen(cmd).read()
+    # Split the output into lines.
+    networks = output.split('    Cell ')
+    # Initialize an empty list to store each WiFi network's details.
+    wifi_networks = []
+    
+    for network in networks:
+        lines = network.split('\n')
+        # Iterate over the lines to extract the WiFi network details.
+        for line in lines:
+            line = line.strip()
+            # Check if the line contains the SSID (network name).
+            if 'ESSID' in line:
+                # Extract the SSID from the line.
+                ssid = line.split(':')[1].strip().strip('"')
+                # Initialize a dictionary to store the details of the WiFi network.
+                wifi_network = {'SSID': ssid}
+        
+        # Iterate over the lines to extract the WiFi network details.
+        for line in lines:
+            line = line.strip()
+            # Check if the line contains the BSSID (MAC address).
+            if 'Address' in line:
+                # Extract the BSSID from the line.
+                bssid = line.split()[3]
+                # Add the BSSID to the dictionary.
+                wifi_network['BSSID'] = bssid
+            # Check if the line contains the signal strength.
+            elif 'Signal level' in line:
+                # Extract the signal strength from the line.
+                signal = line.split('=')[2]#.split()[0]
+                # Add the signal strength to the dictionary.
+                wifi_network['Signal'] = signal
+                quality = line.split('=')[1].split('/')[0]
+                # Add the signal strength to the dictionary.
+                wifi_network['Quality'] = quality
+            # Check if the line contains the channel number.
+            elif 'Channel:' in line:
+                # Extract the channel number from the line.
+                channel = line.split(':')[1]
+                # Add the channel number to the dictionary.
+                wifi_network['Channel'] = channel
+                # Add the dictionary to the list of WiFi networks.
+                wifi_networks.append(wifi_network)
+    # Return the list of WiFi networks.
+    return wifi_networks
 
 
 def runSubprocess(cmd, returnValue=None):
@@ -2694,7 +2790,7 @@ def runSubprocess(cmd, returnValue=None):
             returnValue = stdoutdata.strip()
         if stderrdata:
             stderrdata = stderrdata.strip()
-            app.logger.debug(f'{calledBy} called runSubprocess which returned errdata: {e}')
+            app.logger.debug(f'{calledBy} called runSubprocess which returned errdata: {stderrdata}')
     except Exception as e:
         app.logger.debug(f'{calledBy} called runSubprocess which threw: {e}')
     return returnValue
@@ -2745,10 +2841,16 @@ def getShotsPerDay():
             startHour = int(ArdInterval[1:3])
             endHour   = int(ArdInterval[3:5])
             interval  = int(ArdInterval[5:7])
-            if endHour >= startHour:
-                shotsPerDay = (endHour - startHour) * (60 / interval)
+
+            if (interval > 60):
+                shotsPerHour = 60 * (60 / (interval - 60))
             else:
-                shotsPerDay = ((endHour + 24) - startHour) * (60 / interval) #Future: when I finally code overnight shot handling
+                shotsPerHour = (60 / interval)
+
+            if endHour >= startHour:
+                shotsPerDay = (endHour - startHour) * shotsPerHour
+            else:
+                shotsPerDay = ((endHour + 24) - startHour) * shotsPerHour # STM
             app.logger.debug(f'getShotsPerDay returned: {shotsPerDay}')
             return shotsPerDay
         else:

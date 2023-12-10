@@ -15,4 +15,69 @@
 		</tr>
 	{% endfor %}
 	</table>
+
+	<table>
+	{% for dataVal in wifiData %}
+		<tr>
+		{% if dataVal['key'] == '' and dataVal['value'] == '' %}
+			<th>{{ dataVal['section'] }}</th>
+		</tr>
+		{% elif dataVal['key'] == 'SSID' %}
+			<td class="noborder">
+			<button type="button" class="collapsible">{{ dataVal['value'] }}</button>
+			<div class="content">
+			<table class="embedded">
+		{% else %}
+			<td class="noborder">
+			{% if dataVal['key'] == 'Quality' %}
+				<fieldset>
+					<label>Quality</label>
+					{% set qual = ((dataVal['value'] | int / 70 ) * 100) | round | int %}
+					<div class="alignright">{{ dataVal['value'] }}/70</div>
+					<span>
+						<div class="meter-gauge">
+							<span style="width: {{ 100 - qual }}%;"></span>
+						</div>
+					</span>
+				</fieldset>
+				</td>
+				</tr>
+			{% else %}
+				<div class="alignleft">{{ dataVal['key'] }}</div>
+				<div class="alignright">{{ dataVal['value'] }}</div>
+				</td>
+			{% endif %}
+			{%- if loop.nextitem is defined %}
+				{% if loop.nextitem['key'] == 'SSID' or loop.nextitem['key'] == '' %}
+				</table>
+				</div>
+				</td>
+				{% endif %}
+			{% else %}
+				</table>
+				</div>
+				</td>
+			{% endif %}
+		</tr>
+		{% endif %}
+	{% endfor %}
+	</table>
+
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+	this.classList.toggle("active");
+    var cont = this.nextElementSibling;
+	if (cont.style.display === "block") {
+      cont.style.display = "none";
+    } else {
+      cont.style.display = "block";
+    }
+  });
+}
+</script>
+
 {% endblock %}

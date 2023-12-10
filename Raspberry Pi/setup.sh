@@ -165,7 +165,8 @@ install_apps ()
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
 		echo -e ""$GREEN"Installing bcrypt"$RESET""
-		pip3 install -U "bcrypt<4.0.0"
+		# pip3 install -U "bcrypt<4.0.0" See issue #129
+		pip3 install -U bcrypt
 		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
 		pip3 install pynacl cryptography gssapi paramiko
 	fi
@@ -241,6 +242,8 @@ install_apps ()
 		make
 		make install
 		ldconfig
+
+  		cd /home/${SUDO_USER}/
 
 		echo -e ""$GREEN"Generate udev rules for the camera"$RESET""
 		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
@@ -326,7 +329,7 @@ install_apps ()
 	if grep -q 'i2c-bcm2708' /etc/modules; then
 		echo 'i2c-bcm2708 module already exists'
 	else
-		echo ' adding i2c-bcm2708 to /etc/modules/'
+		echo 'adding i2c-bcm2708 to /etc/modules/'
 		echo 'i2c-bcm2708' >> /etc/modules
 	fi
 	if grep -q 'i2c-dev' /etc/modules; then
@@ -352,7 +355,7 @@ install_apps ()
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 	else
-		echo ' /etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
+		echo '/etc/modprobe.d/raspi-blacklist.conf does not exist - nothing to do.'
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo -e ""$GREEN"Creating gphoto2 shortcuts"$RESET""
@@ -1464,33 +1467,68 @@ test_install ()
 	remoteit=$(dpkg -s remoteit 2> /dev/null)
 	set -e #Resume the error trap
 
+	remoteit_version=0
 	if [[ $remoteit == *"install ok"* ]];
 	then
+		if [ -f /usr/lib/systemd/system/connectd.service ];
+		then
+			((remoteit_version=remoteit_version+1))
+		fi
+		if [ -f /usr/lib/systemd/system/remoteit-refresh.service ];
+		then
+			((remoteit_version=remoteit_version+2))
+		fi
+		case $remoteit_version in
+			(0)
+				echo -e ""$YELLOW"FAIL:"$RESET" remote.it is installed, with NEITHER legacy nor 2023 services detected. Try a reinstall?"
+				;;
+			(1)
+				echo -e ""$GREEN"PASS:"$RESET" remote.it is installed - legacy config (uses connectd.service)"
+				;;
+			(2)
+				echo -e ""$GREEN"PASS:"$RESET" remote.it is installed - 2023 config (uses remoteit-refresh.service)"
+				;;
+			(3)
+				echo -e ""$YELLOW"FAIL:"$RESET" remote.it is installed, with conflicting config detected (legacy + 2023 services)"
+				;;
+		esac
+
 		if systemctl is-active --quiet schannel;
 		then
-			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remoteit)"
+			echo -e ""$GREEN"PASS:"$RESET" schannel  service is running (remote.it)"
 		else
-			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remoteit)"
+			echo -e ""$YELLOW"FAIL:"$RESET" schannel  service is dead (remote.it)"
 		fi
 
-		if [ -f /etc/systemd/system/connectd.service ];
+		# Test health of a legacy config:
+		if [[ $remoteit_version == 1 ]];
 		then
-			if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+			if [ -f /etc/systemd/system/connectd.service ];
 			then
-				echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+				if  grep -q 'After=network.target rc-local.service celery.service' /etc/systemd/system/connectd.service;
+				then
+					echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
+				else
+					echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+				fi
 			else
-				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 			fi
-		else
-			echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 		fi
-
+		
+		# Test health of a 2023 config:
+		# If present, the service name will be injected into the start of the service list, so it displays first, retaining the correct context.
+		
 	else
-		echo -e ""$GREEN"PASS:"$RESET" remoteit  service is not installed"
+		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed"
 	fi
 
 	matchRegex="\s*Names=([\.[:alnum:]-]*).*LoadState=(\w*).*ActiveState=(\w*).*SubState=(\w*).*" # Bash doesn't do digits as "\d"
 	serviceList="setTime cameraTransfer piTransfer heartbeat.timer apt-daily.timer apt-daily.service"
+	if [[ $remoteit_version == 2 ]];
+	then
+		serviceList="remoteit-refresh.service ${serviceList}"
+	fi
 	for service in $serviceList; do
 		status=$(systemctl show $service)
 		if [[ $status =~ $matchRegex ]] ;
@@ -1565,7 +1603,7 @@ remoteit()
 {
 	if [ -f /usr/lib/systemd/system/connectd.service ];
 	then
-		echo -e 'remoteit is installed'
+		echo -e ""$GREEN"PASS:"$RESET" remote.it   is   installed - legacy version"
 		if [ -f /etc/systemd/system/connectd.service ];
 		then
 			#There's already a customised version of connectd.service
@@ -1583,12 +1621,18 @@ remoteit()
 			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
 		fi
 	else
-		echo -e 'remoteit is not installed'
+		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed - legacy version"
 		if [ -f /etc/systemd/system/connectd.service ];
 		then
 			rm -f /etc/systemd/system/connectd.service;
 			echo 'Removed /etc/systemd/system/connectd.service'
 		fi
+	fi
+	if [ -f /usr/lib/systemd/system/remoteit-refresh.service ];
+	then
+		echo -e ""$GREEN"PASS:"$RESET" remote.it   is   installed - current (2023) version"
+	else
+		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed - current (2023) version"
 	fi
 }
 

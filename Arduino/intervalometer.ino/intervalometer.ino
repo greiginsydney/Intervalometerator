@@ -17,11 +17,9 @@ References:
  https://github.com/sparkfun/SparkFun_DS3234_RTC_Arduino_Library
  https://www.hackster.io/aardweeno/controlling-an-arduino-from-a-pi3-using-i2c-59817b
 */
-// Last updated/changed in version 4.5.5:
-// - rejigged 'shutdown in' and related alarm2 code
-// - updated voltmeter array initialisation
-// - prevented sleep if voltmeter still running
-char version[6] = "4.5.5";
+// Last updated/changed in version 4.6.0:
+// - added 'shootFast'
+char version[6] = "4.6.0";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
@@ -52,17 +50,17 @@ char version[6] = "4.5.5";
 //////////////////////////////////
 //   EEPROM memory allocations  //
 //////////////////////////////////
-#define MEMInterval   0x00
-#define MEMAlarm2     0x01
-#define MEMShootDays  0x02
-#define MEMStartHour  0x03
-#define MEMEndHour    0x04
-#define MEMWakePiHour 0x05
-#define MEMWakePiDuration 0x06
-#define MEMTempMin    0x07  // Changed from int (2 bytes) to int8_t (1 byte - signed) in 4.5.0
-#define MEMTempMax    0x08  // "
-#define MEM24Temp0    0x09  // Saved value for midnight.
-#define MEM24Temp23   0x20  // Not actually used in code: it's here for me to know the last memory location I've used
+#define MEMInterval          0x00
+#define MEMAlarm2            0x01
+#define MEMShootDays         0x02
+#define MEMStartHour         0x03
+#define MEMEndHour           0x04
+#define MEMWakePiHour        0x05
+#define MEMWakePiDuration    0x06
+#define MEMTempMin           0x07  // Changed from int (2 bytes) to int8_t (1 byte - signed) in 4.5.0
+#define MEMTempMax           0x08  // "
+#define MEM24Temp0           0x09  // Saved value for midnight.
+#define MEM24Temp23          0x20  // Not actually used in code: it's here for me to know the last memory location I've used
 
 //////////////////////////////////
 //          I2C SETUP           //
@@ -96,6 +94,8 @@ byte   todayAsBits = 0;         // Used in Loop() to determine if we will shoot 
 byte   StartHour = 00;          // Default start hour
 byte   EndHour   = 23;          // Default end hour
 byte   interval  = 15;          // Default spacing between photos. Defaults to a photo every 15 minutes
+byte   shootFastInterval = 0;   // Spacing between photos when in 'shootFast' mode, multiple shots per minute
+byte   shootFastCount = 0;      // The number of shots remaining in this 'shootFast' interval (this minute). (Global so it can be killed by setInterval if necessary)
 byte   WakePiHour = 25;         // At what hour each day do we wake the Pi. Hour in 24-hour time. Changeable from the Pi
 byte   WakePiDuration = 30;     // This is how long we leave the Pi awake for. Changeable from the Pi
 byte   PiShutdownMinute = 0;    // The value pushed to Alarm2 after the Pi wakes up. This becomes the time we'll shut it down
@@ -185,6 +185,7 @@ void setup()
     //Serial.println( "  start hour = " + String(StartHour));
     //Serial.println( "  end hour   = " + String(EndHour));
     //Serial.println( "  interval   = " + String(interval));
+    //Serial.println( "  wakePi     = " + String(WakePiHour) + " and run for " + String(WakePiDuration) + " minutes.");
   }
   else
   {
@@ -195,22 +196,31 @@ void setup()
     rtc.set24Hour(); // Force 24-hour mode to be sure (even though that's its default anyway)
     // Default to 12:00:01 pm, January 1, 2018:
     setTimeDate("20180101120001");
-    EEPROM.update(MEMShootDays, ShootDays);
-    EEPROM.update(MEMStartHour, StartHour);
-    EEPROM.update(MEMEndHour, EndHour);
-    EEPROM.update(MEMInterval, interval);
-    EEPROM.update(MEMWakePiHour, WakePiHour);
+    EEPROM.update(MEMShootDays,      ShootDays);
+    EEPROM.update(MEMStartHour,      StartHour);
+    EEPROM.update(MEMEndHour,        EndHour);
+    EEPROM.update(MEMInterval,       interval);
+    EEPROM.update(MEMWakePiHour,     WakePiHour);
     EEPROM.update(MEMWakePiDuration, WakePiDuration);
-    EEPROM.update(MEMTempMin, (int8_t)127); // Initialise to extremes, so next pass they'll be overwritten with valid values
-    EEPROM.update(MEMTempMax, (int8_t)-128);
+    EEPROM.update(MEMTempMin,        (int8_t)127); //Initialise to extremes, so next pass they'll be overwritten with valid values
+    EEPROM.update(MEMTempMax,        (int8_t)-128);
 
-    // Initalise the temperature array to dummy values:
+    //Initalise the temperature array to dummy values:
     for (int i = 0; i <= 23; i++)
     {
       // TODO: Do we need to initialise the temperature EPROM values here too?
       DailyTemps[i] = (int8_t)-128;
     }
     //Serial.println("Default values burnt to RAM are interval = " + String(interval));
+  }
+
+  if (interval > 60)
+  {
+    shootFastInterval = interval - 60;
+  }
+  else
+  {
+    shootFastInterval = 0;
   }
 
   UpdateTempMinMax("", -1); // Reset or initialise the temperature readings on boot
@@ -283,6 +293,8 @@ void SetAlarm1()
 {
   //printTime();
 
+  byte tempInterval = interval; //Global 'interval' might also include the offset 'shootFast' values we need to retain and handle carefully
+ 
   byte nextDay  = rtc.getDay();
   byte nextShot = rtc.getMinute();
   byte nextHour = rtc.getHour();
@@ -295,10 +307,15 @@ void SetAlarm1()
   //     nextShot = 59;
   //  }
 
+  if (tempInterval > 60)
+  {
+    tempInterval = 1; //If shootFast, we set alarm 1 for every minute
+  }
+ 
   do
   {
     nextShot++;
-  } while (nextShot % interval != 0);
+  } while (nextShot % tempInterval != 0);
 
   if (nextShot >= 60) // Correct for wrapping around the hour
   {
@@ -314,7 +331,7 @@ void SetAlarm1()
   if (StartHour < EndHour)
   {
     //Normal daytime shoot, or 24hr operation
-    //Serial.println("Trad daytime shoot");
+    //Serial.println( F("Trad daytime shoot"));
     if (nextHour < StartHour)
     {
       //We haven't yet started for the day:
@@ -330,23 +347,23 @@ void SetAlarm1()
     }
     else
     {
-      //Serial.println(" - we're in the shooting window. (Daytime shoot)");
+      //Serial.println( F(" - we're in the shooting window. (Daytime shoot)"));
     }
   }
   else
   {
     //Shoot through midnight
-    //Serial.println("STM");
+    //Serial.println( F("STM"));
     if ((nextHour >= EndHour) && (nextHour < StartHour))
     {
         //We haven't yet started for the day:
-        //Serial.println(" - we haven't started for the day yet");
+        //Serial.println( F(" - we haven't started for the day yet"));
         nextHour = StartHour;
         nextShot = 0;
     }
     else
     {
-      //Serial.println(" - we're in the shooting window - STM");
+      //Serial.println( F(" - we're in the shooting window - STM"));
     }
   }
 
@@ -363,14 +380,14 @@ void SetAlarm1()
     if (StartHour > EndHour)
     {
       //STM
-      //Serial.println("STM in the day calculation");
+      //Serial.println( F("STM in the day calculation"));
       if (nextHour < EndHour)
       {
         //It's after midnight, so we've rolled into the next day. Should we be shooting or not?
         //Serial.println(" - today is " + String(nextDay) + ", yesterday was " + String(yesterday) + "\r\n");
         if (prevShootDay & ShootDays)
         {
-          //Serial.println(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n");
+          //Serial.println( F(" - yesterday was a shooting day, so our next shot is *today*. Keep shooting\r\n"));
           break;
         }
         else
@@ -629,7 +646,17 @@ void setInterval(String incoming)
   ShootDays = incoming.charAt(0);
   StartHour = (Validate (StartHour,    incoming.substring(1, 3).toInt(), 00, 23));
   EndHour   = (Validate (EndHour,      incoming.substring(3, 5).toInt(), 01, 24));
-  interval  = (Validate (interval, incoming.substring(5, 7).toInt(), 00, 60));
+  interval  = (Validate (interval,     incoming.substring(5, 7).toInt(), 00, 90));
+
+  if (interval > 60)
+  {
+    shootFastInterval = interval - 60;
+  }
+  else
+  {
+    shootFastInterval = 0;
+  }
+  shootFastCount = 0; // Kill any shootFast sequence underway
 
   EEPROM.update(MEMShootDays, ShootDays);
   EEPROM.update(MEMStartHour, StartHour);
@@ -950,9 +977,12 @@ void loop()
   // - on power-up
   // - when the RTC fires an alarm, and then stays looping until the alarm flag is reset
   // - when the "wake Pi" reed switch is detected, which triggers the Pi to turn on
+  // - as long as shootFastCount > 0 
   // - continuously, whenever the Pi is powered-up
   // ... otherwise we go back to sleep at the end of the loop and wait for the next interrupt
 
+  static unsigned long sfTimerStart;              // This is the time at which the last shootFast photo was taken
+ 
   //Debug loop: Toggle the LED each pass through here (if we're awake)
   if (bitRead(PINC, 0) == LOW) // A0, the Maint header is read as PORTC bit *0*
   {
@@ -982,6 +1012,13 @@ void loop()
       {
         //So it's a ShootDay and either before midnight on an STM shoot, or otherwise within the duration for a daytime shoot
         TakePhoto();
+        if (interval > 60)
+        {
+          //Serial.println( F(" - shootFast triggered"));
+          sfTimerStart = millis(); // Start the timer
+          shootFastCount = 60 / (interval - 60);
+          shootFastCount -= 1; // Decrement for the one we just took. Elsewhere, loop() will do the rest.
+        }
       }
       else if ((StartHour > EndHour) && (rtc.hour() < EndHour))
       {
@@ -991,6 +1028,13 @@ void loop()
         if (yesterdayAsBits & ShootDays)
         {
           TakePhoto();
+          if (interval > 60)
+          {
+            //Serial.println( F(" - shootFast triggered"));
+            sfTimerStart = millis(); // Start the timer 
+            shootFastCount = 60 / (interval - 60);
+            shootFastCount -= 1; // Decrement for the one we just took. Elsewhere, loop() will do the rest.
+          }
         }
         else
         {
@@ -1034,6 +1078,20 @@ void loop()
     ALARM = false;
   }
 
+  if (shootFastCount > 0)
+  {
+    if ((millis() - sfTimerStart) > long(shootFastInterval * 1000))
+    {
+      sfTimerStart = millis(); // Restart for next shot
+      TakePhoto();
+      shootFastCount -= 1;
+    }
+  }
+  else
+  {
+    shootFastCount = 0; // Just in case it's somehow < 0
+  }
+ 
   if (setTimeDateFlag == true)
   {
     setTimeDate(newTimeDate);
@@ -1086,7 +1144,7 @@ void loop()
       //Serial.println( F(" - Resetting the Arduino"));
       resetArduinoFlag = false;
       digitalWrite(PI_POWER, LOW); // Turn the Pi off. May be redundant, but as softReset is ambiguous, best be on the safe side.
-      DelaymS(1000);               //Just to be sure the above has 'taken'
+      DelaymS(1000);               // Just to be sure the above has 'taken'
       softReset();
     }
   }
@@ -1127,8 +1185,8 @@ void loop()
     if ((LastRunningState == HIGH) && (bitRead(PORTB, 1) == LOW))
     {
       //This is a falling edge - the Pi has just gone to sleep.
-      //Serial.println(" - PI_RUNNING went LOW");
-      //Serial.println("LastRunningState WAS high, and PI_RUNNING went LOW. (The Pi has gone to sleep)");
+      //Serial.println( F(" - PI_RUNNING went LOW"));
+      //Serial.println( F("LastRunningState WAS high, and PI_RUNNING went LOW. (The Pi has gone to sleep)"));
       DelaymS(2000); //Just to be sure
       digitalWrite(PI_POWER, LOW);    // Turn the Pi off.
       digitalWrite(PI_SHUTDOWN, LOW); // This should already be low.
@@ -1140,9 +1198,9 @@ void loop()
   {
     if (LastRunningState == LOW)
     {
-      //This is a rising edge - the Pi's just woken up.
-      //Set alarm2 in readiness to put it to sleep:
-      //Serial.println("LastRunningState WAS low, and PI_RUNNING went HIGH. The Pi has just woken up");
+      // This is a rising edge - the Pi's just woken up.
+      // Set alarm2 in readiness to put it to sleep:
+      //Serial.println( F("LastRunningState WAS low, and PI_RUNNING went HIGH. The Pi has just woken up"));
       SetAlarm2(HIGH);
       LastRunningState = HIGH;
     }
@@ -1153,13 +1211,14 @@ void loop()
   // - taken any photo that's required
   // - serviced any housekeeping alarm
   // - actioned any changes pushed via the Pi
-  // ... so now provided: 
+  // So now provided: 
   //    - the Pi isn't running, 
-  //    - ALARM isn't still set
-  //    - we're not still mid-way through a voltage reading loop
+  //    - ALARM isn't still set,
+  //    - we're not still mid-way through a voltage reading loop,
+  //    - or have shootFast images still to take
   //   ... we can sleep!
 
-  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (readVbatteryFlag == false))
+  if ((bitRead(PORTD, PI_POWER) == LOW) && (ALARM == false) && (resetArduinoFlag == false) && (readVbatteryFlag == false) && (shootFastCount == 0))
   {
     // The Pi is powered-off. It's safe for us to sleep
     //Serial.println( F(" - About to sleep"));

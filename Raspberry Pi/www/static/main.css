@@ -595,6 +595,93 @@ option#prog_opt:disabled {
 
 /* End: Environmental page graphs */
 /* ---------------------------------------------------------*/
+/* Start: Collapsible table text */
+
+table .embedded {
+	border-collapse: collapse;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+.collapsible {
+  background-color: #CCC;
+  color: blue;
+  cursor: pointer;
+  padding: 10px;
+  margin: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  border-radius: 0px;
+}
+
+.active, .collapsible:hover {
+  background-color: #AAA;
+}
+
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: white;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+.content {
+  padding: 0;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+
+/* End: Collapsible table text */
+/* ---------------------------------------------------------*/
+/* Start: WiFi meter */
+
+label{ float: left; }
+
+.embedded span {
+	display: block;
+	overflow: hidden;
+	padding-right: 5px;
+	padding-left: 10px;
+}
+
+span > div{ width: 100%; }
+
+fieldset {
+	margin: 0;
+	padding: 0;
+	border-style: none;
+}
+
+.meter-gauge {
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	background-image: linear-gradient(to right, red, orange, yellow, limegreen);
+	height: 25px;
+	display: block;
+}
+
+.meter-gauge > span {
+	height: inherit;
+	background-color: #ccc;
+	background-size: 100% 100%;
+	display: block;
+	text-indent: -9999px;
+	float: right;
+	padding: 0;
+}
+
+
+/* End: WiFi meter */
+/* ---------------------------------------------------------*/
 /* Start: Mobile Devices */
 
 @media screen and (max-height: 700px) {
