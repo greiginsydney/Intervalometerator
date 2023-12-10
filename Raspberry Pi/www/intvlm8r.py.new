@@ -25,9 +25,8 @@ from packaging import version   # getArduinoVersion and related
 from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
 import configparser             # Ini file
-import exifreader               # Thumbnails
 import fnmatch                  # Testing filenames
-import imageio                  # Thumbnails
+import gphoto2 as gp
 import importlib.util           # Testing installed packages
 import inspect                  # /network page
 import io                       # Camera preview
@@ -36,7 +35,6 @@ import logging
 import math                     # Ceiling in /thermal calcs
 import os                       # Hostname
 import psutil
-import rawpy                    # Thumbnails
 import re                       # RegEx. Used in Copy Files & createDestFilename
 import requests                 # Heartbeat
 from smbus2 import SMBus        # I2C
@@ -46,7 +44,13 @@ import subprocess
 import sys
 import time
 
-import gphoto2 as gp
+# Protect against missing components (specific to thumbs)
+try:
+    import exifreader           # Thumbnails
+    import imageio              # Thumbnails
+    import rawpy                # Thumbnails
+except:
+    pass                        # I can't log anything here because logging hasn't been initiated yet
 
 from werkzeug.security import check_password_hash
 
