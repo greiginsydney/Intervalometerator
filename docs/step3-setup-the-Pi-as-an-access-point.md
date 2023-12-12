@@ -8,7 +8,7 @@ You should only perform the steps here once you've completed the config steps an
 
 This process will drop it off the current WiFi network and turn it into its own network and Access Point, at which time it will lose Internet access and be unable to load new software components.
 
-Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.[1](####-1)[2](####-2)
+Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.[[1](#-1)] [[2](#-2)]
 
 ## Make AP
 
@@ -105,6 +105,6 @@ Reboot now? [Y/n]:
 
 ## References
 
-#### [1\] [Configuring the Pi as a WiFi AP](https://github.com/SurferTim/documentation/blob/6bc583965254fa292a470990c40b145f553f6b34/configuration/wireless/access-point.md)
-#### [2\] [Setting up a Raspberry Pi as an access point in a standalone network (NAT)](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)
-#### [3\] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax))
+#### [1] [Configuring the Pi as a WiFi AP](https://github.com/SurferTim/documentation/blob/6bc583965254fa292a470990c40b145f553f6b34/configuration/wireless/access-point.md)
+#### [2] [Setting up a Raspberry Pi as an access point in a standalone network (NAT)](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)
+#### [3] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax))
