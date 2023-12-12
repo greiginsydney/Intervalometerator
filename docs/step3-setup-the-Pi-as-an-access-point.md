@@ -103,6 +103,8 @@ Reboot now? [Y/n]:
 <br>
 <hr >
 
+## References
+
 [1] [Configuring the Pi as a WiFi AP](https://github.com/SurferTim/documentation/blob/6bc583965254fa292a470990c40b145f553f6b34/configuration/wireless/access-point.md)<br>
 [2] [Setting up a Raspberry Pi as an access point in a standalone network (NAT)](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)<br>
 [3] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax))
