@@ -8,7 +8,7 @@ You should only perform the steps here once you've completed the config steps an
 
 This process will drop it off the current WiFi network and turn it into its own network and Access Point, at which time it will lose Internet access and be unable to load new software components.
 
-Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.[[1](#-1)] [[2](#-2)]
+Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.\[[1](#-1)\] \[[2](#-2)\]
 
 ## Make AP
 
