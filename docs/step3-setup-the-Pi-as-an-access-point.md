@@ -8,7 +8,7 @@ You should only perform the steps here once you've completed the config steps an
 
 This process will drop it off the current WiFi network and turn it into its own network and Access Point, at which time it will lose Internet access and be unable to load new software components.
 
-Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.\[[1](#-1-configuring-the-pi-as-a-wifi-ap)\] \[[2](#-2-setting-up-a-Raspberry-Pi-as-an-access-point-in-a-standalone-network-NAT-)\]
+Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.\[[1](#1-configuring-the-pi-as-a-wifi-ap)\] \[[2](#2-setting-up-a-Raspberry-Pi-as-an-access-point-in-a-standalone-network-NAT-)\]
 
 ## Make AP
 
