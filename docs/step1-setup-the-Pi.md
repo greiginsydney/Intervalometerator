@@ -196,4 +196,7 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 - [Setup the Pi as a Wifi Access Point](/docs/step3-setup-the-Pi-as-an-access-point.md)
 
 <br>
+
+Reference:
+https://www.abelectronics.co.uk/kb/article/31/set-a-static-ip-address-on-raspberry-pi-os-bookworm
 <hr >
