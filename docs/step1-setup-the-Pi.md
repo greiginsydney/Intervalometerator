@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the "Bullseye" [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. (Support for "Bookworm" will be added in the next update).
+1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image.
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
@@ -12,7 +12,7 @@ If you're starting from scratch, start here at Step 1.
  </p>
 
 <p align="center">
-<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/5d7d7834-5338-47cd-a854-106022fadd67" width="50%">
+<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/72a06b38-0e11-4127-ae96-3c9759290e02" width="50%">
  </p>
 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
