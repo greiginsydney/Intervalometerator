@@ -26,34 +26,50 @@ If you're starting from scratch, start here at Step 1.
 8. Return to (5) and set `(L2) the timezone`. Select the appropriate options and you'll be returned to the menu.
 9. Select `(3) - Interfacing Options`
     * `(P2) Enable SSH` and at the prompt "Would you like the SSH server to be enabled?" change the selection to `<Yes>` and hit return, then return again at the `OK`.
-10. This step intentionally left blank. ;-)
     
 > Micro SD cards come in some large sizes these days, and if you want to keep backups of the photos off the camera, you'll probably want a card larger than the standard 32G limit of FAT. If you've started with a standard FAT format, this next step lets you expand the disk to consume the whole card. This is a good thing.  
 In so doing however, your average Windows PC will no longer be able to read the card. Check out "<a href="https://ext2-volume-manager.en.lo4d.com/" target="_blank">Ext2 Volume Manager</a>" as a way to get around this. If you're at all uncertain, skip step 11, but be aware that the number of images you can store on the Pi will be limited.
 
-11. Select `(6) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
-12. Select `(1) System Options` and `(S4) Hostname` and give the Pi a recognisable hostname.
-13. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 15.
-14. Select `(1) System Options` and `(S1) Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
+10. Select `(6) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
+11. Select `(1) System Options` and `(S4) Hostname` and give the Pi a recognisable hostname.
+12. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 14.
+13. Select `(1) System Options` and `(S1) Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
-15. Navigate to `Finish` and DECLINE the prompt to reboot.
-16. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
+14. Navigate to `Finish` and DECLINE the prompt to reboot.
+15. Run `ifconfig`. In the output, look under "eth0" for wired and "wlan0" for WiFi. There should be a line starting with "inet" followed by an IP address. The absence of this means you're not on a network.
 
-17. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 19.
-18. Run `sudo nano /etc/dhcpcd.conf`. Add the lines shown, customising the addresses to suit your network:
+16. Assuming success above, you'll probably want to set a static IP. If you're OK with a dynamic IP (or at least are for the time being) jump to Step 19 and a reboot.
+
+17. From 'Bookworm', the Pi uses Network Manager to manage IP addresses.\[[1](#1-set-a-static-ip-address-on-raspberry-pi-os-bookworm)\]
+
+18.1 Run `sudo nmcli -p connection show` to show the available network interfaces:
 
 ```txt
-interface wlan0
-static ip_address=192.168.44.1/24
-static routers=192.168.44.254
-static domain_name_servers=192.168.44.254
+pi@raspberrypi:~ $ sudo nmcli -p connection show
+======================================
+  NetworkManager connection profiles
+======================================
+NAME              UUID                                  TYPE      DEVICE
+----------------------------------------------------------------------------------------------------------------
+mywifissid        09123456-6ac4-4cf7-8154-701234567892  wifi      wlan0
+lo                5612345d-ffff-4ee8-8ef9-12345678990f  loopback  lo
+pi@raspberrypi:~ $
 ```
-> If you have more than one DNS server, add them on the same line with each separated by a space
+
+18.2 Now execute these three commands in turn, replacing the dummy values here with those of your own network:
+
+```txt
+sudo nmcli c mod "mywifissid" ipv4.addresses 10.0.0.220/24 ipv4.method manual
+sudo nmcli con mod "mywifissid" ipv4.gateway 10.0.0.1
+sudo nmcli con mod "mywifissid" ipv4.dns "10.0.0.1"
+```
+
+> If you have more than one DNS server (the last command above), add them all inside the quotes with a space separating each.
 
 19. Reboot the Pi to pickup its new IP address and lock in all the changes made above, including the change to the hostname: `sudo reboot`
 
-20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you added in Step 18.
+20. After it reboots, check it's on the network OK by typing `ifconfig` and check the output now shows the entries you added in Step 18.2.
 (Alternatively, just see if it responds to pings and you can SSH to it on its new IP).
 
 ## Remote config via SSH
@@ -197,6 +213,6 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 <br>
 
-Reference:
-https://www.abelectronics.co.uk/kb/article/31/set-a-static-ip-address-on-raspberry-pi-os-bookworm
+## References
+#### [1] [Set a static IP Address on Raspberry Pi OS Bookworm](https://www.abelectronics.co.uk/kb/article/31/set-a-static-ip-address-on-raspberry-pi-os-bookworm)
 <hr >
