@@ -57,7 +57,7 @@ lo                5612345d-ffff-4ee8-8ef9-12345678990f  loopback  lo
 pi@raspberrypi:~ $
 ```
 
-18.2 Now execute these three commands in turn, replacing the dummy values here with those of your own network:
+18.2 Now execute these three commands in turn, replacing the network name and dummy values here with your own:
 
 ```txt
 sudo nmcli c mod "mywifissid" ipv4.addresses 10.0.0.220/24 ipv4.method manual
