@@ -174,13 +174,13 @@
 		<tr>
 			<td class="noborder">
 			<div class="alignleft{% if blockPreview == 'True' or 'RAW' in imgfmtselected or 'NEF' in imgfmtselected%} tooltip{% endif %}">
-				<button name="CamPreview" id="CamPreview" type="submit" value="preview">Preview</button>
+				<button name="camPreview" id="camPreview" type="submit" value="preview">Preview</button>
 				<!-- See "capture preview" in focus-gui.py -->
 	{% if ("RAW" in imgfmtselected or "NEF" in imgfmtselected)  %}		<span class="tooltiptext">You cannot Preview when shooting RAW</span>{% endif %}
 	{% if blockPreview == "True" %}			<span class="tooltiptext">This camera does not support Preview</span>{% endif %}
 			</div>
 			<div class="alignright">
-				<button name="CamApply" id="CamApply" type="submit" value="apply">Apply</button>
+				<button name="camApply" id="camApply" type="submit" value="apply">Apply</button>
 			</div>
 			</td>
 		</tr>
