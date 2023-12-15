@@ -412,6 +412,28 @@ install_apps ()
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
 
+
+pip3-install ()
+{
+	DISPLAY_TEXT=""
+	matchRegex="^[a-zA-Z]+"
+
+	echo "$1"
+	for ARG in $1;
+	do
+		echo "|$ARG|"
+		if [[ $ARG =~ $matchRegex ]] ;
+		then
+			# Only capture neat 'words' for the display text. (Strip all operators that don't start with a letter).
+			DISPLAY_TEXT+=" ${ARG}"
+		fi
+	done
+	echo -e ""$GREEN"Installing$DISPLAY_TEXT"$RESET""
+	exit
+	${WHICH_PIP3} "install $1"
+}
+
+
 install_website ()
 {
 	# Check for the '-E' switch:
