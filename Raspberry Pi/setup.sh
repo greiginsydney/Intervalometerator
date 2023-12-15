@@ -35,6 +35,7 @@ YELLOW="\033[38;5;11m"
 GREY="\033[38;5;60m"
 RESET="\033[0m"
 
+OSLIST="bookworm" # Add new OS's here, space-delimited, as they're released.
 
 # -----------------------------------
 # START FUNCTIONS
@@ -42,6 +43,34 @@ RESET="\033[0m"
 
 install_apps ()
 {
+	echo -e ""$GREEN"Testing operating system and virtual environment"$RESET""
+	THISOS=$(sed -n -E "s|^VERSION_CODENAME=(\s*.*)$|\1|p" /etc/os-release) ## Delimiter is a '|' here
+	
+	if [[ " $OSLIST " =~ .*\ $THISOS\ .* ]];
+	then
+		echo "'$THISOS' OS detected. Requires a virtual environment."
+		VENV_REQUIRED=1
+	else
+		echo "'$THISOS' OS detected. A virtual environment is optional."
+		VENV_REQUIRED=0
+	fi
+
+	if [[ "$VIRTUAL_ENV" != "" ]]
+	then
+		VENV_ACTIVE=1
+		echo "Virtual environment active."
+	else
+		VENV_ACTIVE=0
+	fi
+
+	if [[ ($VENV_REQUIRED == 1) && ($VENV_ACTIVE == 0) ]];
+	then
+		echo -e "\n"$YELLOW"The required virtual environment is not active"$RESET""
+		echo "Please execute the command 'source venv/bin/activate' and re-run the script."
+		echo -e "If that fails, check you have correctly created the required VENV. Review \nhttps://github.com/greiginsydney/Intervalometerator/blob/bookworm/docs/step1-setup-the-Pi.md"
+		echo ""
+		exit
+	fi
 
 	if [[ -f www/intvlm8r.py ]];
 	then
