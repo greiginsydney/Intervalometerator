@@ -76,10 +76,7 @@
 		</tr>
 	{% endif %}
 	</table>
-</form>
 
-
-<form method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		<tr{% if imgfmtoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
@@ -173,22 +170,22 @@
 </table>
 {% endif %}
 
-<table class="noborder">
-	<tr>
-		<td class="noborder">
-		<div class="alignleft{% if blockPreview == 'True' or 'RAW' in imgfmtselected or 'NEF' in imgfmtselected%} tooltip{% endif %}">
-			<button name="CamSubmit" id="CamPreview" type="submit" value="preview">Preview</button>
-			<!-- See "capture preview" in focus-gui.py -->
-{% if ("RAW" in imgfmtselected or "NEF" in imgfmtselected)  %}		<span class="tooltiptext">You cannot Preview when shooting RAW</span>{% endif %}
-{% if blockPreview == "True" %}			<span class="tooltiptext">This camera does not support Preview</span>{% endif %}
-		</div>
-		<div class="alignright">
-			<button name="CamSubmit" id="CamSubmit" type="submit" value="apply">Apply</button>
-		</div>
-		</td>
-	</tr>
-</table>
-<input type="hidden" name="cameraMfr" value="{{ cameraMfr }}">
+	<table class="noborder" >
+		<tr>
+			<td class="noborder">
+			<div class="alignleft{% if blockPreview == 'True' or 'RAW' in imgfmtselected or 'NEF' in imgfmtselected%} tooltip{% endif %}">
+				<button name="CamPreview" id="CamPreview" type="submit" value="preview">Preview</button>
+				<!-- See "capture preview" in focus-gui.py -->
+	{% if ("RAW" in imgfmtselected or "NEF" in imgfmtselected)  %}		<span class="tooltiptext">You cannot Preview when shooting RAW</span>{% endif %}
+	{% if blockPreview == "True" %}			<span class="tooltiptext">This camera does not support Preview</span>{% endif %}
+			</div>
+			<div class="alignright">
+				<button name="CamApply" id="CamApply" type="submit" value="apply">Apply</button>
+			</div>
+			</td>
+		</tr>
+	</table>
+	<input type="hidden" name="cameraMfr" value="{{ cameraMfr }}">
 </form>
 
 <script>
