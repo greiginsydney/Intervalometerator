@@ -719,15 +719,14 @@ def cameraPOST():
     This page is where you manage all the camera settings
     """
     preview = None
-    
-    if request.form['wakeCamera'] == 'wake':
+    if 'wakeCamera' in request.form:
         writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('camera page POSTed the camera wake command')
     else:
         try:
             camera, context, config = connectCamera(1)
             if camera:
-                if request.form['CamSubmit'] == 'apply':
+                if 'camApply' in request.form:
                     app.logger.debug('-- Camera Apply selected')
                     cameraMfr = request.form.get('cameraMfr')
                     app.logger.debug(f'cameraMfr = {cameraMfr}')
@@ -762,7 +761,7 @@ def cameraPOST():
                         node.set_value(str(request.form.get('exp')))
                     camera.set_config(config, context)
 
-                if request.form['CamSubmit'] == 'preview':
+                if 'camPreview' in request.form:
                     app.logger.debug('-- Camera Preview selected')
                     getPreviewImage(camera, config)
                     preview = 1
