@@ -218,8 +218,8 @@ function lightButtons()
 {
 	if ("{{cameraDate}}" == "")
 	{
-		document.getElementById("CamPreview").disabled = true;
-		document.getElementById("CamSubmit").disabled  = true;
+		document.getElementById("camPreview").disabled = true;
+		document.getElementById("camApply").disabled  = true;
 	}
 	else
 	{
@@ -227,18 +227,18 @@ function lightButtons()
 		{
 			if ("{{blockPreview}}" == "True" || "{{imgfmtselected}}".includes("RAW") || "{{imgfmtselected}}".includes("NEF"))
 			{
-				document.getElementById("CamPreview").disabled = true;
+				document.getElementById("camPreview").disabled = true;
 			}
 			else
 			{
-				document.getElementById("CamPreview").disabled = false;
+				document.getElementById("camPreview").disabled = false;
 			}
-			document.getElementById("CamSubmit").disabled  = true;
+			document.getElementById("camApply").disabled  = true;
 		}
 		else
 		{
-			document.getElementById("CamPreview").disabled = true;
-			document.getElementById("CamSubmit").disabled  = false;
+			document.getElementById("camPreview").disabled = true;
+			document.getElementById("camApply").disabled  = false;
 		}
 	}
 }
