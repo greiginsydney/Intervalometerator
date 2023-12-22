@@ -164,8 +164,6 @@ install_apps ()
 		esac
 	done
 
-	echo -e ""$GREEN"Installing subversion"$RESET""
-	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	echo -e ""$GREEN"Installing python3-pip"$RESET""
 	apt-get install python3-pip -y
 	echo -e ""$GREEN"Upgrading pip3"$RESET""
