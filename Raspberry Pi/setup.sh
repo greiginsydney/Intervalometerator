@@ -1414,7 +1414,7 @@ test_install ()
 	matchRegex="not found$"
 	if [[ $desktop =~ $matchRegex ]];
 	then
-		echo -e ""$GREEN"PASS:"$RESET" OS test passed"
+		echo -e ""$GREEN"PASS:"$RESET" OS test passed - DESKTOP operating system not installed"
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
 	fi
@@ -1634,7 +1634,7 @@ test_os()
 	if [[ $desktop =~ $matchRegex ]];
 	then
 		echo ''
-		echo -e ""$GREEN"PASS:"$RESET" OS test passed"
+		echo -e ""$GREEN"PASS:"$RESET" OS test passed - DESKTOP operating system not installed"
 		echo ''
 	else
 		echo ''
