@@ -56,25 +56,27 @@ venv_test ()
 		VENV_REQUIRED=0
 	fi;
 
-	while true;
-	do
-		if [[ "$VIRTUAL_ENV" != "" ]];
-		then
-			VENV_ACTIVE=1
-			echo "Virtual environment active."
-			break
-		else
-			if [[ ! $TRIED ]];
+	if [[ ($VENV_REQUIRED == 1) ]];
+		while true;
+		do
+			if [[ "$VIRTUAL_ENV" != "" ]];
 			then
-				echo "Virtual environment NOT active. Attempting to activate."
-				source "venv/bin/activate"
-				TRIED==1
-			else
-				VENV_ACTIVE=0
+				VENV_ACTIVE=1
+				echo -e ""$GREEN"Virtual environment active."$RESET""
 				break
+			else
+				if [[ ! $TRIED ]];
+				then
+					echo -e "\n"$YELLOW"Virtual environment NOT active. Attempting to activate."$RESET""
+					source "venv/bin/activate"
+					TRIED==1
+				else
+					VENV_ACTIVE=0
+					break
+				fi;
 			fi;
-		fi;
-	done
+		done
+	fi;
 
 	if [[ ($VENV_REQUIRED == 1) && ($VENV_ACTIVE == 0) ]];
 	then
