@@ -41,7 +41,8 @@ OSLIST="bookworm" # Add new OS's here, space-delimited, as they're released.
 # START FUNCTIONS
 # -----------------------------------
 
-install_apps ()
+
+venv_test ()
 {
 	echo -e ""$GREEN"Testing operating system and virtual environment"$RESET""
 	THISOS=$(sed -n -E "s|^VERSION_CODENAME=(\s*.*)$|\1|p" /etc/os-release) ## Delimiter is a '|' here
@@ -53,25 +54,45 @@ install_apps ()
 	else
 		echo "'$THISOS' OS detected. A virtual environment is optional."
 		VENV_REQUIRED=0
-	fi
+	fi;
 
-	if [[ "$VIRTUAL_ENV" != "" ]]
-	then
-		VENV_ACTIVE=1
-		echo "Virtual environment active."
-	else
-		VENV_ACTIVE=0
-	fi
+	while true;
+	do
+		if [[ "$VIRTUAL_ENV" != "" ]];
+		then
+			VENV_ACTIVE=1
+			echo "Virtual environment active."
+			break
+		else
+			if [[ ! $TRIED ]];
+			then
+				echo "Virtual environment NOT active. Attempting to activate."
+				source "venv/bin/activate"
+				TRIED==1
+			else
+				VENV_ACTIVE=0
+				break
+			fi;
+		fi;
+	done
 
 	if [[ ($VENV_REQUIRED == 1) && ($VENV_ACTIVE == 0) ]];
 	then
-		echo -e "\n"$YELLOW"The required virtual environment is not active"$RESET""
+		echo -e "\n"$YELLOW"The required virtual environment could not be activated"$RESET""
 		echo "Please execute the command 'source venv/bin/activate' and re-run the script."
 		echo -e "If that fails, check you have correctly created the required VENV. Review \nhttps://github.com/greiginsydney/Intervalometerator/blob/bookworm/docs/step1-setup-the-Pi.md"
 		echo ""
 		exit
 	fi
 
+	echo ${SUDO_USER}
+	echo $(which pip3)
+	
+}
+
+
+install_apps ()
+{
 	if [[ -d /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi ]];
 	then
 		echo -e ""$GREEN"Moving repo files."$RESET""
@@ -81,6 +102,7 @@ install_apps ()
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
 
+	
 	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
@@ -94,6 +116,7 @@ install_apps ()
 			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
 		fi;
 		echo ''
+
 
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("paramiko"))';
 		then
@@ -1739,11 +1762,13 @@ fi
 case "$1" in
 	('start')
 		test_os
+		venv_test
 		install_apps
 		prompt_for_reboot
 		;;
 	('web')
 		test_os
+		venv_test
 		install_website
 		prompt_for_reboot
 		;;
