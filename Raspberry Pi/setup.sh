@@ -86,10 +86,8 @@ venv_test ()
 		echo ""
 		exit
 	fi
-
-	echo ${SUDO_USER}
-	echo $(which pip3)
-	
+	#echo ${SUDO_USER}
+	#echo $(which pip3)
 }
 
 
