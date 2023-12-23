@@ -72,14 +72,14 @@ install_apps ()
 		exit
 	fi
 
-	if [[ -f www/intvlm8r.py ]];
+	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
-		if [[ -f www/intvlm8r.py.new ]];
+		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 		then
 			echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
-			cp -fv www/intvlm8r.py www/intvlm8r.old
-			cp -fv www/intvlm8r.py.new www/intvlm8r.py
+			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
+			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		else
 			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
