@@ -217,8 +217,8 @@ install_apps ()
 	then
 		#This is ALL for Paramiko (SSH uploads):
 		export DEBIAN_FRONTEND=noninteractive
-		echo -e ""$GREEN"Installing libffi-dev, libssl-dev, python-dev"$RESET""
-		apt-get install libffi-dev libssl-dev python-dev -y
+		echo -e ""$GREEN"Installing libffi-dev, libssl-dev, python-dev-is-python3"$RESET""
+		apt-get install libffi-dev libssl-dev python-dev-is-python3 -y
 		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
 		apt install krb5-config krb5-user -y
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
@@ -248,8 +248,8 @@ install_apps ()
 		pip3 install sysrsync
 	fi
 
-	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
-	apt-get install nginx nginx-common supervisor python-dev jq -y
+	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev-is-python3, jq"$RESET""
+	apt-get install nginx nginx-common supervisor python-dev-is-python3 jq -y
 
 	# ================== START libgphoto ==================
 	if ( apt list --manual-installed | grep -q libgphoto );
