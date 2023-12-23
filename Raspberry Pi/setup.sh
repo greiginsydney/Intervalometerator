@@ -57,6 +57,7 @@ venv_test ()
 	fi;
 
 	if [[ ($VENV_REQUIRED == 1) ]];
+ 	then
 		while true;
 		do
 			if [[ "$VIRTUAL_ENV" != "" ]];
