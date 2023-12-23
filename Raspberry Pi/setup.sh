@@ -74,11 +74,11 @@ install_apps ()
 
 	if [[ -d /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi ]];
 	then
-		echo "yersd"
+		echo -e ""$GREEN"Moving repo files."$RESET""
 		cp -fvr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/* /home/${SUDO_USER}/
 		rm -fv /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi
 	else
-		echo "not"
+		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
 
 	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
