@@ -370,6 +370,8 @@ install_apps ()
 	fi
 	# ======================== END rawpy ========================
 
+	echo -e ""$GREEN"Installing rsyslog"$RESET""
+	apt install rsyslog -y
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
