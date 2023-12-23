@@ -76,7 +76,7 @@ install_apps ()
 	then
 		echo -e ""$GREEN"Moving repo files."$RESET""
 		cp -fvr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/* /home/${SUDO_USER}/
-		rm -fv /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi
+		rm -fvr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/
 	else
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
