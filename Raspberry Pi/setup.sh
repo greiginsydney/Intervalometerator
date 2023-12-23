@@ -72,6 +72,15 @@ install_apps ()
 		exit
 	fi
 
+	if [[ -d /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi ]];
+	then
+		echo "yersd"
+		cp -fvr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/* /home/${SUDO_USER}/
+		rm -fv /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi
+	else
+		echo "not"
+	fi;
+
 	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
