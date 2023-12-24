@@ -121,7 +121,13 @@ pi@BenchPi3BPlus:~ $ python3 -m venv venv
 pi@BenchPi3BPlus:~ $
 ```
 
-29.3. This downloads the repo, dropping the structure into a subdirectory called `Intervalometerator`:
+29.3 We need to install git so we can download the repo from GitHub:
+
+```
+sudo apt-get install git -y
+```
+
+29.4. This downloads the repo, dropping the structure into a subdirectory called `Intervalometerator`:
 ```txt
 cd ~
 sudo rm -rf Intervalometerator
