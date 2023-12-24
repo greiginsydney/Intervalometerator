@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image.
+1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. You want the "a port of Debian Bookworm with no desktop environment" version.
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
@@ -105,18 +105,38 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue
 
-29. We need to install Subversion so we can download *just* the Pi bits of the repo from GitHub:
-```txt
-sudo apt-get install subversion -y
+29.1. Confirm your current version of python:
+
 ```
-30. This downloads the repo, dropping the structure into the home directory:
-```txt
-svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%20Pi/ ~ --force
+pi@BenchPi3BPlus:~ $ python3 --version
+Python 3.11.2
+pi@BenchPi3BPlus:~ $
 ```
 
-> Advanced tip: if you're testing code and want to install a new branch direct from the repo, replace "/trunk/" in the link above with `/branches/<TheBranchName>/`
+29.2. Update the following command if required with that of the same version number:
 
-31. All the hard work is done by a script in the repo, but it needs to be made executable first:
+```
+pi@BenchPi3BPlus:~ $ sudo apt install python3.11-venv -y
+pi@BenchPi3BPlus:~ $ python3 -m venv venv
+pi@BenchPi3BPlus:~ $
+```
+
+29.3. This downloads the repo, dropping the structure into a subdirectory called `Intervalometerator`:
+```txt
+cd ~
+sudo rm -rf Intervalometerator
+git clone --depth=3 https://github.com/greiginsydney/Intervalometerator
+```
+
+> Advanced tip: if you're testing code and want to install a new branch direct from the repo, add `-b <branchName>` on the end of the line.
+
+30. Now we need to move the setup.sh script file into its final location:
+
+```txt
+mv -fv "Intervalometerator/Raspberry Pi/setup.sh" ~
+``` 
+
+31. All the hard work is done by the script, but it needs to be made executable first:
 ```txt
 sudo chmod +x setup.sh
 ```
