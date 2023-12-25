@@ -316,7 +316,8 @@ install_apps ()
 	echo "Current    online version of python-gphoto2 = $latestPythonGphotoRls"
 
 	echo -n "Checking installed version of python-gphoto2"
-	isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+	#isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
+	isGphoto=$(pip3 show gphoto2 2>/dev/null | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 		if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
 		if [[ $isGphoto != $latestPythonGphotoRls ]]; then
 			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
