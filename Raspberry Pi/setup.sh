@@ -1507,7 +1507,12 @@ test_install ()
 	case $ap_test in
 		(0)
 			echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
-			ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
+			if [[ ($VENV_REQUIRED == 1) ]];
+			then
+				ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
+			else
+				ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
+			fi		
 			if [ -z "$ssid" ];
 			then
 				echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/wpa_supplicant/wpa_supplicant.conf"
