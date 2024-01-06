@@ -952,6 +952,8 @@ install_website ()
 			#echo $val
 			sed -i -E "s|^(\s*ExecStart\s*=\s*)(sudo\s*)?(/usr/bin/python3)|\1\2/home/$SUDO_USER/venv/bin/python3|g" $val
 		done
+  		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service 
+		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"/home/$SUDO_USER/venv/bin/celery\"|g" /etc/default/celery
 	fi
 
 	# Check and reload services if required:
