@@ -1487,6 +1487,7 @@ test_install ()
 		if [[ "$?" -ne 0 ]];
 		then
 			echo -e ""$YELLOW"FAIL:"$RESET" i2cdetect threw an error"
+   			echo "Did the './setup.sh start' test complete without error?"
 		fi
 		set -e #Resume the error trap
 	else
