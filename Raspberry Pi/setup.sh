@@ -365,6 +365,7 @@ install_apps ()
 		installRawpy=1
 	fi
 
+	installRawpy=0 # Force rawpy to NOT attempt to install: it's only going to fail
 	if [ $installRawpy -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing rawpy from GitHub"$RESET""
