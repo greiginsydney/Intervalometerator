@@ -481,6 +481,7 @@ install_website ()
 	fi
 
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service", "myIp.service")
+ 	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service" 
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -939,6 +940,18 @@ install_website ()
 	then
 		chmod -v -x /usr/lib/gvfs/gvfsd-gphoto2
 		echo ''
+	fi
+
+	# Update all service files to use the new path if 'venv'. (Added with bookworm support in early 2024)
+	#if [[ ($VENV_REQUIRED == 1) ]];
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+		for val in "${VenvFiles[@]}";
+		do
+			val="/etc/systemd/system/$val"
+			#echo $val
+			sed -i -E "s|^(\s*ExecStart\s*=\s*)(sudo\s*)?(/usr/bin/python3)|\1\2/home/$SUDO_USER/venv/bin/python3|g" $val
+		done
 	fi
 
 	# Check and reload services if required:
