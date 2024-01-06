@@ -443,6 +443,9 @@ install_apps ()
 		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
 
+	# And a shortcut for the logs folder:
+	ln -sfnv /var/log/ /home/${SUDO_USER}/log
+ 
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
