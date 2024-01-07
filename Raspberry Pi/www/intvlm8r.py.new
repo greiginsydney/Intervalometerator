@@ -456,11 +456,11 @@ def main():
     try:
         templateData['piDaysFree'] = str(round(((piBytesFree / largestImageSize) / shotsPerDay) - 0.5))
     except:
-        None
+        pass
     try:
         templateData['cameraDaysFree'] = round((int(templateData['availableShots']) / shotsPerDay) - 0.5)
     except:
-        None
+        pass
     templateData['daysFreeWarn']  = int(getIni('Thresholds', 'daysfreewarn', 'int', '14'))
     templateData['daysFreeAlarm']  = int(getIni('Thresholds', 'daysfreealarm', 'int', '7'))
 
