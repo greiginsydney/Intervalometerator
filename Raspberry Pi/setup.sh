@@ -959,6 +959,7 @@ install_website ()
 		done
   		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service 
 		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"/home/$SUDO_USER/venv/bin/celery\"|g" /etc/default/celery
+  		sed -i -E "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command
 	fi
 
 	# Check and reload services if required:
