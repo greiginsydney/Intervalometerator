@@ -95,7 +95,7 @@
 	{% endif %}
 		<td>
 			<div class="alignleft">Pi storage free (days):</div>
-			<div class="alignright">{{ piSpaceFree }} ({{ '&lt;1'|safe if (piDaysFree|int == 0) else piDaysFree }})</div>
+			<div class="alignright">{{ piSpaceFree }} ({{ ('&lt;1'|safe) if (( piDaysFree !='Unknown' ) and (piDaysFree|int == 0)) else piDaysFree }})</div>
 		</td>
 	</tr>
 </table>
