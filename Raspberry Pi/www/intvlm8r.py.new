@@ -63,6 +63,7 @@ from celery.app.control import Inspect
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['result_backend'] = 'redis://localhost:6379/0'
+# app.config["TEMPLATES_AUTO_RELOAD"] = True # Uncomment when debugging
 
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
