@@ -128,12 +128,11 @@ var SelectionBits = new Array();
 lightButtons();
 calculateShots();
 intervalHighlighting();
+showSfWarning();
 
-shootFastWarning.style.display = (interval.value <= 60) ? "none":"";
 
 function newSelected(id)
 {
-	var shootFastWarning = document.getElementById("shootFastWarning");
 	var option = document.getElementById(id);
 	if (!option.options[option.selectedIndex].defaultSelected)
 	{
@@ -147,7 +146,7 @@ function newSelected(id)
 	if (id == "interval")
 	{
 		intervalHighlighting(); // Add/remove interval highlight if required
-		shootFastWarning.style.display = (option.value <= 60) ? "none":""; // Display/hide shootFastWarning
+		showSfWarning(); // Display/hide shootFastWarning
 	}
 
 	lightButtons();
@@ -164,6 +163,18 @@ function intervalHighlighting()
 	else
 	{
 		intvSelect.className = 'white';
+	}
+}
+
+function showSfWarning()
+{
+	if ((parseInt(interval.value) <= 60) || (interval.value === "-- choose --"))
+	{
+		shootFastWarning.style.display =  "none";
+	}
+	else
+	{
+		shootFastWarning.style.display =  "";
 	}
 }
 
