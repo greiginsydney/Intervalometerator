@@ -946,7 +946,14 @@ install_website ()
   		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service 
 		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"/home/$SUDO_USER/venv/bin/celery\"|g" /etc/default/celery
   		sed -i -E "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command. (Legacy installs only: we added it initially)
-    		sed -i -E "s|^(\s*user www-data)(.*)$|# \1\2|g" /etc/nginx/nginx.conf	# Comment-out existing www-data user
+    		# nginx:
+      		sed -i -E "s|^(\s*user www-data)(.*)$|# \1\2|g" /etc/nginx/nginx.conf	# Comment-out existing www-data user
+      		if  grep -q 'user pi;' /etc/nginx/nginx.conf
+		then
+			echo "Skipped: '/etc/nginx/nginx.conf' already contains 'user pi;'"
+		else
+			sed -i "1i user pi;" /etc/nginx/nginx.conf
+		fi
 	fi
 
 	# Check and reload services if required:
