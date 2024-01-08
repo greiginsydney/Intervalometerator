@@ -444,7 +444,16 @@ install_apps ()
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo -e ""$GREEN"Creating gphoto2 shortcuts"$RESET""
-	whereisgphoto=$("pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+
+	# Query string differs between OS. (Search tag: bookworm)
+	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+		whereisgphoto=$("pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+    	else
+		whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+    	fi
+
 	if [ ! -z "$whereisgphoto" ]; then
 		gphoto2="$whereisgphoto/gphoto2"
 		examples="$gphoto2/examples"
