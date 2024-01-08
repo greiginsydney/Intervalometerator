@@ -1816,16 +1816,16 @@ then
 	exit 1
 fi
 
+venv_test
+
 case "$1" in
 	('start')
 		test_os
-		venv_test
 		install_apps
 		prompt_for_reboot
 		;;
 	('web')
 		test_os
-		venv_test
 		install_website
 		prompt_for_reboot
 		;;
