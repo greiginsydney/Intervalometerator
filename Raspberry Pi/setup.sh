@@ -243,7 +243,7 @@ install_apps ()
 	if [ $installDropbox -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing dropbox"$RESET""
-		pip3 install dropbox
+		pip3 install -U dropbox
 	fi
 
 	if [ $installGoogle -eq 1 ];
