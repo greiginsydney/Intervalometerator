@@ -211,6 +211,15 @@ install_apps ()
 	pip3 install gunicorn psutil packaging
 	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
+
+	# Add new 'redis' component (if >=Bookworm)
+	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+ 	 	echo -e ""$GREEN"Installing redis"$RESET""	
+  		pip3 install redis
+    	fi
+     
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	pip3 install "celery[redis]"
 
