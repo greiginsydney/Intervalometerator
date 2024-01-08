@@ -258,9 +258,20 @@ install_apps ()
 		pip3 install sysrsync
 	fi
 
-	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev-is-python3, jq"$RESET""
-	apt-get install nginx nginx-common supervisor python-dev-is-python3 jq -y
+	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, jq"$RESET""
+	apt-get install nginx nginx-common supervisor jq -y
 
+	# Add different python-dev component, depending on OS. (Search tag: bookworm)
+	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+ 	 	echo -e ""$GREEN"Installing python-dev-is-python3"$RESET""	
+  		apt-get install python-dev-is-python3 -y
+    	else
+     		echo -e ""$GREEN"Installing python-dev"$RESET""	
+  		apt-get install python-dev -y
+     	fi
+ 
 	# ================== START libgphoto ==================
 	if ( apt list --manual-installed | grep -q libgphoto );
 	then
