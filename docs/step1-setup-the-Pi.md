@@ -174,6 +174,23 @@ Accept the defaults just by pressing return on its own, or choose 1, 2, 3 or 4 (
 
 > If libgphoto throws errors, run `apt-cache search libgphoto2` & it should reveal the name of the "development" version, which you will need to edit back into the script before your repeat attempt at this step.
 
+33.1 It's a rare occurrence, but you might encounter this redis prompt:
+
+```txt
+Configuration file '/etc/redis/redis.conf'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** redis.conf (Y/I/N/O/D/Z) [default=N] ?
+```
+
+The correct response is 'Y': we'll accept the new version. (The setup script will reinstate the customisation later).
+
 34. If all goes well, you'll be presented with a prompt to reboot:
 ```txt
 Exited install_apps OK.
