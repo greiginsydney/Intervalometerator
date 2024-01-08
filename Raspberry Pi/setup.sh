@@ -1484,7 +1484,6 @@ timeSync2 ()
 
 test_install ()
 {
-	echo 'TEST!'
 	echo ''
 	set +e #Suspend the error trap
 	desktop=$(type Xorg 2>&1)
@@ -1492,12 +1491,10 @@ test_install ()
 	matchRegex="not found$"
 	if [[ $desktop =~ $matchRegex ]];
 	then
-		echo -e ""$GREEN"PASS:"$RESET" OS test passed - DESKTOP operating system not installed"
+		echo -e ""$GREEN"PASS:"$RESET" DESKTOP operating system not installed"
 	else
 		echo -e ""$YELLOW"FAIL:"$RESET" Unsupported DESKTOP operating system version detected"
 	fi
-	echo "$(cat /etc/os-release | grep CODENAME)"
-	echo ''
 	[ -f /etc/nginx/sites-available/intvlm8r ] && echo -e ""$GREEN"PASS:"$RESET" /etc/nginx/sites-available/intvlm8r exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/nginx/sites-available/intvlm8r not found"
 	[ -f /etc/systemd/system/intvlm8r.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/intvlm8r.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/intvlm8r.service not found"
 	[ -f /etc/systemd/system/cameraTransfer.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/cameraTransfer.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/cameraTransfer.service not found"
