@@ -424,7 +424,7 @@ install_apps ()
 	fi
 	# -------------------------------------------------------------------------------------------------
 	echo -e ""$GREEN"Creating gphoto2 shortcuts"$RESET""
-	whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+	whereisgphoto=$("pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
 	if [ ! -z "$whereisgphoto" ]; then
 		gphoto2="$whereisgphoto/gphoto2"
 		examples="$gphoto2/examples"
