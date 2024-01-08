@@ -227,9 +227,9 @@ install_apps ()
 	then
 		#This is ALL for Paramiko (SSH uploads):
 		export DEBIAN_FRONTEND=noninteractive
-		echo -e ""$GREEN"Installing libffi-dev, libssl-dev, python-dev-is-python3"$RESET""
-		apt-get install libffi-dev libssl-dev python-dev-is-python3 -y
-		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
+		echo -e ""$GREEN"Installing libffi-dev, libssl-dev"$RESET""
+		apt-get install libffi-dev libssl-dev -y
+  		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
 		apt install krb5-config krb5-user -y
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
