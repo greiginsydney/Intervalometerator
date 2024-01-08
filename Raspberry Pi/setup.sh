@@ -221,7 +221,7 @@ install_apps ()
     	fi
      
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
-	pip3 install "celery[redis]"
+	pip3 install -U "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
 	then
