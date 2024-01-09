@@ -221,7 +221,7 @@ install_apps ()
     	fi
      
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
-	pip3 install -U "celery[redis]"
+	pip3 install "celery[redis]"
 
 	if [ $installSftp -eq 1 ];
 	then
@@ -234,8 +234,8 @@ install_apps ()
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
 		echo -e ""$GREEN"Installing bcrypt"$RESET""
-		# pip3 install -U "bcrypt<4.0.0" See issue #129
-		pip3 install -U bcrypt
+		# pip3 install "bcrypt<4.0.0" See issue #129
+		pip3 install bcrypt
 		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
 		pip3 install pynacl cryptography gssapi paramiko
 	fi
@@ -243,13 +243,13 @@ install_apps ()
 	if [ $installDropbox -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing dropbox"$RESET""
-		pip3 install -U dropbox
+		pip3 install dropbox
 	fi
 
 	if [ $installGoogle -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
-		pip3 install -U pip google-api-python-client oauth2client
+		pip3 install pip google-api-python-client oauth2client
 	fi
 
 	if [ $installRsync -eq 1 ];
