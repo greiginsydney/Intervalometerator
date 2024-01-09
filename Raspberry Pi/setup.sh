@@ -1775,6 +1775,19 @@ remoteit()
 }
 
 
+update()
+{
+	echo ''
+	echo 'This option will update ALL the installed software components (libraries).'
+	read -p 'Press Return to continue with the install or Control-C to abort' response
+	echo ''
+	echo -e ""$GREEN"Looking for 'outdated' components"$RESET""
+	
+	# TY SO: https://stackoverflow.com/a/3452888/13102734
+	pip3 --disable-pip-version-check list --outdated --format=json | python -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))" | xargs -n1 pip3 install -U
+}
+
+
 # Here's where I test new bits when I'm working on the script.
 # Released versions of the script shouldn't have anything there. That's the plan anyway.
 dev()
@@ -1852,6 +1865,10 @@ case "$1" in
 	('remoteit')
 		remoteit
 		;;
+  	('update')
+		update
+		prompt_for_reboot
+		;;
 	('test')
 		test_install
 		;;
@@ -1859,7 +1876,7 @@ case "$1" in
 		dev
 		;;
 	('')
-		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test', 'time' or 'remoteit' after the script name\n"
+		echo -e "\nNo option specified. Re-run with 'start', 'web', 'login', 'ap', 'noap', 'test', 'time', 'remoteit' or 'update' after the script name\n"
 		exit 1
 		;;
 	(*)
