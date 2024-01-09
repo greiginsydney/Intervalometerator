@@ -101,6 +101,8 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 > If this ends with an error "Some index files failed to download. They have been ignored, or old ones used instead." just press up-arrow and return to retry the command. You want to be sure the Pi is healthy and updated before continuing.
 
+> If however you encounter an error saying a certificate is out of date or not valid yet, check that the Pi's real-time clock is correct. `date` on its own will show the date, and you'll set it with this syntax: `sudo date -s '2024-01-09 11:04:00 AEDT'`.
+
 28. `sudo reboot`
 
 Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue
