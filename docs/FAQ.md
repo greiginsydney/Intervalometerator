@@ -218,6 +218,8 @@ This lets 'newusername' execute ALL commands without needing to constantly re-ty
 
 Yes: this is a really useful way of being able to setup a new intvlm8r on your workbench and then take or ship it to site without needing to make further config changes.
 
+### - Old method (up to Bullseye):
+
 All you need to do is edit /etc/wpa_supplicant/wpa_supplicant.conf (`sudo nano /etc/wpa_supplicant/wpa_supplicant.conf`) and add the extra network(s), like shown in this example:
 
 ~~~ bash
@@ -239,6 +241,14 @@ network={
 
 If you omit the 'priority' lines, both networks are deemed the same priority, and the Pi will use the one with the stronger signal. As shown here, if both networks are present, the "myCaptureSiteNetwork" will be used, as it has the numerically higher priority number.
 <br>
+
+### - New method (bookworm+):
+
+bookworm and its successors use Network Manager Command Line Interface ('nmcli') for the administration of networks and network interfaces.
+
+<TODO: a more detailed walkthrough here>
+
+Reference: https://unix.stackexchange.com/a/547531/578745
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
 
