@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the "Bullseye" [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. (Support for "Bookworm" will be added in the next update).
+1. Prepare the memory card with the "Bullseye" [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. (Support for "Bookworm" will be added in a future update).
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
