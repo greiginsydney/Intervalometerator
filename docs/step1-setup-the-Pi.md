@@ -12,7 +12,7 @@ If you're starting from scratch, start here at Step 1.
  </p>
 
 <p align="center">
-<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/5d7d7834-5338-47cd-a854-106022fadd67" width="50%">
+<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/ff69203b-b8da-4a81-9151-54b3665e4c0c" width="50%">
  </p>
 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
