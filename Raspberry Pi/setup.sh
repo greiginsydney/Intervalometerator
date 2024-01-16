@@ -42,7 +42,15 @@ RESET="\033[0m"
 
 install_apps ()
 {
-
+	if [[ -d /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi ]];
+	then
+		echo -e ""$GREEN"Moving repo files."$RESET""
+		cp -fr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/* /home/${SUDO_USER}/
+		rm -fvr /home/${SUDO_USER}/Intervalometerator/
+	else
+		echo -e "\n"$YELLOW"No repo files to move."$RESET""
+	fi;
+ 
 	if [[ -f www/intvlm8r.py ]];
 	then
 		echo ''
