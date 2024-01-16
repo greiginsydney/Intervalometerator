@@ -51,14 +51,14 @@ install_apps ()
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
  
-	if [[ -f www/intvlm8r.py ]];
+	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
-		if [[ -f www/intvlm8r.py.new ]];
+		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 		then
 			echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
-			cp -fv www/intvlm8r.py www/intvlm8r.old
-			cp -fv www/intvlm8r.py.new www/intvlm8r.py
+			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
+			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		else
 			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
@@ -92,11 +92,11 @@ install_apps ()
 
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
-	elif [[ -f www/intvlm8r.py.new ]];
+	elif [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 	then
 		echo ''
 		echo 'intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation.'
-		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+		cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
 		echo ''
@@ -451,15 +451,15 @@ install_website ()
 
 	chown -R $SUDO_USER:www-data ${HOME}
 
-	if [ -f www/intvlm8r.old ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the login prompt step."$RESET""
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
 
-		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" /home/${SUDO_USER}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
-			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
+			sed -i -E "s|^(users = .*)|$firstLogin|g" /home/${SUDO_USER}/www/intvlm8r.py
 			echo -e ""$GREEN"intvlm8r.old found. Restored first login."$RESET""
 		else
 			echo 'Upgrade file found but the first login was not found/detected.'
@@ -484,11 +484,11 @@ install_website ()
 			done <~/www/intvlm8r.old
 		fi
 
-    		if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.old;
+    		if grep -q "### Paste the secret key here. See the Setup docs ###" /home/${SUDO_USER}/www/intvlm8r.old;
 		then
 			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
 		else
-			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" /home/${SUDO_USER}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 			if [ ! -z "$oldSecretKey" ];
 			then
 				echo 'intvlm8r.old found and the original Secret Key has been extracted.'
@@ -501,16 +501,16 @@ install_website ()
 		chg_web_login
 	fi
 
-	if grep -q '### Paste the secret key here. See the Setup docs ###' www/intvlm8r.py;
+	if grep -q '### Paste the secret key here. See the Setup docs ###' /home/${SUDO_USER}/www/intvlm8r.py;
 	then
 		if [ ! -z "$oldSecretKey" ];
 		then
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" /home/${SUDO_USER}/www/intvlm8r.py
 			echo 'intvlm8r.old found and the original Secret Key has been restored.'
 		else
 			#Generate a secret key here & paste in to intvlm8r.py:
 			UUID=$(cat /proc/sys/kernel/random/uuid)
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" /home/${SUDO_USER}/www/intvlm8r.py
 			echo 'A new Secret Key was created.'
 		fi
 	else
@@ -800,7 +800,7 @@ install_website ()
 	# (Thank you SO: https://unix.stackexchange.com/a/78309)
 
 	#NTP
-	if [ -f www/intvlm8r.old ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the NTP prompt step."$RESET""
 	else
@@ -924,9 +924,9 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 		echo "Skipped: '/boot/config.txt' does not contain legacy 'dtoverlay=gpio-poweroff'"
 	fi
 '
-	if [ -f www/intvlm8r.old ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
-		mv -fv www/intvlm8r.old www/intvlm8r.bak
+		mv -fv /home/${SUDO_USER}/www/intvlm8r.old /home/${SUDO_USER}/www/intvlm8r.bak
 	fi
 
 	# WiFi Power Save
@@ -948,9 +948,9 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 
 	remoteit
 
-	if [ -f www/intvlm8r.py.new ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.py.new ];
 	then
-		rm -fv www/intvlm8r.py.new
+		rm -fv /home/${SUDO_USER}/www/intvlm8r.py.new
 	fi
 
 	# Prepare for reboot/restart:
