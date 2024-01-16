@@ -335,8 +335,10 @@ def main():
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
 
-    templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
-    templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
+    arduinoDate = getArduinoDate() # Failure returns "Unknown"
+    templateData['arduinoDate'] = arduinoDate
+    if arduinoDate != 'Unknown':
+        templateData['arduinoTime'] = getArduinoTime() # Failure returns "", but *might* also report midnight in the absence of a working RTC!
 
     try:
         arduinoStats = str(readFromArduino("2", "String", False))
