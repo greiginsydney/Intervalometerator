@@ -12,7 +12,7 @@ If you're starting from scratch, start here at Step 1.
  </p>
 
 <p align="center">
-<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/5d7d7834-5338-47cd-a854-106022fadd67" width="50%">
+<img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/ff69203b-b8da-4a81-9151-54b3665e4c0c" width="50%">
  </p>
 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
@@ -87,23 +87,34 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 28. `sudo reboot`
 
-Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue
+Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue.
 
-29. We need to install Subversion so we can download *just* the Pi bits of the repo from GitHub:
-```txt
-sudo apt-get install subversion -y
+29.1 We need to install git so we can download the repo from GitHub:
+
 ```
-30. This downloads the repo, dropping the structure into the home directory:
-```txt
-svn export https://github.com/greiginsydney/Intervalometerator/trunk/Raspberry%20Pi/ ~ --force
+sudo apt-get install git -y
 ```
 
-> Advanced tip: if you're testing code and want to install a new branch direct from the repo, replace "/trunk/" in the link above with `/branches/<TheBranchName>/`
+29.2. This downloads the repo, dropping the structure into a subdirectory called `Intervalometerator`:
+```txt
+cd ~
+sudo rm -rf Intervalometerator
+git clone --depth=3 https://github.com/greiginsydney/Intervalometerator
+```
 
-31. All the hard work is done by a script in the repo, but it needs to be made executable first:
+> Advanced tip: if you're testing code and want to install a new branch direct from the repo, add `-b <branchName>` on the end of the line.
+
+30. Now we need to move the setup.sh script file into its final location:
+
+```txt
+mv -fv "Intervalometerator/Raspberry Pi/setup.sh" ~
+``` 
+
+31. All the hard work is done by the script, but it needs to be made executable first:
 ```txt
 sudo chmod +x setup.sh
 ```
+
 32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi user's home directory.)
 ```txt
 sudo -E -H ./setup.sh start
@@ -117,14 +128,13 @@ An 'X' indicates the option will be installed
 
 1. [X] SFTP
 2. [X] Dropbox
-3. [X] Google Drive
-4. [ ] rsync
+4. [X] rsync
 
-Press 1, 2 or 3 to toggle the selection.
+Press 1, 2 or 4 to toggle the selection.
 Press return on its own to continue with the install
 ```
 
-Accept the defaults just by pressing return on its own, or choose 1, 2, 3 or 4 (then return) to de-select the options that aren't relevant to you. (You can always install them later if the need arises).
+Accept the defaults just by pressing return on its own, or choose 1, 2 or 4 (then return) to de-select the options that aren't relevant to you. (You can always install them later if the need arises).
 
 > If you choose ALL the options (the default), this step now takes **over an hour** to complete, depending on how slow your Internet connection is. (As at March 2020.) SFTP is the real time-killer here.
 

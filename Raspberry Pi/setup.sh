@@ -42,7 +42,15 @@ RESET="\033[0m"
 
 install_apps ()
 {
-
+	if [[ -d /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi ]];
+	then
+		echo -e ""$GREEN"Moving repo files."$RESET""
+		cp -fr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/* /home/${SUDO_USER}/
+		rm -fvr /home/${SUDO_USER}/Intervalometerator/
+	else
+		echo -e "\n"$YELLOW"No repo files to move."$RESET""
+	fi;
+ 
 	if [[ -f www/intvlm8r.py ]];
 	then
 		echo ''
@@ -379,6 +387,9 @@ install_apps ()
 		echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcuts"$RESET""
 	fi
 
+	# And a shortcut for the logs folder:
+	ln -sfnv /var/log/ /home/${SUDO_USER}/log
+
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
@@ -395,7 +406,7 @@ install_website ()
 		echo -e ""$GREEN"Environment passed with '-E' switch"$RESET""
 	fi
 
-	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service", "apt-daily.timer", "apt-daily.service", "myIp.service")
+	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" "apt-daily.timer" "apt-daily.service" "myIp.service")
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
