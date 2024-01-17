@@ -2497,13 +2497,21 @@ def copyNow(self):
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
     if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
-        app.logger.info('newThumbs returned - thumbnail creation skipped')
-        return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
+        # If thumbs = 0, we'll silently create one thumbnail/preview image, for the benefit of the home page
+        silentMode = True
+        app.logger.info('newThumbs running in silentMode. Only doing the most recent image')
+    else:
+        silentMode = False
+        self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
+        
     thumbsCreated = 0
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
+        if silentMode:
+            # Truncate the file list to ONLY the most recent image
+            FileList.sort(key=lambda x: os.path.getmtime(x))
+            FileList = FileList[-1:]
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
 
         DifferenceList = []
@@ -2536,7 +2544,8 @@ def newThumbs(self):
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
+                    if not silentMode:
+                        self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
                     app.logger.info(f'Thumb  of {DifferenceList[loop]} is {dest}')
                 else:
                     app.logger.info(f'Thumb for {dest} already exists')
@@ -2546,7 +2555,10 @@ def newThumbs(self):
         app.logger.info(f'newThumbs error: {e}')
     dedupeExifData()
     app.logger.info('newThumbs returned')
-    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK', 'statusColour': 'white'}
+    if silentMode:
+        return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
+    else:
+        return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK', 'statusColour': 'white'}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
