@@ -2501,6 +2501,7 @@ def newThumbs(self):
     if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
         app.logger.info('newThumbs returned - thumbnail creation skipped')
         return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
+    thumbsCreated = 0
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
@@ -2523,7 +2524,6 @@ def newThumbs(self):
                     if discarded: continue
                 DifferenceList.append(image)
         thumbsToCreate = len(DifferenceList)
-        thumbsCreated = 0
         app.logger.info(f'Thumbs to create = {thumbsToCreate}')
 
         if thumbsToCreate >= 1:
