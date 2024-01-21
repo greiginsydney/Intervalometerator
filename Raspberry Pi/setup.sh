@@ -819,6 +819,7 @@ install_website ()
 	#Disable the daily auto-update process.
 	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
 	echo ''
+ 	echo -e ""$GREEN"Disabling the daily auto-update process"$RESET""
 	apt-get remove unattended-upgrades -y
 
 	echo ''
