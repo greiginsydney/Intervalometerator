@@ -34,7 +34,7 @@
 			<td id="copyHourMsg" class="centre-text"></td>
 		</tr>
 		
-		<tr>
+		<tr id="showHideRenameOnCopyCbx">
 			<td class="noborder" >
 				<div class="alignleft">Rename on copy:</div>
 				<div class="alignright">
@@ -296,26 +296,27 @@ MandatoryMaskBits["rsync"]          =    6144;
 MandatoryMaskBits["copy"]           =  524288;
 
 
-var method             = document.getElementById("tfrMethod");
-var copyDay            = document.getElementById("copyDay");
-var showHideCopyHour   = document.getElementById("showHideCopyHour");
-var showHideTrnHour    = document.getElementById("showHideTrnHour");
-var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
-var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
-var showHideTrnButton  = document.getElementById("tfrTrNow");
-var showHideRename     = document.getElementById("showHideRename");
-var renameOnCopy       = document.getElementById("renameOnCopy");
-var renameString       = document.getElementById("renameString");
-var showHideTrnWarning = document.getElementById("showHideTrnWarning");
-var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
-var ftp                = document.getElementById("ftp");
-var sftp               = document.getElementById("sftp");
-var dbx                = document.getElementById("dropbox");
-//var google             = document.getElementById("google");
-var rsync              = document.getElementById("rsync");
-var transfer           = document.getElementById("transfer");
-var exampleString      = document.getElementById("exampleString");
-var renameString       = document.getElementById("renameString");
+var method                  = document.getElementById("tfrMethod");
+var copyDay                 = document.getElementById("copyDay");
+var showHideCopyHour        = document.getElementById("showHideCopyHour");
+var showHideTrnHour         = document.getElementById("showHideTrnHour");
+var showHideCopyHrMsg       = document.getElementById("showHideCopyHrMsg");
+var showHideTrnHrMsg        = document.getElementById("showHideTrnHrMsg");
+var showHideTrnButton       = document.getElementById("tfrTrNow");
+var showHideRename          = document.getElementById("showHideRename");
+var showHideRenameOnCopyCbx = document.getElementById("showHideRenameOnCopyCbx");
+var renameOnCopy            = document.getElementById("renameOnCopy");
+var renameString            = document.getElementById("renameString");
+var showHideTrnWarning      = document.getElementById("showHideTrnWarning");
+var showHideTrnMethod       = document.getElementById("showHideTrnMethod");
+var ftp                     = document.getElementById("ftp");
+var sftp                    = document.getElementById("sftp");
+var dbx                     = document.getElementById("dropbox");
+//var google                = document.getElementById("google");
+var rsync                   = document.getElementById("rsync");
+var transfer                = document.getElementById("transfer");
+var exampleString           = document.getElementById("exampleString");
+var renameString            = document.getElementById("renameString");
 
 //initialise constants for the file rename calc's:
 var short_month = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
@@ -340,14 +341,15 @@ dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ?
 //google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
-showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
-showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-showHideTrnButton.style.display  = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
-showHideRename.style.display     = (renameOnCopy.checked == false) ? "none":"";
+showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
+showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
+showHideRenameOnCopyCbx.style.display = (copyDay.value == "Off") ? "none":"";
+showHideTrnButton.style.display       = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideRename.style.display          = (copyDay.value == "Off" || renameOnCopy.checked == false) ? "none":"";
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -381,19 +383,21 @@ function newSelected(id)
 		ftp.style.display               = (method.value != "FTP"          || copyDay.value == "Off") ? "none":"";
 		sftp.style.display              = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
 		dbx.style.display               = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
-		//google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		//google.style.display          = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 		rsync.style.display             = (method.value != "rsync"        || copyDay.value == "Off") ? "none":"";
 		transfer.style.display          = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 		showHideTrnButton.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
 	{
-		showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-		showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-		showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
+		showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
+		showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
+		showHideRenameOnCopyCbx.style.display = (copyDay.value == "Off") ? "none":"";
+		showHideRename.style.display          = (copyDay.value == "Off" || renameOnCopy.checked == false) ? "none":"";
 		if (copyDay.value == "Daily")
 		{
 			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
