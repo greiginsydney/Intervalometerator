@@ -107,7 +107,7 @@
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" title="Choose one of these transfer options" onchange="newSelected(this.id)">
-					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive', 'rsync'] %}
+					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'rsync'] %}
 						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %} {% if method != 'FTP' and method in hiddenTransferOptions %} DISABLED{% endif %} >{{ method }}</option>"
 					{% endfor %}
 					</select>
@@ -178,15 +178,6 @@
 			<td>
 				<div class="alignleft"><label for="dbx_app_key">App key:</label></div>
 				<div class="alignright"><input type="text" name="dbx_app_key" id="dbx_app_key" value="{{ dbx_app_key }}" placeholder="f7dy463gj7ii5" oninput="newText(this.id)"></div>
-			</td>
-		</tr>
-	</table>
-
-	<table id="google">
-		<tr>
-			<td>
-				<div class="alignleft"><label for="googleRemoteFolder">Remote folder:</label></div>
-				<div class="alignright"><input type="text" name="googleRemoteFolder" id="googleRemoteFolder" value="{{ googleRemoteFolder }}" placeholder="e.g. images" oninput="newText(this.id)"></div>
 			</td>
 		</tr>
 	</table>
@@ -281,7 +272,7 @@ SelectionBits["sftpUser"]           =      64;
 SelectionBits["sftpPassword"]       =     128;
 SelectionBits["sftpRemoteFolder"]   =     256;
 SelectionBits["dbx_app_key"]          =     512;
-SelectionBits["googleRemoteFolder"] =    1024;
+//SelectionBits["googleRemoteFolder"] =    1024;
 SelectionBits["rsyncUsername"]      =    2048;
 SelectionBits["rsyncHost"]          =    4096;
 SelectionBits["rsyncRemoteFolder"]  =    8192;
@@ -298,7 +289,7 @@ var MandatoryMaskBits = new Array();
 MandatoryMaskBits["ftp"]            =       6; //These values are the *sum* of the bit values (above) that can't be empty
 MandatoryMaskBits["sftp"]           =     224;
 MandatoryMaskBits["dropbox"]        =     512;
-MandatoryMaskBits["google"]         =       0;
+//MandatoryMaskBits["google"]         =       0;
 MandatoryMaskBits["rsync"]          =    6144;
 MandatoryMaskBits["copy"]           =  524288;
 
@@ -317,7 +308,7 @@ var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
 var ftp                = document.getElementById("ftp");
 var sftp               = document.getElementById("sftp");
 var dbx                = document.getElementById("dropbox");
-var google             = document.getElementById("google");
+//var google             = document.getElementById("google");
 var rsync              = document.getElementById("rsync");
 var transfer           = document.getElementById("transfer");
 var exampleString      = document.getElementById("exampleString");
@@ -343,7 +334,7 @@ document.getElementById("originalFileName").innerHTML = pcF
 ftp.style.display      = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
 sftp.style.display     = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
 dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
-google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+//google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
@@ -387,7 +378,7 @@ function newSelected(id)
 		ftp.style.display               = (method.value != "FTP"          || copyDay.value == "Off") ? "none":"";
 		sftp.style.display              = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
 		dbx.style.display               = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
-		google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		//google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 		rsync.style.display             = (method.value != "rsync"        || copyDay.value == "Off") ? "none":"";
 		transfer.style.display          = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 		showHideTrnButton.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
