@@ -88,6 +88,17 @@
 			</td>
 		</tr>
 		</tbody>
+		<tr id="showHideCopyOnBootup">
+			<td>
+				<div class="alignleft">Copy on Pi bootup:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a transfer each time it boots" onchange="newSelected(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
 	</table>
 	
 	<table class="noborder">
