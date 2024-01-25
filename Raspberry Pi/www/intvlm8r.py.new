@@ -133,16 +133,14 @@ hiddenTransferOptions = ''
 hiddenTransferDict = {
   "paramiko": "SFTP",
   "dropbox": "Dropbox",
-  "google": "Google Drive",
   "sysrsync": "rsync"
 }
 # TY SO: https://stackoverflow.com/a/41815890
-for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
+for package_name in ('paramiko', 'dropbox', 'sysrsync'):
     spec = importlib.util.find_spec(package_name)
     if spec is None:
         app.logger.debug(f'{package_name} is not installed')
         hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
-    hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict['google'] # hard-codes Google onto the 'hidden' (actually 'disabled') list
 app.logger.debug(f'hiddenTransferOptions = {hiddenTransferOptions}')
 
 def writeString(value, waitTime):
@@ -887,7 +885,6 @@ def transfer():
         'sftpUser'              : '',
         'sftpPassword'          : '',
         'sftpRemoteFolder'      : '',
-        'googleRemoteFolder'    : '',
         'dbx_app_key'           : '',
         'rsyncUsername'         : '',
         'rsyncHost'             : '',
@@ -913,7 +910,6 @@ def transfer():
         'sftpUser'           : '',
         'sftpPassword'       : '',
         'sftpRemoteFolder'   : '',
-        'googleRemoteFolder' : '',
         'dbx_app_key'        : '',
         'rsyncUsername'      : '',
         'rsyncHost'          : '',
@@ -938,7 +934,6 @@ def transfer():
         templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
         templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
         templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
-        templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
         templateData['dbx_app_key']        = config.get('Transfer', 'dbx_app_key')
         templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
         templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
@@ -999,9 +994,6 @@ def transferPOST():
                 config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'Dropbox'):
                 config.set('Transfer', 'dbx_app_key', str(request.form.get('dbx_app_key') or ''))
-            elif (request.form.get('tfrMethod') == 'Google Drive'):
-                googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
-                config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'rsync'):
                 config.set('Transfer', 'rsyncUsername', str(request.form.get('rsyncUsername') or ''))
                 config.set('Transfer', 'rsyncHost', str(request.form.get('rsyncHost') or ''))
