@@ -45,34 +45,35 @@
 				</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tbody id="showHideRename">
+		<tr>
 			<td class="noborder" ><label for="renameString">Create a new filename using these format strings:</label></td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%Y = 4-digit year</div>
 				<div class="alignright">%m = month (01-12)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%b = short month ('Jan')</div>
 				<div class="alignright">%d = day of month (01-31)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%a = short weekday ('Mon')</div>
 				<div class="alignright">%H = hour (00-23)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%M = minute (00-59)</div>
 				<div class="alignright">%S = second (00-59)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%F = original filename</div>
 				<div class="alignright">
@@ -80,12 +81,13 @@
 				</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft" id="originalFileName"></div>
 				<div class="alignright" id="exampleString"></div>
 			</td>
 		</tr>
+		</tbody>
 	</table>
 	
 	<table class="noborder">
@@ -301,6 +303,7 @@ var showHideTrnHour    = document.getElementById("showHideTrnHour");
 var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
 var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
 var showHideTrnButton  = document.getElementById("tfrTrNow");
+var showHideRename     = document.getElementById("showHideRename");
 var renameOnCopy       = document.getElementById("renameOnCopy");
 var renameString       = document.getElementById("renameString");
 var showHideTrnWarning = document.getElementById("showHideTrnWarning");
@@ -344,6 +347,7 @@ showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" =
 showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
 showHideTrnButton.style.display  = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideRename.style.display     = (renameOnCopy.checked == false) ? "none":"";
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -366,7 +370,6 @@ else
 // Run when the form first loads:
 checkForBlanks();
 lightButtons();
-showHideRename();
 updateExample();
 
 function newSelected(id)
@@ -527,18 +530,8 @@ function updateRename(id)
 	{
 		renameString.classList.remove("redborder")
 	}
-	showHideRename();
+	showHideRename.style.display = (renameOnCopy.checked == false) ? "none":"";
 	lightButtons();
-}
-
-function showHideRename()
-{
-	var showHide = (renameOnCopy.checked == false) ? "none":"";
-	rows = document.getElementsByName("showHideRename")
-	for (i = 0; i < rows.length; i++)
-	{
-		rows[i].style.display = showHide;
-	}
 }
 
 function checkForBlanks()
