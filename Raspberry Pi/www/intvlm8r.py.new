@@ -1485,9 +1485,10 @@ def system():
 
     try:
         arduinoDate = getArduinoDate() # Failure returns "Unknown"
+        tempTime = getArduinoTime()    # Failure returns "", on-screen as "Unknown", but *might* also report midnight in the absence of a working RTC!
         templateData['arduinoDate'] = arduinoDate
         if arduinoDate != 'Unknown':
-            templateData['arduinoTime'] = getArduinoTime() # Failure returns "", but *might* also report midnight in the absence of a working RTC!
+            templateData['arduinoTime'] = tempTime
         rawWakePi = str(readFromArduino("5", "String", False))
         if rawWakePi != "Unknown":
             wakePiTime                     = rawWakePi[0:2]
