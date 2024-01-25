@@ -1,7 +1,7 @@
 [Unit]
 Description = myIp.service. Show my IP address
-After = network-online.target
-Wants = network-online.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
@@ -10,7 +10,7 @@ Group=www-data
 WorkingDirectory=/home/pi/
 # Wait 5s before starting the script:
 # ExecStartPre=/bin/sleep 5
-ExecStart = /home/pi/myIp.sh
+ExecStart=/home/pi/myIp.sh
 TimeoutSec=0
 StandardOutput=tty
 StandardError=journal
