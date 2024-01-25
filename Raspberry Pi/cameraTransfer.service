@@ -27,7 +27,7 @@ Group=www-data
 WorkingDirectory=/home/pi/www
 Environment="PATH=/home/pi/www"
 ExecStartPre=/bin/sleep 30
-ExecStart=/usr/bin/python3 /home/pi/www/cameraTransfer.py copyNow
+ExecStart=/usr/bin/python3 /home/pi/www/cameraTransfer.py bootup
 StandardError=journal
 
 [Install]
