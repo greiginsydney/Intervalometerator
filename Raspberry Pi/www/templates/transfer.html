@@ -259,6 +259,7 @@
 	</table>
 </form>
 
+<p>9</p>
 
 <script>
 var SelectionByte = 0;
@@ -273,7 +274,7 @@ SelectionBits["sftpServer"]         =      32;
 SelectionBits["sftpUser"]           =      64;
 SelectionBits["sftpPassword"]       =     128;
 SelectionBits["sftpRemoteFolder"]   =     256;
-SelectionBits["dbx_app_key"]          =     512;
+SelectionBits["dbx_app_key"]        =     512;
 //SelectionBits["googleRemoteFolder"] =    1024;
 SelectionBits["rsyncUsername"]      =    2048;
 SelectionBits["rsyncHost"]          =    4096;
@@ -291,7 +292,7 @@ var MandatoryMaskBits = new Array();
 MandatoryMaskBits["ftp"]            =       6; //These values are the *sum* of the bit values (above) that can't be empty
 MandatoryMaskBits["sftp"]           =     224;
 MandatoryMaskBits["dropbox"]        =     512;
-//MandatoryMaskBits["google"]         =       0;
+//MandatoryMaskBits["google"]       =       0;
 MandatoryMaskBits["rsync"]          =    6144;
 MandatoryMaskBits["copy"]           =  524288;
 
@@ -476,13 +477,19 @@ function lightButtons()
 	}
 
 	//'Copy now' button:
-	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
+	// Disable if any of the copy settings have been changed and not submitted.
+	if (((SelectionByte & 983040) != 0))
 	{
 		copyButton.disabled  = true;
 	}
 	else
 	{
 		copyButton.disabled  = false;
+	}
+	// Disable if copy is Off:
+	if (copyDay.value == "Off")
+	{
+		copyButton.disabled  = true;
 	}
 
 	//'Transfer now' button:
