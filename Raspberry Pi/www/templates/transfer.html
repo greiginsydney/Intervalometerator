@@ -93,7 +93,7 @@
 				<div class="alignleft">Copy on Pi bootup:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a transfer each time it boots" onchange="newSelected(this.id)"/>
+						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a transfer each time it boots" onchange="updateRename(this.id)"/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
@@ -270,32 +270,32 @@
 	</table>
 </form>
 
-<p>9</p>
 
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
 //Don't change these without updating the 'Transfer now' interlocking in lightButtons():
-SelectionBits["tfrMethod"]          =       1;
-SelectionBits["ftpServer"]          =       2;
-SelectionBits["ftpUser"]            =       4;
-SelectionBits["ftpPassword"]        =       8;
-SelectionBits["ftpRemoteFolder"]    =      16;
-SelectionBits["sftpServer"]         =      32;
-SelectionBits["sftpUser"]           =      64;
-SelectionBits["sftpPassword"]       =     128;
-SelectionBits["sftpRemoteFolder"]   =     256;
-SelectionBits["dbx_app_key"]        =     512;
-//SelectionBits["googleRemoteFolder"] =    1024;
-SelectionBits["rsyncUsername"]      =    2048;
-SelectionBits["rsyncHost"]          =    4096;
-SelectionBits["rsyncRemoteFolder"]  =    8192;
-SelectionBits["transferDay"]        =   16384;
-SelectionBits["transferHour"]       =   32768;
-SelectionBits["copyDay"]            =   65536;
-SelectionBits["copyHour"]           =  131072;
-SelectionBits["renameOnCopy"]       =  262144;
-SelectionBits["renameString"]       =  524288;
+SelectionBits["tfrMethod"]          =        1; // 2^0
+SelectionBits["ftpServer"]          =        2;
+SelectionBits["ftpUser"]            =        4;
+SelectionBits["ftpPassword"]        =        8;
+SelectionBits["ftpRemoteFolder"]    =       16;
+SelectionBits["sftpServer"]         =       32;
+SelectionBits["sftpUser"]           =       64;
+SelectionBits["sftpPassword"]       =      128;
+SelectionBits["sftpRemoteFolder"]   =      256; // 2^8
+SelectionBits["dbx_app_key"]        =      512;
+//SelectionBits["googleRemoteFolder"] =   1024;
+SelectionBits["rsyncUsername"]      =     2048;
+SelectionBits["rsyncHost"]          =     4096;
+SelectionBits["rsyncRemoteFolder"]  =     8192;
+SelectionBits["transferDay"]        =    16384;
+SelectionBits["transferHour"]       =    32768;
+SelectionBits["copyDay"]            =    65536; // 2^16
+SelectionBits["copyHour"]           =   131072;
+SelectionBits["renameOnCopy"]       =   262144;
+SelectionBits["renameString"]       =   524288;
+SelectionBits["copyOnBootup"]       =  1048576;
 
 //These text fields can't be blank if their respective selection is active
 var MandatoryByte     = 0;
@@ -329,6 +329,7 @@ var rsync                   = document.getElementById("rsync");
 var transfer                = document.getElementById("transfer");
 var exampleString           = document.getElementById("exampleString");
 var renameString            = document.getElementById("renameString");
+var showHideCopyOnBoot      = document.getElementById("showHideCopyOnBootup");
 
 //initialise constants for the file rename calc's:
 var short_month = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
@@ -360,8 +361,10 @@ showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime
 showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
 showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
 showHideRenameOnCopyCbx.style.display = (copyDay.value == "Off") ? "none":"";
-showHideTrnButton.style.display       = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 showHideRename.style.display          = (copyDay.value == "Off" || renameOnCopy.checked == false) ? "none":"";
+showHideCopyOnBoot.style.display      = (copyDay.value == "Off") ? "none":"";
+showHideTrnButton.style.display       = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -410,6 +413,7 @@ function newSelected(id)
 		showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
 		showHideRenameOnCopyCbx.style.display = (copyDay.value == "Off") ? "none":"";
 		showHideRename.style.display          = (copyDay.value == "Off" || renameOnCopy.checked == false) ? "none":"";
+		showHideCopyOnBoot.style.display      = (copyDay.value == "Off") ? "none":"";
 		if (copyDay.value == "Daily")
 		{
 			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
@@ -489,7 +493,7 @@ function lightButtons()
 
 	//'Copy now' button:
 	// Disable if any of the copy settings have been changed and not submitted.
-	if (((SelectionByte & 983040) != 0))
+	if (((SelectionByte & 2031616) != 0))
 	{
 		copyButton.disabled  = true;
 	}
@@ -532,6 +536,7 @@ function openInNewTab(url) {
 	win.focus();
 }
 
+// This fn does double-duty, as it now handles both of the check-boxes on the page
 function updateRename(id)
 {
 	var option = document.getElementById(id);
