@@ -45,6 +45,8 @@ def main(argv):
     if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
+        elif sys.argv[1] == 'bootup':
+            bootup = True
 
     if not os.path.exists(INIFILE_NAME):
         pass
@@ -52,15 +54,18 @@ def main(argv):
         {
         'copyDay'         : 'Off',
         'copyHour'        : '00',
+        'copyOnBootup'    : 'Off'
         })
     config.read(INIFILE_NAME)
     try:
         copyDay       = config.get('Copy', 'copyDay')
         copyHour      = config.get('Copy', 'copyHour')
+        copyOnBootup  = config.get('Copy', 'copyOnBootup')
 
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'
+        copyOnBootup = 'Off'
         log('INI file error: ' + str(e))
 
     log('')
@@ -71,6 +76,9 @@ def main(argv):
         if (copyNow == True):
             # We're OK to copy NOW
             log('OK to copy on copyNow.')
+        elif ((bootup == True) and (copyOnBootup != 'Off')):
+            # We're OK to copy NOW, as we've been called by the service and the bootup flag has been set
+            log('OK to copy on bootup.')
         elif (now.strftime("%H") == copyHour):
             # We're OK to copy NOW
             log(f'OK to copy @ {copyHour}:00.')
