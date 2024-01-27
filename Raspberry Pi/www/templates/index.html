@@ -118,7 +118,7 @@
 					var data = JSON.parse(this.response);
 					// update UI
 					col[0].innerHTML = data['status'];
-					row[0].className = data['statusColour'];
+					updateColouring(col[0], data['statusColour'])
 					if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS')
 					{
 						//We're done.
@@ -143,14 +143,14 @@
 				{
 					// We reached our target server, but it returned an error
 					col[0].innerHTML = 'The Pi returned an error';
-					row[0].className = 'orange';
+					updateColouring(col[0], "orange")
 				}
 			};
 			request.onerror = function()
 			{
 				// There was a connection error of some sort
 				col[0].innerHTML = 'The Pi did not respond';
-				row[0].className = 'orange';
+				updateColouring(col[0], "orange")
 			}
 			request.send()
 		}
@@ -214,8 +214,24 @@
 			default:
 				col[0].innerHTML = 'Applying changed settings';
 		}
-		row[0].className = 'white';
+		updateColouring(col[0], "white")
 		return true;
+	}
+
+	function updateColouring(element, newColour)
+	{
+		const colourList = [ "red", "orange", "white" ];
+		for (i in colourList)
+		{
+			if (colourList[i] == newColour)
+			{
+				element.classList.add(colourList[i]);
+			}
+			else
+			{
+				element.classList.remove(colourList[i]);
+			}
+		}
 	}
 
 	function updateMsgBackground()
