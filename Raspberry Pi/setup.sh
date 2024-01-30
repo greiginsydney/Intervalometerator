@@ -453,6 +453,7 @@ install_apps ()
 	else
 		echo "setting dtparam=i2c_arm=on in $I2CPath"
 		echo 'dtparam=i2c_arm=on' >> $I2CPath
+  	fi
 
  	if [ -f /etc/modprobe.d/raspi-blacklist.conf ];
 	then
