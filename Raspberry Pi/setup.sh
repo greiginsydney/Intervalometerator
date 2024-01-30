@@ -453,7 +453,7 @@ install_apps ()
 	else
 		echo "setting dtparam=i2c_arm=on in $I2CPath"
 		echo 'dtparam=i2c_arm=on' >> $I2CPath
-  	fi
+	fi
 
  	if [ -f /etc/modprobe.d/raspi-blacklist.conf ];
 	then
@@ -1017,28 +1017,28 @@ install_website ()
 	done
 
 	# Step 101 - slows the I2C speed
-	if  grep -q 'dtparam=i2c1=on' /boot/config.txt;
+	if  grep -q 'dtparam=i2c1=on' $I2CPath;
 	then
-		echo "Skipped: '/boot/config.txt' already contains 'dtparam=i2c1=on'"
+		echo "Skipped: '$I2CPath' already contains 'dtparam=i2c1=on'"
 	else
-		sed -i '/dtparam=i2c_arm=on/i dtparam=i2c1=on' /boot/config.txt
+		sed -i '/dtparam=i2c_arm=on/i dtparam=i2c1=on' $I2CPath
 	fi
 
-	if  grep -q 'i2c_arm_baudrate' /boot/config.txt;
+	if  grep -q 'i2c_arm_baudrate' $I2CPath;
 	then
-		echo "Skipped: '/boot/config.txt' already contains 'i2c_arm_baudrate'"
+		echo "Skipped: '$I2CPath' already contains 'i2c_arm_baudrate'"
 	else
-		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt
+		sed -i 's/dtparam=i2c_arm=on/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' $I2CPath
 	fi
-	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' /boot/config.txt #Un-comments the speed line
+	sed -i 's/^#dtparam=i2c_arm=on,i2c_arm_baudrate=40000/dtparam=i2c_arm=on,i2c_arm_baudrate=40000/g' $I2CPath #Un-comments the speed line
 
 	# Step 102
 	# https://unix.stackexchange.com/questions/77277/how-to-append-multiple-lines-to-a-file
-	if  grep -Fq 'intervalometerator' '/boot/config.txt';
+	if  grep -Fq 'intervalometerator' $I2CPath;
 	then
-		echo "Skipped: '/boot/config.txt' already contains our added config lines"
+		echo "Skipped: '$I2CPath' already contains our added config lines"
 	else
-cat <<END >> /boot/config.txt
+cat <<END >> $I2CPath
 
 #The intervalometerator has no need for bluetooth:
 dtoverlay=pi3-disable-bt
@@ -1058,12 +1058,12 @@ END
 
 : '
 TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
-	if grep -q '^dtoverlay=gpio-poweroff' /boot/config.txt;
+	if grep -q '^dtoverlay=gpio-poweroff' $I2CPath;
 	then
-		echo -e ""$YELLOW"'/boot/config.txt' contains legacy dtoverlay=gpio-poweroff. Updating.""$RESET"
-		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low/dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low/g' /boot/config.txt
+		echo -e ""$YELLOW"'$I2CPath' contains legacy dtoverlay=gpio-poweroff. Updating.""$RESET"
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low/dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low/g' $I2CPath
 	else
-		echo "Skipped: '/boot/config.txt' does not contain legacy 'dtoverlay=gpio-poweroff'"
+		echo "Skipped: '$I2CPath' does not contain legacy 'dtoverlay=gpio-poweroff'"
 	fi
 '
 	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
@@ -1527,7 +1527,7 @@ test_install ()
 	[ -f /etc/systemd/system/setTime.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/setTime.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/setTime.service not found"
 	[ -f /etc/systemd/system/redis.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/redis.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/redis.service not found"
 	[ -f /etc/systemd/system/celery.service ] && echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/celery.service exists" || echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/celery.service not found"
-	grep -q 'i2c_arm_baudrate' /boot/config.txt && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in /boot/config.txt" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in /boot/config.txt"
+	grep -q 'i2c_arm_baudrate' $I2CPath && echo -e ""$GREEN"PASS:"$RESET" i2c_arm_baudrate is present in $I2CPath" || echo -e ""$YELLOW"FAIL:"$RESET" i2c_arm_baudrate not present in $I2CPath"
 	if grep -qcim1 'i2c-dev' /etc/modules;
 	then
 		echo -e ""$GREEN"PASS:"$RESET" i2c-dev installed in /etc/modules"
