@@ -292,7 +292,7 @@ install_apps ()
 	set -e #Resume the error trap
 
 	if [[ $isLibgphoto2 ]];
- 	then
+	then
 		echo -e "\rCurrent  installed version of libgphoto2 = $isLibgphoto2"
 		if dpkg --compare-versions $isLibgphoto2 "lt" $latestLibgphoto2Rls ;
 		then
@@ -340,9 +340,9 @@ install_apps ()
 	#isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	isGphoto=$(pip3 show gphoto2 2>/dev/null | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isGphoto && ($isGphoto != "(none)") ]];
- 	then
+	then
 		if [[ $isGphoto != $latestPythonGphotoRls ]];
-  		then
+		then
 			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
 			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
@@ -375,9 +375,11 @@ install_apps ()
 	echo    "Current     online version of rawpy = $latestRawpyRls"
 	echo -n "Checking installed version of rawpy "
 	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
-	if [[ $isRawpy && ($isRawpy != "(none)") ]]; then
+	if [[ $isRawpy && ($isRawpy != "(none)") ]];
+	then
 		echo -e "\rCurrent installed version of rawpy  = $isRawpy"
-		if [[ $isRawpy != $latestRawpyRls ]]; then
+		if [[ $isRawpy != $latestRawpyRls ]];
+		then
 			echo -e ""$GREEN"Updating rawpy"$RESET""
 			installRawpy=1
 		else
@@ -415,13 +417,15 @@ install_apps ()
 	# -------------------------------------------------------------------------------------------------
 	# Thank you: http://www.uugear.com/portfolio/a-single-script-to-setup-i2c-on-your-raspberry-pi/
 	echo -e ""$GREEN"Enabling i2c"$RESET""
-	if grep -q 'i2c-bcm2708' /etc/modules; then
+	if grep -q 'i2c-bcm2708' /etc/modules;
+	then
 		echo 'i2c-bcm2708 module already exists'
 	else
 		echo 'adding i2c-bcm2708 to /etc/modules/'
 		echo 'i2c-bcm2708' >> /etc/modules
 	fi
-	if grep -q 'i2c-dev' /etc/modules; then
+	if grep -q 'i2c-dev' /etc/modules;
+	then
 		echo 'i2c-dev module already exists'
 	else
 		echo 'adding i2c-dev to /etc/modules/'
@@ -436,19 +440,22 @@ install_apps ()
 	else
 		I2CPath="/boot/config.txt"
 	fi
-	if grep -q 'dtparam=i2c1=on' $I2CPath; then
+	if grep -q 'dtparam=i2c1=on' $I2CPath;
+	then
 		echo 'i2c1 parameter already set'
 	else
 		echo "setting dtparam=i2c1=on in $I2CPath"
 		echo 'dtparam=i2c1=on' >> $I2CPath
 	fi
-	if grep -q 'dtparam=i2c_arm=on' $I2CPath; then
+	if grep -q 'dtparam=i2c_arm=on' $I2CPath;
+	then
 		echo 'i2c_arm parameter already set'
 	else
 		echo "setting dtparam=i2c_arm=on in $I2CPath"
 		echo 'dtparam=i2c_arm=on' >> $I2CPath
 
- 	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
+ 	if [ -f /etc/modprobe.d/raspi-blacklist.conf ];
+	then
 		echo 'removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
@@ -467,16 +474,19 @@ install_apps ()
 		whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
     	fi
 
-	if [ ! -z "$whereisgphoto" ]; then
+	if [ ! -z "$whereisgphoto" ];
+	then
 		gphoto2="$whereisgphoto/gphoto2"
 		examples="$gphoto2/examples"
-		if [ -d  $gphoto2 ]; then
+		if [ -d  $gphoto2 ];
+		then
 			ln -sfnv "$gphoto2" /home/${SUDO_USER}/gphoto2
 			echo -e "Created shortcut 'gphoto2' to point to '$gphoto2'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 		fi
-		if [ -d  $examples ]; then
+		if [ -d  $examples ];
+		then
 			ln -sfnv "$examples" /home/${SUDO_USER}/examples
 			echo -e "Created shortcut 'examples' to point to '$examples'"
 		else
@@ -1070,7 +1080,8 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 		echo -e "WiFi power save mode is already off"
 	fi
 	# Permanently disable WiFi power save mode:
-	if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local; then
+	if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local;
+	then
 		echo -e 'WiFi power save mode is already disabled in /etc/rc.local'
 	else
 		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
