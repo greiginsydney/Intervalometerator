@@ -1541,6 +1541,7 @@ test_install ()
 		then
 			echo -e ""$YELLOW"FAIL:"$RESET" i2cdetect threw an error"
    			echo "Did the './setup.sh start' test complete without error?"
+      			echo "(A reboot is required after install for this test to pass)"
 		fi
 		set -e #Resume the error trap
 	else
