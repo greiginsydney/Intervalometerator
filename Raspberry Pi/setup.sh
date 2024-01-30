@@ -291,7 +291,8 @@ install_apps ()
 	isLibgphoto2=$(pkg-config --modversion --silence-errors libgphoto2)
 	set -e #Resume the error trap
 
-	if [[ $isLibgphoto2 ]]; then
+	if [[ $isLibgphoto2 ]];
+ 	then
 		echo -e "\rCurrent  installed version of libgphoto2 = $isLibgphoto2"
 		if dpkg --compare-versions $isLibgphoto2 "lt" $latestLibgphoto2Rls ;
 		then
@@ -338,8 +339,10 @@ install_apps ()
 	echo -n "Checking installed version of python-gphoto2"
 	#isGphoto=$(su - $SUDO_USER -c "pip3 show gphoto2 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	isGphoto=$(pip3 show gphoto2 2>/dev/null | sed -n 's/.*Version:\s\(.*\).*/\1/p')
-		if [[ $isGphoto && ($isGphoto != "(none)") ]]; then
-		if [[ $isGphoto != $latestPythonGphotoRls ]]; then
+	if [[ $isGphoto && ($isGphoto != "(none)") ]];
+ 	then
+		if [[ $isGphoto != $latestPythonGphotoRls ]];
+  		then
 			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
 			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
@@ -424,6 +427,7 @@ install_apps ()
 		echo 'adding i2c-dev to /etc/modules/'
 		echo 'i2c-dev' >> /etc/modules
 	fi
+
 	# config.txt path changes for Bookworm+
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
