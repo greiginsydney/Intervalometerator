@@ -424,19 +424,27 @@ install_apps ()
 		echo 'adding i2c-dev to /etc/modules/'
 		echo 'i2c-dev' >> /etc/modules
 	fi
-	if grep -q 'dtparam=i2c1=on' /boot/config.txt; then
+	# config.txt path changes for Bookworm+
+	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+		I2CPath="/boot/firmware/config.txt"
+	else
+		I2CPath="/boot/config.txt"
+	fi
+	if grep -q 'dtparam=i2c1=on' $I2CPath; then
 		echo 'i2c1 parameter already set'
 	else
-		echo 'setting dtparam=i2c1=on in /boot/config.txt'
-		echo 'dtparam=i2c1=on' >> /boot/config.txt
+		echo "setting dtparam=i2c1=on in $I2CPath"
+		echo 'dtparam=i2c1=on' >> $I2CPath
 	fi
-	if grep -q 'dtparam=i2c_arm=on' /boot/config.txt; then
+	if grep -q 'dtparam=i2c_arm=on' $I2CPath; then
 		echo 'i2c_arm parameter already set'
 	else
-		echo 'setting dtparam=i2c_arm=on in /boot/config.txt'
-		echo 'dtparam=i2c_arm=on' >> /boot/config.txt
-	fi
-	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
+		echo "setting dtparam=i2c_arm=on in $I2CPath"
+		echo 'dtparam=i2c_arm=on' >> $I2CPath
+
+ 	if [ -f /etc/modprobe.d/raspi-blacklist.conf ]; then
 		echo 'removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
 		sed -i 's/^blacklist i2c-bcm2708/#blacklist i2c-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
