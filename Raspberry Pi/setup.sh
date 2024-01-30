@@ -87,6 +87,15 @@ venv_test ()
 		echo ""
 		exit
 	fi
+
+ 	# config.txt path changes for Bookworm+
+	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+		I2CPath="/boot/firmware/config.txt"
+	else
+		I2CPath="/boot/config.txt"
+	fi
 	#echo ${SUDO_USER}
 	#echo $(which pip3)
 }
@@ -432,14 +441,7 @@ install_apps ()
 		echo 'i2c-dev' >> /etc/modules
 	fi
 
-	# config.txt path changes for Bookworm+
-	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
-	if [[ ($VENV_ACTIVE == 1) ]];
-	then
-		I2CPath="/boot/firmware/config.txt"
-	else
-		I2CPath="/boot/config.txt"
-	fi
+	# $I2CPATH is either /boot/config.txt or /boot/firmware/config.txt depending on OS. Set in 'venv_test'
 	if grep -q 'dtparam=i2c1=on' $I2CPath;
 	then
 		echo 'i2c1 parameter already set'
