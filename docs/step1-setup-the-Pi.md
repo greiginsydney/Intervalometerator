@@ -60,7 +60,7 @@ pi@raspberrypi:~ $
 18.2 Now execute these three commands in turn, replacing the network name and dummy values here with your own:
 
 ```txt
-sudo nmcli c mod "mywifissid" ipv4.addresses 10.0.0.220/24 ipv4.method manual
+sudo nmcli con mod "mywifissid" ipv4.addresses 10.0.0.220/24 ipv4.method manual
 sudo nmcli con mod "mywifissid" ipv4.gateway 10.0.0.1
 sudo nmcli con mod "mywifissid" ipv4.dns "10.0.0.1"
 ```
