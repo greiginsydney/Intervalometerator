@@ -411,6 +411,18 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing rsyslog"$RESET""
 	apt install rsyslog -y
+	
+	echo -e ""$GREEN"Installing dnsmasq, hostapd"$RESET""
+	apt-get install dnsmasq hostapd -y
+	echo -e ""$GREEN"Disabling dnsmasq"$RESET""
+	systemctl stop dnsmasq
+	systemctl disable dnsmasq
+	systemctl mask dnsmasq
+	echo -e ""$GREEN"Disabling hostapd"$RESET""
+	systemctl stop hostapd
+	systemctl disable hostapd
+	systemctl mask hostapd
+	
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
@@ -1200,9 +1212,7 @@ CIDRtoNetmask ()
 
 make_ap ()
 {
-	apt-get install dnsmasq hostapd -y
-	systemctl stop dnsmasq
-	systemctl stop hostapd
+	# hostapd & dnsmasq are installed but disabled & masked at this stage.
 	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
 	if  grep -Fq 'interface wlan0' '/etc/dhcpcd.conf';
@@ -1297,8 +1307,11 @@ END
 	systemctl unmask hostapd
 	echo 'Enabling hostapd'
 	systemctl enable hostapd
+	
+	systemctl unmask dnsmasq
 	echo 'Enabling dnsmasq'
 	systemctl enable dnsmasq
+	
 	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi access point!'
 }
 
@@ -1308,11 +1321,13 @@ unmake_ap ()
 	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
 		systemctl disable dnsmasq #Stops it launching on bootup
+		systemctl mask dnsmasq
 		echo 'Disabled dnsmasq'
 	fi
 	if systemctl --all --type service | grep -q 'hostapd';
 	then
 		systemctl disable hostapd
+		systemctl mask hostapd
 		echo 'Disabled hostapd'
 		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
 	fi
