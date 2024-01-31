@@ -1318,7 +1318,50 @@ END
 
 make_ap_nmcli ()
 {
-	echo "make_ap_nmcli"
+	echo -e ""$GREEN"make_ap_nmcli"$RESET""
+	echo ''
+	
+	#Extract existing DHCP values (if present):
+	# local oldDhcpStartIp=$()
+	# oldDhcpEndIp=$()
+	# oldDhcpSubnetMask=$()
+	#Populate defaults otherwise:
+	if [ -z "$oldDhcpStartIp" ]; then oldDhcpStartIp='10.10.10.10'; fi
+	if [ -z "$oldDhcpEndIp" ]; then oldDhcpEndIp='10.10.10.100'; fi
+	if [ -z "$oldDhcpSubnetMask" ]; then oldDhcpSubnetMask='255.255.255.0'; fi
+	
+	#Extract existing WiFi values (if present):
+	#oldWifiSsid=$()
+	#oldWifiChannel=$()
+	#oldWifiPwd=$()
+	local oldWifiCountry=$(LANG=C iw reg get | cut -s -d : -f 1 | head -1 | cut -s -d ' ' -f 2)
+	
+	echo $oldWifiCountry
+
+	#Populate defaults otherwise:
+	if [ -z "$oldWifiSsid" ]; then oldWifiSsid='intvlm8r'; fi
+	if [ -z "$oldWifiChannel" ]; then oldWifiChannel='5'; fi
+	if [ -z "$oldWifiPwd" ]; then oldWifiPwd='myPiNetw0rkAccess!'; fi
+	if [[ ! $oldWifiCountry =~ [a-zA-Z]{2} ]]; then oldWifiCountry=''; fi # Null the value if it's not just two letters
+
+	echo ''
+	echo 'Set your Pi as a WiFi Access Point. (Ctrl-C to abort)'
+	echo 'If unsure, go with the defaults until you get to the SSID and password'
+	echo ''
+	read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
+	read -e -i "$oldDhcpStartIp" -p    'Choose the starting IP address for DCHP : ' dhcpStartIp
+	read -e -i "$oldDhcpEndIp" -p      'Choose  the  ending IP address for DCHP : ' dhcpEndIp
+	read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
+	read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                        : ' wifiSsid
+	read -e -i "$oldWifiPwd" -p        'Choose a better password than this      : ' wifiPwd
+	read -e -i "$oldWifiChannel" -p    'Choose an appropriate WiFi channel      : ' wifiChannel
+	read -e -i "$oldWifiCountry" -p    'Set your 2-digit WiFi country           : ' wifiCountry
+
+	#TODO: Validate these inputs. Make sure none are null
+
+	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+
+	#Paste in the new settings
 
 }
 
