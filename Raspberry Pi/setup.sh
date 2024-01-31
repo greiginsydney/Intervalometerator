@@ -84,7 +84,7 @@ venv_test ()
 		echo -e "\n"$YELLOW"The required virtual environment could not be activated"$RESET""
 		echo "Please execute the command 'source venv/bin/activate' and re-run the script."
 		echo -e "If that fails, check you have correctly created the required VENV. Review \nhttps://github.com/greiginsydney/Intervalometerator/blob/bookworm/docs/step1-setup-the-Pi.md"
-		echo ""
+		echo ''
 		exit
 	fi
 
@@ -1415,7 +1415,7 @@ END
 	fi
 
 	wlanLine=$(sed -n '/interface wlan0/=' /etc/dhcpcd.conf) #This is the line number that the wlan config starts at
-	echo ""
+	echo ''
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
 	case $staticResponse in
 		(y|Y|"")
@@ -1478,7 +1478,7 @@ unmake_ap_nmcli ()
 	fi
 	echo ''
 	
-	oldSsid=""
+	local oldSsid=""
 	while true; do
 		read -e -i "$oldSsid"    -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
@@ -1489,7 +1489,7 @@ unmake_ap_nmcli ()
 		fi
 		break
 	done
-	oldPsk=""
+	local oldPsk=""
 	while true; do
 		read -e -i "$oldPsk"     -p "Set the network's Psk (password)      : " newPsk
 		if [ -z "$newPsk" ];
@@ -1501,16 +1501,18 @@ unmake_ap_nmcli ()
 		break
 	done
 
-	uuid=$(nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0)
-	echo $uuid
-	echo "here0"
+	echo ''
+	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
+	echo ''
+	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
+	
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
 	case $staticResponse in
 		(y|Y|"")
-			oldPiIpV4=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d: -f2- | cut -d/ -f1)
-			oldDhcpSubnetCIDR=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d/ -f2-)
-			oldRouter=$(LANG=C nmcli -t -f IP4.GATEWAY device show wlan0 | cut -d: -f2-)
-			oldDnsServers=$(LANG=C nmcli -t -f IP4.DNS device show wlan0 | cut -d: -f2-)
+			local oldPiIpV4=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d: -f2- | cut -d/ -f1)
+			local oldDhcpSubnetCIDR=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d/ -f2-)
+			local oldRouter=$(LANG=C nmcli -t -f IP4.GATEWAY device show wlan0 | cut -d: -f2-)
+			local oldDnsServers=$(LANG=C nmcli -t -f IP4.DNS device show wlan0 | cut -d: -f2-)
 			
 			if [ "$oldDhcpSubnetCIDR" ]; then oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
 			
@@ -1523,18 +1525,17 @@ unmake_ap_nmcli ()
 			#Paste in the new settings
 			
 			nmcli con mod device wlan0 ipv4.method manual
-			nmcli con mod $uuid ipv4.addresses $piIpV4/$cidr_mask ipv4.method manual
-			nmcli con mod $uuid ipv4.gateway $router
-			nmcli con mod $uuid ipv4.dns $DnsServers
+			nmcli con mod $wlan0Name ipv4.addresses $piIpV4/$cidr_mask ipv4.method manual
+			nmcli con mod $wlan0Name ipv4.gateway $router
+			nmcli con mod $wlan0Name ipv4.dns $DnsServers
 
 			;;
 		(*)
-			echo "here"
-			nmcli con mod $uuid ipv4.method auto
-			echo "here2"
+			nmcli con mod $wlan0Name ipv4.method auto
 			;;
 	esac
 
+	echo ''
 	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
 	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
 }
