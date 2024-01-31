@@ -1462,7 +1462,81 @@ END
 
 unmake_ap_nmcli ()
 {
-	echo "unmake_ap_nmcli"
+	echo -e ""$GREEN"unmake_ap_nmcli"$RESET""
+	echo ''
+	if systemctl --all --type service | grep -q 'dnsmasq';
+	then
+		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
+		systemctl disable dnsmasq #Stops it launching on bootup
+		systemctl mask dnsmasq
+	fi
+	if systemctl --all --type service | grep -q 'hostapd';
+	then
+		echo -e ""$GREEN"Disabling hostapd"$RESET""
+		systemctl disable hostapd
+		systemctl mask hostapd
+	fi
+	echo ''
+	
+	oldSsid=""
+	while true; do
+		read -e -i "$oldSsid"    -p "Set the network's SSID                : " newSsid
+		if [ -z "$newSsid" ];
+		then
+			echo -e 'Error: SSID value cannot be empty.'
+			echo ''
+			continue
+		fi
+		break
+	done
+	oldPsk=""
+	while true; do
+		read -e -i "$oldPsk"     -p "Set the network's Psk (password)      : " newPsk
+		if [ -z "$newPsk" ];
+		then
+			echo -e "Error: Psk value cannot be empty."
+			echo ''
+			continue
+		fi
+		break
+	done
+
+	uuid=$(nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0)
+	echo $uuid
+	echo "here0"
+	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
+	case $staticResponse in
+		(y|Y|"")
+			oldPiIpV4=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d: -f2- | cut -d/ -f1)
+			oldDhcpSubnetCIDR=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d/ -f2-)
+			oldRouter=$(LANG=C nmcli -t -f IP4.GATEWAY device show wlan0 | cut -d: -f2-)
+			oldDnsServers=$(LANG=C nmcli -t -f IP4.DNS device show wlan0 | cut -d: -f2-)
+			
+			if [ "$oldDhcpSubnetCIDR" ]; then oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
+			
+			read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
+			read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
+			read -e -i "$oldRouter" -p         'Set the router/gateway IP               : ' router
+			read -e -i "$oldDnsServers" -p     'Set the DNS Server(s) (space-delimited) : ' DnsServers
+
+			cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+			#Paste in the new settings
+			
+			nmcli con mod device wlan0 ipv4.method manual
+			nmcli con mod $uuid ipv4.addresses $piIpV4/$cidr_mask ipv4.method manual
+			nmcli con mod $uuid ipv4.gateway $router
+			nmcli con mod $uuid ipv4.dns $DnsServers
+
+			;;
+		(*)
+			echo "here"
+			nmcli con mod $uuid ipv4.method auto
+			echo "here2"
+			;;
+	esac
+
+	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
+	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
 }
 
 
@@ -1902,7 +1976,6 @@ case "$1" in
 		chg_web_login
 		;;
 	('ap')
-		test_os
 		# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 		if [[ ($VENV_ACTIVE == 1) ]];
 		then
@@ -1913,7 +1986,6 @@ case "$1" in
 		prompt_for_reboot
 		;;
 	('noap')
-		test_os
 		# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 		if [[ ($VENV_ACTIVE == 1) ]];
 		then
