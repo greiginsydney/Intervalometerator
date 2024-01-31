@@ -1316,6 +1316,12 @@ END
 }
 
 
+make_ap_nmcli ()
+{
+	echo "make_ap_nmcli"
+
+}
+
 unmake_ap ()
 {
 	if systemctl --all --type service | grep -q 'dnsmasq';
@@ -1451,6 +1457,12 @@ END
 	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
 	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
 	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change"
+}
+
+
+unmake_ap_nmcli ()
+{
+	echo "unmake_ap_nmcli"
 }
 
 
@@ -1891,12 +1903,24 @@ case "$1" in
 		;;
 	('ap')
 		test_os
-		make_ap
+		# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+		if [[ ($VENV_ACTIVE == 1) ]];
+		then
+			make_ap_nmcli
+		else
+			make_ap
+		fi
 		prompt_for_reboot
 		;;
 	('noap')
 		test_os
-		unmake_ap
+		# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+		if [[ ($VENV_ACTIVE == 1) ]];
+		then
+			unmake_ap_nmcli
+		else
+			unmake_ap
+		fi
 		prompt_for_reboot
 		;;
 	('time')
