@@ -1478,9 +1478,8 @@ unmake_ap_nmcli ()
 	fi
 	echo ''
 	
-	local oldSsid=""
 	while true; do
-		read -e -i "$oldSsid"    -p "Set the network's SSID                : " newSsid
+		read -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
 			echo -e 'Error: SSID value cannot be empty.'
@@ -1489,9 +1488,9 @@ unmake_ap_nmcli ()
 		fi
 		break
 	done
-	local oldPsk=""
+	
 	while true; do
-		read -e -i "$oldPsk"     -p "Set the network's Psk (password)      : " newPsk
+		read -p "Set the network's Psk (password)      : " newPsk
 		if [ -z "$newPsk" ];
 		then
 			echo -e "Error: Psk value cannot be empty."
@@ -1514,18 +1513,17 @@ unmake_ap_nmcli ()
 			local oldRouter=$(LANG=C nmcli -t -f IP4.GATEWAY device show wlan0 | cut -d: -f2-)
 			local oldDnsServers=$(LANG=C nmcli -t -f IP4.DNS device show wlan0 | cut -d: -f2-)
 			
-			if [ "$oldDhcpSubnetCIDR" ]; then oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
+			if [ "$oldDhcpSubnetCIDR" ]; then local oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
 			
 			read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
 			read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
 			read -e -i "$oldRouter" -p         'Set the router/gateway IP               : ' router
 			read -e -i "$oldDnsServers" -p     'Set the DNS Server(s) (space-delimited) : ' DnsServers
 
-			cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+			local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 			#Paste in the new settings
-			
-			nmcli con mod device wlan0 ipv4.method manual
-			nmcli con mod $wlan0Name ipv4.addresses $piIpV4/$cidr_mask ipv4.method manual
+
+			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 			nmcli con mod $wlan0Name ipv4.gateway $router
 			nmcli con mod $wlan0Name ipv4.dns $DnsServers
 
