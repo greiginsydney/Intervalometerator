@@ -46,7 +46,7 @@ venv_test ()
 {
 	echo -e ""$GREEN"Testing operating system and virtual environment"$RESET""
 	THISOS=$(sed -n -E "s|^VERSION_CODENAME=(\s*.*)$|\1|p" /etc/os-release) ## Delimiter is a '|' here
-	
+
 	if [[ " $OSLIST " =~ .*\ $THISOS\ .* ]];
 	then
 		echo "'$THISOS' OS detected. Requires a virtual environment."
@@ -112,7 +112,7 @@ install_apps ()
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
 
-	
+
 	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
@@ -225,10 +225,10 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
- 	 	echo -e ""$GREEN"Installing redis"$RESET""	
+ 	 	echo -e ""$GREEN"Installing redis"$RESET""
   		pip3 install redis
     	fi
-     
+
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	pip3 install "celery[redis]"
 
@@ -274,13 +274,13 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
- 	 	echo -e ""$GREEN"Installing python-dev-is-python3"$RESET""	
+ 	 	echo -e ""$GREEN"Installing python-dev-is-python3"$RESET""
   		apt-get install python-dev-is-python3 -y
     	else
-     		echo -e ""$GREEN"Installing python-dev"$RESET""	
+     		echo -e ""$GREEN"Installing python-dev"$RESET""
   		apt-get install python-dev -y
      	fi
- 
+
 	# ================== START libgphoto ==================
 	if ( apt list --manual-installed | grep -q libgphoto );
 	then
@@ -411,7 +411,7 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing rsyslog"$RESET""
 	apt install rsyslog -y
-	
+
 	echo -e ""$GREEN"Installing dnsmasq, hostapd"$RESET""
 	apt-get install dnsmasq hostapd -y
 	echo -e ""$GREEN"Disabling dnsmasq"$RESET""
@@ -422,7 +422,7 @@ install_apps ()
 	systemctl stop hostapd
 	systemctl disable hostapd
 	systemctl mask hostapd
-	
+
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
@@ -513,7 +513,7 @@ install_apps ()
 
 	# And a shortcut for the logs folder:
 	ln -sfnv /var/log/ /home/${SUDO_USER}/log
- 
+
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
@@ -553,7 +553,7 @@ install_website ()
 	fi
 
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" "apt-daily.timer" "apt-daily.service" "myIp.service")
- 	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service" 
+ 	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service"
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -1010,7 +1010,7 @@ install_website ()
 			#echo $val
 			sed -i -E "s|^(\s*ExecStart\s*=\s*)(sudo\s*)?(/usr/bin/python3)|\1\2/home/$SUDO_USER/venv/bin/python3|g" $val
 		done
-  		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service 
+  		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service
 		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"/home/$SUDO_USER/venv/bin/celery\"|g" /etc/default/celery
   		sed -i -E --follow-symlinks "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command. (Legacy installs only: we added it initially)
     		# nginx:
@@ -1307,11 +1307,11 @@ END
 	systemctl unmask hostapd
 	echo 'Enabling hostapd'
 	systemctl enable hostapd
-	
+
 	systemctl unmask dnsmasq
 	echo 'Enabling dnsmasq'
 	systemctl enable dnsmasq
-	
+
 	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi access point!'
 }
 
@@ -1320,7 +1320,7 @@ make_ap_nmcli ()
 {
 	echo -e ""$GREEN"make_ap_nmcli"$RESET""
 	echo ''
-	
+
 	# ================== START DHCP ==================
 	if  grep -q 'interface=wlan0' /etc/dnsmasq.conf;
 	then
@@ -1354,7 +1354,7 @@ END
 	connectionFile="/etc/NetworkManager/system-connections/"$wlan0Name".nmconnection"
 	if [ -f $connectionFile ];
 	then
-		local oldWifiSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
+		#local oldWifiSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
 		local oldWifiChannel=$(grep -r '^channel=' $connectionFile | cut -s -d = -f 2)
 		local oldWifiPwd=$(grep -r '^psk=' $connectionFile | cut -s -d = -f 2)
 		echo $oldWifiPwd
@@ -1385,9 +1385,9 @@ END
 	local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 
 	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
-	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$newSsid'"
+	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$wifiSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
-
+	echo ''
 	#Paste in the new settings
 	sed -i -E "s/^(\s*dhcp-range=)(.*)$/\1$dhcpStartIp,$dhcpEndIp,$dhcpSubnetMask,24h/" /etc/dnsmasq.conf
 
@@ -1396,9 +1396,13 @@ END
 	systemctl enable dnsmasq
 	systemctl start dnsmasq
 
-	nmcli dev wifi hotspot ifname wlan0 ssid $wifiSsid password $wifiPwd
-	nmcli con mod hotspot 802-11-wireless.mode ap
+	nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid $wifiSsid
+	echo -e ""$GREEN"Byeeee!"$RESET""
+	nmcli con modify hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
+	nmcli con modify hotspot wifi-sec.key-mgmt wpa-psk
+	nmcli con modify hotspot wifi-sec.psk $wifiPwd
 	nmcli con mod hotspot ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
+	nmcli con up hotspot
 }
 
 unmake_ap ()
@@ -1561,7 +1565,7 @@ unmake_ap_nmcli ()
 		fi
 		break
 	done
-	
+
 	while true; do
 		read -p "Set the network's Psk (password)      : " newPsk
 		if [ -z "$newPsk" ];
@@ -1582,9 +1586,9 @@ unmake_ap_nmcli ()
 			local oldDhcpSubnetCIDR=$(LANG=C nmcli -t -f IP4.ADDRESS device show wlan0 | cut -d/ -f2-)
 			local oldRouter=$(LANG=C nmcli -t -f IP4.GATEWAY device show wlan0 | cut -d: -f2-)
 			local oldDnsServers=$(LANG=C nmcli -t -f IP4.DNS device show wlan0 | cut -d: -f2-)
-			
+
 			if [ "$oldDhcpSubnetCIDR" ]; then local oldDhcpSubnetMask=$(CIDRtoNetmask $oldDhcpSubnetCIDR); fi
-			
+
 			read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
 			read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
 			read -e -i "$oldRouter" -p         'Set the router/gateway IP               : ' router
@@ -1600,22 +1604,21 @@ unmake_ap_nmcli ()
 	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$newSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
-	
+	echo ''
+
 	nmcli con del hotspot
-	echo '====1'
 	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
 	#Paste in the new settings
 	case $staticResponse in
 		(y|Y|"")
 			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 			nmcli con mod $wlan0Name ipv4.gateway $router
-			nmcli con mod $wlan0Name ipv4.dns $DnsServers		
+			nmcli con mod $wlan0Name ipv4.dns $DnsServers
 		;;
 		(*)
 			nmcli con mod $wlan0Name ipv4.method auto
 		;;
 	esac
-	echo '====2'
 }
 
 
@@ -1747,7 +1750,7 @@ test_install ()
 				ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
 			else
 				ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
-			fi		
+			fi
 			if [ -z "$ssid" ];
 			then
 				echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/wpa_supplicant/wpa_supplicant.conf"
@@ -1861,10 +1864,10 @@ test_install ()
 				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
 			fi
 		fi
-		
+
 		# Test health of a 2023 config:
 		# If present, the service name will be injected into the start of the service list, so it displays first, retaining the correct context.
-		
+
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed"
 	fi
@@ -1990,7 +1993,7 @@ update()
 	read -p 'Press Return to continue with the install or Control-C to abort' response
 	echo ''
 	echo -e ""$GREEN"Looking for 'outdated' components"$RESET""
-	
+
 	# TY SO: https://stackoverflow.com/a/3452888/13102734
 	pip3 --disable-pip-version-check list --outdated --format=json | python -c "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))" | xargs -n1 pip3 install -U
 }
