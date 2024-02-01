@@ -1321,28 +1321,51 @@ make_ap_nmcli ()
 	echo -e ""$GREEN"make_ap_nmcli"$RESET""
 	echo ''
 	
-	#Extract existing DHCP values (if present):
-	# local oldDhcpStartIp=$()
-	# oldDhcpEndIp=$()
-	# oldDhcpSubnetMask=$()
-	#Populate defaults otherwise:
-	if [ -z "$oldDhcpStartIp" ]; then oldDhcpStartIp='10.10.10.10'; fi
-	if [ -z "$oldDhcpEndIp" ]; then oldDhcpEndIp='10.10.10.100'; fi
+	# ================== START DHCP ==================
+	if  grep -q 'interface=wlan0' /etc/dnsmasq.conf;
+	then
+		#Read the current values:
+		wlanLine=$(sed -n '/interface=wlan0/=' /etc/dnsmasq.conf) #This is the line number that the wlan config starts at
+		oldDhcpStartIp=$(sed -n -E "$wlanLine,$ s|^\s*dhcp-range=(.*)$|\1|p" /etc/dnsmasq.conf ) # Delimiter is '|'
+		matchRegex="\s*(([0-9]{1,3}\.){3}[0-9]{1,3}),(([0-9]{1,3}\.){3}[0-9]{1,3}),(([0-9]{1,3}\.){3}[0-9]{1,3})," # Bash doesn't do digits as "\d"
+		if [[ $oldDhcpStartIp =~ $matchRegex ]] ;
+			then
+				oldDhcpStartIp=${BASH_REMATCH[1]}
+				oldDhcpEndIp=${BASH_REMATCH[3]}
+				oldDhcpSubnetMask=${BASH_REMATCH[5]}
+			fi
+	else
+		echo 'No IPs in /etc/dnsmasq.conf. Adding some defaults'
+		#Create default values:
+		cat <<END >> /etc/dnsmasq.conf
+interface=wlan0      # Use the required wireless interface - usually wlan0
+	dhcp-range=10.10.10.10,10.10.10.100,255.255.255.0,24h
+END
+	fi
+	#Populate defaults if required:
+	if [ -z "$oldPiIpV4" ];         then oldPiIpV4='10.10.10.1'; fi
+	if [ -z "$oldDhcpStartIp" ];    then oldDhcpStartIp='10.10.10.10'; fi
+	if [ -z "$oldDhcpEndIp" ];      then oldDhcpEndIp='10.10.10.100'; fi
 	if [ -z "$oldDhcpSubnetMask" ]; then oldDhcpSubnetMask='255.255.255.0'; fi
-	
-	#Extract existing WiFi values (if present):
-	#oldWifiSsid=$()
-	#oldWifiChannel=$()
-	#oldWifiPwd=$()
-	local oldWifiCountry=$(LANG=C iw reg get | cut -s -d : -f 1 | head -1 | cut -s -d ' ' -f 2)
-	
-	echo $oldWifiCountry
+	# ================== END DHCP ==================
 
+	# ================= START WIFI =================
+	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
+	connectionFile="/etc/NetworkManager/system-connections/"$wlan0Name".nmconnection"
+	if [ -f $connectionFile ];
+	then
+		local oldWifiSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
+		local oldWifiChannel=$(grep -r '^channel=' $connectionFile | cut -s -d = -f 2)
+		local oldWifiPwd=$(grep -r '^psk=' $connectionFile | cut -s -d = -f 2)
+		echo $oldWifiPwd
+	fi
+	#local oldWifiCountry=$(LANG=C iw reg get | cut -s -d : -f 1 | head -1 | cut -s -d ' ' -f 2)
 	#Populate defaults otherwise:
-	if [ -z "$oldWifiSsid" ]; then oldWifiSsid='intvlm8r'; fi
-	if [ -z "$oldWifiChannel" ]; then oldWifiChannel='5'; fi
-	if [ -z "$oldWifiPwd" ]; then oldWifiPwd='myPiNetw0rkAccess!'; fi
-	if [[ ! $oldWifiCountry =~ [a-zA-Z]{2} ]]; then oldWifiCountry=''; fi # Null the value if it's not just two letters
+	if [ -z "$oldWifiSsid" ];    then local oldWifiSsid='intvlm8r'; fi
+	if [ -z "$oldWifiChannel" ]; then local oldWifiChannel='5'; fi
+	if [ -z "$oldWifiPwd" ];     then local oldWifiPwd='myPiNetw0rkAccess!'; fi
+	#if [[ ! $oldWifiCountry =~ [a-zA-Z]{2} ]]; then oldWifiCountry=''; fi # Null the value if it's not just two letters
+	# ================== END WIFI ==================
 
 	echo ''
 	echo 'Set your Pi as a WiFi Access Point. (Ctrl-C to abort)'
@@ -1355,14 +1378,27 @@ make_ap_nmcli ()
 	read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                        : ' wifiSsid
 	read -e -i "$oldWifiPwd" -p        'Choose a better password than this      : ' wifiPwd
 	read -e -i "$oldWifiChannel" -p    'Choose an appropriate WiFi channel      : ' wifiChannel
-	read -e -i "$oldWifiCountry" -p    'Set your 2-digit WiFi country           : ' wifiCountry
+	#read -e -i "$oldWifiCountry" -p    'Set your 2-digit WiFi country           : ' wifiCountry
 
 	#TODO: Validate these inputs. Make sure none are null
 
-	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+	local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
+
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$newSsid'"
+	read -p "Press any key to continue or ^C to abort " discard
 
 	#Paste in the new settings
+	sed -i -E "s/^(\s*dhcp-range=)(.*)$/\1$dhcpStartIp,$dhcpEndIp,$dhcpSubnetMask,24h/" /etc/dnsmasq.conf
 
+	systemctl unmask dnsmasq
+	echo 'Enabling dnsmasq'
+	systemctl enable dnsmasq
+	systemctl start dnsmasq
+
+	nmcli dev wifi hotspot ifname wlan0 ssid $wifiSsid password $wifiPwd
+	nmcli con mod hotspot 802-11-wireless.mode ap
+	nmcli con mod hotspot ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 }
 
 unmake_ap ()
@@ -1512,15 +1548,9 @@ unmake_ap_nmcli ()
 		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
 		systemctl disable dnsmasq #Stops it launching on bootup
 		systemctl mask dnsmasq
+		echo ''
 	fi
-	if systemctl --all --type service | grep -q 'hostapd';
-	then
-		echo -e ""$GREEN"Disabling hostapd"$RESET""
-		systemctl disable hostapd
-		systemctl mask hostapd
-	fi
-	echo ''
-	
+
 	while true; do
 		read -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
@@ -1543,11 +1573,8 @@ unmake_ap_nmcli ()
 		break
 	done
 
-	echo ''
-	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
-	echo ''
 	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
-	
+	echo $wlan0Name
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
 	case $staticResponse in
 		(y|Y|"")
@@ -1564,22 +1591,31 @@ unmake_ap_nmcli ()
 			read -e -i "$oldDnsServers" -p     'Set the DNS Server(s) (space-delimited) : ' DnsServers
 
 			local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
-			#Paste in the new settings
-
-			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
-			nmcli con mod $wlan0Name ipv4.gateway $router
-			nmcli con mod $wlan0Name ipv4.dns $DnsServers
-
 			;;
 		(*)
 			nmcli con mod $wlan0Name ipv4.method auto
 			;;
 	esac
 
-	local ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
-	echo ''
-	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
-	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$newSsid'"
+	read -p "Press any key to continue or ^C to abort " discard
+	
+	nmcli con del hotspot
+	echo '====1'
+	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
+	#Paste in the new settings
+	case $staticResponse in
+		(y|Y|"")
+			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
+			nmcli con mod $wlan0Name ipv4.gateway $router
+			nmcli con mod $wlan0Name ipv4.dns $DnsServers		
+		;;
+		(*)
+			nmcli con mod $wlan0Name ipv4.method auto
+		;;
+	esac
+	echo '====2'
 }
 
 
