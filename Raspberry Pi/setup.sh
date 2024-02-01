@@ -1399,16 +1399,23 @@ END
 	#Paste in the new settings
 	sed -i -E "s/^(\s*dhcp-range=)(.*)$/\1$dhcpStartIp,$dhcpEndIp,$dhcpSubnetMask,24h/" /etc/dnsmasq.conf
 
-	systemctl unmask dnsmasq
 	echo 'Enabling dnsmasq'
+	systemctl unmask dnsmasq
 	systemctl enable dnsmasq
 	systemctl start dnsmasq
 
-	nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid $wifiSsid
-	echo -e ""$GREEN"Byeeee!"$RESET""
+	# Modify existing hotspot, otherwise delete and start afresh
+	if [[ $wlan0Name == "hotspot" ]];
+	then
+		nmcli con mod type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
+	else
+		nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
+		nmcli con del "$wlan0Name"
+	fi
+	echo -e ""$GREEN"Byeeee!"$RESET""	
 	nmcli con modify hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
 	nmcli con modify hotspot wifi-sec.key-mgmt wpa-psk
-	nmcli con modify hotspot wifi-sec.psk $wifiPwd
+	nmcli con modify hotspot wifi-sec.psk "$wifiPwd"
 	nmcli con mod hotspot ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 	nmcli con up hotspot
 }
@@ -1604,12 +1611,9 @@ unmake_ap_nmcli ()
 
 			local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 			;;
-		(*)
-			nmcli con mod $wlan0Name ipv4.method auto
-			;;
 	esac
 
-	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *network*"
 	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$newSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
@@ -1621,7 +1625,7 @@ unmake_ap_nmcli ()
 		(y|Y|"")
 			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 			nmcli con mod $wlan0Name ipv4.gateway $router
-			nmcli con mod $wlan0Name ipv4.dns $DnsServers
+			nmcli con mod $wlan0Name ipv4.dns "$DnsServers"
 		;;
 		(*)
 			nmcli con mod $wlan0Name ipv4.method auto
