@@ -1576,6 +1576,7 @@ unmake_ap_nmcli ()
 			;;
 	esac
 
+	local ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
 	echo ''
 	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
 	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
