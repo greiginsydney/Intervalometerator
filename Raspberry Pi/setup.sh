@@ -412,16 +412,24 @@ install_apps ()
 	echo -e ""$GREEN"Installing rsyslog"$RESET""
 	apt install rsyslog -y
 
-	echo -e ""$GREEN"Installing dnsmasq, hostapd"$RESET""
-	apt-get install dnsmasq hostapd -y
+	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+	if [[ ($VENV_ACTIVE == 1) ]];
+	then
+		echo -e ""$GREEN"Installing dnsmasq"$RESET""
+		apt-get install dnsmasq -y # No hostapd in bookworm+
+	else
+		echo -e ""$GREEN"Installing dnsmasq, hostapd"$RESET""
+		apt-get install dnsmasq hostapd -y
+		echo -e ""$GREEN"Disabling hostapd"$RESET""
+		systemctl stop hostapd
+		systemctl disable hostapd
+		systemctl mask hostapd
+	fi
+	
 	echo -e ""$GREEN"Disabling dnsmasq"$RESET""
 	systemctl stop dnsmasq
 	systemctl disable dnsmasq
 	systemctl mask dnsmasq
-	echo -e ""$GREEN"Disabling hostapd"$RESET""
-	systemctl stop hostapd
-	systemctl disable hostapd
-	systemctl mask hostapd
 
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
