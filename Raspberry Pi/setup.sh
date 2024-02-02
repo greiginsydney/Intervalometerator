@@ -1743,69 +1743,135 @@ test_install ()
 		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
 	fi
 	echo ''
-	# Test for ap/noap mode:
-	ap_test=0
-	if systemctl --all --type service | grep -q 'dnsmasq';
+	# ================== START WIFI TESTS ==================
+	ap_test=0	
+	if [[ ($VENV_REQUIRED == 1) ]];
 	then
-		((ap_test=ap_test+1))
-	fi
-	if systemctl --all --type service | grep -q 'hostapd';
-	then
-		((ap_test=ap_test+2))
-	fi
-	[ -f /etc/hostapd/hostapd.conf ] && ap_test=$((ap_test+4))
-	case $ap_test in
-		(0)
-			echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
-			if [[ ($VENV_REQUIRED == 1) ]];
-			then
-				ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
-			else
+		# ============== START BOOKWORM+ WIFI TESTS ===========
+		systemctl is-active --quiet dnsmasq && ap_test=$((ap_test+1)) # If dnsmasq is running, add 1
+		
+		
+		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
+		if [ -z "$activeConnections" ];
+		then
+			echo -e ""$YELLOW"FAIL:"$RESET" No active network connection(s) found"
+		else
+			((ap_test=ap_test+2)) # If we have an active network connection, add 2
+			# Loop through them:
+			IFS=$'\n'
+			for ARG in $activeConnections;
+			do
+				echo $ARG
+			done
+			unset IFS
+			
+		fi
+		
+		
+		
+		
+		exit
+		
+		
+		#TODO: Test for ap mode
+		nmcli -t c s -a | awk '!/loopback/' | cut -d : -f 1 # Returns connected (active) network name(s): *probably* the SSID if wifi client
+		nmcli -t c s -a | awk '!/loopback/' | cut -d : -f 4 # Returns connected network interface. e.g. 'wlan0', 'eth0'
+		#TODO: what does the above report if we have MULTIPLE network connections active?
+			
+		#TODO: Test for WiFi client
+		#TODO: test for an active connection (as a client)
+		
+		
+		ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
+		
+		echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
+		echo -e ""$GREEN"PASS:"$RESET" It will attempt to connect to this/these SSIDs: $ssid"
+		
+				
+		local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
+		connectionFile="/etc/NetworkManager/system-connections/"$wlan0Name".nmconnection"
+		# if [ -f $connectionFile ];
+		# then
+			# #local oldWifiSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
+			
+		# fi
+		
+		#This is for the AP detection:
+		echo -e ""$GREEN"PASS:"$RESET" The Pi SHOULD be an AP"
+		echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/hostapd/hostapd.conf"
+		echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $myWifiSsid"
+		local myWifiChannel=$(grep -r '^channel=' $connectionFile | cut -s -d = -f 2)
+		if [ -z "$myWifiChannel" ];
+		then
+			echo -e ""$YELLOW"FAIL:"$RESET" A Wi-Fi channel was expected but not found in $connectionFile"
+		else
+			echo -e ""$GREEN"PASS:"$RESET" It's using channel $myWifiChannel"
+		fi
+		
+		
+		# =============== END BOOKWORM+ WIFI TESTS ============
+	else
+		# ============== START LEGACY WIFI TESTS ===============
+		# Test for ap/noap mode:
+		if systemctl --all --type service | grep -q 'dnsmasq';
+		then
+			((ap_test=ap_test+1))
+		fi
+		if systemctl --all --type service | grep -q 'hostapd';
+		then
+			((ap_test=ap_test+2))
+		fi
+		[ -f /etc/hostapd/hostapd.conf ] && ap_test=$((ap_test+4))
+		case $ap_test in
+			(0)
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
 				ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
-			fi
-			if [ -z "$ssid" ];
-			then
-				echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/wpa_supplicant/wpa_supplicant.conf"
-			else
-				echo -e ""$GREEN"PASS:"$RESET" It will attempt to connect to this/these SSIDs: $ssid"
-			fi
-			;;
-		(1)
-			echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
-			;;
-		(2)
-			echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be an AP"
-			;;
-		(3)
-			echo -e ""$YELLOW"FAIL:"$RESET" hostapd & dnsmasq are installed, but hostapd.conf is missing"
-			;;
-		(4)
-			echo -e ""$YELLOW"FAIL:"$RESET" hostapd.conf is present but hostapd & dnsmasq are missing"
-			;;
-		(5)
-			echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 5"
-			;;
-		(6)
-			echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 6"
-			;;
-		(7)
-			echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
-   			myWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
-			if [ -z "$myWifiSsid" ];
-			then
-				echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/hostapd/hostapd.conf"
-			else
-				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $myWifiSsid"
-			fi
-			myWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
-			if [ -z "$myWifiChannel" ];
-			then
-				echo -e ""$YELLOW"FAIL:"$RESET" A Wi-Fi channel was expected but not found in /etc/hostapd/hostapd.conf"
-			else
-				echo -e ""$GREEN"PASS:"$RESET" It's using channel $myWifiChannel"
-			fi
-			;;
-	esac
+				if [ -z "$ssid" ];
+				then
+					echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/wpa_supplicant/wpa_supplicant.conf"
+				else
+					echo -e ""$GREEN"PASS:"$RESET" It will attempt to connect to this/these SSIDs: $ssid"
+				fi
+				;;
+			(1)
+				echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
+				;;
+			(2)
+				echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be an AP"
+				;;
+			(3)
+				echo -e ""$YELLOW"FAIL:"$RESET" hostapd & dnsmasq are installed, but hostapd.conf is missing"
+				;;
+			(4)
+				echo -e ""$YELLOW"FAIL:"$RESET" hostapd.conf is present but hostapd & dnsmasq are missing"
+				;;
+			(5)
+				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 5"
+				;;
+			(6)
+				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 6"
+				;;
+			(7)
+				echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
+				myWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
+				if [ -z "$myWifiSsid" ];
+				then
+					echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/hostapd/hostapd.conf"
+				else
+					echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $myWifiSsid"
+				fi
+				myWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
+				if [ -z "$myWifiChannel" ];
+				then
+					echo -e ""$YELLOW"FAIL:"$RESET" A Wi-Fi channel was expected but not found in /etc/hostapd/hostapd.conf"
+				else
+					echo -e ""$GREEN"PASS:"$RESET" It's using channel $myWifiChannel"
+				fi
+				;;
+		esac
+		# ============== END LEGACY WIFI TESTS ===============
+	fi
+	# ================== END WIFI TESTS ==================
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
