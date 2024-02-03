@@ -402,10 +402,15 @@ install_apps ()
 
 	if [ $installRawpy -eq 1 ];
 	then
-		# echo -e ""$GREEN"Installing rawpy from GitHub"$RESET""
-		# pip install "git+https://github.com/letmaik/rawpy.git@v$latestRawpyRls"
-  		# Force rawpy to NOT attempt to install: it's only going to fail
-  		echo -e "\n"$YELLOW"Skipping rawpy installation/upgrade. Thumbnails will not work if rawpy isn't present"$RESET""
+		# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
+		if [[ ($VENV_ACTIVE == 1) ]];
+		then
+			# Skip the rawpy install: it's only going to fail (on bookworm+)
+			echo -e "\n"$YELLOW"Skipping rawpy installation/upgrade. Thumbnails for RAWs will not work if rawpy isn't present"$RESET""
+		else
+			echo -e ""$GREEN"Installing rawpy from GitHub"$RESET""
+			pip install "git+https://github.com/letmaik/rawpy.git@v$latestRawpyRls"
+		fi
 	fi
 	# ======================== END rawpy ========================
 
