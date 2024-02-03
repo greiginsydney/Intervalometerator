@@ -1847,9 +1847,15 @@ test_install ()
 				echo -e ""$GREEN"PASS:"$RESET" It has an active connection to this/these SSIDs: $connectedSsid"
 				;;
 			(22)
+   				# Good-ish. WiFi AP.
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own WiFi network"
+				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
+    				echo -e ""$YELLOW"PASS:"$RESET" dnsmasq is not running (22)"
+				;;
+   			(23)
 				# Good. WiFi AP.
 				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own WiFi network"
-				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $connectedSsid and is using channel $connectedChannel"
+				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
 				;;
 			(*)
 				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value $ap_test:"
