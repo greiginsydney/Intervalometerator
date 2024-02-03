@@ -1877,11 +1877,11 @@ test_install ()
 	else
 		# ============== START LEGACY WIFI TESTS ===============
 		# Test for ap/noap mode:
-		if systemctl --all --type service | grep -q 'dnsmasq';
+		if systemctl is-active --quiet dnsmasq ;
 		then
 			((ap_test=ap_test+1))
 		fi
-		if systemctl --all --type service | grep -q 'hostapd';
+		if systemctl is-active --quiet hostapd ;
 		then
 			((ap_test=ap_test+2))
 		fi
