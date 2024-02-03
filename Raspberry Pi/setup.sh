@@ -1305,6 +1305,7 @@ END
 
 	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 
+	echo ''
 	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$wifiSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
@@ -1395,6 +1396,7 @@ END
 
 	local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 
+	echo ''
 	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$wifiSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
@@ -1537,6 +1539,7 @@ END
 			;;
 	esac
 
+	echo ''
 	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
 	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change manually"
@@ -1604,8 +1607,8 @@ unmake_ap_nmcli ()
 		break
 	done
 
-	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
-	echo $wlan0Name
+	#local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
+	#echo $wlan0Name
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
 	case $staticResponse in
 		(y|Y|"")
@@ -1628,24 +1631,25 @@ unmake_ap_nmcli ()
 			;;
 	esac
 
+	echo ''
 	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
 
-	set +e # Suspend the error trap
-	nmcli con del hotspot # Would otherwise throw a terminating error if 'hotspot' doesn't exist
+	set +e # Suspend the error trap. The below would otherwise throw a terminating error if 'hotspot' doesn't exist. 
+	nmcli con del hotspot 2> /dev/null # Suppress any error display.
 	set -e # Resume the error trap
 	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
 	# Paste in the new settings
 	case $staticResponse in
 		(y|Y|"")
-			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
-			nmcli con mod $wlan0Name ipv4.gateway $router
-			nmcli con mod $wlan0Name ipv4.dns "$DnsServers"
+			nmcli con mod "$newSsid" ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
+			nmcli con mod "$newSsid" ipv4.gateway $router
+			nmcli con mod "$newSsid" ipv4.dns "$DnsServers"
 		;;
 		(*)
-			nmcli con mod $wlan0Name ipv4.method auto
+			nmcli con mod "$newSsid" ipv4.method auto
 		;;
 	esac
 }
