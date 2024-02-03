@@ -1771,66 +1771,96 @@ test_install ()
 	then
 		# ============== START BOOKWORM+ WIFI TESTS ===========
 		systemctl is-active --quiet dnsmasq && ap_test=$((ap_test+1)) # If dnsmasq is running, add 1
-		
-		
+
 		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
-		if [ -z "$activeConnections" ];
+		if [ ! -z "$activeConnections" ];
 		then
-			echo -e ""$YELLOW"FAIL:"$RESET" No active network connection(s) found"
-		else
 			((ap_test=ap_test+2)) # If we have an active network connection, add 2
 			# Loop through them:
 			IFS=$'\n'
-			for ARG in $activeConnections;
+			for thisConnection in $activeConnections;
 			do
-				echo $ARG
+				local connectionFile="/etc/NetworkManager/system-connections/"$thisConnection".nmconnection"
+				if [ -f $connectionFile ];
+				then
+					local connectedSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
+					local connectedChannel=$(grep -r '^channel=' $connectionFile | cut -s -d = -f 2)
+					local connectedMode=$(grep -r '^mode=' $connectionFile | cut -s -d = -f 2)
+					local apCount=0   # Just in case we somehow end up with multiple connections. Each success only increments ap_test once
+					local noapCount=0 # "
+					if [[ $connectedMode == "ap" ]];
+					then
+						if [[ ($apCount == 0) ]];
+						then
+							((ap_test=ap_test+4)) # we're an Access Point. Add 4
+							apCount=apCount+1
+							if [ ! -z "$connectedChannel" ]; then ((ap_test=ap_test+16)); fi
+						fi
+					elif [[ $connectedMode =~ infra.* ]];
+					then
+						if [[ ($noapCount == 0) ]];
+						then
+							((ap_test=ap_test+8)) # we're a client, connected to a WiFi network. Add 8
+							noapCount=noapCount+1
+						fi
+					fi
+				fi
 			done
 			unset IFS
-			
 		fi
-		
-		
-		
-		
-		exit
-		
-		
-		#TODO: Test for ap mode
-		nmcli -t c s -a | awk '!/loopback/' | cut -d : -f 1 # Returns connected (active) network name(s): *probably* the SSID if wifi client
-		nmcli -t c s -a | awk '!/loopback/' | cut -d : -f 4 # Returns connected network interface. e.g. 'wlan0', 'eth0'
-		#TODO: what does the above report if we have MULTIPLE network connections active?
-			
-		#TODO: Test for WiFi client
-		#TODO: test for an active connection (as a client)
-		
-		
-		ssid=$(LANG=C nmcli -t -f active,ssid dev wifi | grep ^yes | cut -d: -f2-)
-		
-		echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
-		echo -e ""$GREEN"PASS:"$RESET" It will attempt to connect to this/these SSIDs: $ssid"
-		
-				
-		local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
-		connectionFile="/etc/NetworkManager/system-connections/"$wlan0Name".nmconnection"
-		# if [ -f $connectionFile ];
-		# then
-			# #local oldWifiSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
-			
-		# fi
-		
-		#This is for the AP detection:
-		echo -e ""$GREEN"PASS:"$RESET" The Pi SHOULD be an AP"
-		echo -e ""$YELLOW"FAIL:"$RESET" An SSID (network name) was expected but not found in /etc/hostapd/hostapd.conf"
-		echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $myWifiSsid"
-		local myWifiChannel=$(grep -r '^channel=' $connectionFile | cut -s -d = -f 2)
-		if [ -z "$myWifiChannel" ];
-		then
-			echo -e ""$YELLOW"FAIL:"$RESET" A Wi-Fi channel was expected but not found in $connectionFile"
-		else
-			echo -e ""$GREEN"PASS:"$RESET" It's using channel $myWifiChannel"
-		fi
-		
-		
+
+		case $ap_test in
+			(0)
+				echo -e ""$YELLOW"FAIL:"$RESET" No network connection was detected (0)"
+				;;
+			(1)
+				# dnsmasq is running. That's the sign we SHOULD be an AP
+				echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq is running, however no network connection was detected (1)"
+				;;
+			(2)
+				# we have an active network connection
+				echo -e ""$YELLOW"FAIL:"$RESET" A network connection was detected, but no WiFi data was found (2)"
+				;;
+			(3)
+				# active network + dnsmasq
+				echo -e ""$YELLOW"FAIL:"$RESET" A network connection was detected, but no WiFi data was found (3)"
+				;;
+			(6)
+				# We're an AP & have an active network connection, but no CHANNEL.
+				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is an access point (AP) however no channel has been configured (6)"
+				;;
+			(7)
+				# We're an AP, dmsmasq is running and we have an active network connection.
+				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is an access point (AP) however no channel has been configured (7)"
+				;;
+			(8)
+				# We're a WiFi client
+				echo -e ""$YELLOW"PASS:"$RESET" The Pi is a Wi-Fi client, however there is no active network connection (8)"
+				;;
+			(9)
+				# We're a WiFi client HOWEVER dmsmasq is running. (Bad/unexpected)
+				echo -e ""$YELLOW"PASS:"$RESET" The Pi is a Wi-Fi client, however there is no active network connection (9)"
+				;;
+			(10)
+				# Good. WiFi client.
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
+				echo -e ""$GREEN"PASS:"$RESET" It has an active connection to this/these SSIDs: $connectedSsid"
+				;;
+			(22)
+				# Good. WiFi AP.
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own WiFi network"
+				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is $connectedSsid and is using channel $connectedChannel"
+				;;
+			(*)
+				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value $ap_test:"
+				echo " 1 = dnsmasq is running"
+				echo " 2 = we have an active network connection"
+				echo " 4 = we're an access point (AP) - our own WiFi network"
+				echo " 8 = we're a WiFi client"
+				echo "16 = we're an access point (AP) - our own WiFi network - and have a WiFi channel correctly configured"
+				echo ''
+				;;
+		esac
 		# =============== END BOOKWORM+ WIFI TESTS ============
 	else
 		# ============== START LEGACY WIFI TESTS ===============
