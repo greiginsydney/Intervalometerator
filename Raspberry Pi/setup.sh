@@ -1305,6 +1305,11 @@ END
 
 	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$wifiSsid'"
+	read -p "Press any key to continue or ^C to abort " discard
+	echo ''
+
 	#Paste in the new settings
 	sed -i -E "s|^(\s*static ip_address=)(.*)|\1$piIpV4/$cidr_mask|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
 	sed -i -E "s/^(\s*dhcp-range=)(.*)$/\1$dhcpStartIp,$dhcpEndIp,$dhcpSubnetMask,24h/" /etc/dnsmasq.conf
@@ -1319,8 +1324,6 @@ END
 	systemctl unmask dnsmasq
 	echo 'Enabling dnsmasq'
 	systemctl enable dnsmasq
-
-	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi access point!'
 }
 
 
@@ -1528,13 +1531,27 @@ END
 			read -e -i "$oldDnsServers" -p     'Set the DNS Server(s) (space-delimited) : ' DnsServers
 
 			cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
-			#Paste in the new settings
+			;;
+		(*)
+			echo -n # Do nothing.
+			;;
+	esac
+
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
+	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change manually"
+	read -p "Press any key to continue or ^C to abort " discard
+	echo ''
+	
+	#Paste in the new settings
+	case $staticResponse in
+		(y|Y|"")
 			sed -i -E "s/^#+(interface wlan0.*)/\1/" /etc/dhcpcd.conf
 			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static ip_address=)(.*)$|\  \1$piIpV4/$cidr_mask|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
 			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static routers=)(.*)$|\  \1$router|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
 			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static domain_name_servers=)(.*)$|\  \1$DnsServers|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
 			sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
-			;;
+		;;
 		(*)
 			if grep -qi 'interface wlan0' /etc/dhcpcd.conf;
 			then
@@ -1548,13 +1565,8 @@ END
 			else
 				echo -e 'Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf'
 			fi
-			;;
+		;;
 	esac
-
-	echo 'WARNING: After the next reboot, the Pi will come up as a WiFi *client*'
-	ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
-	echo -e "WARNING: It will attempt to connect to this/these SSIDs: $ssid"
-	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change"
 }
 
 
@@ -1565,7 +1577,7 @@ unmake_ap_nmcli ()
 	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
 		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
-		systemctl disable dnsmasq #Stops it launching on bootup
+		systemctl disable dnsmasq # Stops it launching on bootup
 		systemctl mask dnsmasq
 		echo ''
 	fi
@@ -1611,16 +1623,21 @@ unmake_ap_nmcli ()
 
 			local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 			;;
+		(*)
+			echo -n # Do nothing.
+			;;
 	esac
 
-	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *network*"
-	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$newSsid'"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
 
-	nmcli con del hotspot
+	set +e # Suspend the error trap
+	nmcli con del hotspot # Would otherwise throw a terminating error if 'hotspot' doesn't exist
+	set -e # Resume the error trap
 	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
-	#Paste in the new settings
+	# Paste in the new settings
 	case $staticResponse in
 		(y|Y|"")
 			nmcli con mod $wlan0Name ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
@@ -1743,6 +1760,7 @@ test_install ()
 		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
 	fi
 	echo ''
+	
 	# ================== START WIFI TESTS ==================
 	ap_test=0	
 	if [[ ($VENV_REQUIRED == 1) ]];
