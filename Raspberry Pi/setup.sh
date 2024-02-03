@@ -1580,7 +1580,8 @@ unmake_ap_nmcli ()
 	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
 		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
-		systemctl disable dnsmasq # Stops it launching on bootup
+		systemctl stop dnsmasq    # Stop it now
+  		systemctl disable dnsmasq # Prevents it launching on bootup
 		systemctl mask dnsmasq
 		echo ''
 	fi
