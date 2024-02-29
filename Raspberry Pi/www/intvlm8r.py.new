@@ -1975,7 +1975,9 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
                 app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
             newName = None
             if (renameOnCopy == True):
-                newName = renameFile(dest, renameString)
+                if renameString:
+                    newName = renameFile(dest, renameString)
+                    newName = newName.replace((PI_PHOTO_DIR  + "/"), "") # Trim the path for brevity
             if not newName:
                 newName = imageFileName #If renameFile err'd, paste in the original filename. And do it anyway if renameOnCopy == False
             # The rename file here does double-duty. It links original & new names, and also protects us when deleteAfterCopy is OFF, but deleteAfterTransfer is ON
