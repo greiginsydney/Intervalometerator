@@ -2028,7 +2028,7 @@ def createDestFilename(imageFullFilename, targetFolder, suffix):
     return dest
 
 
-def renameFile(imageFullFilename, renameString, deleteAfterCopy):
+def renameFile(imageFullFilename, renameString):
     try:
         imageFolderTree, originalFileName = os.path.split(imageFullFilename)
         fileName, fileExt = os.path.splitext(originalFileName)
