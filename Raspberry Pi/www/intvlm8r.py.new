@@ -2087,7 +2087,7 @@ def renameFile(imageFullFilename, renameString):
             app.logger.info(f'renameFile error : {e}')
     except Exception as e:
         app.logger.info(f'renameFile unhandled error: {e}')
-    return
+    return renamedFile
 
 
 def getCreationTime(imageFullFilename):
