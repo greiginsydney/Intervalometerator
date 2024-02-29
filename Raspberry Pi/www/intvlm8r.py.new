@@ -2082,13 +2082,6 @@ def renameFile(imageFullFilename, renameString):
             if not safetyNet == True:
                 app.logger.info(f'renameFile about to rename file {imageFullFilename} to {renameString}')
                 os.rename(imageFullFilename,renamedFile)
-                if (deleteAfterCopy == False):
-                    #Add to the rename file here
-                    try:
-                        with open(PI_PHOTO_RENAME_FILE, "a") as f:
-                            f.write(f'{fileName}{fileExt} {renamedFile}\r\n')
-                    except Exception as e:
-                        app.logger.info(f'renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
         except Exception as e:
             app.logger.info(f'renameFile error  renaming file {imageFullFilename} to {renameString}')
             app.logger.info(f'renameFile error : {e}')
