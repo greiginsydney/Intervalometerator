@@ -425,10 +425,7 @@ install_apps ()
 	else
 		echo -e ""$GREEN"Installing dnsmasq, hostapd"$RESET""
 		apt-get install dnsmasq hostapd -y
-		echo -e ""$GREEN"Disabling hostapd"$RESET""
-		systemctl stop hostapd
-		systemctl disable hostapd
-		systemctl mask hostapd
+		# hostapd installs already masked by default. Nothing to do here
 	fi
 	
 	echo -e ""$GREEN"Disabling dnsmasq"$RESET""
