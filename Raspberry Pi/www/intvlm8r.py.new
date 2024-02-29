@@ -1920,13 +1920,11 @@ def files_to_copy(camera):
         try:
             dcimIndex = path.index("/DCIM/") # The path from the camera should contain "/DCIM/" - it's basically the root of any digital camera's image folder tree
             shortPath = path[(dcimIndex + 1):]
-            #New test added in 4.6.3:
             if shortPath in renamed_files:
-                app.logger.info(f'----------------> files_to_copy() matched shortPath {shortPath} in renamed_files')
                 continue
         except IndexError:
-            #Nope, not there. Try alternative treatment:
-            app.logger.info(f'files_to_copy() failed to find DCIM in {path}')
+            # Nope, not there. Try alternative treatment:
+            app.logger.info(f'files_to_copy() failed to find /DCIM/ in {path}')
         except Exception as e:
             app.logger.debug(f'files_to_copy() threw unexpectedly on the /DCIM/ test: {e}')
         
