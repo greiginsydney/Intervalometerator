@@ -1914,11 +1914,28 @@ def files_to_copy(camera):
         app.logger.info('files_to_copy() reports no files found on the camera')
         return
     for path in camera_files:
+        # This skips copying an image if its entire path is in the PI_PHOTO_RENAME_FILE.
+        # As of 4.6.3 this file becomes an archive of EVERY image we've previously copied,
+        # so we don't repeat copying images that are deliberately left on the camera but deleted off the Pi. (DeleteAfterCopy=False, DeleteAfterTransfer=True)
+        try:
+            dcimIndex = path.index("/DCIM/") # The path from the camera should contain "/DCIM/" - it's basically the root of any digital camera's image folder tree
+            shortPath = path[(dcimIndex + 1):]
+            #New test added in 4.6.3:
+            if shortPath in renamed_files:
+                app.logger.info(f'----------------> files_to_copy() matched shortPath {shortPath} in renamed_files')
+                continue
+        except IndexError:
+            #Nope, not there. Try alternative treatment:
+            app.logger.info(f'files_to_copy() failed to find DCIM in {path}')
+        except Exception as e:
+            app.logger.debug(f'files_to_copy() threw unexpectedly on the /DCIM/ test: {e}')
+        
+        # Legacy code. Some or all of this is earmarked to go:
         sourceFolderTree, imageFileName = os.path.split(path)
-        dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
-        dest = os.path.join(dest, imageFileName)
-        if dest in computer_files:
-            continue
+        #dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
+        #dest = os.path.join(dest, imageFileName)
+        #if dest in computer_files:
+        #    continue
         if imageFileName in renamed_files:
             continue
         newFilesList.append(path)
