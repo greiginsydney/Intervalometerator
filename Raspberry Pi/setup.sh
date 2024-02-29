@@ -420,18 +420,24 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
-		echo -e ""$GREEN"Installing dnsmasq"$RESET""
-		apt-get install dnsmasq -y # No hostapd in bookworm+
+		: # No hostapd in bookworm+
 	else
-		echo -e ""$GREEN"Installing dnsmasq, hostapd"$RESET""
-		apt-get install dnsmasq hostapd -y
-		# hostapd installs already masked by default. Nothing to do here
+		echo -e ""$GREEN"Installing hostapd"$RESET""
+		apt-get install hostapd -y
+		# hostapd installs masked by default. Nothing to do here
 	fi
-	
-	echo -e ""$GREEN"Disabling dnsmasq"$RESET""
-	systemctl stop dnsmasq
-	systemctl disable dnsmasq
-	systemctl mask dnsmasq
+
+	if systemctl --all --type service | grep -q 'dnsmasq';
+	then
+ 		echo -e ""$GREEN"dnsmasq is already installed"$RESET""
+	else
+		echo -e ""$GREEN"Installing dnsmasq"$RESET""
+		apt-get install dnsmasq -y
+		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
+		systemctl stop dnsmasq
+		systemctl disable dnsmasq
+		systemctl mask dnsmasq
+	fi
 
 	echo -e ""$GREEN"Installing smbus2"$RESET""
 	pip3 install smbus2
