@@ -2892,4 +2892,6 @@ def norobots():
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
+   # app.jinja_env.auto_reload = True             # Enable when debugging: reloads template files
+   # app.config['TEMPLATES_AUTO_RELOAD'] = True   # Enable when debugging: reloads template files
    app.run(host='0.0.0.0')
