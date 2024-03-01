@@ -42,6 +42,7 @@ htmltext = ''
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
+    bootup  = False
     if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
@@ -54,39 +55,38 @@ def main(argv):
         {
         'copyDay'         : 'Off',
         'copyHour'        : '00',
-        'copyOnBootup'    : 'Off'
+        'copyOnBootup'    : False
         })
     config.read(INIFILE_NAME)
     try:
         copyDay       = config.get('Copy', 'copyDay')
         copyHour      = config.get('Copy', 'copyHour')
-        copyOnBootup  = config.get('Copy', 'copyOnBootup')
+        copyOnBootup  = config.getboolean('Copy', 'copyOnBootup')
 
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'
-        copyOnBootup = 'Off'
+        copyOnBootup = False
         log('INI file error: ' + str(e))
 
     log('')
     now = datetime.datetime.now()
     log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour= {copyHour}')
-    if ((now.strftime("%A") == copyDay) | (copyDay == "Daily")):
-        # We're OK to copy TODAY
-        if (copyNow == True):
-            # We're OK to copy NOW
-            log('OK to copy on copyNow.')
-        elif ((bootup == True) and (copyOnBootup != 'Off')):
+    if (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
+        # We're OK to copy NOW
+        log(f'OK to copy @ {copyHour}:00 on {now.strftime("%A")}')
+    elif copyNow == True:
+        # We're OK to copy NOW
+        log('OK to copy on copyNow')
+    elif bootup == True:
+        if copyOnBootup == True:
             # We're OK to copy NOW, as we've been called by the service and the bootup flag has been set
-            log('OK to copy on bootup.')
-        elif (now.strftime("%H") == copyHour):
-            # We're OK to copy NOW
-            log(f'OK to copy @ {copyHour}:00.')
+            log('OK to copy on bootup')
         else:
-            log(f'Not OK to copy @ {now.strftime("%H")}:00.')
+            log('Copy on bootup requested but flag not set')
             return
     else:
-        log(f'Not OK to copy today ({now.strftime("%A")}).')
+        log('Not OK to copy')
         return
 
     response = None
