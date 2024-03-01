@@ -176,9 +176,13 @@ def main(argv):
     elif copyNow == True:
         # We're OK to transfer now
         log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
-    elif ((bootup == True) and (transferOnBootup == True)):
+    elif bootup == True:
+        if transferOnBootup == True:
             # We're OK to transfer NOW, as we've been called by the service and the bootup flag has been set
-            log('OK to transfer on bootup.')
+            log('OK to transfer on bootup')
+        else:
+            log('Transfer on bootup requested but flag not set')
+            return
     else:
         log(f'Not OK to transfer. Method = {tfrMethod}')
         return
