@@ -92,10 +92,13 @@ sftpPort = 22
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
+    bootup  = False
     if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
-        if sys.argv[1] == 'reauthGoogle':
+        elif sys.argv[1] == 'bootup':
+            bootup = True
+        elif sys.argv[1] == 'reauthGoogle':
             returncode = reauthGoogle()
             if returncode == 0:
                 copyNow = True
@@ -125,6 +128,7 @@ def main(argv):
         'rsyncRemoteFolder'  : '',
         'transferDay'        : '',
         'transferHour'       : '',
+        'transferOnBootup'   : False,
         'deleteAfterTransfer': False
         })
     config.read(INIFILE_NAME)
@@ -145,6 +149,7 @@ def main(argv):
         rsyncRemoteFolder   = config.get('Transfer', 'rsyncRemoteFolder')
         transferDay         = config.get('Transfer', 'transferDay')
         transferHour        = config.get('Transfer', 'transferHour')
+        transferOnBootup    = config.getboolean('Transfer', 'transferOnBootup')
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
 
     except Exception as e:
@@ -171,6 +176,9 @@ def main(argv):
     elif copyNow == True:
         # We're OK to transfer now
         log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
+    elif ((bootup == True) and (transferOnBootup == True)):
+            # We're OK to transfer NOW, as we've been called by the service and the bootup flag has been set
+            log('OK to transfer on bootup.')
     else:
         log(f'Not OK to transfer. Method = {tfrMethod}')
         return
