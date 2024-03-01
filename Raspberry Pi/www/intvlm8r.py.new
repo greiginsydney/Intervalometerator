@@ -1970,9 +1970,6 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
         copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
         if (copyOK >= gp.GP_OK):
             os.utime(dest, (imageMtime, imageMtime)) #Update mtime with the value from the camera
-            if (deleteAfterCopy == True):
-                gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
-                app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
             newName = None
             if (renameOnCopy == True):
                 if renameString:
@@ -1980,12 +1977,16 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
                     newName = newName.replace((PI_PHOTO_DIR  + "/DCIM/"), "") # Trim the path for brevity
             if not newName:
                 newName = imageFileName #If renameFile err'd, paste in the original filename. And do it anyway if renameOnCopy == False
-            # The rename file here does double-duty. It links original & new names, and also protects us when deleteAfterCopy is OFF, but deleteAfterTransfer is ON
-            try:
-                with open(PI_PHOTO_RENAME_FILE, "a") as f:
-                    f.write(f'{dcimPath} {newName}\r\n')
-            except Exception as e:
-                app.logger.info(f'copy_files: renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
+            if (deleteAfterCopy == True):
+                gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
+                app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
+            else:
+                # The rename file here does double-duty. It links original & new names, and also protects us when deleteAfterCopy is OFF, but deleteAfterTransfer is ON
+                try:
+                    with open(PI_PHOTO_RENAME_FILE, "a") as f:
+                        f.write(f'{dcimPath} {newName}\r\n')
+                except Exception as e:
+                    app.logger.info(f'copy_files: renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
         else:
             app.logger.info(f"copy_files: image {dest} did not return 'GP_OK'")
             return 1
