@@ -241,6 +241,17 @@
 				</div>
 			</td>
 		</tr>
+		<tr id="showHideTrnOnBootup">
+			<td>
+				<div class="alignleft">Transfer each time the Pi boots:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="transferOnBootup" name="transferOnBootup" {% if transferOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a transfer each time it boots" onchange="newSelected(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
 		<tr id="showHideTrnHrMsg">
 			<td class="centre-text" id="transferHourMsg"></td>
 		</tr>
