@@ -897,7 +897,9 @@ def transfer():
         'piTransferLogLink'     : '',
         'hiddenTransferOptions' : hiddenTransferOptions,
         'renameOnCopy'          : 'Off',
-        'renameString'          : ''
+        'renameString'          : '',
+        'copyOnBootup'          : '',
+        'transferOnBootup'      : ''
     }
     config = configparser.ConfigParser(
         {
@@ -920,7 +922,9 @@ def transfer():
         'copyHour'           : '',
         'wakePiTime'         : '25',
         'renameOnCopy'       : 'Off',
-        'renameString'       : ''
+        'renameString'       : '',
+        'copyOnBootup'       : 'Off',
+        'transferOnBootup'   : 'Off'
         })
     try:
         config.read(iniFile)
@@ -940,10 +944,12 @@ def transfer():
         templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
         templateData['transferDay']        = config.get('Transfer', 'transferDay')
         templateData['transferHour']       = config.get('Transfer', 'transferHour')
+        templateData['transferOnBootup']   = config.get('Transfer', 'transferOnBootup')
         templateData['copyDay']            = config.get('Copy', 'copyDay')
         templateData['copyHour']           = config.get('Copy', 'copyHour')
         templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
         templateData['renameString']       = config.get('Copy', 'renameString')
+        templateData['copyOnBootup']       = config.get('Copy', 'copyOnBootup')
     except Exception as e:
         app.logger.debug(f'INI file error: {e}')
         flash('Error reading from the Ini file', 'red')
