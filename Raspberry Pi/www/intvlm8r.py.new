@@ -1919,7 +1919,7 @@ def files_to_copy(camera):
         # so we don't repeat copying images that are deliberately left on the camera but deleted off the Pi. (DeleteAfterCopy=False, DeleteAfterTransfer=True)
         try:
             dcimIndex = path.index("/DCIM/") # The path from the camera should contain "/DCIM/" - it's basically the root of any digital camera's image folder tree
-            shortPath = path[(dcimIndex + 1):]
+            shortPath = path[(dcimIndex + 6):]
             if shortPath in renamed_files:
                 continue
         except IndexError:
@@ -1950,7 +1950,7 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
     sourceFolderTree, imageFileName = os.path.split(imageToCopy)
     dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
     dest = os.path.join(dest, imageFileName)
-    dcimPath = dest.replace((PI_PHOTO_DIR  + "/"), "")
+    dcimPath = dest.replace((PI_PHOTO_DIR  + "/DCIM/"), "")
     app.logger.debug(f'Copying {imageToCopy} --> {dest}')
     try:
         imageMtime = get_camera_file_info(camera, imageToCopy).file.mtime
@@ -1977,7 +1977,7 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
             if (renameOnCopy == True):
                 if renameString:
                     newName = renameFile(dest, renameString)
-                    newName = newName.replace((PI_PHOTO_DIR  + "/"), "") # Trim the path for brevity
+                    newName = newName.replace((PI_PHOTO_DIR  + "/DCIM/"), "") # Trim the path for brevity
             if not newName:
                 newName = imageFileName #If renameFile err'd, paste in the original filename. And do it anyway if renameOnCopy == False
             # The rename file here does double-duty. It links original & new names, and also protects us when deleteAfterCopy is OFF, but deleteAfterTransfer is ON
