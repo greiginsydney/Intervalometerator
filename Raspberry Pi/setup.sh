@@ -1066,7 +1066,6 @@ make_ap ()
 {
 	apt-get install dnsmasq hostapd -y
 	systemctl stop dnsmasq
-	systemctl stop hostapd
 	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
 	if  grep -Fq 'interface wlan0' '/etc/dhcpcd.conf';
