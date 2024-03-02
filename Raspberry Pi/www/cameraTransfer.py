@@ -40,7 +40,7 @@ htmltext = ''
 
 
 def main(argv):
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     copyNow = False
     bootup  = False
     if len(sys.argv) > 1:
