@@ -1073,7 +1073,8 @@ def transferNow(self):
     errorMsg = 'out'
     statusColour = 'white'
     try:
-        cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
+        #cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer'] # Removed with 4.6.3 in March 2024.
+        cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
