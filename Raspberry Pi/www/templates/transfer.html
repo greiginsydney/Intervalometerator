@@ -241,7 +241,10 @@
 				</div>
 			</td>
 		</tr>
-		<tr id="showHideTrnOnBootup">
+		<tr id="showHideTrnHrMsg">
+			<td class="centre-text" id="transferHourMsg"></td>
+		</tr>
+		<tr>
 			<td>
 				<div class="alignleft">Transfer each time the Pi boots:</div>
 				<div class="alignright">
@@ -251,9 +254,6 @@
 					</label>
 				</div>
 			</td>
-		</tr>
-		<tr id="showHideTrnHrMsg">
-			<td class="centre-text" id="transferHourMsg"></td>
 		</tr>
 		<tr>
 			<td>
@@ -307,6 +307,7 @@ SelectionBits["copyHour"]           =   131072;
 SelectionBits["renameOnCopy"]       =   262144;
 SelectionBits["renameString"]       =   524288;
 SelectionBits["copyOnBootup"]       =  1048576;
+SelectionBits["transferOnBootup"]   =  2097152;
 
 //These text fields can't be blank if their respective selection is active
 var MandatoryByte     = 0;
@@ -447,13 +448,29 @@ function newSelected(id)
 		}
 	}
 
-	if (!option.options[option.selectedIndex].defaultSelected)
+	if (id == "transferOnBootup")
 	{
-		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		// Handles the checkbox:
+		if (option.defaultChecked != option.checked)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		}
 	}
 	else
 	{
-		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+		// else handle the drop-down lists:
+		if (!option.options[option.selectedIndex].defaultSelected)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+		}
 	}
 	lightButtons();
 }
@@ -551,6 +568,7 @@ function openInNewTab(url) {
 function updateRename(id)
 {
 	var option = document.getElementById(id);
+	// Handles the 'copyOnBootup' checkbox:
 	if (option.defaultChecked != option.checked)
 	{
 		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
