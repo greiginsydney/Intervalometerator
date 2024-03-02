@@ -33,6 +33,17 @@
 		<tr id="showHideCopyHrMsg">
 			<td id="copyHourMsg" class="centre-text"></td>
 		</tr>
+		<tr id="showHideCopyOnBootup">
+			<td>
+				<div class="alignleft">Copy each time the Pi boots:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a copy each time it boots" onchange="updateRename(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
 
 		<tr id="showHideRenameOnCopyCbx">
 			<td class="noborder" >
@@ -88,17 +99,6 @@
 			</td>
 		</tr>
 		</tbody>
-		<tr id="showHideCopyOnBootup">
-			<td>
-				<div class="alignleft">Copy each time the Pi boots:</div>
-				<div class="alignright">
-					<label class="loginChkbox">
-						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a copy each time it boots" onchange="updateRename(this.id)"/>
-						<span class="rememberme"></span>
-					</label>
-				</div>
-			</td>
-		</tr>
 	</table>
 
 	<table class="noborder">
