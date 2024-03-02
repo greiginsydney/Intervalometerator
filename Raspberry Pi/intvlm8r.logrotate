@@ -11,6 +11,7 @@
     copytruncate
 
 /home/pi/cameraTransfer.log {}
+/home/pi/www/piTransfer.log
 /home/pi/setTime.log {}
 /home/pi/www/gunicorn.error {}
 /var/log/celery/*.log {}
