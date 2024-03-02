@@ -71,7 +71,7 @@ def main(argv):
 
     log('')
     now = datetime.datetime.now()
-    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour= {copyHour}')
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour = {copyHour}')
     if (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
         # We're OK to copy NOW
         log(f'OK to copy @ {copyHour}:00 on {now.strftime("%A")}')
