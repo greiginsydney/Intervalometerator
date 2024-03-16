@@ -935,6 +935,19 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 		echo "Skipped: '/boot/config.txt' does not contain legacy 'dtoverlay=gpio-poweroff'"
 	fi
 '
+
+	# Added 16 Mar 2024 in 4.6.3. Support for powerShell-style in-line comment text is ambiguous here at best.
+	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' /boot/config.txt
+	then
+		echo -e ""$YELLOW"'/boot/config.txt' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
+		#Add the new '# Legacy:' header line first:
+		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' /boot/config.txt
+		#Replace the bad version:
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' /boot/config.txt
+	else
+		echo "Skipped: '/boot/config.txt' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
+	fi
+
 	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
 		mv -fv /home/${SUDO_USER}/www/intvlm8r.old /home/${SUDO_USER}/www/intvlm8r.bak
