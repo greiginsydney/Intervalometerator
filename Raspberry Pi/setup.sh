@@ -918,8 +918,10 @@ dtparam=act_led_activelow=on
 dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 
 #Set GPIO27 to follow the running state: it's High while running and 0 when shutdown is complete. The Arduino will monitor this pin.
-dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY
-#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+# LEGACY:
+dtoverlay=gpio-poweroff,gpiopin=27,active_low 
+# NEW - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low 
 END
 	fi
 
