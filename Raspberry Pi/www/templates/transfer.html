@@ -35,7 +35,7 @@
 		</tr>
 		<tr id="showHideCopyOnBootup">
 			<td>
-				<div class="alignleft">Copy each time the Pi boots:</div>
+				<div class="alignleft">Also copy each time the Pi boots:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
 						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a copy each time it boots" onchange="updateRename(this.id)"/>
@@ -246,7 +246,7 @@
 		</tr>
 		<tr>
 			<td>
-				<div class="alignleft">Transfer each time the Pi boots:</div>
+				<div class="alignleft">Also transfer each time the Pi boots:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
 						<input type="checkbox" id="transferOnBootup" name="transferOnBootup" {% if transferOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a transfer each time it boots" onchange="newSelected(this.id)"/>
