@@ -63,7 +63,7 @@ def main(argv):
         copyDay       = config.get('Copy', 'copyDay')
         copyHour      = config.get('Copy', 'copyHour')
         copyOnBootup  = config.getboolean('Copy', 'copyOnBootup')
-        wakePiHour    = config.get('general', 'wakePiHour')
+        wakePiHour    = config.get('Global', 'wakePiHour')
 
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
