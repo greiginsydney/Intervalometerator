@@ -958,6 +958,7 @@ def transfer():
 
     rawWakePi = str(readFromArduino("5", "String", True))
     if rawWakePi != "Unknown":
+        setIni('Global', 'wakePiHour', rawWakePi[0:2])
         templateData['wakePiTime']     = rawWakePi[0:2]
 
     return render_template('transfer.html', **templateData)
