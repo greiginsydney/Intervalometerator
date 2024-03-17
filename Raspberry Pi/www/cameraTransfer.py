@@ -76,7 +76,7 @@ def main(argv):
         # We're OK to copy NOW. (copyNow trumps all other options)
         log('OK to copy on copyNow')
     elif (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
-        # We're OK to copy NOW
+        # Now is a valid combo of day & hour
         log(f'OK to copy @ {copyHour}:00 on {now.strftime("%A")}')
     elif bootup == True:
         if copyOnBootup == True:
