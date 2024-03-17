@@ -1,10 +1,10 @@
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along with this program.  If not, see 
+# You should have received a copy of the GNU General Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # This script is part of the Intervalometerator project, a time-lapse camera controller for DSLRs:
@@ -41,9 +41,11 @@ htmltext = ''
 
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    log('')
     copyNow = False
     bootup  = False
     if len(sys.argv) > 1:
+        log(f'sys.argv = {sys.argv}')
         if sys.argv[1] == 'copyNow':
             copyNow = True
         elif sys.argv[1] == 'bootup':
@@ -69,9 +71,9 @@ def main(argv):
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'
         copyOnBootup = False
+        wakePiHour = 25
         log('INI file error: ' + str(e))
 
-    log('')
     now = datetime.datetime.now()
     log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour = {copyHour}. wakePiHour is {wakePiHour}:00')
     if copyNow == True:
