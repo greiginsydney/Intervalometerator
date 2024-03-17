@@ -72,12 +72,12 @@ def main(argv):
     log('')
     now = datetime.datetime.now()
     log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour = {copyHour}')
-    if (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
+    if copyNow == True:
+        # We're OK to copy NOW. (copyNow trumps all other options)
+        log('OK to copy on copyNow')
+    elif (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
         # We're OK to copy NOW
         log(f'OK to copy @ {copyHour}:00 on {now.strftime("%A")}')
-    elif copyNow == True:
-        # We're OK to copy NOW
-        log('OK to copy on copyNow')
     elif bootup == True:
         if copyOnBootup == True:
             # We're OK to copy NOW, as we've been called by the service and the bootup flag has been set
