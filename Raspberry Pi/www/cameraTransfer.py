@@ -55,13 +55,15 @@ def main(argv):
         {
         'copyDay'         : 'Off',
         'copyHour'        : '00',
-        'copyOnBootup'    : False
+        'copyOnBootup'    : False,
+        'wakePiTime'      : '25'
         })
     config.read(INIFILE_NAME)
     try:
         copyDay       = config.get('Copy', 'copyDay')
         copyHour      = config.get('Copy', 'copyHour')
         copyOnBootup  = config.getboolean('Copy', 'copyOnBootup')
+        wakePiTime    = config.get('general', 'wakePiTime')
 
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
@@ -75,9 +77,9 @@ def main(argv):
     if copyNow == True:
         # We're OK to copy NOW. (copyNow trumps all other options)
         log('OK to copy on copyNow')
-    elif (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & (now.strftime("%H") == copyHour)):
+    elif (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & ((now.strftime("%H") == wakepitime ) | (now.strftime("%H") == copyHour))):
         # Now is a valid combo of day & hour
-        log(f'OK to copy @ {copyHour}:00 on {now.strftime("%A")}')
+        log(f'OK to copy @ {now.strftime("%H")}:00 on {now.strftime("%A")}')
     elif bootup == True:
         if copyOnBootup == True:
             # We're OK to copy NOW, as we've been called by the service and the bootup flag has been set
