@@ -91,9 +91,11 @@ sftpPort = 22
 
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    log('')
     copyNow = False
     bootup  = False
     if len(sys.argv) > 1:
+        log(f'sys.argv = {sys.argv}')
         if sys.argv[1] == 'copyNow':
             copyNow = True
         elif sys.argv[1] == 'bootup':
@@ -129,7 +131,8 @@ def main(argv):
         'transferDay'        : '',
         'transferHour'       : '',
         'transferOnBootup'   : False,
-        'deleteAfterTransfer': False
+        'deleteAfterTransfer': False,
+        'wakePiHour'         : '25'
         })
     config.read(INIFILE_NAME)
     try:
@@ -151,6 +154,7 @@ def main(argv):
         transferHour        = config.get('Transfer', 'transferHour')
         transferOnBootup    = config.getboolean('Transfer', 'transferOnBootup')
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
+        wakePiHour          = config.get('Global', 'wakePiHour')
 
     except Exception as e:
         tfrMethod = 'Off' # If we hit an unknown exception, force tfrMethod=Off, because we can't be sure what triggered the error
@@ -168,14 +172,13 @@ def main(argv):
         log('STATUS: Upload aborted. tfrMethod=Off')
         return
 
-    log('')
     now = datetime.datetime.now()
-    if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
-        # We're OK to transfer now
-        log(f'OK to transfer @ {transferHour}:00. Method = {tfrMethod}')
-    elif copyNow == True:
-        # We're OK to transfer now
+    if copyNow == True:
+        # We're OK to copy NOW. (copyNow trumps all other options)
         log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
+    elif (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & ((now.strftime("%H") == wakePiHour ) | (now.strftime("%H") == transferHour))):
+        # Now is a valid combo of day & hour
+        log(f'OK to transfer @ {(((now.strftime("%A")}:00. Method = {tfrMethod}')
     elif bootup == True:
         if transferOnBootup == True:
             # We're OK to transfer NOW, as we've been called by the service and the bootup flag has been set
