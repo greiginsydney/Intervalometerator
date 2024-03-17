@@ -1474,9 +1474,9 @@ def system():
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-    
+
     arduinoVersion = str(getArduinoVersion('0'))
-    
+
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1509,7 +1509,7 @@ def system():
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
                     if 0 <= shutdownAt <= 119:
                         if tempTime != '':
-                            shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.                            
+                            shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.
                             shutdownAt = shutdownAt - int(tempTime.split(":")[1])
                             templateData['piShutdownIn'] = shutdownAt
                         else:
@@ -1607,7 +1607,7 @@ def systemPOST():
         WakePiHour = str(request.form.get('wakePiTime'))
         if WakePiHour == 'Always On':
             WakePiHour = '25'
-        setIni('Global', 'wakePiHour', WakePiHour)        
+        setIni('Global', 'wakePiHour', WakePiHour)
         writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}", 1)
         cache.delete("5")   # Flush the previously cached value
 
@@ -1937,7 +1937,7 @@ def files_to_copy(camera):
             app.logger.info(f'files_to_copy() failed to find /DCIM/ in {path}')
         except Exception as e:
             app.logger.debug(f'files_to_copy() threw unexpectedly on the /DCIM/ test: {e}')
-        
+
         # Legacy code. Some or all of this is earmarked to go:
         sourceFolderTree, imageFileName = os.path.split(path)
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
@@ -2529,7 +2529,7 @@ def newThumbs(self):
     else:
         silentMode = False
         self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
-        
+
     thumbsCreated = 0
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
@@ -2642,7 +2642,7 @@ def getCeleryTasks():
                     # Prevents leak of message if user=anon
                     flash('There are no Celery workers running', 'red')
             except:
-                # No user? 
+                # No user?
                 pass
             return
         # Show tasks that are currently active.
@@ -2744,10 +2744,10 @@ def network():
 def scan_wifi_networks(interface):
     """
     Scans the nearby WiFi networks and displays the results.
- 
+
     A hybrid of:
     https://github.com/Xilef12000/RPi0w-wifi-catcher/blob/main/iwlist.py
-    
+
     Returns:
     - list of dictionaries:
         A list of dictionaries containing the details of each WiFi network.
@@ -2757,7 +2757,7 @@ def scan_wifi_networks(interface):
         - 'Signal': The signal strength of the WiFi network in dBm.
         - 'Channel': The channel number of the WiFi network.
     """
- 
+
     # Run the command to scan for nearby WiFi networks using the 'iwlist' command.
     # The output will be in the form of a byte string.
     cmd = (f'/usr/bin/sudo /usr/sbin/iwlist {interface} scan')
@@ -2766,7 +2766,7 @@ def scan_wifi_networks(interface):
     networks = output.split('    Cell ')
     # Initialize an empty list to store each WiFi network's details.
     wifi_networks = []
-    
+
     for network in networks:
         lines = network.split('\n')
         # Iterate over the lines to extract the WiFi network details.
@@ -2778,7 +2778,7 @@ def scan_wifi_networks(interface):
                 ssid = line.split(':')[1].strip().strip('"')
                 # Initialize a dictionary to store the details of the WiFi network.
                 wifi_network = {'SSID': ssid}
-        
+
         # Iterate over the lines to extract the WiFi network details.
         for line in lines:
             line = line.strip()
