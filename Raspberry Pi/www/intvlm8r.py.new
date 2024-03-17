@@ -1606,6 +1606,7 @@ def systemPOST():
         WakePiHour = str(request.form.get('wakePiTime'))
         if WakePiHour == 'Always On':
             WakePiHour = '25'
+        setIni('Global', 'wakePiHour', WakePiHour)        
         writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}", 1)
         cache.delete("5")   # Flush the previously cached value
 
