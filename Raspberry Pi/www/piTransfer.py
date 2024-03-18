@@ -184,7 +184,7 @@ def main(argv):
             # We're OK to transfer NOW, as we've been called by the service and the bootup flag has been set
             log('OK to transfer on bootup')
         else:
-            log('Transfer on bootup requested but flag not set')
+            log('Transfer on bootup requested but flag not set. Exiting')
             return
     else:
         log(f'Not OK to transfer. Method = {tfrMethod}')
