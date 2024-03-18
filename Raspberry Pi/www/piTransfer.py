@@ -92,10 +92,10 @@ sftpPort = 22
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     log('')
+    log(f'sys.argv = {sys.argv}')
     copyNow = False
     bootup  = False
     if len(sys.argv) > 1:
-        log(f'sys.argv = {sys.argv}')
         if sys.argv[1] == 'copyNow':
             copyNow = True
         elif sys.argv[1] == 'bootup':
