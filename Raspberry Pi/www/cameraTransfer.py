@@ -87,7 +87,7 @@ def main(argv):
             # We're OK to copy NOW, as we've been called by the service and the bootup flag has been set
             log('OK to copy on bootup')
         else:
-            log('Copy on bootup requested but flag not set. Exiting')
+            log('Script ran at bootup but flag not set. Exiting')
             return
     else:
         log('Not OK to copy')
