@@ -178,7 +178,7 @@ def main(argv):
         log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
     elif (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & ((now.strftime("%H") == wakePiHour ) | (now.strftime("%H") == transferHour))):
         # Now is a valid combo of day & hour
-        log(f'OK to transfer @ {now.strftime("%A")}:00. Method = {tfrMethod}')
+        log(f'OK to transfer @ {now.strftime("%H")}:00 on {now.strftime("%A")}. Method = {tfrMethod}')
     elif bootup == True:
         if transferOnBootup == True:
             # We're OK to transfer NOW, as we've been called by the service and the bootup flag has been set
