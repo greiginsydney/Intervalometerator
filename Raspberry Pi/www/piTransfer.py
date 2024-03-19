@@ -168,10 +168,6 @@ def main(argv):
             else:
                 return 0
 
-    if (tfrMethod == 'Off'):
-        log('STATUS: Upload aborted. tfrMethod=Off')
-        return
-
     now = datetime.datetime.now()
     if copyNow == True:
         # We're OK to copy NOW. (copyNow trumps all other options)
@@ -188,6 +184,10 @@ def main(argv):
             return
     else:
         log(f'Not OK to transfer. Method = {tfrMethod}')
+        return
+
+    if (tfrMethod == 'Off'):
+        log('STATUS: Upload aborted. tfrMethod=Off')
         return
 
     log(f'STATUS: Commencing upload using {tfrMethod}')
