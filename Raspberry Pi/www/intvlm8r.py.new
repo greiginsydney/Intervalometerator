@@ -2168,7 +2168,7 @@ def makeThumb(imageFile):
                         app.logger.info(f'makeThumb preview unhandled error: {e}')
             try:
                 with Image.open(imageFile) as thumb:
-                    thumb.thumbnail((160, 160), Image.ANTIALIAS)
+                    thumb.thumbnail((160, 160), Image.Resampling.LANCZOS)
                     thumb.save(dest, "JPEG")
             except Exception as e:
                 app.logger.info(f'makeThumb thumbnail save error: {e}')
