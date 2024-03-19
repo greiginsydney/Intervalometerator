@@ -75,7 +75,7 @@ def main(argv):
         log('INI file error: ' + str(e))
 
     now = datetime.datetime.now()
-    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour = {copyHour}. wakePiHour is {wakePiHour}:00')
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay}, CopyHour = {copyHour}. wakePiHour is {wakePiHour}:00')
     if copyNow == True:
         # We're OK to copy NOW. (copyNow trumps all other options)
         log('OK to copy on copyNow')
