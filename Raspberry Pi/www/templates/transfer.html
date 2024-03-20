@@ -33,8 +33,19 @@
 		<tr id="showHideCopyHrMsg">
 			<td id="copyHourMsg" class="centre-text"></td>
 		</tr>
-		
-		<tr>
+		<tr id="showHideCopyOnBootup">
+			<td>
+				<div class="alignleft">Also copy each time the Pi boots:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="copyOnBootup" name="copyOnBootup" {% if copyOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a copy each time it boots" onchange="updateRename(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+
+		<tr id="showHideRenameOnCopyCbx">
 			<td class="noborder" >
 				<div class="alignleft">Rename on copy:</div>
 				<div class="alignright">
@@ -45,34 +56,35 @@
 				</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tbody id="showHideRename">
+		<tr>
 			<td class="noborder" ><label for="renameString">Create a new filename using these format strings:</label></td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%Y = 4-digit year</div>
 				<div class="alignright">%m = month (01-12)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%b = short month ('Jan')</div>
 				<div class="alignright">%d = day of month (01-31)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%a = short weekday ('Mon')</div>
 				<div class="alignright">%H = hour (00-23)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%M = minute (00-59)</div>
 				<div class="alignright">%S = second (00-59)</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft">%F = original filename</div>
 				<div class="alignright">
@@ -80,14 +92,15 @@
 				</div>
 			</td>
 		</tr>
-		<tr name="showHideRename">
+		<tr>
 			<td class="noborder">
 				<div class="alignleft" id="originalFileName"></div>
 				<div class="alignright" id="exampleString"></div>
 			</td>
 		</tr>
+		</tbody>
 	</table>
-	
+
 	<table class="noborder">
 		<tr>
 			<td class="noborder">
@@ -97,7 +110,7 @@
 			</td>
 		</tr>
 	</table>
-	
+
 	<table>
 		<tr>
 			<th>Transfer Settings - from the Pi</th>
@@ -107,7 +120,7 @@
 				<div class="alignleft">Upload method:</div>
 				<div class="alignright">
 					<select name="tfrMethod" id="tfrMethod" title="Choose one of these transfer options" onchange="newSelected(this.id)">
-					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'Google Drive', 'rsync'] %}
+					{% for method in ['Off', 'FTP', 'SFTP', 'Dropbox', 'rsync'] %}
 						<option value="{{ method }}"{% if method == tfrMethod %} SELECTED{% endif %} {% if method != 'FTP' and method in hiddenTransferOptions %} DISABLED{% endif %} >{{ method }}</option>"
 					{% endfor %}
 					</select>
@@ -115,7 +128,7 @@
 			</td>
 		</tr>
 		<tr id="showHideTrnWarning">
-			<td class="noborder">Copy needs to be enabled first.</td>
+			<td class="noborder centre-text">Copy needs to be enabled first.</td>
 		</tr>
 	</table>
 
@@ -182,15 +195,6 @@
 		</tr>
 	</table>
 
-	<table id="google">
-		<tr>
-			<td>
-				<div class="alignleft"><label for="googleRemoteFolder">Remote folder:</label></div>
-				<div class="alignright"><input type="text" name="googleRemoteFolder" id="googleRemoteFolder" value="{{ googleRemoteFolder }}" placeholder="e.g. images" oninput="newText(this.id)"></div>
-			</td>
-		</tr>
-	</table>
-
 	<table id="rsync">
 		<tr>
 			<td>
@@ -242,6 +246,17 @@
 		</tr>
 		<tr>
 			<td>
+				<div class="alignleft">Also transfer each time the Pi boots:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="transferOnBootup" name="transferOnBootup" {% if transferOnBootup == 'on' %}CHECKED {% endif %}title="Check for the Pi to initiate a transfer each time it boots" onchange="newSelected(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
 				<div class="alignleft">
 					<button type="button" name="view" id="view" onClick="openInNewTab('{{ piTransferLogLink }}');">View log</button>
 				</div>
@@ -271,26 +286,28 @@
 var SelectionByte = 0;
 var SelectionBits = new Array();
 //Don't change these without updating the 'Transfer now' interlocking in lightButtons():
-SelectionBits["tfrMethod"]          =       1;
-SelectionBits["ftpServer"]          =       2;
-SelectionBits["ftpUser"]            =       4;
-SelectionBits["ftpPassword"]        =       8;
-SelectionBits["ftpRemoteFolder"]    =      16;
-SelectionBits["sftpServer"]         =      32;
-SelectionBits["sftpUser"]           =      64;
-SelectionBits["sftpPassword"]       =     128;
-SelectionBits["sftpRemoteFolder"]   =     256;
-SelectionBits["dbx_app_key"]          =     512;
-SelectionBits["googleRemoteFolder"] =    1024;
-SelectionBits["rsyncUsername"]      =    2048;
-SelectionBits["rsyncHost"]          =    4096;
-SelectionBits["rsyncRemoteFolder"]  =    8192;
-SelectionBits["transferDay"]        =   16384;
-SelectionBits["transferHour"]       =   32768;
-SelectionBits["copyDay"]            =   65536;
-SelectionBits["copyHour"]           =  131072;
-SelectionBits["renameOnCopy"]       =  262144;
-SelectionBits["renameString"]       =  524288;
+SelectionBits["tfrMethod"]          =        1; // 2^0
+SelectionBits["ftpServer"]          =        2;
+SelectionBits["ftpUser"]            =        4;
+SelectionBits["ftpPassword"]        =        8;
+SelectionBits["ftpRemoteFolder"]    =       16;
+SelectionBits["sftpServer"]         =       32;
+SelectionBits["sftpUser"]           =       64;
+SelectionBits["sftpPassword"]       =      128;
+SelectionBits["sftpRemoteFolder"]   =      256; // 2^8
+SelectionBits["dbx_app_key"]        =      512;
+//SelectionBits["googleRemoteFolder"] =   1024;
+SelectionBits["rsyncUsername"]      =     2048;
+SelectionBits["rsyncHost"]          =     4096;
+SelectionBits["rsyncRemoteFolder"]  =     8192;
+SelectionBits["transferDay"]        =    16384;
+SelectionBits["transferHour"]       =    32768;
+SelectionBits["copyDay"]            =    65536; // 2^16
+SelectionBits["copyHour"]           =   131072;
+SelectionBits["renameOnCopy"]       =   262144;
+SelectionBits["renameString"]       =   524288;
+SelectionBits["copyOnBootup"]       =  1048576;
+SelectionBits["transferOnBootup"]   =  2097152;
 
 //These text fields can't be blank if their respective selection is active
 var MandatoryByte     = 0;
@@ -298,30 +315,33 @@ var MandatoryMaskBits = new Array();
 MandatoryMaskBits["ftp"]            =       6; //These values are the *sum* of the bit values (above) that can't be empty
 MandatoryMaskBits["sftp"]           =     224;
 MandatoryMaskBits["dropbox"]        =     512;
-MandatoryMaskBits["google"]         =       0;
+//MandatoryMaskBits["google"]       =       0;
 MandatoryMaskBits["rsync"]          =    6144;
 MandatoryMaskBits["copy"]           =  524288;
 
 
-var method             = document.getElementById("tfrMethod");
-var copyDay            = document.getElementById("copyDay");
-var showHideCopyHour   = document.getElementById("showHideCopyHour");
-var showHideTrnHour    = document.getElementById("showHideTrnHour");
-var showHideCopyHrMsg  = document.getElementById("showHideCopyHrMsg");
-var showHideTrnHrMsg   = document.getElementById("showHideTrnHrMsg");
-var showHideTrnButton  = document.getElementById("tfrTrNow");
-var renameOnCopy       = document.getElementById("renameOnCopy");
-var renameString       = document.getElementById("renameString");
-var showHideTrnWarning = document.getElementById("showHideTrnWarning");
-var showHideTrnMethod  = document.getElementById("showHideTrnMethod");
-var ftp                = document.getElementById("ftp");
-var sftp               = document.getElementById("sftp");
-var dbx                = document.getElementById("dropbox");
-var google             = document.getElementById("google");
-var rsync              = document.getElementById("rsync");
-var transfer           = document.getElementById("transfer");
-var exampleString      = document.getElementById("exampleString");
-var renameString       = document.getElementById("renameString");
+var method                  = document.getElementById("tfrMethod");
+var copyDay                 = document.getElementById("copyDay");
+var showHideCopyHour        = document.getElementById("showHideCopyHour");
+var showHideTrnHour         = document.getElementById("showHideTrnHour");
+var showHideCopyHrMsg       = document.getElementById("showHideCopyHrMsg");
+var showHideTrnHrMsg        = document.getElementById("showHideTrnHrMsg");
+var showHideTrnButton       = document.getElementById("tfrTrNow");
+var showHideRename          = document.getElementById("showHideRename");
+var showHideRenameOnCopyCbx = document.getElementById("showHideRenameOnCopyCbx");
+var renameOnCopy            = document.getElementById("renameOnCopy");
+var renameString            = document.getElementById("renameString");
+var showHideTrnWarning      = document.getElementById("showHideTrnWarning");
+var showHideTrnMethod       = document.getElementById("showHideTrnMethod");
+var ftp                     = document.getElementById("ftp");
+var sftp                    = document.getElementById("sftp");
+var dbx                     = document.getElementById("dropbox");
+//var google                = document.getElementById("google");
+var rsync                   = document.getElementById("rsync");
+var transfer                = document.getElementById("transfer");
+var exampleString           = document.getElementById("exampleString");
+var renameString            = document.getElementById("renameString");
+var showHideCopyOnBoot      = document.getElementById("showHideCopyOnBootup");
 
 //initialise constants for the file rename calc's:
 var short_month = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
@@ -343,16 +363,20 @@ document.getElementById("originalFileName").innerHTML = pcF
 ftp.style.display      = (method.value != "FTP" || copyDay.value == "Off") ? "none":"";
 sftp.style.display     = (method.value != "SFTP" || copyDay.value == "Off") ? "none":"";
 dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ? "none":"";
-google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+//google.style.display   = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
-showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
-showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-showHideTrnButton.style.display  = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
+showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
+showHideRenameOnCopyCbx.style.display = (copyDay.value == "Off") ? "none":"";
+showHideRename.style.display          = (copyDay.value == "Off" || renameOnCopy.checked == false) ? "none":"";
+showHideCopyOnBoot.style.display      = (copyDay.value == "Off") ? "none":"";
+showHideTrnButton.style.display       = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
+
 
 //Initialise the two text fields:
 if (copyDay.value == "Daily")
@@ -375,7 +399,6 @@ else
 // Run when the form first loads:
 checkForBlanks();
 lightButtons();
-showHideRename();
 updateExample();
 
 function newSelected(id)
@@ -387,19 +410,22 @@ function newSelected(id)
 		ftp.style.display               = (method.value != "FTP"          || copyDay.value == "Off") ? "none":"";
 		sftp.style.display              = (method.value != "SFTP"         || copyDay.value == "Off") ? "none":"";
 		dbx.style.display               = (method.value != "Dropbox"      || copyDay.value == "Off") ? "none":"";
-		google.style.display            = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
+		//google.style.display          = (method.value != "Google Drive" || copyDay.value == "Off") ? "none":"";
 		rsync.style.display             = (method.value != "rsync"        || copyDay.value == "Off") ? "none":"";
 		transfer.style.display          = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 		showHideTrnButton.style.display = (method.value == "Off"          || copyDay.value == "Off") ? "none":"";
 	}
 	if (id == "copyDay")
 	{
-		showHideCopyHour.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideTrnHour.style.display    = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideCopyHrMsg.style.display  = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-		showHideTrnHrMsg.style.display   = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
-		showHideTrnWarning.style.display = (copyDay.value != "Off") ? "none":"";
-		showHideTrnMethod.style.display  = (copyDay.value == "Off") ? "none":"";
+		showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
+		showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
+		showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
+		showHideRenameOnCopyCbx.style.display = (copyDay.value == "Off") ? "none":"";
+		showHideRename.style.display          = (copyDay.value == "Off" || renameOnCopy.checked == false) ? "none":"";
+		showHideCopyOnBoot.style.display      = (copyDay.value == "Off") ? "none":"";
 		if (copyDay.value == "Daily")
 		{
 			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each day at {{wakePiTime}}:00 when the Pi starts."
@@ -409,7 +435,7 @@ function newSelected(id)
 			document.getElementById("copyHourMsg").innerHTML = "A copy takes place each " + copyDay.value + " at {{wakePiTime}}:00 when the Pi starts."
 		}
 	}
-	
+
 	if (id == "transferDay")
 	{
 		if (transferDay.value == "Daily")
@@ -422,13 +448,29 @@ function newSelected(id)
 		}
 	}
 
-	if (!option.options[option.selectedIndex].defaultSelected)
+	if (id == "transferOnBootup")
 	{
-		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		// Handles the checkbox:
+		if (option.defaultChecked != option.checked)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		}
 	}
 	else
 	{
-		SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+		// else handle the drop-down lists:
+		if (!option.options[option.selectedIndex].defaultSelected)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+		}
 	}
 	lightButtons();
 }
@@ -466,7 +508,7 @@ function lightButtons()
 {
 	var copyButton = document.getElementById("copyNow");
 	var applyButton = document.getElementById("apply");
-	
+
 	//'Apply' button:
 	if (SelectionByte == 0)
 	{
@@ -478,13 +520,19 @@ function lightButtons()
 	}
 
 	//'Copy now' button:
-	if (((SelectionByte & SelectionBits["renameOnCopy"]) == SelectionBits["renameOnCopy"]) || ((SelectionByte & SelectionBits["renameString"]) == SelectionBits["renameString"]))
+	// Disable if any of the copy settings have been changed and not submitted.
+	if (((SelectionByte & 2031616) != 0))
 	{
 		copyButton.disabled  = true;
 	}
 	else
 	{
 		copyButton.disabled  = false;
+	}
+	// Disable if copy is Off:
+	if (copyDay.value == "Off")
+	{
+		copyButton.disabled  = true;
 	}
 
 	//'Transfer now' button:
@@ -504,7 +552,7 @@ function lightButtons()
 		copyButton.disabled  = true;
 		applyButton.disabled = true;
 	}
-	else if ((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0) 
+	else if ((MandatoryByte & MandatoryMaskBits[method.value.toLowerCase()]) != 0)
 	{
 		applyButton.disabled = true;
 	}
@@ -516,9 +564,11 @@ function openInNewTab(url) {
 	win.focus();
 }
 
+// This fn does double-duty, as it now handles both of the check-boxes on the page
 function updateRename(id)
 {
 	var option = document.getElementById(id);
+	// Handles the 'copyOnBootup' checkbox:
 	if (option.defaultChecked != option.checked)
 	{
 		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
@@ -527,7 +577,7 @@ function updateRename(id)
 	{
 		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
 	}
-	
+
 	if (renameOnCopy.checked == true && renameString.value == "")
 	{
 		renameString.classList.add("redborder")
@@ -536,18 +586,8 @@ function updateRename(id)
 	{
 		renameString.classList.remove("redborder")
 	}
-	showHideRename();
+	showHideRename.style.display = (renameOnCopy.checked == false) ? "none":"";
 	lightButtons();
-}
-
-function showHideRename()
-{
-	var showHide = (renameOnCopy.checked == false) ? "none":"";
-	rows = document.getElementsByName("showHideRename")
-	for (i = 0; i < rows.length; i++)
-	{
-		rows[i].style.display = showHide;
-	}
 }
 
 function checkForBlanks()
@@ -574,12 +614,12 @@ function updateExample()
 	var tempString = renameString.value;
 	var fileName = pcF.split('.')[0];
 	var fileExt  = pcF.split('.')[1];
-	
+
 	//Strip any commas or spaces and update the field:
 	tempString = tempString.replace(' ','')
 	tempString = tempString.replace(',','')
 	renameString.value = tempString;
-	
+
 	//Substitute values and update the example
 	if (tempString === '')
 	{

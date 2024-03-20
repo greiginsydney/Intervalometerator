@@ -133,16 +133,14 @@ hiddenTransferOptions = ''
 hiddenTransferDict = {
   "paramiko": "SFTP",
   "dropbox": "Dropbox",
-  "google": "Google Drive",
   "sysrsync": "rsync"
 }
 # TY SO: https://stackoverflow.com/a/41815890
-for package_name in ('paramiko', 'dropbox', 'google', 'sysrsync'):
+for package_name in ('paramiko', 'dropbox', 'sysrsync'):
     spec = importlib.util.find_spec(package_name)
     if spec is None:
         app.logger.debug(f'{package_name} is not installed')
         hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict[package_name]
-    hiddenTransferOptions = hiddenTransferOptions + "," + hiddenTransferDict['google'] # hard-codes Google onto the 'hidden' (actually 'disabled') list
 app.logger.debug(f'hiddenTransferOptions = {hiddenTransferOptions}')
 
 def writeString(value, waitTime):
@@ -257,17 +255,7 @@ class User(UserMixin):
 @login_manager.user_loader
 def user_loader(username):
     if username not in users:
-        return
-    user = User()
-    user.id = username
-    return user
-
-
-@login_manager.request_loader
-def request_loader(request):
-    username = request.form.get('username')
-    if username not in users:
-        return
+        return None
     user = User()
     user.id = username
     return user
@@ -345,8 +333,10 @@ def main():
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
 
-    templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
-    templateData['arduinoTime'] = getArduinoTime() # Failure returns ""
+    arduinoDate = getArduinoDate() # Failure returns "Unknown"
+    templateData['arduinoDate'] = arduinoDate
+    if arduinoDate != 'Unknown':
+        templateData['arduinoTime'] = getArduinoTime() # Failure returns "", but *might* also report midnight in the absence of a working RTC!
 
     try:
         arduinoStats = str(readFromArduino("2", "String", False))
@@ -895,7 +885,6 @@ def transfer():
         'sftpUser'              : '',
         'sftpPassword'          : '',
         'sftpRemoteFolder'      : '',
-        'googleRemoteFolder'    : '',
         'dbx_app_key'           : '',
         'rsyncUsername'         : '',
         'rsyncHost'             : '',
@@ -908,7 +897,9 @@ def transfer():
         'piTransferLogLink'     : '',
         'hiddenTransferOptions' : hiddenTransferOptions,
         'renameOnCopy'          : 'Off',
-        'renameString'          : ''
+        'renameString'          : '',
+        'copyOnBootup'          : '',
+        'transferOnBootup'      : ''
     }
     config = configparser.ConfigParser(
         {
@@ -921,7 +912,6 @@ def transfer():
         'sftpUser'           : '',
         'sftpPassword'       : '',
         'sftpRemoteFolder'   : '',
-        'googleRemoteFolder' : '',
         'dbx_app_key'        : '',
         'rsyncUsername'      : '',
         'rsyncHost'          : '',
@@ -932,7 +922,9 @@ def transfer():
         'copyHour'           : '',
         'wakePiTime'         : '25',
         'renameOnCopy'       : 'Off',
-        'renameString'       : ''
+        'renameString'       : '',
+        'copyOnBootup'       : 'Off',
+        'transferOnBootup'   : 'Off'
         })
     try:
         config.read(iniFile)
@@ -946,17 +938,18 @@ def transfer():
         templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
         templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
         templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
-        templateData['googleRemoteFolder'] = config.get('Transfer', 'googleRemoteFolder')
         templateData['dbx_app_key']        = config.get('Transfer', 'dbx_app_key')
         templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
         templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
         templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
         templateData['transferDay']        = config.get('Transfer', 'transferDay')
         templateData['transferHour']       = config.get('Transfer', 'transferHour')
+        templateData['transferOnBootup']   = config.get('Transfer', 'transferOnBootup')
         templateData['copyDay']            = config.get('Copy', 'copyDay')
         templateData['copyHour']           = config.get('Copy', 'copyHour')
         templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
         templateData['renameString']       = config.get('Copy', 'renameString')
+        templateData['copyOnBootup']       = config.get('Copy', 'copyOnBootup')
     except Exception as e:
         app.logger.debug(f'INI file error: {e}')
         flash('Error reading from the Ini file', 'red')
@@ -965,6 +958,7 @@ def transfer():
 
     rawWakePi = str(readFromArduino("5", "String", True))
     if rawWakePi != "Unknown":
+        setIni('Global', 'wakePiHour', rawWakePi[0:2])
         templateData['wakePiTime']     = rawWakePi[0:2]
 
     return render_template('transfer.html', **templateData)
@@ -1007,9 +1001,6 @@ def transferPOST():
                 config.set('Transfer', 'sftpRemoteFolder', sftpRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'Dropbox'):
                 config.set('Transfer', 'dbx_app_key', str(request.form.get('dbx_app_key') or ''))
-            elif (request.form.get('tfrMethod') == 'Google Drive'):
-                googleRemoteFolder = reformatSlashes(str(request.form.get('googleRemoteFolder')))
-                config.set('Transfer', 'googleRemoteFolder', googleRemoteFolder or '')
             elif (request.form.get('tfrMethod') == 'rsync'):
                 config.set('Transfer', 'rsyncUsername', str(request.form.get('rsyncUsername') or ''))
                 config.set('Transfer', 'rsyncHost', str(request.form.get('rsyncHost') or ''))
@@ -1024,6 +1015,8 @@ def transferPOST():
             config.set('Copy', 'copyHour', str(request.form.get('copyHour') or ''))
             config.set('Copy', 'renameOnCopy', str(request.form.get('renameOnCopy') or 'Off'))
             config.set('Copy', 'renameString', str(request.form.get('renameString').replace('%','%%') or ''))
+            config.set('Copy', 'copyOnBootup', str(request.form.get('copyOnBootup') or 'Off'))
+            config.set('Transfer', 'transferOnBootup', str(request.form.get('transferOnBootup') or 'Off'))
             with open(iniFile, 'w') as config_file:
                 config.write(config_file)
         except Exception as e:
@@ -1081,7 +1074,8 @@ def transferNow(self):
     errorMsg = 'out'
     statusColour = 'white'
     try:
-        cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer']
+        #cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer'] # Removed with 4.6.3 in March 2024.
+        cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
@@ -1480,9 +1474,9 @@ def system():
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-    
+
     arduinoVersion = str(getArduinoVersion('0'))
-    
+
     try:
         with open('/proc/device-tree/model', 'r') as myfile:
             templateData['piModel'] = myfile.read()
@@ -1500,10 +1494,11 @@ def system():
         app.logger.debug(f'system: Threw querying Pi os version: {e}')
 
     try:
-        templateData['arduinoDate'] = getArduinoDate() # Failure returns "Unknown"
-        tempTime = getArduinoTime()                    # Failure returns "", on-screen as "Unknown"
-        if tempTime != '':
-                templateData['arduinoTime'] = tempTime
+        arduinoDate = getArduinoDate() # Failure returns "Unknown"
+        tempTime = getArduinoTime()    # Failure returns "", on-screen as "Unknown", but *might* also report midnight in the absence of a working RTC!
+        templateData['arduinoDate'] = arduinoDate
+        if arduinoDate != 'Unknown':
+            templateData['arduinoTime'] = tempTime
         rawWakePi = str(readFromArduino("5", "String", False))
         if rawWakePi != "Unknown":
             wakePiTime                     = rawWakePi[0:2]
@@ -1514,7 +1509,7 @@ def system():
                     shutdownAt = int(readFromArduino("9", "String", False)) # The Arduino returns the minute past the hour that it will shutdown
                     if 0 <= shutdownAt <= 119:
                         if tempTime != '':
-                            shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.                            
+                            shutdownAt -= 1  #Remove the bonus minute added in the Arduino. This prevents on-screen confusion when time remaining is 1 minute > the value you just set.
                             shutdownAt = shutdownAt - int(tempTime.split(":")[1])
                             templateData['piShutdownIn'] = shutdownAt
                         else:
@@ -1612,6 +1607,7 @@ def systemPOST():
         WakePiHour = str(request.form.get('wakePiTime'))
         if WakePiHour == 'Always On':
             WakePiHour = '25'
+        setIni('Global', 'wakePiHour', WakePiHour)
         writeString(f"SP={WakePiHour}{request.form.get('wakePiDuration')}", 1)
         cache.delete("5")   # Flush the previously cached value
 
@@ -1928,6 +1924,21 @@ def files_to_copy(camera):
         app.logger.info('files_to_copy() reports no files found on the camera')
         return
     for path in camera_files:
+        # This skips copying an image if its entire path is in the PI_PHOTO_RENAME_FILE.
+        # As of 4.6.3 this file becomes an archive of EVERY image we've previously copied,
+        # so we don't repeat copying images that are deliberately left on the camera but deleted off the Pi. (DeleteAfterCopy=False, DeleteAfterTransfer=True)
+        try:
+            dcimIndex = path.index("/DCIM/") # The path from the camera should contain "/DCIM/" - it's basically the root of any digital camera's image folder tree
+            shortPath = path[(dcimIndex + 6):]
+            if shortPath in renamed_files:
+                continue
+        except IndexError:
+            # Nope, not there. Try alternative treatment:
+            app.logger.info(f'files_to_copy() failed to find /DCIM/ in {path}')
+        except Exception as e:
+            app.logger.debug(f'files_to_copy() threw unexpectedly on the /DCIM/ test: {e}')
+
+        # Legacy code. Some or all of this is earmarked to go:
         sourceFolderTree, imageFileName = os.path.split(path)
         dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
         dest = os.path.join(dest, imageFileName)
@@ -1949,6 +1960,7 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
     sourceFolderTree, imageFileName = os.path.split(imageToCopy)
     dest = CreateDestPath(sourceFolderTree, PI_PHOTO_DIR)
     dest = os.path.join(dest, imageFileName)
+    dcimPath = dest.replace((PI_PHOTO_DIR  + "/DCIM/"), "")
     app.logger.debug(f'Copying {imageToCopy} --> {dest}')
     try:
         imageMtime = get_camera_file_info(camera, imageToCopy).file.mtime
@@ -1968,11 +1980,23 @@ def copy_files(camera, imageToCopy, deleteAfterCopy, renameOnCopy, renameString)
         copyOK = gp.check_result(gp.gp_file_save(camera_file, dest))
         if (copyOK >= gp.GP_OK):
             os.utime(dest, (imageMtime, imageMtime)) #Update mtime with the value from the camera
+            newName = None
+            if (renameOnCopy == True):
+                if renameString:
+                    newName = renameFile(dest, renameString)
+                    newName = newName.replace((PI_PHOTO_DIR  + "/DCIM/"), "") # Trim the path for brevity
+            if not newName:
+                newName = imageFileName #If renameFile err'd, paste in the original filename. And do it anyway if renameOnCopy == False
             if (deleteAfterCopy == True):
                 gp.check_result(gp.gp_camera_file_delete(camera, sourceFolderTree, imageFileName))
                 app.logger.info(f'Deleted {sourceFolderTree}/{imageFileName}')
-            if (renameOnCopy == True):
-                renameFile(dest, renameString, deleteAfterCopy)
+            else:
+                # The rename file here does double-duty. It links original & new names, and also protects us when deleteAfterCopy is OFF, but deleteAfterTransfer is ON
+                try:
+                    with open(PI_PHOTO_RENAME_FILE, "a") as f:
+                        f.write(f'{dcimPath} {newName}\r\n')
+                except Exception as e:
+                    app.logger.info(f'copy_files: renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
         else:
             app.logger.info(f"copy_files: image {dest} did not return 'GP_OK'")
             return 1
@@ -2017,7 +2041,7 @@ def createDestFilename(imageFullFilename, targetFolder, suffix):
     return dest
 
 
-def renameFile(imageFullFilename, renameString, deleteAfterCopy):
+def renameFile(imageFullFilename, renameString):
     try:
         imageFolderTree, originalFileName = os.path.split(imageFullFilename)
         fileName, fileExt = os.path.splitext(originalFileName)
@@ -2071,19 +2095,12 @@ def renameFile(imageFullFilename, renameString, deleteAfterCopy):
             if not safetyNet == True:
                 app.logger.info(f'renameFile about to rename file {imageFullFilename} to {renameString}')
                 os.rename(imageFullFilename,renamedFile)
-                if (deleteAfterCopy == False):
-                    #Add to the rename file here
-                    try:
-                        with open(PI_PHOTO_RENAME_FILE, "a") as f:
-                            f.write(f'{fileName}{fileExt} {renamedFile}\r\n')
-                    except Exception as e:
-                        app.logger.info(f'renameFile error writing to PI_PHOTO_RENAME_FILE: {e}')
         except Exception as e:
             app.logger.info(f'renameFile error  renaming file {imageFullFilename} to {renameString}')
             app.logger.info(f'renameFile error : {e}')
     except Exception as e:
         app.logger.info(f'renameFile unhandled error: {e}')
-    return
+    return renamedFile
 
 
 def getCreationTime(imageFullFilename):
@@ -2151,7 +2168,7 @@ def makeThumb(imageFile):
                         app.logger.info(f'makeThumb preview unhandled error: {e}')
             try:
                 with Image.open(imageFile) as thumb:
-                    thumb.thumbnail((160, 160), Image.ANTIALIAS)
+                    thumb.thumbnail((160, 160), Image.Resampling.LANCZOS)
                     thumb.save(dest, "JPEG")
             except Exception as e:
                 app.logger.info(f'makeThumb thumbnail save error: {e}')
@@ -2505,12 +2522,21 @@ def copyNow(self):
 @celery.task(time_limit=1800, bind=True)
 def newThumbs(self):
     app.logger.info('newThumbs() entered') #This logs to /var/log/celery/celery_worker.log
-    self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
     if int(getIni('Global', 'thumbsCount', 'int', '24')) == 0:
-        app.logger.info('newThumbs returned - thumbnail creation skipped')
-        return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
+        # If thumbs = 0, we'll silently create one thumbnail/preview image, for the benefit of the home page
+        silentMode = True
+        app.logger.info('newThumbs running in silentMode. Only doing the most recent image')
+    else:
+        silentMode = False
+        self.update_state(state='PROGRESS', meta={'status': 'Commencing thumbnail creation', 'statusColour': 'white'})
+
+    thumbsCreated = 0
     try:
         FileList  = list_Pi_Images(PI_PHOTO_DIR)
+        if silentMode:
+            # Truncate the file list to ONLY the most recent image
+            FileList.sort(key=lambda x: os.path.getmtime(x))
+            FileList = FileList[-1:]
         ThumbList = list_Pi_Images(PI_THUMBS_DIR)
 
         DifferenceList = []
@@ -2531,7 +2557,6 @@ def newThumbs(self):
                     if discarded: continue
                 DifferenceList.append(image)
         thumbsToCreate = len(DifferenceList)
-        thumbsCreated = 0
         app.logger.info(f'Thumbs to create = {thumbsToCreate}')
 
         if thumbsToCreate >= 1:
@@ -2544,7 +2569,8 @@ def newThumbs(self):
                     continue
                 if not alreadyExists:
                     thumbsCreated += 1
-                    self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
+                    if not silentMode:
+                        self.update_state(state='PROGRESS', meta={'status': 'Created thumbnail ' + str(thumbsCreated) + ' of ' + str(thumbsToCreate), 'statusColour': 'white'})
                     app.logger.info(f'Thumb  of {DifferenceList[loop]} is {dest}')
                 else:
                     app.logger.info(f'Thumb for {dest} already exists')
@@ -2554,7 +2580,10 @@ def newThumbs(self):
         app.logger.info(f'newThumbs error: {e}')
     dedupeExifData()
     app.logger.info('newThumbs returned')
-    return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK', 'statusColour': 'white'}
+    if silentMode:
+        return {'status': 'Creation of thumbnail images skipped', 'statusColour': 'white'}
+    else:
+        return {'status': 'Created ' + str(thumbsCreated) + ' thumbnail images OK', 'statusColour': 'white'}
 
 
 # TY Miguel: https://blog.miguelgrinberg.com/post/using-celery-with-flask
@@ -2608,9 +2637,13 @@ def getCeleryTasks():
         d = i.stats()
         if not d:
             app.logger.debug('getCeleryTasks reports no Celery workers running.')
-            if current_user.is_authenticated:
-                # Prevents leak of message if user=anon
-                flash('There are no Celery workers running', 'red')
+            try:
+                if current_user.is_authenticated:
+                    # Prevents leak of message if user=anon
+                    flash('There are no Celery workers running', 'red')
+            except:
+                # No user?
+                pass
             return
         # Show tasks that are currently active.
         activeTasks = i.active()
@@ -2711,10 +2744,10 @@ def network():
 def scan_wifi_networks(interface):
     """
     Scans the nearby WiFi networks and displays the results.
- 
+
     A hybrid of:
     https://github.com/Xilef12000/RPi0w-wifi-catcher/blob/main/iwlist.py
-    
+
     Returns:
     - list of dictionaries:
         A list of dictionaries containing the details of each WiFi network.
@@ -2724,7 +2757,7 @@ def scan_wifi_networks(interface):
         - 'Signal': The signal strength of the WiFi network in dBm.
         - 'Channel': The channel number of the WiFi network.
     """
- 
+
     # Run the command to scan for nearby WiFi networks using the 'iwlist' command.
     # The output will be in the form of a byte string.
     cmd = (f'/usr/bin/sudo /usr/sbin/iwlist {interface} scan')
@@ -2733,7 +2766,7 @@ def scan_wifi_networks(interface):
     networks = output.split('    Cell ')
     # Initialize an empty list to store each WiFi network's details.
     wifi_networks = []
-    
+
     for network in networks:
         lines = network.split('\n')
         # Iterate over the lines to extract the WiFi network details.
@@ -2745,7 +2778,7 @@ def scan_wifi_networks(interface):
                 ssid = line.split(':')[1].strip().strip('"')
                 # Initialize a dictionary to store the details of the WiFi network.
                 wifi_network = {'SSID': ssid}
-        
+
         # Iterate over the lines to extract the WiFi network details.
         for line in lines:
             line = line.strip()
@@ -2869,4 +2902,6 @@ def norobots():
 
 #This always needs to be at the end, as nothing else will run after it - it's blocking:
 if __name__ == "__main__":
+   # app.jinja_env.auto_reload = True             # Enable when debugging: reloads template files
+   # app.config['TEMPLATES_AUTO_RELOAD'] = True   # Enable when debugging: reloads template files
    app.run(host='0.0.0.0')

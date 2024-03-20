@@ -1,10 +1,10 @@
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along with this program.  If not, see 
+# You should have received a copy of the GNU General Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # This script is part of the Intervalometerator project, a time-lapse camera controller for DSLRs:
@@ -40,11 +40,16 @@ htmltext = ''
 
 
 def main(argv):
-    logging.basicConfig(filename=LOGFILE_NAME, filemode='w', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    log('')
+    log(f'sys.argv = {sys.argv}')
     copyNow = False
+    bootup  = False
     if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
+        elif sys.argv[1] == 'bootup':
+            bootup = True
 
     if not os.path.exists(INIFILE_NAME):
         pass
@@ -52,33 +57,40 @@ def main(argv):
         {
         'copyDay'         : 'Off',
         'copyHour'        : '00',
+        'copyOnBootup'    : False,
+        'wakePiHour'      : '25'
         })
     config.read(INIFILE_NAME)
     try:
         copyDay       = config.get('Copy', 'copyDay')
         copyHour      = config.get('Copy', 'copyHour')
+        copyOnBootup  = config.getboolean('Copy', 'copyOnBootup')
+        wakePiHour    = config.get('Global', 'wakePiHour')
 
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'
+        copyOnBootup = False
+        wakePiHour = 25
         log('INI file error: ' + str(e))
 
-    log('')
     now = datetime.datetime.now()
-    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour= {copyHour}')
-    if ((now.strftime("%A") == copyDay) | (copyDay == "Daily")):
-        # We're OK to copy TODAY
-        if (copyNow == True):
-            # We're OK to copy NOW
-            log('OK to copy on copyNow.')
-        elif (now.strftime("%H") == copyHour):
-            # We're OK to copy NOW
-            log(f'OK to copy @ {copyHour}:00.')
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay}, CopyHour = {copyHour}. wakePiHour is {wakePiHour}:00')
+    if copyNow == True:
+        # We're OK to copy NOW. (copyNow trumps all other options)
+        log('OK to copy on copyNow')
+    elif (((now.strftime("%A") == copyDay) | (copyDay == "Daily")) & ((now.strftime("%H") == wakePiHour ) | (now.strftime("%H") == copyHour))):
+        # Now is a valid combo of day & hour
+        log(f'OK to copy @ {now.strftime("%H")}:00 on {now.strftime("%A")}')
+    elif bootup == True:
+        if copyOnBootup == True:
+            # We're OK to copy NOW, as we've been called by the service and the bootup flag has been set
+            log('OK to copy on bootup')
         else:
-            log(f'Not OK to copy @ {now.strftime("%H")}:00.')
+            log('Script ran at bootup but flag not set. Exiting')
             return
     else:
-        log(f'Not OK to copy today ({now.strftime("%A")}).')
+        log('Not OK to copy')
         return
 
     response = None

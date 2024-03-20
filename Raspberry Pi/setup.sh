@@ -51,14 +51,14 @@ install_apps ()
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
  
-	if [[ -f www/intvlm8r.py ]];
+	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
-		if [[ -f www/intvlm8r.py.new ]];
+		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 		then
 			echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
-			cp -fv www/intvlm8r.py www/intvlm8r.old
-			cp -fv www/intvlm8r.py.new www/intvlm8r.py
+			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
+			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		else
 			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
@@ -92,11 +92,11 @@ install_apps ()
 
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
-	elif [[ -f www/intvlm8r.py.new ]];
+	elif [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 	then
 		echo ''
 		echo 'intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation.'
-		cp -fv www/intvlm8r.py.new www/intvlm8r.py
+		cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
 		echo ''
@@ -143,8 +143,6 @@ install_apps ()
 		esac
 	done
 
-	echo -e ""$GREEN"Installing subversion"$RESET""
-	apt-get install subversion -y # Used later in this script to clone the RPi dir's of the Github repo
 	echo -e ""$GREEN"Installing python3-pip"$RESET""
 	apt-get install python3-pip -y
 	echo -e ""$GREEN"Upgrading pip3"$RESET""
@@ -199,6 +197,16 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, python-dev, jq"$RESET""
 	apt-get install nginx nginx-common supervisor python-dev jq -y
+
+	# Stuff some extra text into the nginx welcome page:
+	if [[ -f /usr/share/nginx/html/index.html ]];
+	then
+		sed -i -E "s|^(<h1>Welcome to nginx)(!)(.*)|\1 on the intvlm8r\3|g" /usr/share/nginx/html/index.html
+		if ! grep -q "The intvlm8r setup is incomplete" /usr/share/nginx/html/index.html;
+		then
+			sed -i "/Further configuration is required*/a <p><b>The intvlm8r setup is incomplete:</b> the 'web' step has not been fully or correctly performed.</p>" /usr/share/nginx/html/index.html
+		fi
+	fi
 
 	# ================== START libgphoto ==================
 	if ( apt list --manual-installed | grep -q libgphoto );
@@ -451,15 +459,15 @@ install_website ()
 
 	chown -R $SUDO_USER:www-data ${HOME}
 
-	if [ -f www/intvlm8r.old ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the login prompt step."$RESET""
 		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
 
-		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" /home/${SUDO_USER}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
-			sed -i -E "s|^(users = .*)|$firstLogin|g" www/intvlm8r.py
+			sed -i -E "s|^(users = .*)|$firstLogin|g" /home/${SUDO_USER}/www/intvlm8r.py
 			echo -e ""$GREEN"intvlm8r.old found. Restored first login."$RESET""
 		else
 			echo 'Upgrade file found but the first login was not found/detected.'
@@ -484,11 +492,11 @@ install_website ()
 			done <~/www/intvlm8r.old
 		fi
 
-    		if grep -q "### Paste the secret key here. See the Setup docs ###" www/intvlm8r.old;
+    		if grep -q "### Paste the secret key here. See the Setup docs ###" /home/${SUDO_USER}/www/intvlm8r.old;
 		then
 			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
 		else
-			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" /home/${SUDO_USER}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 			if [ ! -z "$oldSecretKey" ];
 			then
 				echo 'intvlm8r.old found and the original Secret Key has been extracted.'
@@ -501,16 +509,16 @@ install_website ()
 		chg_web_login
 	fi
 
-	if grep -q '### Paste the secret key here. See the Setup docs ###' www/intvlm8r.py;
+	if grep -q '### Paste the secret key here. See the Setup docs ###' /home/${SUDO_USER}/www/intvlm8r.py;
 	then
 		if [ ! -z "$oldSecretKey" ];
 		then
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" www/intvlm8r.py
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" /home/${SUDO_USER}/www/intvlm8r.py
 			echo 'intvlm8r.old found and the original Secret Key has been restored.'
 		else
 			#Generate a secret key here & paste in to intvlm8r.py:
 			UUID=$(cat /proc/sys/kernel/random/uuid)
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" www/intvlm8r.py
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" /home/${SUDO_USER}/www/intvlm8r.py
 			echo 'A new Secret Key was created.'
 		fi
 	else
@@ -800,7 +808,7 @@ install_website ()
 	# (Thank you SO: https://unix.stackexchange.com/a/78309)
 
 	#NTP
-	if [ -f www/intvlm8r.old ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the NTP prompt step."$RESET""
 	else
@@ -821,6 +829,7 @@ install_website ()
 	#Disable the daily auto-update process.
 	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
 	echo ''
+ 	echo -e ""$GREEN"Disabling the daily auto-update process"$RESET""
 	apt-get remove unattended-upgrades -y
 
 	echo ''
@@ -909,8 +918,10 @@ dtparam=act_led_activelow=on
 dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 
 #Set GPIO27 to follow the running state: it's High while running and 0 when shutdown is complete. The Arduino will monitor this pin.
-dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY
-#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+# LEGACY:
+dtoverlay=gpio-poweroff,gpiopin=27,active_low 
+# NEW - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low 
 END
 	fi
 
@@ -924,9 +935,22 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 		echo "Skipped: '/boot/config.txt' does not contain legacy 'dtoverlay=gpio-poweroff'"
 	fi
 '
-	if [ -f www/intvlm8r.old ];
+
+	# Added 16 Mar 2024 in 4.6.3. Support for powerShell-style in-line comment text is ambiguous here at best.
+	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' /boot/config.txt
 	then
-		mv -fv www/intvlm8r.old www/intvlm8r.bak
+		echo -e ""$YELLOW"'/boot/config.txt' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
+		#Add the new '# Legacy:' header line first:
+		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' /boot/config.txt
+		#Replace the bad version:
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' /boot/config.txt
+	else
+		echo "Skipped: '/boot/config.txt' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
+	fi
+
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
+	then
+		mv -fv /home/${SUDO_USER}/www/intvlm8r.old /home/${SUDO_USER}/www/intvlm8r.bak
 	fi
 
 	# WiFi Power Save
@@ -948,9 +972,9 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 
 	remoteit
 
-	if [ -f www/intvlm8r.py.new ];
+	if [ -f /home/${SUDO_USER}/www/intvlm8r.py.new ];
 	then
-		rm -fv www/intvlm8r.py.new
+		rm -fv /home/${SUDO_USER}/www/intvlm8r.py.new
 	fi
 
 	# Prepare for reboot/restart:
@@ -1057,7 +1081,6 @@ make_ap ()
 {
 	apt-get install dnsmasq hostapd -y
 	systemctl stop dnsmasq
-	systemctl stop hostapd
 	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
 	if  grep -Fq 'interface wlan0' '/etc/dhcpcd.conf';

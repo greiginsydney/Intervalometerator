@@ -182,7 +182,7 @@ function newDaySelected()
 {
 	var daySelected = document.getElementById("shootDays");
 	var daysChanged = false;
-	numDaysSelected = 0
+	numDaysSelected = 0;
 	for (loop = 0; loop < daySelected.options.length; loop++)
 	{
 		var opt = daySelected.options[loop];
@@ -207,11 +207,11 @@ function calculateShots()
 
 	if (interval_value > 60)
 	{
-		shotsPerHour = 60 * (60 / (interval_value - 60))
+		shotsPerHour = 60 * (60 / (interval_value - 60));
 	}
 	else
 	{
-		shotsPerHour = (60 / interval_value)
+		shotsPerHour = (60 / interval_value);
 	}
 
 	var result = ((parseInt(endHour.value) - parseInt(startHour.value)) * shotsPerHour);
@@ -304,7 +304,7 @@ function checkThresholds(thisRow, thisValue)
 	}
 	if (rowValue.innerHTML == 0)
 	{
-		rowValue.innerHTML = "< 1"
+		rowValue.innerHTML = "< 1";
 	}
 }
 
@@ -323,13 +323,13 @@ function lightButtons()
 	if (startHour.value == endHour.value)
 	{
 		document.getElementById("apply").disabled  = true;
-		startHour.classList.add("redborder")
-		  endHour.classList.add("redborder")
+		startHour.classList.add("redborder");
+		endHour.classList.add("redborder");
 	}
 	else
 	{
-		startHour.classList.remove("redborder")
-		  endHour.classList.remove("redborder")
+		startHour.classList.remove("redborder");
+		endHour.classList.remove("redborder");
 	}
 }
 </script>
