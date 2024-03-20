@@ -169,6 +169,7 @@ def main(argv):
                 return 0
 
     now = datetime.datetime.now()
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, TransferDay = {transferDay}, TransferHour = {transferHour}. wakePiHour is {wakePiHour}:00')
     if copyNow == True:
         # We're OK to copy NOW. (copyNow trumps all other options)
         log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
@@ -183,7 +184,7 @@ def main(argv):
             log('Script ran at bootup but flag not set. Exiting')
             return
     else:
-        log(f'Not OK to transfer. Method = {tfrMethod}')
+        log('Not OK to transfer')
         return
 
     if (tfrMethod == 'Off'):
