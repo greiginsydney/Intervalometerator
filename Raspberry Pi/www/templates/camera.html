@@ -3,6 +3,24 @@
 
 <form method="post" onsubmit="return userFeedback(this, event)">
 	<table>
+		<tr>
+			<td>
+				<div class="alignleft">Enable camera USB communication:</div>
+				<div class="alignright">
+					<label class="loginChkbox">
+						<input type="checkbox" id="enableCameraUsb" name="enableCameraUsb" {% if enableCameraUsb == 'on' %}CHECKED {% endif %}title="Check to enable USB communication with the camera" onchange="updateCbx(this.id)"/>
+						<span class="rememberme"></span>
+					</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="centre-text">
+				<p>When camera USB is disabled, the intvlm8r is only able to manage the shooting schedule</p>
+			</td>
+		</tr>
+	</table>
+	<table>
 	{% if cameraModel != "" %}
 		<tr>
 			<th>Camera Settings</th>
