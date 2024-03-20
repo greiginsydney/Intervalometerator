@@ -91,11 +91,16 @@ sftpPort = 22
 
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
+    log('')
+    log(f'sys.argv = {sys.argv}')
     copyNow = False
+    bootup  = False
     if len(sys.argv) > 1:
         if sys.argv[1] == 'copyNow':
             copyNow = True
-        if sys.argv[1] == 'reauthGoogle':
+        elif sys.argv[1] == 'bootup':
+            bootup = True
+        elif sys.argv[1] == 'reauthGoogle':
             returncode = reauthGoogle()
             if returncode == 0:
                 copyNow = True
@@ -125,7 +130,9 @@ def main(argv):
         'rsyncRemoteFolder'  : '',
         'transferDay'        : '',
         'transferHour'       : '',
-        'deleteAfterTransfer': False
+        'transferOnBootup'   : False,
+        'deleteAfterTransfer': False,
+        'wakePiHour'         : '25'
         })
     config.read(INIFILE_NAME)
     try:
@@ -145,7 +152,9 @@ def main(argv):
         rsyncRemoteFolder   = config.get('Transfer', 'rsyncRemoteFolder')
         transferDay         = config.get('Transfer', 'transferDay')
         transferHour        = config.get('Transfer', 'transferHour')
+        transferOnBootup    = config.getboolean('Transfer', 'transferOnBootup')
         deleteAfterTransfer = config.getboolean('Transfer', 'deleteAfterTransfer')
+        wakePiHour          = config.get('Global', 'wakePiHour')
 
     except Exception as e:
         tfrMethod = 'Off' # If we hit an unknown exception, force tfrMethod=Off, because we can't be sure what triggered the error
@@ -159,20 +168,27 @@ def main(argv):
             else:
                 return 0
 
-    if (tfrMethod == 'Off'):
-        log('STATUS: Upload aborted. tfrMethod=Off')
+    now = datetime.datetime.now()
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, TransferDay = {transferDay}, TransferHour = {transferHour}. wakePiHour is {wakePiHour}:00')
+    if copyNow == True:
+        # We're OK to copy NOW. (copyNow trumps all other options)
+        log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
+    elif (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & ((now.strftime("%H") == wakePiHour ) | (now.strftime("%H") == transferHour))):
+        # Now is a valid combo of day & hour
+        log(f'OK to transfer @ {now.strftime("%H")}:00 on {now.strftime("%A")}. Method = {tfrMethod}')
+    elif bootup == True:
+        if transferOnBootup == True:
+            # We're OK to transfer NOW, as we've been called by the service and the bootup flag has been set
+            log('OK to transfer on bootup')
+        else:
+            log('Script ran at bootup but flag not set. Exiting')
+            return
+    else:
+        log('Not OK to transfer')
         return
 
-    log('')
-    now = datetime.datetime.now()
-    if (((now.strftime("%A") == transferDay) | (transferDay == "Daily")) & (now.strftime("%H") == transferHour)):
-        # We're OK to transfer now
-        log(f'OK to transfer @ {transferHour}:00. Method = {tfrMethod}')
-    elif copyNow == True:
-        # We're OK to transfer now
-        log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
-    else:
-        log(f'Not OK to transfer. Method = {tfrMethod}')
+    if (tfrMethod == 'Off'):
+        log('STATUS: Upload aborted. tfrMethod=Off')
         return
 
     log(f'STATUS: Commencing upload using {tfrMethod}')
