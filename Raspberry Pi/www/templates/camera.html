@@ -115,8 +115,8 @@
 				<select name="wb" id="wb" onchange="newSelected(this.id)">
 				{% if wboptions %}
 					{% for wb in wboptions %}
-					<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
-				{% endfor %}
+						<option value="{{wb}}"{{ ' SELECTED' if wb == wbselected }}>{{wb}}</option>
+					{% endfor %}
 				{% else %}
 					<option disabled selected value="n/a" style="display:none">n/a</option>
 				{% endif %}
@@ -167,7 +167,7 @@
 				<select name="exp" id="exp" onchange="newSelected(this.id)">
 				{% if expoptions %}
 					{% for exp in expoptions %}
-					<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
+						<option value="{{exp}}"{{ ' SELECTED' if exp == expselected }}>{{exp}}</option>
 					{% endfor %}
 				{% else %}
 					<option disabled selected value="n/a" style="display:none">n/a</option>
