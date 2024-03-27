@@ -1563,9 +1563,7 @@ def system():
             for value, name in TIME_SETTING_OPTIONS:
                 if readValue(config,name) != 'Not available':
                     timeSettingsValid += value
-            if timeSettingsValid != 0:
-                timeSettingsValid += 1 # Provided there's at least ONE active value, add 'auto'
-                templateData['timeSettingsValid'] = timeSettingsValid
+            templateData['timeSettingsValid'] = timeSettingsValid
             app.logger.debug(f'system: timeSettingsValid = {timeSettingsValid}')
             camera.exit()
     except Exception as e:
