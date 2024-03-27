@@ -104,7 +104,7 @@ REBOOT_SAFE_WORD = 'seeyasoon'
 HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
 PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
-TIME_SETTING_OPTIONS = [(2,'syncdatetime'), (4,'syncdatetimeutc'), (8,'datetime'), (16,'datetimeutc')]
+TIME_SETTING_OPTIONS = [(1,'syncdatetime'), (2,'syncdatetimeutc'), (4,'datetime'), (8,'datetimeutc')]
 
 # /////// VERSION-RELATED STATICS ////////
 # UI components (features) will display if the Arduino is running this version or later:
