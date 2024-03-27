@@ -185,12 +185,15 @@
 			<td class="noborder">
 				<div class="alignleft">&nbsp;</div>
 				<div class="alignright">
-					<label class="loginChkbox">
-						<input type="checkbox" id="cameraTimeMode" name="cameraTimeMode" onchange="newSetTimeSelected(this.id)" {% if cameraTimeMode == '1' %} checked="checked"{% endif %}>
-						<span class="rememberme"></span>
-					</label>
+					<select name="cameraTimeMode" id="cameraTimeMode" title="Choose the method to use">
+						<option value="1">Auto</option>
+						{% for value, name in timeSettingOptions %}
+							<option value="{{value}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{name}}</option>
+						{% endfor %}
+					</select>
+					
 				</div>
-				<div class="alignright"><label for="cameraTimeMode">Alt camera time mode:&nbsp;</label></div>
+				<div class="alignright"><label for="cameraTimeMode">Camera time mode:&nbsp;</label></div>
 			</td>
 		</tr>
 		<tr>
