@@ -104,6 +104,7 @@ REBOOT_SAFE_WORD = 'seeyasoon'
 HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
 PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
+TIME_SETTING_OPTIONS = [(2,'syncdatetime'), (4,'syncdatetimeutc'), (8,'datetime'), (16,'datetimeutc')]
 
 # /////// VERSION-RELATED STATICS ////////
 # UI components (features) will display if the Arduino is running this version or later:
@@ -1474,7 +1475,9 @@ def system():
         'pythonGphoto2Version': 'Unknown',
         'cameraDateTime'      : 'Unknown',
         'tzOffset'            : '0',
-        'cameraTimeMode'      : 0
+        'cameraTimeMode'      : 0,
+        'timeSettingOptions'  : TIME_SETTING_OPTIONS,
+        'timeSettingsValid'   : 0
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
@@ -1555,9 +1558,18 @@ def system():
             camera, context, config = connectCamera(1)
         if camera:
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
+            #Capture all the valid time setting options:
+            timeSettingsValid = 0
+            for value, name in TIME_SETTING_OPTIONS:
+                if readValue(config,name) != 'Not available':
+                    timeSettingsValid += value
+            if timeSettingsValid != 0:
+                timeSettingsValid += 1 # Provided there's at least ONE active value, add 'auto'
+                templateData['timeSettingsValid'] = timeSettingsValid
+            app.logger.debug(f'system: timeSettingsValid = {timeSettingsValid}')
             camera.exit()
     except Exception as e:
-        app.logger.debug(f'system: Threw querying cameraDateTime: {e}')
+        app.logger.debug(f'system: Threw in cameraDateTime: {e}')
 
     try:
         tzOffset = (request.cookies.get('tzOffset'))
