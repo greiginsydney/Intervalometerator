@@ -1651,6 +1651,7 @@ def systemPOST():
                         camera.set_config(config)
                     else:
                         app.logger.debug('Failed to setCameraTimeAndDate')
+                        flash('Error setting camera time & date', 'red')
                     camera.exit()
             except Exception as e:
                 app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
