@@ -186,7 +186,6 @@
 				<div class="alignleft">&nbsp;</div>
 				<div class="alignright">
 					<select name="cameraTimeMode" id="cameraTimeMode" title="Choose the method to use">
-						<option value="1">Auto</option>
 						{% for value, name in timeSettingOptions %}
 							<option value="{{value}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{name}}</option>
 						{% endfor %}
