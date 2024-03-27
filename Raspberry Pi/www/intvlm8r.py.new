@@ -1831,40 +1831,65 @@ def getCameraTimeAndDate( camera, config, returnValue ):
 
 def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     """
-    Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
+    Based on Jim's example "set-camera-clock.py"
     """
-    abilities = camera.get_abilities()
-    # get configuration tree
-    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
-    if OK >= gp.GP_OK:
-        app.logger.debug('Set camera time (opt 1)')
-        now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-        epochTime = int(time.mktime(now))
-        date_config.set_value(epochTime)
-        return True
-    if cameraTimeMode != '1':
-        #Skip this option if the "Alt camera time mode" is selected on the /system page
-        OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
-        if OK >= gp.GP_OK:
-            app.logger.debug('Set camera time (opt 4)')
-            sync_config.set_value(1)
+    app.logger.debug(f'Entered setCameraTimeAndDate. cameraTimeMode = {cameraTimeMode}')
+    for value, name in TIME_SETTING_OPTIONS:
+        if value == int(cameraTimeMode):
+            app.logger.debug(f'Setting camera time option {value}, {name}')
+            break
+    try:
+        #abilities = camera.get_abilities()
+        # These need to be carefully sequenced so you don't misfire on 'shorter' in 'longer':
+        if 'syncdatetimeutc' in name:
+            OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetimeutc')
+            if OK >= gp.GP_OK:
+                sync_config.set_value(1)
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to syncdatetimeutc widget query")
+                return False
             return True
-    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
-    if OK >= gp.GP_OK:
-        widget_type = date_config.get_type()
-        if widget_type == gp.GP_WIDGET_DATE:
-            app.logger.debug('Set camera time (opt 2)')
-            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-            epochTime = int(time.mktime(now))
-            app.logger.debug('epochTime = {0}'.format(epochTime))
-            date_config.set_value(epochTime)
+        elif 'datetimeutc' in name:
+            OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
+            if OK >= gp.GP_OK:
+                now = int(time.time())
+                date_config.set_value(now)
+                return True
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to datetimeutc widget query")
+                return False
+        elif 'syncdatetime' in name:
+            OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
+            if OK >= gp.GP_OK:
+                sync_config.set_value(1)
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to syncdatetime widget query")
+                return False
+            return True
+        elif 'datetime' in name:
+            OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
+            if OK >= gp.GP_OK:
+                widget_type = date_config.get_type()
+                if widget_type == gp.GP_WIDGET_DATE:
+                    app.logger.debug('setCameraTimeAndDate datetime as GP_WIDGET_DATE integer')
+                    now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+                    epochTime = int(time.mktime(now))
+                    app.logger.debug('epochTime = {0}'.format(epochTime))
+                    date_config.set_value(epochTime)
+                else:
+                    app.logger.debug('setCameraTimeAndDate datetime as string')
+                    now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+                    newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
+                    date_config.set_value(newNow)
+                return True
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to datetime widget query")
+                return False
         else:
-            app.logger.debug('Set camera time (opt 3)')
-            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-            newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
-            date_config.set_value(newNow)
-        return True
-    app.logger.debug('Failed to set camera time')
+            app.logger.debug('setCameraTimeAndDate failed to match on the incoming cameraTimeMode')
+            return False
+    except Exception as e:
+        app.logger.debug(f'setCameraTimeAndDate threw: {e}')
     return False
 
 
