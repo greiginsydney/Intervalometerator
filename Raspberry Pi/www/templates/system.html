@@ -187,10 +187,9 @@
 				<div class="alignright">
 					<select name="cameraTimeMode" id="cameraTimeMode" title="Choose the method to use">
 						{% for value, name in timeSettingOptions %}
-							<option value="{{value}}"{% if count == piThumbCount %} SELECTED{% endif %}>{{name}}</option>
+							<option value="{{value}}"{% if value == cameraTimeMode|int %} SELECTED{% endif %}{% if (timeSettingsValid - value) < 0 %} DISABLED{% endif %}>{{name}}</option>
 						{% endfor %}
 					</select>
-					
 				</div>
 				<div class="alignright"><label for="cameraTimeMode">Camera time mode:&nbsp;</label></div>
 			</td>
