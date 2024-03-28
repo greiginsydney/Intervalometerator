@@ -613,96 +613,99 @@ def thumbnails():
 @login_required
 def camera():
     cameraData = {
-        'cameraModel'   : '',
-        'cameraLens'    : 'Unknown',
-        'cameraDate'    : '',
-        'focusmode'     : '',
-        'exposuremode'  : '',
-        'autopoweroff'  : '',
-        'imgfmtselected': '',
-        'imgfmtoptions' : '',
-        'wbselected'    : '',
-        'wboptions'     : '',
-        'isoselected'   : '',
-        'isooptions'    : '',
-        'apselected'    : '',
-        'apoptions'     : '',
-        'shutselected'  : '',
-        'shutoptions'   : '',
-        'expselected'   : '',
-        'expoptions'    : '',
-        'piPreviewFile' : '',
-        'cameraMfr'     : 'Unknown',
-        'blockPreview'  : 'False'
+        'cameraModel'     : '',
+        'cameraLens'      : 'Unknown',
+        'cameraDate'      : '',
+        'focusmode'       : '',
+        'exposuremode'    : '',
+        'autopoweroff'    : '',
+        'imgfmtselected'  : '',
+        'imgfmtoptions'   : '',
+        'wbselected'      : '',
+        'wboptions'       : '',
+        'isoselected'     : '',
+        'isooptions'      : '',
+        'apselected'      : '',
+        'apoptions'       : '',
+        'shutselected'    : '',
+        'shutoptions'     : '',
+        'expselected'     : '',
+        'expoptions'      : '',
+        'piPreviewFile'   : '',
+        'cameraMfr'       : 'Unknown',
+        'blockPreview'    : 'False',
+        'enableCameraUsb' : 'false' # Jinja requires bools in lower case
         }
 
     args = request.args.to_dict()
     if args.get('preview'):
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
-    try:
-        camera, context, config = connectCamera(1)
-        if camera:
-            abilities = camera.get_abilities()
-            cameraData['cameraModel']              = abilities.model
-            cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
-            if (cameraData['cameraLens'] == 'Unknown'):
-                #Try to build this from focal length:
-                focalMin, discardMe = readRange (camera, 'status', 'minfocallength')
-                focalMax, discardMe = readRange (camera, 'status', 'maxfocallength')
-                if (focalMin == focalMax):
-                    cameraData['cameraLens'] = focalMin
+    if getCameraUsbMode():
+        try:
+            cameraData['enableCameraUsb'] = 'true'
+            camera, context, config = connectCamera(1)
+            if camera:
+                abilities = camera.get_abilities()
+                cameraData['cameraModel']              = abilities.model
+                cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
+                if (cameraData['cameraLens'] == 'Unknown'):
+                    #Try to build this from focal length:
+                    focalMin, discardMe = readRange (camera, 'status', 'minfocallength')
+                    focalMax, discardMe = readRange (camera, 'status', 'maxfocallength')
+                    if (focalMin == focalMax):
+                        cameraData['cameraLens'] = focalMin
+                    else:
+                        focalMin = focalMin.replace(" mm", "")
+                        cameraData['cameraLens'] = (f'{focalMin}-{focalMax}')
+                cameraTimeAndDate = getCameraTimeAndDate(camera, config, 'Unknown')
+                cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
+                if 'Nikon' in cameraMfr:
+                    cameraMfr = 'Nikon'
+                    cameraData['cameraMfr'] = 'Nikon'
+                elif 'Canon' in cameraMfr:
+                    cameraMfr = 'Canon'
+                    cameraData['cameraMfr'] = 'Canon'
+                if (cameraMfr == 'Nikon'):
+                    imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
+                    apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
+                    cameraData['exposuremode']      = readValue (config, 'expprogram')
                 else:
-                    focalMin = focalMin.replace(" mm", "")
-                    cameraData['cameraLens'] = (f'{focalMin}-{focalMax}')
-            cameraTimeAndDate = getCameraTimeAndDate(camera, config, 'Unknown')
-            cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
-            if 'Nikon' in cameraMfr:
-                cameraMfr = 'Nikon'
-                cameraData['cameraMfr'] = 'Nikon'
-            elif 'Canon' in cameraMfr:
-                cameraMfr = 'Canon'
-                cameraData['cameraMfr'] = 'Canon'
-            if (cameraMfr == 'Nikon'):
-                imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
-                apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
-                cameraData['exposuremode']      = readValue (config, 'expprogram')
-            else:
-                imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
-                apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
-                cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
-            #Attributes generic to all cameras:
-            wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
-            isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
-            shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
-            expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
+                    imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
+                    apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
+                    cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+                #Attributes generic to all cameras:
+                wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
+                isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
+                shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
+                expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
 
-            abilities = camera.get_abilities()
-            if abilities.model in cameraPreviewBlocklist:
-                cameraData['blockPreview']  = 'True'
+                abilities = camera.get_abilities()
+                if abilities.model in cameraPreviewBlocklist:
+                    cameraData['blockPreview']  = 'True'
 
-            camera.exit()
-            cameraData['cameraDate']    = cameraTimeAndDate
-            cameraData['focusmode']     = readValue (config, 'focusmode')
-            cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
-            if (cameraData['exposuremode'] == "Not available"):
-                #try "expprogram"
-                cameraData['exposuremode']  = readValue (config, 'expprogram')
-            cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
-            cameraData['imgfmtselected']= imgfmtselected
-            cameraData['imgfmtoptions'] = imgfmtoptions
-            cameraData['wbselected']    = wbselected
-            cameraData['wboptions']     = wboptions
-            cameraData['isoselected']   = isoselected
-            cameraData['isooptions']    = isooptions
-            cameraData['apselected']    = apselected
-            cameraData['apoptions']     = apoptions
-            cameraData['shutselected']  = shutselected
-            cameraData['shutoptions']   = shutoptions
-            cameraData['expselected']   = expselected
-            cameraData['expoptions']    = expoptions
-    except Exception as e:
-        app.logger.debug(f'Unknown camera GET error: {e}')
+                camera.exit()
+                cameraData['cameraDate']    = cameraTimeAndDate
+                cameraData['focusmode']     = readValue (config, 'focusmode')
+                cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
+                if (cameraData['exposuremode'] == "Not available"):
+                    #try "expprogram"
+                    cameraData['exposuremode']  = readValue (config, 'expprogram')
+                cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
+                cameraData['imgfmtselected']= imgfmtselected
+                cameraData['imgfmtoptions'] = imgfmtoptions
+                cameraData['wbselected']    = wbselected
+                cameraData['wboptions']     = wboptions
+                cameraData['isoselected']   = isoselected
+                cameraData['isooptions']    = isooptions
+                cameraData['apselected']    = apselected
+                cameraData['apoptions']     = apoptions
+                cameraData['shutselected']  = shutselected
+                cameraData['shutoptions']   = shutoptions
+                cameraData['expselected']   = expselected
+                cameraData['expoptions']    = expoptions
+        except Exception as e:
+            app.logger.debug(f'Unknown camera GET error: {e}')
 
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
@@ -719,7 +722,12 @@ def cameraPOST():
     if 'wakeCamera' in request.form:
         writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('camera page POSTed the camera wake command')
-    else:
+    elif 'enableCameraUsb' in request.form:
+        # This is only ever present when the box is checked, and we can't be sure if the user changed it or not.
+        # testing = request.form.get('enableCameraUsb')
+        # app.logger.debug(f'camera page POSTed the USB on/off checkbox - {testing}')
+        setIni('Global', 'enableCameraUsb', 'On')
+        cache.set('enableCameraUsb', 'True', timeout = 300)
         try:
             camera, context, config = connectCamera(1)
             if camera:
@@ -766,6 +774,13 @@ def cameraPOST():
                 camera.exit()
         except Exception as e:
             app.logger.debug(f'Unknown camera POST error: {e}')
+            
+    else:
+        # enableCameraUsb is not present, therefore false:
+        app.logger.debug('----->>>>>>> Setting cameraUSB to False')
+        setIni('Global', 'enableCameraUsb', 'False')
+        cache.delete('enableCameraUsb')
+        cache.set('enableCameraUsb', 'False', timeout = 300)
 
     return redirect(url_for('camera', preview = preview))
 
