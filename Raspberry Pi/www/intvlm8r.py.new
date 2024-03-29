@@ -1725,7 +1725,27 @@ def setTime(newTime):
         app.logger.debug(f'setTime unhandled time error: {e}')
 
 
+def getCameraUsbMode():
+    """
+    Queries the cache to determine if Camera USB comms is enabled.
+    If this fails to return a result, query the INI file.
+    Still no hits? Default to True
+    """
+    result = cache.get('enableCameraUsb')
+    if result is None:
+        #The cache is empty? Read from INI, and set the cache
+        app.logger.debug('getCameraUsbMode cache query returned None. Setting and returning True')
+        result = getIni('Global', 'enableCameraUsb', 'bool', 'True')
+        cache.set('enableCameraUsb', result, timeout = 300)
+    return result
+
+
 def connectCamera(retries):
+    """
+    Establishes a connection to the camera & returns a tuple of the camera objects.
+    The 'retries' value lets the calling fn determine how much time we'll invest in trying to get the camera's attention.
+    This is all done in an effort to minimise page load times
+    """
     app.logger.debug('connectCamera entered')
     try:
         camera = gp.Camera()
