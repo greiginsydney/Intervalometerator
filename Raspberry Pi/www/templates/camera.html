@@ -14,13 +14,17 @@
 				</div>
 			</td>
 		</tr>
+
+		{% if enableCameraUsb == 'false' %}
 		<tr>
 			<td class="centre-text">
 				<p>When camera USB is disabled, the intvlm8r is only able to manage the shooting schedule</p>
 			</td>
 		</tr>
+		{% endif %}
 	</table>
-	<table>
+
+	<table id="cameraInfo">
 	{% if cameraModel != "" %}
 		<tr>
 			<th>Camera Settings</th>
@@ -95,7 +99,7 @@
 	{% endif %}
 	</table>
 
-	<table>
+	<table id="imageInfo">
 		<tr{% if imgfmtoptions|length <= 1 %} class="grey"{% endif %}>
 			<td>
 			<div class="alignleft"><label for="img">Image format:</label></div>
@@ -216,6 +220,12 @@ var SelectionBits = new Array();
 	SelectionBits["shutter"]  = 16;
 	SelectionBits["exp"]      = 32;
 
+var cameraInfo = document.getElementById("cameraInfo");
+var imageInfo  = document.getElementById("imageInfo");
+// Reveals or hides the camera tables depending on the state of enableCameraUsb:
+cameraInfo.style.display = ("{{enableCameraUsb}}" == "false") ? "none":"";
+imageInfo.style.display  = ("{{enableCameraUsb}}" == "false") ? "none":"";
+	
 lightButtons(); <!--  Forces a run when the form first loads -->
 checkWhiteBalance();
 function newSelected(id)
