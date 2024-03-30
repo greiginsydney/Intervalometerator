@@ -2992,4 +2992,5 @@ def norobots():
 if __name__ == "__main__":
    # app.jinja_env.auto_reload = True             # Enable when debugging: reloads template files
    # app.config['TEMPLATES_AUTO_RELOAD'] = True   # Enable when debugging: reloads template files
+   # app.run(host='0.0.0.0', debug=True)          # Toggle with below: templates won't reload without Debug
    app.run(host='0.0.0.0')
