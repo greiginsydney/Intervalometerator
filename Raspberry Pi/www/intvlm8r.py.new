@@ -332,12 +332,15 @@ def main():
         'daysFreeAlarm'     : '0',
         'lastTrnResult'     : 'Unknown',
         'lastTrnLogFile'    : '',
-        'piLastImageFile'   : 'Unknown'
+        'piLastImageFile'   : 'Unknown',
+        'cameraUsbMode'     : 'false' # Jinja requires bools in lower case
     }
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
     camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    if usbMode == 'enabled':
+        templateData['cameraUsbMode'] = 'true'
 
     arduinoDate = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoDate'] = arduinoDate
@@ -470,7 +473,6 @@ def main():
     except Exception as e:
         app.logger.debug(f'Exception reading STATUS in piTransfer.log file: {e}')
     return render_template('main.html', **templateData)
-
 
 @app.route("/", methods = ['POST'])
 @login_required
