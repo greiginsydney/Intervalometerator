@@ -337,7 +337,7 @@ def main():
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
-    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
 
     arduinoDate = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoDate'] = arduinoDate
@@ -366,7 +366,7 @@ def main():
     # Camera comms:
     try:
         if not config:
-            camera, context, config = connectCamera(1)
+            camera, context, config, discardMe = connectCamera(1)
         if camera:
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
@@ -644,7 +644,7 @@ def camera():
     if getCameraUsbMode():
         try:
             cameraData['enableCameraUsb'] = 'true'
-            camera, context, config = connectCamera(1)
+            camera, context, config, usbMode = connectCamera(1)
             if camera:
                 abilities = camera.get_abilities()
                 cameraData['cameraModel']              = abilities.model
@@ -729,7 +729,7 @@ def cameraPOST():
         setIni('Global', 'enableCameraUsb', 'On')
         cache.set('enableCameraUsb', 'True', timeout = 300)
         try:
-            camera, context, config = connectCamera(1)
+            camera, context, config, discardMe = connectCamera(1)
             if camera:
                 if 'camApply' in request.form:
                     app.logger.debug('-- Camera Apply selected')
@@ -805,7 +805,7 @@ def intervalometer():
 
     # Camera comms:
     try:
-        camera, context, config = connectCamera(1)
+        camera, context, config, discardMe = connectCamera(1)
         if camera:
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
@@ -1497,7 +1497,7 @@ def system():
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
-    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    camera, context, config, discardMe = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
 
     arduinoVersion = str(getArduinoVersion('0'))
 
@@ -1570,7 +1570,7 @@ def system():
 
     try:
         if not config:
-            camera, context, config = connectCamera(1)
+            camera, context, config, discardMe = connectCamera(1)
         if camera:
             templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
             #Capture all the valid time setting options:
@@ -1659,7 +1659,7 @@ def systemPOST():
         if request.form.get('setCameraTime'):
             app.logger.debug('Checked: setCameraTime')
             try:
-                camera, context, config = connectCamera(1)
+                camera, context, config, discardMe = connectCamera(1)
                 if camera:
                     if setCameraTimeAndDate(camera, config, newTime, cameraTimeMode):
                         # apply the changed config
@@ -1747,46 +1747,49 @@ def connectCamera(retries):
     This is all done in an effort to minimise page load times
     """
     app.logger.debug('connectCamera entered')
-    try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        while True:
-            app.logger.debug(f'connectCamera retries = {retries}')
-            try:
-                camera.init(context)
-                config = camera.get_config(context)
-                app.logger.debug('connectCamera has made a connection to the camera. Exiting')
-                break
-            except gp.GPhoto2Error as e:
-                app.logger.debug(f'connectCamera GPhoto2Error: {e}')
-                if e.string == 'Unknown model':
-                    if retries % 2 == 0:
-                        app.logger.debug('connectCamera waking the camera & going again')
-                        writeString("WC", 1) # Sends the WAKE command to the Arduino
-                    else:
-                        app.logger.debug('connectCamera going again without waking the camera')
-                elif e.string == 'Could not claim the USB device':
-                    app.logger.debug('connectCamera could not claim the USB device. Exiting')
-                    #TODO: pass this back upstream to present to the user
+    if getCameraUsbMode():
+        try:
+            camera = gp.Camera()
+            context = gp.gp_context_new()
+            while True:
+                app.logger.debug(f'connectCamera retries = {retries}')
+                try:
+                    camera.init(context)
+                    config = camera.get_config(context)
+                    app.logger.debug('connectCamera has made a connection to the camera. Exiting')
+                    break
+                except gp.GPhoto2Error as e:
+                    app.logger.debug(f'connectCamera GPhoto2Error: {e}')
+                    if e.string == 'Unknown model':
+                        if retries % 2 == 0:
+                            app.logger.debug('connectCamera waking the camera & going again')
+                            writeString("WC", 1) # Sends the WAKE command to the Arduino
+                        else:
+                            app.logger.debug('connectCamera going again without waking the camera')
+                    elif e.string == 'Could not claim the USB device':
+                        app.logger.debug('connectCamera could not claim the USB device. Exiting')
+                        #TODO: pass this back upstream to present to the user
+                        camera.exit()
+                        return None, None, None, 'enabled'
+                except Exception as e:
+                    app.logger.debug(f'connectCamera error: {e}')
+                if retries >= 4:
+                    app.logger.debug('connectCamera returning None')
                     camera.exit()
-                    return None, None, None
-            except Exception as e:
-                app.logger.debug(f'connectCamera error: {e}')
-            if retries >= 4:
-                app.logger.debug('connectCamera returning None')
-                camera.exit()
-                return None, None, None
-            if retries % 2 == 0:
-                time.sleep(1.5);    # Pause after waking
-            else:
-                time.sleep(0.5);  # Brief pause before looping
-            retries += 1
-        app.logger.debug('connectCamera returning 3 values')
-        return camera, context, config
-    except Exception as e:
-        app.logger.debug(f'connectCamera outer error: {e}')
-        return None, None, None
-
+                    return None, None, None, 'enabled'
+                if retries % 2 == 0:
+                    time.sleep(1.5);    # Pause after waking
+                else:
+                    time.sleep(0.5);  # Brief pause before looping
+                retries += 1
+            app.logger.debug('connectCamera returning 3 values')
+            return camera, context, config, 'enabled'
+        except Exception as e:
+            app.logger.debug(f'connectCamera outer error: {e}')
+            return None, None, None, 'enabled'
+    else:
+        app.logger.debug('connectCamera returned  - NO CAMERA MODE engaged')
+        return None, None, None, 'disabled'
 
 def readValue ( camera, attribute ):
     """
