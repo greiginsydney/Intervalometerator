@@ -222,6 +222,8 @@
 				<div class="alignleft">Transfer day:</div>
 				<div class="alignright">
 					<select name="transferDay" id="transferDay" title="The day of the week on which a copy takes place" onchange="newSelected(this.id)">
+					<option value="afterCopy"{% if 'afterCopy' == transferDay %} SELECTED{% endif %}>after Copy completes</option>
+					<option disabled>──────────</option>
 					{% for day in ['Daily','Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						<option value="{{ day }}"{% if day == transferDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
@@ -367,7 +369,7 @@ dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ?
 rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display         = (copyDay.value == "Off" || transferDay.value == "afterCopy" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
@@ -418,7 +420,7 @@ function newSelected(id)
 	if (id == "copyDay")
 	{
 		showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display         = (copyDay.value == "Off" || transferDay.value == "afterCopy" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
@@ -446,6 +448,7 @@ function newSelected(id)
 		{
 			document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each " + transferDay.value + " at {{wakePiTime}}:00 when the Pi starts."
 		}
+		showHideTrnHour.style.display = (transferDay.value == "afterCopy") ? "none":"";
 	}
 
 	if (id == "transferOnBootup")
