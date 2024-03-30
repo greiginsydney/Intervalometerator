@@ -172,10 +172,13 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft"><label for="setCameraTime">Set camera date/time:</label></div>
+				<div class="alignleft{% if cameraUsbMode == 'false' %} grey-out tooltip{% endif %}">
+					<label for="setCameraTime">Set camera date/time:</label>
+					{% if cameraUsbMode == 'false' %}<span class="tooltiptext">USB communication with the camera is not enabled</span>{% endif %}
+				</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"/>
+						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"{% if cameraUsbMode == 'false' %} DISABLED{% endif %}/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
