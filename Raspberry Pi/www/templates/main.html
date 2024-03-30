@@ -80,7 +80,7 @@
 			<div class="alignright">{{ piImageCount }}</div>
 		</td>
 	</tr>
-	<tr class="{{ 'green' if (lastImage|string() == piLastImage|string()) and (piLastImage != 'n/a') }}">
+	<tr{% if (lastImage|string() == piLastImage|string()) and (piLastImage != 'n/a') %} class="green"{% endif %}>
 		<td>
 			<div class="alignleft">Last image on Pi:</div>
 			<div class="alignright">{{ piLastImage }}</div>
