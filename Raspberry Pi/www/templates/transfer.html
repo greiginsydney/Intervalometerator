@@ -23,7 +23,7 @@
 				<div class="alignleft">Copy hour:</div>
 				<div class="alignright">
 					<select name="copyHour" id="copyHour" title="The hour of the day at which a copy takes place" onchange="newSelected(this.id)">
-						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
+						{% for hour in range (24) %}
 							<option value="{{ hour }}"{% if hour == copyHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
 					</select>
@@ -234,7 +234,7 @@
 				<div class="alignleft">Transfer hour:</div>
 				<div class="alignright">
 					<select name="transferHour" id="transferHour" title="The hour of the day at which a transfer takes place" onchange="newSelected(this.id)">
-						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
+						{% for hour in range (24) %}
 							<option value="{{ hour }}"{% if hour == transferHour %} SELECTED{% endif %}>{{ hour }}</option>
 						{% endfor %}
 					</select>
