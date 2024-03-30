@@ -339,8 +339,7 @@ def main():
     app.logger.debug('YES - this bit of MAIN fired!')
 
     camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-    if usbMode == 'enabled':
-        templateData['cameraUsbMode'] = 'true'
+    templateData['cameraUsbMode'] = usbMode
 
     arduinoDate = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoDate'] = arduinoDate
@@ -644,7 +643,7 @@ def camera():
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
     camera, context, config, usbMode = connectCamera(1)
-    if usbMode == 'enabled':
+    if usbMode == 'true':
         cameraData['enableCameraUsb'] = 'true'
         try:
             if camera:
@@ -1775,26 +1774,26 @@ def connectCamera(retries):
                         app.logger.debug('connectCamera could not claim the USB device. Exiting')
                         #TODO: pass this back upstream to present to the user
                         camera.exit()
-                        return None, None, None, 'enabled'
+                        return None, None, None, 'true'
                 except Exception as e:
                     app.logger.debug(f'connectCamera error: {e}')
                 if retries >= 4:
                     app.logger.debug('connectCamera returning None')
                     camera.exit()
-                    return None, None, None, 'enabled'
+                    return None, None, None, 'true'
                 if retries % 2 == 0:
                     time.sleep(1.5);    # Pause after waking
                 else:
                     time.sleep(0.5);  # Brief pause before looping
                 retries += 1
             app.logger.debug('connectCamera returning 3 values')
-            return camera, context, config, 'enabled'
+            return camera, context, config, 'true'
         except Exception as e:
             app.logger.debug(f'connectCamera outer error: {e}')
-            return None, None, None, 'enabled'
+            return None, None, None, 'true'
     else:
         app.logger.debug('connectCamera returned  - NO CAMERA MODE engaged')
-        return None, None, None, 'disabled'
+        return None, None, None, 'false'
 
 
 def readValue ( camera, attribute ):
