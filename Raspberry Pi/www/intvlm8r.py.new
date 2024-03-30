@@ -1734,7 +1734,7 @@ def getCameraUsbMode():
     result = cache.get('enableCameraUsb')
     if result is None:
         #The cache is empty? Read from INI, and set the cache
-        app.logger.debug('getCameraUsbMode cache query returned None. Setting and returning True')
+        app.logger.debug('getCameraUsbMode cache query returned None')
         result = getIni('Global', 'enableCameraUsb', 'bool', 'True')
         cache.set('enableCameraUsb', result, timeout = 300)
     return result
