@@ -1604,14 +1604,13 @@ def system():
 
     try:
         cameraTimeMode = request.cookies.get('cameraTimeMode')
-        if cameraTimeMode != '1':
-            cameraTimeMode = '0'
     except:
         cameraTimeMode = '0'
         app.logger.debug(f'system: Threw on bad cameraTimeMode: {cameraTimeMode}')
     templateData['cameraTimeMode'] = cameraTimeMode
 
     return render_template('system.html', **templateData)
+
 
 @app.route("/system", methods = ['POST'])    # The system page's POST method
 @login_required
@@ -1796,6 +1795,7 @@ def connectCamera(retries):
     else:
         app.logger.debug('connectCamera returned  - NO CAMERA MODE engaged')
         return None, None, None, 'disabled'
+
 
 def readValue ( camera, attribute ):
     """
