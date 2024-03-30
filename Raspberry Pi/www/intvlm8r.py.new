@@ -473,6 +473,7 @@ def main():
         app.logger.debug(f'Exception reading STATUS in piTransfer.log file: {e}')
     return render_template('main.html', **templateData)
 
+
 @app.route("/", methods = ['POST'])
 @login_required
 def mainPOST():
@@ -789,6 +790,7 @@ def cameraPOST():
         cache.set('enableCameraUsb', False, timeout = 300)
 
     return redirect(url_for('camera', preview = preview))
+
 
 @app.route("/intervalometer")
 @login_required
@@ -1497,12 +1499,14 @@ def system():
         'tzOffset'            : '0',
         'cameraTimeMode'      : 0,
         'timeSettingOptions'  : TIME_SETTING_OPTIONS,
-        'timeSettingsValid'   : 0
+        'timeSettingsValid'   : 0,
+        'cameraUsbMode'       : 'false' # Jinja requires bools in lower case
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
-    camera, context, config, discardMe = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    templateData['cameraUsbMode'] = usbMode
 
     arduinoVersion = str(getArduinoVersion('0'))
 
@@ -1573,21 +1577,23 @@ def system():
 
     templateData['arduinoVersion'] = 'Unknown' if (str(arduinoVersion) == '0') else str(arduinoVersion)
 
-    try:
-        if not config:
-            camera, context, config, discardMe = connectCamera(1)
-        if camera:
-            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
-            #Capture all the valid time setting options:
-            timeSettingsValid = 0
-            for value, name in TIME_SETTING_OPTIONS:
-                if readValue(config,name) != 'Not available':
-                    timeSettingsValid += value
-            templateData['timeSettingsValid'] = timeSettingsValid
-            app.logger.debug(f'system: timeSettingsValid = {timeSettingsValid}')
-            camera.exit()
-    except Exception as e:
-        app.logger.debug(f'system: Threw in cameraDateTime: {e}')
+    if usbMode == "true":
+        try:
+            if not config:
+                camera, context, config, discardMe = connectCamera(1)
+            if camera:
+                templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
+
+                #Capture all the valid time setting options:
+                timeSettingsValid = 0
+                for value, name in TIME_SETTING_OPTIONS:
+                    if readValue(config,name) != 'Not available':
+                        timeSettingsValid += value
+                templateData['timeSettingsValid'] = timeSettingsValid
+                app.logger.debug(f'system: timeSettingsValid = {timeSettingsValid}')
+                camera.exit()
+        except Exception as e:
+            app.logger.debug(f'system: Threw in cameraDateTime: {e}')
 
     try:
         tzOffset = (request.cookies.get('tzOffset'))
