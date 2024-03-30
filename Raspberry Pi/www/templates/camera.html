@@ -8,20 +8,17 @@
 				<div class="alignleft">Enable camera USB communication:</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" id="enableCameraUsb" name="enableCameraUsb" {% if enableCameraUsb == 'on' %}CHECKED {% endif %}title="Check to enable USB communication with the camera" onchange="updateCbx(this.id)"/>
+						<input type="checkbox" id="enableCameraUsb" name="enableCameraUsb" {% if enableCameraUsb == 'true' %}CHECKED {% endif %}title="Check to enable USB communication with the camera" onchange="newSelected(this.id)">
 						<span class="rememberme"></span>
 					</label>
 				</div>
 			</td>
 		</tr>
-
-		{% if enableCameraUsb == 'false' %}
-		<tr>
+		<tr id="usbWarning" class="orange">
 			<td class="centre-text">
-				<p>When camera USB is disabled, the intvlm8r is only able to manage the shooting schedule</p>
+				<strong>When camera USB is disabled, the intvlm8r is only able to manage the shooting schedule</strong>
 			</td>
 		</tr>
-		{% endif %}
 	</table>
 
 	<table id="cameraInfo">
@@ -207,44 +204,70 @@
 			</td>
 		</tr>
 	</table>
+	<!-- These are for the benefit of a POST to understand the context/previous value: -->
 	<input type="hidden" name="cameraMfr" value="{{ cameraMfr }}">
+	<input type="hidden" id="cameraUsbToggled" name="cameraUsbToggled" value = "false">
 </form>
 
 <script>
 var SelectionByte = 0;
 var SelectionBits = new Array();
-	SelectionBits["img"]      =  1;
-	SelectionBits["wb"]       =  2;
-	SelectionBits["iso"]      =  4;
-	SelectionBits["aperture"] =  8;
-	SelectionBits["shutter"]  = 16;
-	SelectionBits["exp"]      = 32;
+	SelectionBits["img"]             =  1;
+	SelectionBits["wb"]              =  2;
+	SelectionBits["iso"]             =  4;
+	SelectionBits["aperture"]        =  8;
+	SelectionBits["shutter"]         = 16;
+	SelectionBits["exp"]             = 32;
+	SelectionBits["enableCameraUsb"] = 64;
 
 var cameraInfo = document.getElementById("cameraInfo");
 var imageInfo  = document.getElementById("imageInfo");
-// Reveals or hides the camera tables depending on the state of enableCameraUsb:
-cameraInfo.style.display = ("{{enableCameraUsb}}" == "false") ? "none":"";
-imageInfo.style.display  = ("{{enableCameraUsb}}" == "false") ? "none":"";
-	
-lightButtons(); <!--  Forces a run when the form first loads -->
+var usbWarning = document.getElementById("usbWarning");
+var cameraUsbToggled  = document.getElementById("cameraUsbToggled");
+
+// Run when the page loads:
+lightButtons();
 checkWhiteBalance();
+showHideCamera('on_load');
+
 function newSelected(id)
 {
 	var option = document.getElementById(id);
-	if (!option.options[option.selectedIndex].defaultSelected)
+	if (id == "enableCameraUsb")
 	{
-		SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		// Handles the checkbox:
+		if (option.defaultChecked != option.checked)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+			cameraUsbToggled.value = 'true';
+			showHideCamera('hide'); // Hidden always if the selection has changed from load. Remains hidden until AFTER you Apply
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+			cameraUsbToggled.value = 'false';
+			showHideCamera('on_load'); // Update camera status to follow the on-load value
+		}
 	}
 	else
 	{
-		SelectionByte = SelectionByte ^ SelectionBits[id]; //XOR turns it off
+		// else handle the drop-down lists:
+		if (!option.options[option.selectedIndex].defaultSelected)
+		{
+			SelectionByte = SelectionByte | SelectionBits[id]; // Or turns the bit on
+		}
+		else
+		{
+			SelectionByte = SelectionByte ^ SelectionBits[id]; // XOR turns it off
+		}
 	}
 	lightButtons();
 	if (id = "wb") checkWhiteBalance();
 }
+
 function lightButtons()
 {
-	if ("{{cameraDate}}" == "")
+	if (("{{cameraDate}}" == "") && (SelectionByte != 64))
 	{
 		document.getElementById("camPreview").disabled = true;
 		document.getElementById("camApply").disabled  = true;
@@ -270,6 +293,7 @@ function lightButtons()
 		}
 	}
 }
+
 function checkWhiteBalance()
 {
 	var wbselected = document.getElementById("wb");
@@ -285,6 +309,32 @@ function checkWhiteBalance()
 	else
 	{
 		wbRow.className = "";
+	}
+}
+
+// Shows/hides the camera-related tables depending on the status of enableCameraUsb
+function showHideCamera(action)
+{
+	if (action == 'on_load')
+	{
+		// Reveals or hides the camera tables depending on the state of enableCameraUsb
+		cameraInfo.style.display = ("{{enableCameraUsb}}" == "false") ? "none":"";
+		imageInfo.style.display  = ("{{enableCameraUsb}}" == "false") ? "none":"";
+	}
+	else
+	{
+		// Hide if the user's changed the checkbox to disable cameraUsb
+		cameraInfo.style.display = "none";
+		imageInfo.style.display  = "none";
+	}
+	// This is effectively an XOR of these two inputs, but that returns the desired outcome
+	if (cameraUsbToggled.value == "{{enableCameraUsb}}")
+	{
+		usbWarning.classList.remove("hidden");
+	}
+	else
+	{
+		usbWarning.classList.add("hidden");
 	}
 }
 
