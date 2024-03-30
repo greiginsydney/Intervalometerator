@@ -641,10 +641,10 @@ def camera():
     if args.get('preview'):
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
-    if getCameraUsbMode():
+    camera, context, config, usbMode = connectCamera(1)
+    if usbMode == 'enabled':
+        cameraData['enableCameraUsb'] = 'true'
         try:
-            cameraData['enableCameraUsb'] = 'true'
-            camera, context, config, usbMode = connectCamera(1)
             if camera:
                 abilities = camera.get_abilities()
                 cameraData['cameraModel']              = abilities.model
@@ -706,6 +706,8 @@ def camera():
                 cameraData['expoptions']    = expoptions
         except Exception as e:
             app.logger.debug(f'Unknown camera GET error: {e}')
+    else:
+        app.logger.debug('cameraUsbMode is false')
 
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
