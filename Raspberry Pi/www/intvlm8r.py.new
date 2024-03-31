@@ -928,7 +928,8 @@ def transfer():
         'renameOnCopy'          : 'Off',
         'renameString'          : '',
         'copyOnBootup'          : '',
-        'transferOnBootup'      : ''
+        'transferOnBootup'      : '',
+        'cameraUsbMode'         : 'false' # Jinja requires bools in lower case
     }
     config = configparser.ConfigParser(
         {
@@ -955,43 +956,46 @@ def transfer():
         'copyOnBootup'       : 'Off',
         'transferOnBootup'   : 'Off'
         })
-    try:
-        config.read(iniFile)
-        #app.logger.debug('Found the file in GET')
-        templateData['tfrMethod']          = config.get('Transfer', 'tfrmethod')
-        templateData['ftpServer']          = config.get('Transfer', 'ftpServer')
-        templateData['ftpUser']            = config.get('Transfer', 'ftpUser')
-        templateData['ftpPassword']        = config.get('Transfer', 'ftpPassword')
-        templateData['ftpRemoteFolder']    = config.get('Transfer', 'ftpRemoteFolder')
-        templateData['sftpServer']         = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
-        templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
-        templateData['dbx_app_key']        = config.get('Transfer', 'dbx_app_key')
-        templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
-        templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
-        templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
-        templateData['transferDay']        = config.get('Transfer', 'transferDay')
-        templateData['transferHour']       = config.get('Transfer', 'transferHour')
-        templateData['transferOnBootup']   = config.get('Transfer', 'transferOnBootup')
-        templateData['copyDay']            = config.get('Copy', 'copyDay')
-        templateData['copyHour']           = config.get('Copy', 'copyHour')
-        templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
-        templateData['renameString']       = config.get('Copy', 'renameString')
-        templateData['copyOnBootup']       = config.get('Copy', 'copyOnBootup')
-    except Exception as e:
-        app.logger.debug(f'INI file error: {e}')
-        flash('Error reading from the Ini file', 'red')
 
-    templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
+    usbMode = getCameraUsbMode()
+    templateData['cameraUsbMode'] = str(usbMode).lower() # jinja requires true/false as a lower-case string
+    if usbMode:
+        try:
+            config.read(iniFile)
+            #app.logger.debug('Found the file in transfer GET')
+            templateData['tfrMethod']          = config.get('Transfer', 'tfrmethod')
+            templateData['ftpServer']          = config.get('Transfer', 'ftpServer')
+            templateData['ftpUser']            = config.get('Transfer', 'ftpUser')
+            templateData['ftpPassword']        = config.get('Transfer', 'ftpPassword')
+            templateData['ftpRemoteFolder']    = config.get('Transfer', 'ftpRemoteFolder')
+            templateData['sftpServer']         = config.get('Transfer', 'sftpServer')
+            templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
+            templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
+            templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
+            templateData['dbx_app_key']        = config.get('Transfer', 'dbx_app_key')
+            templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
+            templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
+            templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
+            templateData['transferDay']        = config.get('Transfer', 'transferDay')
+            templateData['transferHour']       = config.get('Transfer', 'transferHour')
+            templateData['transferOnBootup']   = config.get('Transfer', 'transferOnBootup')
+            templateData['copyDay']            = config.get('Copy', 'copyDay')
+            templateData['copyHour']           = config.get('Copy', 'copyHour')
+            templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
+            templateData['renameString']       = config.get('Copy', 'renameString')
+            templateData['copyOnBootup']       = config.get('Copy', 'copyOnBootup')
+        except Exception as e:
+            app.logger.debug(f'INI file error: {e}')
+            flash('Error reading from the Ini file', 'red')
 
-    rawWakePi = str(readFromArduino("5", "String", True))
-    if rawWakePi != "Unknown":
-        setIni('Global', 'wakePiHour', rawWakePi[0:2])
-        templateData['wakePiTime']     = rawWakePi[0:2]
+        templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
+
+        rawWakePi = str(readFromArduino("5", "String", True))
+        if rawWakePi != "Unknown":
+            setIni('Global', 'wakePiHour', rawWakePi[0:2])
+            templateData['wakePiTime']     = rawWakePi[0:2]
 
     return render_template('transfer.html', **templateData)
-
 
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
 @login_required
