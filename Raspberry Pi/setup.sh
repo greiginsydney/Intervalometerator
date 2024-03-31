@@ -1101,22 +1101,22 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 		mv -fv /home/${SUDO_USER}/www/intvlm8r.old /home/${SUDO_USER}/www/intvlm8r.bak
 	fi
 
-	# WiFi Power Save
-	# Disable WiFi power save mode:
+	# Wi-Fi Power Save
+	# Disable Wi-Fi power save mode:
 	if iw wlan0 get power_save | grep -q 'on';
 	then
 		iw wlan0 set power_save off
-		echo -e ""$GREEN"Disabled WiFi power save mode"$RESET""
+		echo -e ""$GREEN"Disabled Wi-Fi power save mode"$RESET""
 	else
-		echo -e "WiFi power save mode is already off"
+		echo -e "Wi-Fi power save mode is already off"
 	fi
-	# Permanently disable WiFi power save mode:
+	# Permanently disable Wi-Fi power save mode:
 	if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local;
 	then
-		echo -e 'WiFi power save mode is already disabled in /etc/rc.local'
+		echo -e 'Wi-Fi power save mode is already disabled in /etc/rc.local'
 	else
 		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
-		echo -e ""$GREEN"WiFi power save mode disabled in /etc/rc.local"$RESET""
+		echo -e ""$GREEN"Wi-Fi power save mode disabled in /etc/rc.local"$RESET""
 	fi
 
 	remoteit
@@ -1288,7 +1288,7 @@ END
 
 	#Only move the hostapd.conf file from the Repo is there isn't an existing one:
 	[ -f hostapd.conf ] && mv -v hostapd.conf /etc/hostapd/hostapd.conf
-	#Extract the required WiFi values:
+	#Extract the required Wi-Fi values:
 	oldWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
 	oldWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
 	oldWifiPwd=$(sed -n -E 's/^\s*wpa_passphrase=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
@@ -1298,7 +1298,7 @@ END
 	if [ -z "$oldWifiPwd" ]; then oldWifiPwd='myPiNetw0rkAccess!'; fi
 
 	echo ''
-	echo 'Set your Pi as a WiFi Access Point. (Ctrl-C to abort)'
+	echo 'Set your Pi as a Wi-Fi Access Point. (Ctrl-C to abort)'
 	echo 'If unsure, go with the defaults until you get to the SSID and password'
 	echo ''
 	read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi        : ' piIpV4
@@ -1307,14 +1307,14 @@ END
 	read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask        : ' dhcpSubnetMask
 	read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                       : ' wifiSsid
 	read -e -i "$oldWifiPwd" -p        'Choose a better password than this     : ' wifiPwd
-	read -e -i "$oldWifiChannel" -p    'Choose an appropriate WiFi channel     : ' wifiChannel
+	read -e -i "$oldWifiChannel" -p    'Choose an appropriate Wi-Fi channel    : ' wifiChannel
 
 	#TODO: Validate these inputs. Make sure none are null
 
 	cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 
 	echo ''
-	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as its own Wi-Fi network (acccess point)"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as its own Wi-Fi network (access point)"
 	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$wifiSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
@@ -1369,7 +1369,7 @@ END
 	if [ -z "$oldDhcpSubnetMask" ]; then oldDhcpSubnetMask='255.255.255.0'; fi
 	# ================== END DHCP ==================
 
-	# ================= START WIFI =================
+	# ================= START Wi-Fi =================
 	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
 	connectionFile="/etc/NetworkManager/system-connections/"$wlan0Name".nmconnection"
 	if [ -f $connectionFile ];
@@ -1385,10 +1385,10 @@ END
 	if [ -z "$oldWifiChannel" ]; then local oldWifiChannel='5'; fi
 	if [ -z "$oldWifiPwd" ];     then local oldWifiPwd='myPiNetw0rkAccess!'; fi
 	#if [[ ! $oldWifiCountry =~ [a-zA-Z]{2} ]]; then oldWifiCountry=''; fi # Null the value if it's not just two letters
-	# ================== END WIFI ==================
+	# ================== END Wi-Fi ==================
 
 	echo ''
-	echo 'Set your Pi as a WiFi Access Point. (Ctrl-C to abort)'
+	echo 'Set your Pi as a Wi-Fi Access Point. (Ctrl-C to abort)'
 	echo 'If unsure, go with the defaults until you get to the SSID and password'
 	echo ''
 	read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
@@ -1397,15 +1397,15 @@ END
 	read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
 	read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                        : ' wifiSsid
 	read -e -i "$oldWifiPwd" -p        'Choose a better password than this      : ' wifiPwd
-	read -e -i "$oldWifiChannel" -p    'Choose an appropriate WiFi channel      : ' wifiChannel
-	#read -e -i "$oldWifiCountry" -p    'Set your 2-digit WiFi country           : ' wifiCountry
+	read -e -i "$oldWifiChannel" -p    'Choose an appropriate Wi-Fi channel     : ' wifiChannel
+	#read -e -i "$oldWifiCountry" -p    'Set your 2-digit Wi-Fi country           : ' wifiCountry
 
 	#TODO: Validate these inputs. Make sure none are null
 
 	local cidr_mask=$(IPprefix_by_netmask $dhcpSubnetMask)
 
 	echo ''
-	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as its own Wi-Fi network (acccess point)"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as its own Wi-Fi network (access point)"
 	echo -e ""$YELLOW"WARNING:"$RESET" You will find it advertised as SSID '$wifiSsid'"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
@@ -1425,7 +1425,7 @@ END
 		nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
 		nmcli con del "$wlan0Name"
 	fi
-	echo -e ""$GREEN"Byeeee!"$RESET""	
+	echo -e ""$GREEN"Byeeee!"$RESET""
 	nmcli con modify hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
 	nmcli con modify hotspot wifi-sec.key-mgmt wpa-psk
 	nmcli con modify hotspot wifi-sec.psk "$wifiPwd"
@@ -1454,7 +1454,7 @@ unmake_ap ()
 	oldSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	oldPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	while true; do
-		read -e -i "$oldCountry" -p 'Set your two-letter WiFi country code : ' newCountry
+		read -e -i "$oldCountry" -p 'Set your two-letter Wi-Fi country code: ' newCountry
 		if [ -z "$newCountry" ];
 		then
 			echo -e 'Error: Country value cannot be empty.'
@@ -1548,12 +1548,12 @@ END
 	esac
 
 	echo ''
-	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a Wi-Fi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
 	echo "WARNING: 'sudo nano /etc/wpa_supplicant/wpa_supplicant.conf' to change manually"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
-	
+
 	#Paste in the new settings
 	case $staticResponse in
 		(y|Y|"")
@@ -1561,7 +1561,7 @@ END
 			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static ip_address=)(.*)$|\  \1$piIpV4/$cidr_mask|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
 			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static routers=)(.*)$|\  \1$router|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
 			sed -i -E "$wlanLine,$ s|^\s*#*\s*(static domain_name_servers=)(.*)$|\  \1$DnsServers|" /etc/dhcpcd.conf #Used "|" as the delimiter, as "/" is in the replacement string
-			sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
+			sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a Wi-Fi network
 		;;
 		(*)
 			if grep -qi 'interface wlan0' /etc/dhcpcd.conf;
@@ -1572,7 +1572,7 @@ END
 				sed -i -E "$wlanLine,$ s/^\s*(static\s*ip_address=)(.*)/##  \1\2/" /etc/dhcpcd.conf
 				sed -i -E "$wlanLine,$ s/^\s*(static routers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "routers"
 				sed -i -E "$wlanLine,$ s/^\s*(static domain_name_servers.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "domain_name_servers"
-				sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a WiFi network
+				sed -i -E "s/^\s*#*\s*(nohook wpa_supplicant.*)/##  \1/" /etc/dhcpcd.conf  # DOUBLE-Comment-out "nohook wpa_supplicant", as this line prevents us trying to connect to a Wi-Fi network
 			else
 				echo -e 'Skipped: interface wlan0 is not specified in /etc/dhcpcd.conf'
 			fi
@@ -1641,12 +1641,12 @@ unmake_ap_nmcli ()
 	esac
 
 	echo ''
-	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a WiFi *client*"
+	echo -e ""$YELLOW"WARNING:"$RESET" If you proceed, this connection will end, and the Pi will come up as a Wi-Fi *client*"
 	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
 
-	set +e # Suspend the error trap. The below would otherwise throw a terminating error if 'hotspot' doesn't exist. 
+	set +e # Suspend the error trap. The below would otherwise throw a terminating error if 'hotspot' doesn't exist.
 	nmcli con del hotspot 2> /dev/null # Suppress any error display.
 	set -e # Resume the error trap
 	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
@@ -1773,12 +1773,12 @@ test_install ()
 		echo -e ""$YELLOW"FAIL:"$RESET" i2c-dev not installed in /etc/modules"
 	fi
 	echo ''
-	
-	# ================== START WIFI TESTS ==================
-	ap_test=0	
+
+	# ================== START Wi-Fi TESTS ==================
+	ap_test=0
 	if [[ ($VENV_REQUIRED == 1) ]];
 	then
-		# ============== START BOOKWORM+ WIFI TESTS ===========
+		# ============== START BOOKWORM+ Wi-Fi TESTS ===========
 		systemctl is-active --quiet dnsmasq && ap_test=$((ap_test+1)) # If dnsmasq is running, add 1
 
 		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
@@ -1809,7 +1809,7 @@ test_install ()
 					then
 						if [[ ($noapCount == 0) ]];
 						then
-							((ap_test=ap_test+8)) # we're a client, connected to a WiFi network. Add 8
+							((ap_test=ap_test+8)) # we're a client, connected to a Wi-Fi network. Add 8
 							noapCount=noapCount+1
 						fi
 					fi
@@ -1828,11 +1828,11 @@ test_install ()
 				;;
 			(2)
 				# we have an active network connection
-				echo -e ""$YELLOW"FAIL:"$RESET" A network connection was detected, but no WiFi data was found (2)"
+				echo -e ""$YELLOW"FAIL:"$RESET" A network connection was detected, but no Wi-Fi data was found (2)"
 				;;
 			(3)
 				# active network + dnsmasq
-				echo -e ""$YELLOW"FAIL:"$RESET" A network connection was detected, but no WiFi data was found (3)"
+				echo -e ""$YELLOW"FAIL:"$RESET" A network connection was detected, but no Wi-Fi data was found (3)"
 				;;
 			(6)
 				# We're an AP & have an active network connection, but no CHANNEL.
@@ -1843,42 +1843,42 @@ test_install ()
 				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is an access point (AP) however no channel has been configured (7)"
 				;;
 			(8)
-				# We're a WiFi client
+				# We're a Wi-Fi client
 				echo -e ""$YELLOW"PASS:"$RESET" The Pi is a Wi-Fi client, however there is no active network connection (8)"
 				;;
 			(9)
-				# We're a WiFi client HOWEVER dmsmasq is running. (Bad/unexpected)
+				# We're a Wi-Fi client HOWEVER dmsmasq is running. (Bad/unexpected)
 				echo -e ""$YELLOW"PASS:"$RESET" The Pi is a Wi-Fi client, however there is no active network connection (9)"
 				;;
 			(10)
-				# Good. WiFi client.
+				# Good. Wi-Fi client.
 				echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
 				echo -e ""$GREEN"PASS:"$RESET" It has an active connection to this/these SSIDs: $connectedSsid"
 				;;
 			(22)
-   				# Good-ish. WiFi AP.
-				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own WiFi network"
+   				# Good-ish. Wi-Fi AP.
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own Wi-Fi network"
 				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
     				echo -e ""$YELLOW"PASS:"$RESET" dnsmasq is not running (22)"
 				;;
    			(23)
-				# Good. WiFi AP.
-				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own WiFi network"
+				# Good. Wi-Fi AP.
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own Wi-Fi network"
 				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
 				;;
 			(*)
 				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value $ap_test:"
 				echo " 1 = dnsmasq is running"
 				echo " 2 = we have an active network connection"
-				echo " 4 = we're an access point (AP) - our own WiFi network"
-				echo " 8 = we're a WiFi client"
-				echo "16 = we're an access point (AP) - our own WiFi network - and have a WiFi channel correctly configured"
+				echo " 4 = we're an access point (AP) - our own Wi-Fi network"
+				echo " 8 = we're a Wi-Fi client"
+				echo "16 = we're an access point (AP) - our own Wi-Fi network - and have a Wi-Fi channel correctly configured"
 				echo ''
 				;;
 		esac
-		# =============== END BOOKWORM+ WIFI TESTS ============
+		# =============== END BOOKWORM+ Wi-Fi TESTS ============
 	else
-		# ============== START LEGACY WIFI TESTS ===============
+		# ============== START LEGACY Wi-Fi TESTS ===============
 		# Test for ap/noap mode:
 		if systemctl is-active --quiet dnsmasq ;
 		then
@@ -1936,18 +1936,18 @@ test_install ()
 				fi
 				;;
 		esac
-		# ============== END LEGACY WIFI TESTS ===============
+		# ============== END LEGACY Wi-Fi TESTS ===============
 	fi
-	# ================== END WIFI TESTS ==================
+	# ================== END Wi-Fi TESTS ==================
 	#WiFiCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 
 	if iw wlan0 get power_save | grep -q 'on';
 	then
-		echo -e ""$YELLOW"FAIL:"$RESET" WiFi power save is ON"
+		echo -e ""$YELLOW"FAIL:"$RESET" Wi-Fi power save is ON"
 	else
-		echo -e ""$GREEN"PASS:"$RESET" WiFi power save is OFF"
+		echo -e ""$GREEN"PASS:"$RESET" Wi-Fi power save is OFF"
 	fi
 	echo ''
 	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx
