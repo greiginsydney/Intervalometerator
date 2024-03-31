@@ -1,6 +1,21 @@
 {% extends "index.html" %}
 {% block content %}
 
+{% if cameraUsbMode == 'false' %}
+<table>
+	<tr>
+		<th>Transfer Settings</th>
+	</tr>
+</table>
+<table>
+	<tr id="usbWarning" class="orange">
+		<td class="centre-text">
+			<strong>With camera USB disabled, the intvlm8r is only able to manage the shooting schedule</strong><br/>
+			Change this on the <a href="/camera" >/camera</a> page
+		</td>
+	</tr>
+</table>
+{% else %}
 <form method="post" onsubmit="return userFeedback(this, event)">
 	<table id='copy'>
 		<tr>
@@ -282,7 +297,6 @@
 		</tr>
 	</table>
 </form>
-
 
 <script>
 var SelectionByte = 0;
@@ -655,4 +669,6 @@ function getParentTable(obj)
 }
 
 </script>
+
+{% endif %}
 {% endblock %}
