@@ -1068,11 +1068,13 @@ def copyNowCronJob():
     if sourceIp != "127.0.0.1":
         abort(403)
 
-   tasks = [copyNow.si()]
+    tasks = [copyNow.si()]
     if (getIni('Transfer', 'transferDay', 'string', '') == 'afterCopy'):
         tasks.append(transferNow.si())
         app.logger.debug('copyNowCronJob() entered. A transfer will occur after the copy')
     tasks.append(newThumbs.si())
+
+    chain(*tasks).apply_async()
 
     res = make_response('OK')
     return res, 200
@@ -2515,10 +2517,9 @@ def trnCopyNow():
     app.logger.debug('trnCopyNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
     tasks = [copyNow.si()]
-    if (getIni('Transfer', 'transferDay', 'string', '') == 'afterCopy'):
-        tasks.append(transferNow.si())
-        app.logger.debug('A transfer will occur after the copy')
     tasks.append(newThumbs.si())
+
+    task = chain(*tasks).apply_async()
 
     app.logger.debug(f'trnCopyNow() returned with task_id= {task.id}')
     return jsonify({}), 202, {'Location': url_for('backgroundStatus', task_id=task.id)}
