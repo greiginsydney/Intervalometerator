@@ -69,7 +69,12 @@ app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cooki
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
 
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
+celery = Celery(app.name,
+                broker=app.config['CELERY_BROKER_URL'],
+                backend=app.config['result_backend'],
+                broker_connection_retry_on_startup = True,
+                broker_connection_retry = True
+                )
 celery.conf.update(app.config)
 
 cache = Cache(app, config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
