@@ -122,7 +122,11 @@
 <table>
 	<tr>
 		<td>
+			{% if piLastImageFile == "photos/default_image.JPG" %}
+			<img src="{{ url_for('static',filename=(piLastImageFile))}}" alt="placeholder image - welcome to the Intervalometerator" width="100%">
+			{% else %}
 			<a href="{{ url_for('static',filename=(piLastImageFile))}}" target="_blank"><img src="{{ url_for('static',filename=(piLastImageFile))}}" alt="last image" width="100%"></a>
+			{% endif %}
 		</td>
 	</tr>
 </table> 
