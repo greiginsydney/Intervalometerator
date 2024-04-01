@@ -1547,7 +1547,7 @@ unmake_ap ()
 		read -e -i "$oldSsid"    -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
-			echo -e 'Error: SSID value cannot be empty.'
+			echo -e 'Error: SSID name cannot be empty.'
 			echo ''
 			continue
 		fi
@@ -1678,7 +1678,7 @@ unmake_ap_nmcli ()
 		read -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
-			echo -e 'Error: SSID value cannot be empty.'
+			echo -e 'Error: SSID name cannot be empty.'
 			echo ''
 			continue
 		fi
