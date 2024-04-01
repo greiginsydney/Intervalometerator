@@ -1287,7 +1287,7 @@ END
 	if [ -z "$oldDhcpSubnetMask" ]; then oldDhcpSubnetMask='255.255.255.0'; fi
 
 	#Only move the hostapd.conf file from the Repo is there isn't an existing one:
-	[ -f hostapd.conf ] && mv -v hostapd.conf /etc/hostapd/hostapd.conf
+	[ -f /home/${SUDO_USER}/hostapd.conf ] && mv -v /home/${SUDO_USER}/hostapd.conf /etc/hostapd/hostapd.conf
 	#Extract the required Wi-Fi values:
 	oldWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
 	oldWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
