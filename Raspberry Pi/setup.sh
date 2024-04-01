@@ -1916,11 +1916,11 @@ test_install ()
 				;;
 			(6)
 				# We're an AP & have an active network connection, but no CHANNEL.
-				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is an access point (AP) however no channel has been configured (6)"
+				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is its own Wi-Fi network (an Access Point) however no channel has been configured (6)"
 				;;
 			(7)
 				# We're an AP, dmsmasq is running and we have an active network connection.
-				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is an access point (AP) however no channel has been configured (7)"
+				echo -e ""$YELLOW"FAIL:"$RESET" The Pi is its own Wi-Fi network (an Access Point) however no channel has been configured (7)"
 				;;
 			(8)
 				# We're a Wi-Fi client
@@ -1937,22 +1937,22 @@ test_install ()
 				;;
 			(22)
    				# Good-ish. Wi-Fi AP.
-				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own Wi-Fi network"
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is its own Wi-Fi network (Access Point)"
 				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
-    				echo -e ""$YELLOW"PASS:"$RESET" dnsmasq is not running (22)"
+    			echo -e ""$YELLOW"PASS:"$RESET" dnsmasq is not running (22)"
 				;;
    			(23)
 				# Good. Wi-Fi AP.
-				echo -e ""$GREEN"PASS:"$RESET" The Pi is an access point (AP) - our own Wi-Fi network"
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is its own Wi-Fi network (Access Point)"
 				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
 				;;
 			(*)
 				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value $ap_test:"
 				echo " 1 = dnsmasq is running"
 				echo " 2 = we have an active network connection"
-				echo " 4 = we're an access point (AP) - our own Wi-Fi network"
+				echo " 4 = we're our own Wi-Fi network (an Access Point)"
 				echo " 8 = we're a Wi-Fi client"
-				echo "16 = we're an access point (AP) - our own Wi-Fi network - and have a Wi-Fi channel correctly configured"
+				echo "16 = we're our own Wi-Fi network (an Access Point) and have a Wi-Fi channel correctly configured"
 				echo ''
 				;;
 		esac
