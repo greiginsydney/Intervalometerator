@@ -1387,7 +1387,6 @@ END
 		#local oldWifiSsid=$(grep -r '^ssid=' $connectionFile | cut -s -d = -f 2)
 		local oldWifiChannel=$(grep -r '^channel=' $connectionFile | cut -s -d = -f 2)
 		local oldWifiPwd=$(grep -r '^psk=' $connectionFile | cut -s -d = -f 2)
-		echo $oldWifiPwd
 	fi
 	#local oldWifiCountry=$(LANG=C iw reg get | cut -s -d : -f 1 | head -1 | cut -s -d ' ' -f 2)
 	#Populate defaults otherwise:
