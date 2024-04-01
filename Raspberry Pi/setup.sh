@@ -1981,10 +1981,10 @@ test_install ()
 				fi
 				;;
 			(1)
-				echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be an AP"
+				echo -e ""$YELLOW"FAIL:"$RESET" dnsmasq running alone. hostapd should also be running for the Pi to be a Wi-Fi network (Access Point)"
 				;;
 			(2)
-				echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be an AP"
+				echo -e ""$YELLOW"FAIL:"$RESET" hostapd running alone. dnsmasq should also be running for the Pi to be a Wi-Fi network (Access Point)"
 				;;
 			(3)
 				echo -e ""$YELLOW"FAIL:"$RESET" hostapd & dnsmasq are installed, but hostapd.conf is missing"
@@ -1999,7 +1999,7 @@ test_install ()
 				echo -e ""$YELLOW"FAIL:"$RESET" Test returned unexpected value 6"
 				;;
 			(7)
-				echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be an AP"
+				echo -e ""$GREEN"PASS:"$RESET" hostapd, dnsmasq & hostapd.conf all exist. The Pi SHOULD be a Wi-Fi network (Access Point)"
 				myWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
 				if [ -z "$myWifiSsid" ];
 				then
