@@ -1971,7 +1971,7 @@ test_install ()
 		[ -f /etc/hostapd/hostapd.conf ] && ap_test=$((ap_test+4))
 		case $ap_test in
 			(0)
-				echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not an Access Point"
+				echo -e ""$GREEN"PASS:"$RESET" The Pi is a Wi-Fi client, not a Wi-Fi network (Access Point)"
 				ssid=$(sed -n -E 's/^\s*ssid="(.*)"/\1/p' /etc/wpa_supplicant/wpa_supplicant.conf)
 				if [ -z "$ssid" ];
 				then
