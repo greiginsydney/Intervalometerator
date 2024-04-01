@@ -270,6 +270,16 @@ install_apps ()
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, jq"$RESET""
 	apt-get install nginx nginx-common supervisor jq -y
 
+	# Stuff some extra text into the nginx welcome page:
+	if [[ -f /usr/share/nginx/html/index.html ]];
+	then
+		sed -i -E "s|^(<h1>Welcome to nginx)(!)(.*)|\1 on the intvlm8r\3|g" /usr/share/nginx/html/index.html
+		if ! grep -q "The intvlm8r setup is incomplete" /usr/share/nginx/html/index.html;
+		then
+			sed -i "/Further configuration is required*/a <p><b>The intvlm8r setup is incomplete:</b> the 'web' step has not been fully or correctly performed.</p>" /usr/share/nginx/html/index.html
+		fi
+	fi
+
 	# Add different python-dev component, depending on OS. (Search tag: bookworm)
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
