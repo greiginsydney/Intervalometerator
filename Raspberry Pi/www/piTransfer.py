@@ -169,7 +169,7 @@ def main(argv):
                 return 0
 
     now = datetime.datetime.now()
-    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, TransferDay = {transferDay}, TransferHour = {transferHour}. wakePiHour is {wakePiHour}:00')
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, TransferDay = {transferDay or "[none]" }, TransferHour = {transferHour or "[none]" }. wakePiHour is {wakePiHour}:00')
     if copyNow == True:
         # We're OK to copy NOW. (copyNow trumps all other options)
         log(f"OK to transfer on 'copyNow'. Method = {tfrMethod}")
