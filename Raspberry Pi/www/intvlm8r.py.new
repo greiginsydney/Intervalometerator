@@ -2511,9 +2511,9 @@ def setIni(keySection, keyName, newValue):
         config.set(keySection, keyName, newValue)
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
-        app.logger.debug(f'Added key {keySection}/{keyName} with a value of {newValue}')
+        app.logger.debug(f'Added key {keySection}/{keyName} with {newValue = }') # Strange but true, this syntax prints the variable's name & value between single-quotes
     except Exception as e:
-        app.logger.debug(f'Exception thrown trying to add key {keySection}/{keyName} with a value of {newValue}')
+        app.logger.debug(f'Exception thrown trying to add key {keySection}/{keyName} with {newValue = }')
 
 
 @app.route('/trnCopyNow', methods=['POST'])
