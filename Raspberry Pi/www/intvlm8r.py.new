@@ -714,7 +714,7 @@ def camera():
         except Exception as e:
             app.logger.debug(f'Unknown camera GET error: {e}')
     else:
-        app.logger.debug('cameraUsbMode is false')
+        app.logger.debug('nothing to display: cameraUsbMode is false')
 
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
