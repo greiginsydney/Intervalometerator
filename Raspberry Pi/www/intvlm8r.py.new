@@ -1809,7 +1809,7 @@ def connectCamera(retries):
             app.logger.debug(f'connectCamera outer error: {e}')
             return None, None, None, 'true'
     else:
-        app.logger.debug('connectCamera returned  - NO CAMERA MODE engaged')
+        app.logger.debug('connectCamera returned  - NO CAMERA MODE active')
         return None, None, None, 'false'
 
 
