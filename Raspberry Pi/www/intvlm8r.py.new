@@ -344,7 +344,8 @@ def main():
     app.logger.debug('YES - this bit of MAIN fired!')
 
     camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-    templateData['cameraUsbMode'] = usbMode
+    if usbMode:
+        templateData['cameraUsbMode'] = 'true'
 
     arduinoDate = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoDate'] = arduinoDate
@@ -649,7 +650,7 @@ def camera():
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
     camera, context, config, usbMode = connectCamera(1)
-    if usbMode == 'true':
+    if usbMode:
         cameraData['enableCameraUsb'] = 'true'
         try:
             if camera:
@@ -963,8 +964,8 @@ def transfer():
         })
 
     usbMode = getCameraUsbMode()
-    templateData['cameraUsbMode'] = str(usbMode).lower() # jinja requires true/false as a lower-case string
     if usbMode:
+        templateData['cameraUsbMode'] = 'true'
         try:
             config.read(iniFile)
             #app.logger.debug('Found the file in transfer GET')
@@ -1519,7 +1520,8 @@ def system():
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
     camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
-    templateData['cameraUsbMode'] = usbMode
+    if usbMode:
+        templateData['cameraUsbMode'] = 'true'
 
     arduinoVersion = str(getArduinoVersion('0'))
 
@@ -1590,7 +1592,7 @@ def system():
 
     templateData['arduinoVersion'] = 'Unknown' if (str(arduinoVersion) == '0') else str(arduinoVersion)
 
-    if usbMode == "true":
+    if usbMode:
         try:
             if not config:
                 camera, context, config, discardMe = connectCamera(1)
@@ -1793,26 +1795,26 @@ def connectCamera(retries):
                         app.logger.debug('connectCamera could not claim the USB device. Exiting')
                         #TODO: pass this back upstream to present to the user
                         camera.exit()
-                        return None, None, None, 'true'
+                        return None, None, None, True
                 except Exception as e:
                     app.logger.debug(f'connectCamera error: {e}')
                 if retries >= 4:
                     app.logger.debug('connectCamera returning None')
                     camera.exit()
-                    return None, None, None, 'true'
+                    return None, None, None, True
                 if retries % 2 == 0:
                     time.sleep(1.5);    # Pause after waking
                 else:
                     time.sleep(0.5);  # Brief pause before looping
                 retries += 1
             app.logger.debug('connectCamera returning 3 values')
-            return camera, context, config, 'true'
+            return camera, context, config, True
         except Exception as e:
             app.logger.debug(f'connectCamera outer error: {e}')
-            return None, None, None, 'true'
+            return None, None, None, True
     else:
         app.logger.debug('connectCamera returned  - NO CAMERA MODE active')
-        return None, None, None, 'false'
+        return None, None, None, False
 
 
 def readValue ( camera, attribute ):
