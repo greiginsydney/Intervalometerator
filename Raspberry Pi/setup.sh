@@ -1673,8 +1673,9 @@ unmake_ap_nmcli ()
 		echo ''
 	fi
 
+	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
 	while true; do
-		read -p "Set the network's SSID                : " newSsid
+		read -e -i "$wlan0Name" -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
 			echo -e 'Error: SSID name cannot be empty.'
@@ -1695,8 +1696,6 @@ unmake_ap_nmcli ()
 		break
 	done
 
-	#local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
-	#echo $wlan0Name
 	read -p 'Do you want to assign the Pi a static IP address? [Y/n]: ' staticResponse
 	case $staticResponse in
 		(y|Y|"")
