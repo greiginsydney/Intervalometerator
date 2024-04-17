@@ -1334,7 +1334,7 @@ END
 			echo ''
 			continue
 		elif [ ${#wifiPwd} -lt 8 ];
-		then 
+		then
 			echo -e ""$YELLOW"ERROR:"$RESET" Psk must be at least 8 characters."
 			echo ''
 			continue
@@ -1458,7 +1458,7 @@ END
 			echo ''
 			continue
 		elif [ ${#wifiPwd} -lt 8 ];
-		then 
+		then
 			echo -e ""$YELLOW"ERROR:"$RESET" Psk must be at least 8 characters."
 			echo ''
 			continue
@@ -1675,7 +1675,7 @@ unmake_ap_nmcli ()
 
 	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
 	if [[ $wlan0Name == 'hotspot' ]]; then wlan0Name=''; fi # Suppress auto-populate below if name is 'hotspot'
- 	while true; do
+	while true; do
 		read -e -i "$wlan0Name" -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
@@ -1740,7 +1740,7 @@ unmake_ap_nmcli ()
 			nmcli con mod "$newSsid" ipv4.method auto
 		;;
 	esac
- 	nmcli con up "$newSsid"
+	nmcli con up "$newSsid"
 }
 
 
