@@ -1674,7 +1674,8 @@ unmake_ap_nmcli ()
 	fi
 
 	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
-	while true; do
+	if [[ $wlan0Name == 'hotspot' ]]; then wlan0Name=''; fi # Suppress auto-populate below if name is 'hotspot'
+ 	while true; do
 		read -e -i "$wlan0Name" -p "Set the network's SSID                : " newSsid
 		if [ -z "$newSsid" ];
 		then
