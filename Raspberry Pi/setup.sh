@@ -118,7 +118,7 @@ install_apps ()
 		echo ''
 		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 		then
-			echo 'intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade.'
+  			echo -e ""$GREEN"intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade"$RESET""
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
