@@ -123,10 +123,9 @@ install_apps ()
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		else
-			echo "intvlm8r.py found. Looks like a repeat run through the 'start' process."
+			echo -e ""$GREEN"intvlm8r.py found. Looks like a repeat run through the 'start' process"$RESET""
 		fi;
 		echo ''
-
 
 		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("paramiko"))';
 		then
@@ -158,7 +157,7 @@ install_apps ()
 	elif [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 	then
 		echo ''
-		echo 'intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation.'
+		echo -e ""$GREEN"intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation"$RESET""
 		cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
