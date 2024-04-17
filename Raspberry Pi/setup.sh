@@ -1740,6 +1740,7 @@ unmake_ap_nmcli ()
 			nmcli con mod "$newSsid" ipv4.method auto
 		;;
 	esac
+ 	nmcli con up "$newSsid"
 }
 
 
