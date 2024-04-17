@@ -610,7 +610,7 @@ def thumbnails():
     if ThumbsToShow == 0:
         flash('Thumbnail generation disabled', 'info')
     else:
-        if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
+        if (getIni('Transfer', 'deleteAfterTransfer', 'bool', False)):
             flash('Delete after transfer is active', 'orange')
 
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
@@ -1758,7 +1758,7 @@ def getCameraUsbMode():
     if result is None:
         #The cache is empty? Read from INI, and set the cache
         app.logger.debug('getCameraUsbMode cache query returned None')
-        result = getIni('Global', 'enableCameraUsb', 'bool', 'True')
+        result = getIni('Global', 'enableCameraUsb', 'bool', True)
         cache.set('enableCameraUsb', result, timeout = 300)
     return result
 
@@ -2570,8 +2570,8 @@ def copyNow(self):
     if filesToCopy:
         numberToCopy = len(filesToCopy)
         app.logger.info(f'copyNow has been tasked with copying {numberToCopy} images')
-        deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
-        renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
+        deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', False)
+        renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', False)
         renameString = getIni('Copy', 'renameString', 'string', None)
         if not renameString:
             app.logger.info('copyNow reports renameString is blank/empty. Forcing renameOnCopy = False')
