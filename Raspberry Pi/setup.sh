@@ -1499,7 +1499,7 @@ END
 	# Modify existing hotspot, otherwise delete and start afresh
 	if [[ $wlan0Name == "hotspot" ]];
 	then
-		nmcli con mod type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
+		nmcli con mod hotspot autoconnect yes ssid "$wifiSsid"
 	else
 		nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
 		nmcli con del "$wlan0Name"
