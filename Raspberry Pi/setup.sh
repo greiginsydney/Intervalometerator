@@ -1237,6 +1237,9 @@ CIDRtoNetmask ()
 
 make_ap ()
 {
+	echo -e ""$GREEN"make_ap"$RESET""
+	echo ''
+
 	# hostapd & dnsmasq are installed but disabled & masked at this stage.
 	sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*)\"|\1/etc/hostapd/hostapd.conf\"|" /etc/default/hostapd
 	sed -i -E '/^#[^# ].*/d' /etc/dhcpcd.conf #Trim all default commented-out config lines: Match "<SINGLE-HASH><value>"
@@ -1516,7 +1519,7 @@ unmake_ap ()
 {
 	echo -e ""$GREEN"unmake_ap"$RESET""
 	echo ''
- 
+
 	oldCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	oldSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	oldPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
