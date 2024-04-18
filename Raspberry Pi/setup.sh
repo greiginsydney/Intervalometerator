@@ -1664,14 +1664,6 @@ unmake_ap_nmcli ()
 {
 	echo -e ""$GREEN"unmake_ap_nmcli"$RESET""
 	echo ''
-	if systemctl --all --type service | grep -q 'dnsmasq';
-	then
-		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
-		systemctl stop dnsmasq    # Stop it now
-  		systemctl disable dnsmasq # Prevents it launching on bootup
-		systemctl mask dnsmasq
-		echo ''
-	fi
 
 	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
 	if [[ $wlan0Name == 'hotspot' ]]; then wlan0Name=''; fi # Suppress auto-populate below if name is 'hotspot'
@@ -1724,6 +1716,15 @@ unmake_ap_nmcli ()
 	echo -e ""$YELLOW"WARNING:"$RESET" It will attempt to connect to the '$newSsid' network"
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
+
+	if systemctl --all --type service | grep -q 'dnsmasq';
+	then
+		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
+		systemctl stop dnsmasq    # Stop it now
+  		systemctl disable dnsmasq # Prevents it launching on bootup
+		systemctl mask dnsmasq
+		echo ''
+	fi
 
 	set +e # Suspend the error trap. The below would otherwise throw a terminating error if 'hotspot' doesn't exist.
 	nmcli con del hotspot 2> /dev/null # Suppress any error display.
