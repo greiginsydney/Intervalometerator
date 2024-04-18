@@ -1241,9 +1241,19 @@ isUserLocal ()
 	matchRegex='[0-9]+(\.[0-9]+){3}'
 	if [[ $whoAmI =~ $matchRegex ]] ;
 	then
-		echo "false"
+		# OK, the user has an IP address. Are they on a wired (OK) or wireless (bad) NIC?
+		clientIpAddress=${BASH_REMATCH}
+		#echo $clientIpAddress
+		wlanClients=$(arp | grep 'wlan[[:digit:]]')
+		#echo $wlanClients
+		if [[ $wlanClients == *"$clientIpAddress"* ]]
+		then
+			echo "false" # This user is on WiFi. No go
+		else
+			echo "true"  # This user is connected via an Ethernet NIC
+		fi
 	else
-		echo "true"
+		echo "true" # This user is directly connected to the Pi. (There is no IP address for this user)
 	fi
 }
 
