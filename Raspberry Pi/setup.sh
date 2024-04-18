@@ -1472,10 +1472,10 @@ END
 	read -e -i "$oldPiIpV4" -p         'Choose an IP address for the Pi         : ' piIpV4
 	read -e -i "$oldDhcpStartIp" -p    'Choose the starting IP address for DCHP : ' dhcpStartIp
 	read -e -i "$oldDhcpEndIp" -p      'Choose  the  ending IP address for DCHP : ' dhcpEndIp
-	read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask        : ' dhcpSubnetMask
+	read -e -i "$oldDhcpSubnetMask" -p 'Set the appropriate subnet mask         : ' dhcpSubnetMask
 
 	while true; do
-		read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                       : ' wifiSsid
+		read -e -i "$oldWifiSsid" -p       'Pick a nice SSID                        : ' wifiSsid
 		if [ -z "$wifiSsid" ];
 		then
 			echo -e ""$YELLOW"ERROR:"$RESET" SSID name cannot be empty."
@@ -1486,7 +1486,7 @@ END
 	done
 
 	while true; do
-		read -e -i "$oldWifiPwd" -p        'Choose a better password than this     : ' wifiPwd
+		read -e -i "$oldWifiPwd" -p        'Choose a better password than this      : ' wifiPwd
 		if [ -z "$wifiPwd" ];
 		then
 			echo -e ""$YELLOW"ERROR:"$RESET" Psk value cannot be empty."
@@ -1502,7 +1502,7 @@ END
 	done
 
 	while true; do
-		read -e -i "$oldWifiChannel" -p    'Choose an appropriate Wi-Fi channel    : ' wifiChannel
+		read -e -i "$oldWifiChannel" -p    'Choose an appropriate Wi-Fi channel     : ' wifiChannel
 		if [ -z "$wifiChannel" ];
 		then
 			echo -e ""$YELLOW"ERROR:"$RESET" Wi-Fi channel cannot be empty."
