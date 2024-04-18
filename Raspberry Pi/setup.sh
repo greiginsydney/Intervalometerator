@@ -1514,20 +1514,6 @@ END
 
 unmake_ap ()
 {
-	if systemctl --all --type service | grep -q 'dnsmasq';
-	then
-		systemctl disable dnsmasq #Stops it launching on bootup
-		systemctl mask dnsmasq
-		echo 'Disabled dnsmasq'
-	fi
-	if systemctl --all --type service | grep -q 'hostapd';
-	then
-		systemctl disable hostapd
-		systemctl mask hostapd
-		echo 'Disabled hostapd'
-		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
-	fi
-	[ -f /etc/hostapd/hostapd.conf ] && mv -fv /etc/hostapd/hostapd.conf /home/${SUDO_USER}/hostapd.conf
 
 	oldCountry=$(sed -n -E 's|^\s*country=(.*)$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	oldSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
@@ -1633,6 +1619,21 @@ END
 	read -p "Press any key to continue or ^C to abort " discard
 	echo ''
 
+	if systemctl --all --type service | grep -q 'dnsmasq';
+	then
+		systemctl disable dnsmasq #Stops it launching on bootup
+		systemctl mask dnsmasq
+		echo 'Disabled dnsmasq'
+	fi
+	if systemctl --all --type service | grep -q 'hostapd';
+	then
+		systemctl disable hostapd
+		systemctl mask hostapd
+		echo 'Disabled hostapd'
+		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
+	fi
+	[ -f /etc/hostapd/hostapd.conf ] && mv -fv /etc/hostapd/hostapd.conf /home/${SUDO_USER}/hostapd.conf
+ 
 	#Paste in the new settings
 	case $staticResponse in
 		(y|Y|"")
