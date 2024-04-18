@@ -1777,6 +1777,7 @@ unmake_ap_nmcli ()
 	set +e # Suspend the error trap. The below would otherwise throw a terminating error if 'hotspot' doesn't exist.
 	nmcli con del hotspot 2> /dev/null # Suppress any error display.
 	set -e # Resume the error trap
+	sleep 5
 	nmcli d wifi connect "$newSsid" password "$newPsk" ifname wlan0
 	# Paste in the new settings
 	case $staticResponse in
