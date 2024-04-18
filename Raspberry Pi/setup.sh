@@ -1909,7 +1909,8 @@ test_install ()
 		# ============== START BOOKWORM+ Wi-Fi TESTS ===========
 		systemctl is-active --quiet dnsmasq && ap_test=$((ap_test+1)) # If dnsmasq is running, add 1
 
-		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
+		#local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
+  		local activeConnections=$(nmcli -t c s -a | awk '/wlan0/' | cut -d: -f 1  )
 		if [ ! -z "$activeConnections" ];
 		then
 			((ap_test=ap_test+2)) # If we have an active network connection, add 2
