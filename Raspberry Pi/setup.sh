@@ -1235,6 +1235,19 @@ CIDRtoNetmask ()
 }
 
 
+isUserLocal ()
+{
+	whoAmI=$(who am i)
+	matchRegex='[0-9]+(\.[0-9]+){3}'
+	if [[ $whoAmI =~ $matchRegex ]] ;
+	then
+		echo "false"
+	else
+		echo "true"
+	fi
+}
+
+
 make_ap ()
 {
 	echo -e ""$GREEN"make_ap"$RESET""
@@ -1387,6 +1400,15 @@ make_ap_nmcli ()
 {
 	echo -e ""$GREEN"make_ap_nmcli"$RESET""
 	echo ''
+
+	if [[ $(isUserLocal) == "false" ]];
+	then
+		echo ''
+		echo -e ""$YELLOW"This command is not available from a wireless network connection."$RESET""
+		echo -e ""$YELLOW"You need to be directly connected to the Pi"$RESET""
+		echo ''
+		exit
+	fi
 
 	# ================== START DHCP ==================
 	if  grep -q 'interface=wlan0' /etc/dnsmasq.conf;
@@ -1670,6 +1692,15 @@ unmake_ap_nmcli ()
 {
 	echo -e ""$GREEN"unmake_ap_nmcli"$RESET""
 	echo ''
+
+	if [[ $(isUserLocal) == "false" ]];
+	then
+		echo ''
+		echo -e ""$YELLOW"This command is not available from a wireless network connection."$RESET""
+		echo -e ""$YELLOW"You need to be directly connected to the Pi"$RESET""
+		echo ''
+		exit
+	fi
 
 	local wlan0Name=$(LANG=C nmcli -t -f GENERAL.CONNECTION device show wlan0 | cut -d: -f2-)
 	if [[ $wlan0Name == 'hotspot' ]]; then wlan0Name=''; fi # Suppress auto-populate below if name is 'hotspot'
