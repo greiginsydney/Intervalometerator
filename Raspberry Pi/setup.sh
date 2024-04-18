@@ -119,6 +119,7 @@ install_apps ()
 		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 		then
   			echo -e ""$GREEN"intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade"$RESET""
+    			echo ''
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
@@ -158,6 +159,7 @@ install_apps ()
 	then
 		echo ''
 		echo -e ""$GREEN"intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation"$RESET""
+ 		echo ''
 		cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
