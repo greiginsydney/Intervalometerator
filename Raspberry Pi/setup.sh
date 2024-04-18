@@ -1415,7 +1415,7 @@ make_ap_nmcli ()
 	then
 		echo ''
 		echo -e ""$YELLOW"This command is not available from a wireless network connection."$RESET""
-		echo -e ""$YELLOW"You need to be directly connected to the Pi"$RESET""
+		echo -e ""$YELLOW"You need to be on a wired network or directly connected to the Pi"$RESET""
 		echo ''
 		exit
 	fi
@@ -1707,7 +1707,7 @@ unmake_ap_nmcli ()
 	then
 		echo ''
 		echo -e ""$YELLOW"This command is not available from a wireless network connection."$RESET""
-		echo -e ""$YELLOW"You need to be directly connected to the Pi"$RESET""
+		echo -e ""$YELLOW"You need to be on a wired network or directly connected to the Pi"$RESET""
 		echo ''
 		exit
 	fi
