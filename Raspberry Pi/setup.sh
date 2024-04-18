@@ -1244,7 +1244,7 @@ isUserLocal ()
 		# OK, the user has an IP address. Are they on a wired (OK) or wireless (bad) NIC?
 		clientIpAddress=${BASH_REMATCH}
 		#echo $clientIpAddress
-		wlanClients=$(arp | grep 'wlan[[:digit:]]')
+		wlanClients=$(arp -n | grep 'wlan[[:digit:]]')
 		#echo $wlanClients
 		if [[ $wlanClients == *"$clientIpAddress"* ]]
 		then
