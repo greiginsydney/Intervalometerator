@@ -29,13 +29,12 @@ import time
 
 sudo_username = os.getenv("SUDO_USER")
 if sudo_username:
-    LOGFILE_PATH = os.path.expanduser('~' + sudo_username + '/')
-    INIFILE_PATH = os.path.expanduser('~' + sudo_username + '/')
+    PI_USER_HOME = os.path.expanduser('~' + sudo_username + '/')
 else:
-    LOGFILE_PATH = os.path.expanduser('~')
-    INIFILE_PATH = os.path.expanduser('~')
-LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'cameraTransfer.log')
-INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
+    PI_USER_HOME = os.path.expanduser('~')
+
+LOGFILE_NAME = os.path.join(PI_USER_HOME, 'cameraTransfer.log')
+INIFILE_NAME = os.path.join(PI_USER_HOME, 'www/intvlm8r.ini')
 
 htmltext = ''
 
