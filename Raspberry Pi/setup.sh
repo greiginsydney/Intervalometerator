@@ -1042,11 +1042,11 @@ install_website ()
 		sed -i -E --follow-symlinks "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command. (Legacy installs only: we added it initially)
 		# nginx:
 		sed -i -E "s|^(\s*user www-data)(.*)$|# \1\2|g" /etc/nginx/nginx.conf	# Comment-out existing www-data user
-		if  grep -q 'user pi;' /etc/nginx/nginx.conf
+		if grep -q "user ${SUDO_USER};" /etc/nginx/nginx.conf;
 		then
-			echo "Skipped: '/etc/nginx/nginx.conf' already contains 'user pi;'"
+			echo "Skipped: '/etc/nginx/nginx.conf' already contains 'user ${SUDO_USER};'"
 		else
-			sed -i "1i user pi;" /etc/nginx/nginx.conf
+			sed -i "1i user ${SUDO_USER};" /etc/nginx/nginx.conf
 		fi
 	fi
 
