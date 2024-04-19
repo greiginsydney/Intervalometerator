@@ -57,7 +57,7 @@ venv_test ()
 	fi;
 
 	if [[ ($VENV_REQUIRED == 1) ]];
- 	then
+	then
 		while true;
 		do
 			if [[ "$VIRTUAL_ENV" != "" ]];
@@ -88,7 +88,7 @@ venv_test ()
 		exit
 	fi
 
- 	# config.txt path changes for Bookworm+
+	# config.txt path changes for Bookworm+
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
@@ -118,8 +118,8 @@ install_apps ()
 		echo ''
 		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
 		then
-  			echo -e ""$GREEN"intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade"$RESET""
-    			echo ''
+			echo -e ""$GREEN"intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade"$RESET""
+			echo ''
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
 			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
@@ -159,7 +159,7 @@ install_apps ()
 	then
 		echo ''
 		echo -e ""$GREEN"intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation"$RESET""
- 		echo ''
+		echo ''
 		cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
 
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
@@ -226,9 +226,9 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
- 	 	echo -e ""$GREEN"Installing redis"$RESET""
-  		pip3 install redis
-    	fi
+		echo -e ""$GREEN"Installing redis"$RESET""
+		pip3 install redis
+	fi
 
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	pip3 install "celery[redis]"
@@ -239,7 +239,7 @@ install_apps ()
 		export DEBIAN_FRONTEND=noninteractive
 		echo -e ""$GREEN"Installing libffi-dev, libssl-dev"$RESET""
 		apt-get install libffi-dev libssl-dev -y
-  		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
+		echo -e ""$GREEN"Installing krb5-config, krb5-user"$RESET""
 		apt install krb5-config krb5-user -y
 		echo -e ""$GREEN"Installing libkrb5-dev"$RESET""
 		apt-get install libkrb5-dev -y
@@ -285,12 +285,12 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
- 	 	echo -e ""$GREEN"Installing python-dev-is-python3"$RESET""
-  		apt-get install python-dev-is-python3 -y
-    	else
-     		echo -e ""$GREEN"Installing python-dev"$RESET""
-  		apt-get install python-dev -y
-     	fi
+		echo -e ""$GREEN"Installing python-dev-is-python3"$RESET""
+		apt-get install python-dev-is-python3 -y
+	else
+		echo -e ""$GREEN"Installing python-dev"$RESET""
+		apt-get install python-dev -y
+	fi
 
 	# ================== START libgphoto ==================
 	if ( apt list --manual-installed | grep -q libgphoto );
@@ -335,7 +335,7 @@ install_apps ()
 		apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
 
 		echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
-  		rm -rf /home/${SUDO_USER}/libgphoto2
+		rm -rf /home/${SUDO_USER}/libgphoto2
 		git clone https://github.com/gphoto/libgphoto2.git
 		cd /home/${SUDO_USER}/libgphoto2
 		autoreconf --install --symlink
@@ -344,7 +344,7 @@ install_apps ()
 		make install
 		ldconfig
 
-  		cd /home/${SUDO_USER}/
+		cd /home/${SUDO_USER}/
 
 		echo -e ""$GREEN"Generate udev rules for the camera"$RESET""
 		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
@@ -440,7 +440,7 @@ install_apps ()
 
 	if systemctl --all --type service | grep -q 'dnsmasq';
 	then
- 		echo -e ""$GREEN"dnsmasq is already installed"$RESET""
+		echo -e ""$GREEN"dnsmasq is already installed"$RESET""
 	else
 		echo -e ""$GREEN"Installing dnsmasq"$RESET""
 		apt-get install dnsmasq -y
@@ -496,7 +496,7 @@ install_apps ()
 		echo 'dtparam=i2c_arm=on' >> $I2CPath
 	fi
 
- 	if [ -f /etc/modprobe.d/raspi-blacklist.conf ];
+	if [ -f /etc/modprobe.d/raspi-blacklist.conf ];
 	then
 		echo 'removing i2c from /etc/modprobe.d/raspi-blacklist.conf'
 		sed -i 's/^blacklist spi-bcm2708/#blacklist spi-bcm2708/' /etc/modprobe.d/raspi-blacklist.conf
@@ -512,9 +512,9 @@ install_apps ()
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
 		whereisgphoto=$(python -m pip show gphoto2 | sed -n 's/.*Location:\s\(.*\).*/\1/p')
-    	else
+	else
 		whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
-    	fi
+	fi
 
 	if [ ! -z "$whereisgphoto" ];
 	then
@@ -580,7 +580,7 @@ install_website ()
 	fi
 
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" "apt-daily.timer" "apt-daily.service" "myIp.service")
- 	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service"
+	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service"
 
 	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
@@ -658,7 +658,7 @@ install_website ()
 			done <~/www/intvlm8r.old
 		fi
 
-    		if grep -q "### Paste the secret key here. See the Setup docs ###" /home/${SUDO_USER}/www/intvlm8r.old;
+		if grep -q "### Paste the secret key here. See the Setup docs ###" /home/${SUDO_USER}/www/intvlm8r.old;
 		then
 			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
 		else
@@ -703,9 +703,9 @@ install_website ()
 				sed -i "s|User=pi|User=$SUDO_USER|g" $val
 			fi
 		done
-		if [ -f celery.conf ]; 		then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
-		if [ -f celery ]; 		then sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery; fi
-		if [ -f intvlm8r.logrotate ]; 	then sed -i "s| pi | $SUDO_USER |g" intvlm8r.logrotate; fi
+		if [ -f celery.conf ];			then sed -i "s| pi | $SUDO_USER |g" celery.conf; fi
+		if [ -f celery ];				then sed -i "s|\"pi\"|\"$SUDO_USER\"|g" celery; fi
+		if [ -f intvlm8r.logrotate ];	then sed -i "s| pi | $SUDO_USER |g" intvlm8r.logrotate; fi
 		usermod -a -G i2c $SUDO_USER #This gives the user permission to access i2c
 		if [ /etc/udev/rules.d/99-com.rules ];
 		then
@@ -945,12 +945,12 @@ install_website ()
 
 	if grep -F -q "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
 	then
-	    echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
+		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-	    sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime.
- 	    echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
-	    crontab -u $SUDO_USER cronTemp #install new cron file
-	    echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
+		sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime.
+		echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+		crontab -u $SUDO_USER cronTemp #install new cron file
+		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
 	rm cronTemp
 
@@ -1037,12 +1037,12 @@ install_website ()
 			#echo $val
 			sed -i -E "s|^(\s*ExecStart\s*=\s*)(sudo\s*)?(/usr/bin/python3)|\1\2/home/$SUDO_USER/venv/bin/python3|g" $val
 		done
-  		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service
+		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service
 		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"/home/$SUDO_USER/venv/bin/celery\"|g" /etc/default/celery
-  		sed -i -E --follow-symlinks "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command. (Legacy installs only: we added it initially)
-    		# nginx:
-      		sed -i -E "s|^(\s*user www-data)(.*)$|# \1\2|g" /etc/nginx/nginx.conf	# Comment-out existing www-data user
-      		if  grep -q 'user pi;' /etc/nginx/nginx.conf
+		sed -i -E --follow-symlinks "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command. (Legacy installs only: we added it initially)
+		# nginx:
+		sed -i -E "s|^(\s*user www-data)(.*)$|# \1\2|g" /etc/nginx/nginx.conf	# Comment-out existing www-data user
+		if  grep -q 'user pi;' /etc/nginx/nginx.conf
 		then
 			echo "Skipped: '/etc/nginx/nginx.conf' already contains 'user pi;'"
 		else
@@ -1546,7 +1546,7 @@ END
 	nmcli con modify hotspot wifi-sec.key-mgmt wpa-psk
 	nmcli con modify hotspot wifi-sec.psk "$wifiPwd"
 	nmcli con mod hotspot ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
- 	echo -e ""$GREEN"Byeee!"$RESET""
+	echo -e ""$GREEN"Byeee!"$RESET""
 	nmcli con up hotspot
 }
 
@@ -1771,7 +1771,7 @@ unmake_ap_nmcli ()
 	then
 		echo -e ""$GREEN"Disabling dnsmasq"$RESET""
 		systemctl stop dnsmasq    # Stop it now
-  		systemctl disable dnsmasq # Prevents it launching on bootup
+		systemctl disable dnsmasq # Prevents it launching on bootup
 		systemctl mask dnsmasq
 		echo ''
 	fi
@@ -1897,8 +1897,8 @@ test_install ()
 		if [[ "$?" -ne 0 ]];
 		then
 			echo -e ""$YELLOW"FAIL:"$RESET" i2cdetect threw an error"
-   			echo "Did the './setup.sh start' test complete without error?"
-      			echo "(A reboot is required after install for this test to pass)"
+			echo "Did the './setup.sh start' test complete without error?"
+			echo "(A reboot is required after install for this test to pass)"
 		fi
 		set -e #Resume the error trap
 	else
@@ -1914,7 +1914,7 @@ test_install ()
 		systemctl is-active --quiet dnsmasq && ap_test=$((ap_test+1)) # If dnsmasq is running, add 1
 
 		#local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
-  		local activeConnections=$(nmcli -t c s -a | awk '/wlan0/' | cut -d: -f 1  )
+		local activeConnections=$(nmcli -t c s -a | awk '/wlan0/' | cut -d: -f 1  )
 		if [ ! -z "$activeConnections" ];
 		then
 			((ap_test=ap_test+2)) # If we have an active network connection, add 2
@@ -1989,12 +1989,12 @@ test_install ()
 				echo -e ""$GREEN"PASS:"$RESET" It has an active connection to this/these SSIDs: $connectedSsid"
 				;;
 			(22)
-   				# Good-ish. Wi-Fi AP.
+				# Good-ish. Wi-Fi AP.
 				echo -e ""$GREEN"PASS:"$RESET" The Pi is its own Wi-Fi network (Access Point)"
 				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
-    			echo -e ""$YELLOW"PASS:"$RESET" dnsmasq is not running (22)"
+				echo -e ""$YELLOW"PASS:"$RESET" dnsmasq is not running (22)"
 				;;
-   			(23)
+			(23)
 				# Good. Wi-Fi AP.
 				echo -e ""$GREEN"PASS:"$RESET" The Pi is its own Wi-Fi network (Access Point)"
 				echo -e ""$GREEN"PASS:"$RESET" Its SSID (network name) is '$connectedSsid' and is using channel $connectedChannel"
@@ -2364,7 +2364,7 @@ case "$1" in
 	('remoteit')
 		remoteit
 		;;
-  	('update')
+	('update')
 		update
 		prompt_for_reboot
 		;;
