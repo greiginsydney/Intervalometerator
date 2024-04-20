@@ -1128,6 +1128,14 @@ def transferNow(self):
             stderrdata = stderrdata.strip()
             app.logger.info(f'transferNow error = {stderrdata}')
             errorMsg = ''
+            
+            if "sudo: a terminal is required to read the password" in stderrdata:
+                # The intvlm8r user isn't a member of the sudoers group. We need higher permissions. Log stderrdata & a STATUS msg:
+                with open(PI_TRANSFER_FILE, 'a') as piTransferLogfile:
+                    nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                    piTransferLogfile.write(f'{nowtime} {stderrdata}\r\n')
+                    piTransferLogfile.write(f'{nowtime} STATUS: Transfer failed, needs password. Add user to sudoers group\r\n')
+            
     except Exception as e:
         app.logger.info(f'Unhandled transferNow error: {e}')
         errorMsg = ' unexpected'
