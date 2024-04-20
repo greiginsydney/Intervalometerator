@@ -74,13 +74,41 @@ server {
 
 ## My camera and/or Pi are running low on storage. How can I delete old images?
 
-Hidden config options in the INI file will let you delete images off the camera after they've been safely transferred to the Pi, and after they've been safely uploaded to your nominated "off-box" destination.
+### My camera is running low on storage
 
-This option isn't visible in the browser, so to change it you need to SSH to the Pi. Browse to /home/pi/www/ and edit the file intvlm8r.ini. Set the two highlighted options On or Off as required. If the option's not already there, just add the line in by hand:
+If you want to delete ALL the images from the camera, Jim's provided an example script that will do this, and I've created a symbolic link to his examples folder.
+
+SSH to the Pi and login with your username (usually 'pi', without the quotes), and the password. If you skipped the step to change this, it will still be 'raspberry'.
+
+Run these two commands: 
+
+```bash
+cd ~/examples
+sudo python3 clear-space.py 95
+```
+
+The number after clear-space.py tells the script to keep deleting files until that percentage of space is free. I recommend you DON'T choose 100, because that's potentially unachievable and could cause the script to lock up.
+<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)
+
+### Enable 'DeleteAftercopy' or 'DeleteAfterTransfer'
+
+Hidden config options (stored in the INI file) will let you delete images off the camera after they've been safely transferred to the Pi, and after they've been safely uploaded to your nominated "off-box" destination.
+
+This option isn't visible in the browser, so to change it you need to SSH to the Pi and edit the file there manually:
+1. Edit the file intvlm8r.ini with `sudo nano ~/www/intvlm8r.ini`
+2.	This opens the file in a basic text editor. Note that you can’t use your mouse, only the arrow keys to move around
+3.	Move the cursor (which is usually at the top LH corner) to the end of the relevant 'DeleteAfter..' line – after the second ‘f’ in Off, then Backspace to delete the f’s and replace with an ‘n’. (Reverse that to change from On to Off)
+4.	Type Control-X. The bottom of the screen will update to ask “Save modified buffer?”
+5.	Press Y (on its own). The screen will prompt for the filename “File Name to Write: /home/pi/www/intvlm8r.ini”, which is giving you an opportunity to do a “Save As” and give it a new name. But we won’t.
+6.	Hit return and you’re done.
+
+Set the two highlighted options On or Off as required. If the option's not already there, just add the line in by hand, like in this example file:
 
 <pre>
 [Global]
-file created = 05 Jan 2020
+file created = 05 Jan 2023
 thumbscount = 20
 
 [Transfer]
@@ -100,16 +128,6 @@ copyhour = 00
 <b>deleteaftercopy = On</b>
 </pre>
 
-If you want to delete ALL the images from the camera, Jim's provided an example script that will do this, and I've created a symbolic link to his examples folder.
-
-```bash
-cd /home/pi/examples
-sudo python3 clear-space.py 95
-```
-
-(Change `/home/pi` to your username if you've not installed the intvlm8r as 'pi').
-
-The number after clear-space.py tells the script to keep deleting files until that percentage of space is free.
 <br>
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/FAQ.md)

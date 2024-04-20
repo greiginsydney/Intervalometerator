@@ -68,7 +68,6 @@ def main(argv):
         copyOnBootup    = config.getboolean('Copy', 'copyOnBootup')
         wakePiHour      = config.get('Global', 'wakePiHour')
         enableCameraUsb = config.getboolean('Global', 'enableCameraUsb')
-
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'

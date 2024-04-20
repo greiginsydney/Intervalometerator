@@ -112,7 +112,6 @@ install_apps ()
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
 
-
 	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
 	then
 		echo ''
@@ -290,6 +289,16 @@ install_apps ()
 	else
 		echo -e ""$GREEN"Installing python-dev"$RESET""
 		apt-get install python-dev -y
+	fi
+
+	# Stuff some extra text into the nginx welcome page:
+	if [[ -f /usr/share/nginx/html/index.html ]];
+	then
+		sed -i -E "s|^(<h1>Welcome to nginx)(!)(.*)|\1 on the intvlm8r\3|g" /usr/share/nginx/html/index.html
+		if ! grep -q "The intvlm8r setup is incomplete" /usr/share/nginx/html/index.html;
+		then
+			sed -i "/Further configuration is required*/a <p><b>The intvlm8r setup is incomplete:</b> the 'web' step has not been fully or correctly performed.</p>" /usr/share/nginx/html/index.html
+		fi
 	fi
 
 	# ================== START libgphoto ==================
@@ -582,7 +591,7 @@ install_website ()
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" "apt-daily.timer" "apt-daily.service" "myIp.service")
 	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service"
 
-	# Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
+  # Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
 	cd  ${HOME}
 	mkdir -pv photos
 	mkdir -pv preview
@@ -981,6 +990,7 @@ install_website ()
 	#Disable the daily auto-update process.
 	#https://askubuntu.com/questions/1037285/starting-daily-apt-upgrade-and-clean-activities-stopping-mysql-service
 	echo ''
+ 	echo -e ""$GREEN"Disabling the daily auto-update process"$RESET""
 	apt-get remove unattended-upgrades -y
 
 	echo ''
@@ -1092,8 +1102,10 @@ dtparam=act_led_activelow=on
 dtoverlay=gpio-shutdown,gpio_pin=17,active_low=1,gpio_pull=up
 
 #Set GPIO27 to follow the running state: it's High while running and 0 when shutdown is complete. The Arduino will monitor this pin.
-dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY
-#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+# LEGACY:
+dtoverlay=gpio-poweroff,gpiopin=27,active_low 
+# NEW - TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
+#dtoverlay=gpio-led,gpio=27,trigger=default-on,active_low 
 END
 	fi
 
@@ -1107,6 +1119,19 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 		echo "Skipped: '$I2CPath' does not contain legacy 'dtoverlay=gpio-poweroff'"
 	fi
 '
+
+	# Added 16 Mar 2024 in 4.6.3. Support for powerShell-style in-line comment text is ambiguous here at best.
+	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' /boot/config.txt
+	then
+		echo -e ""$YELLOW"'/boot/config.txt' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
+		#Add the new '# Legacy:' header line first:
+		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' /boot/config.txt
+		#Replace the bad version:
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' /boot/config.txt
+	else
+		echo "Skipped: '/boot/config.txt' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
+	fi
+
 	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
 	then
 		mv -fv /home/${SUDO_USER}/www/intvlm8r.old /home/${SUDO_USER}/www/intvlm8r.bak

@@ -12,8 +12,10 @@ If you're starting from scratch, start here at Step 1.
  </p>
 
 <p align="center">
+
 <img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/72a06b38-0e11-4127-ae96-3c9759290e02" width="50%">
- </p>
+
+</p>
 
 2. Add HDMI, power and keyboard connections and turn it on. (You don't need a mouse for this, but add one if you're feeling so inclined).
 3. The boot process ends at a login screen. The default credentials are `pi` / `raspberry`.
@@ -30,10 +32,11 @@ If you're starting from scratch, start here at Step 1.
 > Micro SD cards come in some large sizes these days, and if you want to keep backups of the photos off the camera, you'll probably want a card larger than the standard 32G limit of FAT. If you've started with a standard FAT format, this next step lets you expand the disk to consume the whole card. This is a good thing.  
 In so doing however, your average Windows PC will no longer be able to read the card. Check out "<a href="https://ext2-volume-manager.en.lo4d.com/" target="_blank">Ext2 Volume Manager</a>" as a way to get around this. If you're at all uncertain, skip step 10, but be aware that the number of images you can store on the Pi will be limited.
 
-10. Select `(6) Advanced Options` and select `(A1) expand filesystem`, allowing access to the whole card, then hit return again at the `OK`.
+10. This step intentionally left blank. ;-)
 11. Select `(1) System Options` and `(S4) Hostname` and give the Pi a recognisable hostname.
 12. If you're building this onto a Pi with a wired network connection instead of WiFi, skip the next step. Resume at Step 14.
 13. Select `(1) System Options` and `(S1) Wireless LAN`. At this stage we'll be a wifi *client*. When prompted:
+
     * Select your country
     * Enter the local SSID and passphrase (password). Note that the Pi Zero W's radio is limited to 2.4G, so any attempts to connect to a 5G network will fail.
 14. Navigate to `Finish` and DECLINE the prompt to reboot.
@@ -105,7 +108,7 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 28. `sudo reboot`
 
-Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue
+Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue.
 
 29.1. Confirm your current version of python:
 
@@ -130,6 +133,7 @@ sudo apt-get install git -y
 ```
 
 29.4. This downloads the repo, dropping the structure into a subdirectory called `Intervalometerator`:
+
 ```txt
 cd ~
 sudo rm -rf Intervalometerator
@@ -145,9 +149,11 @@ mv -fv "Intervalometerator/Raspberry Pi/setup.sh" ~
 ``` 
 
 31. All the hard work is done by the script, but it needs to be made executable first:
+
 ```txt
 sudo chmod +x setup.sh
 ```
+
 32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi user's home directory.)
 ```txt
 sudo -E -H ./setup.sh start

@@ -787,6 +787,7 @@ def cameraPOST():
                         preview = 1
 
                     camera.exit()
+
             except Exception as e:
                 app.logger.debug(f'Unknown camera POST error: {e}')
 

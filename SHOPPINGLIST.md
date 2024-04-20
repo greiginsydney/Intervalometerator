@@ -175,8 +175,6 @@ DeadOn RTC Breakout - DS3234
     $AUD24</br>
     $USD11
 
-#### The DS3234 real-time clock chip used here is currently not available due to the global component shortage. It's expected back in stock in the second half of CY23, and we hope Sparkfun is at the front of the queue.
-
 #### Coin-cell Backup Battery
 
 The DeadOn RTC requires a 3V lithium backup battery. The common CR1225 or the slightly thinner CR1220 are compatible here. Your DeadOn supplier will probably have these in stock, otherwise they're the sort of item you might get from the local electronics hobby store or key-cutting kiosk.
@@ -270,7 +268,7 @@ As the project is presented, this LED lights when the Arduino is awake, but only
 #### Custom PCB
 
 ~~The custom PCB for the project is available on eBay. It measures 135x76mm.~~
-Currently out of stock: more are on their way, due Octob er 2023.
+Currently out of stock: more are on their way, due early 2024.
 
 - [eBay](https://www.ebay.com.au/itm/266371793739)
 
