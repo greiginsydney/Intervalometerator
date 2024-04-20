@@ -110,8 +110,15 @@
 
 <table>
 	<tr>
-		<td>
+		<td class="noborder nopadbot">
 			<div class="alignleft">Last transfer:</div>
+			<div class="alignright">
+				<a href="{{ lastTrnLogFile }}" target="_blank">{{ lastTrnTime }}</a>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="noborder nopadtop">
 			<div class="alignright">
 				<a href="{{ lastTrnLogFile }}" target="_blank">{{ lastTrnResult }}</a>
 			</div>
