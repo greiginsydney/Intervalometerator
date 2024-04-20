@@ -335,7 +335,8 @@ def main():
         'piDaysFree'        : 'Unknown',
         'daysFreeWarn'      : '0',
         'daysFreeAlarm'     : '0',
-        'lastTrnResult'     : 'Unknown',
+        'lastTrnTime'       : 'Unknown',
+        'lastTrnResult'     : '',
         'lastTrnLogFile'    : '',
         'piLastImageFile'   : 'Unknown',
         'cameraUsbMode'     : 'false' # Jinja requires bools in lower case
@@ -473,7 +474,8 @@ def main():
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
                 if 'STATUS: ' in line:
-                    templateData['lastTrnResult'] = line.replace('STATUS: ','')
+                    templateData['lastTrnTime'] = line[:19]
+                    templateData['lastTrnResult'] = line[28:]
                     break
     except Exception as e:
         app.logger.debug(f'Exception reading STATUS in piTransfer.log file: {e}')
