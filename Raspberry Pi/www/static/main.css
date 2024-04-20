@@ -137,6 +137,14 @@ input[type=radio] {
 	outline-color: #FF0000;
 }
 
+.nopadbot {
+	padding-bottom: 0;
+}
+
+.nopadtop {
+	padding-top: 0;
+}
+
 /* Tooltip container */
 .tooltip {
 	position: relative;

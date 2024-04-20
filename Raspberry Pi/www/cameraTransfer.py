@@ -29,12 +29,12 @@ import time
 
 sudo_username = os.getenv("SUDO_USER")
 if sudo_username:
-    LOGFILE_PATH = os.path.expanduser('~' + sudo_username + '/')
+    PI_USER_HOME = os.path.expanduser('~' + sudo_username + '/')
 else:
-    LOGFILE_PATH = os.path.expanduser('~')
-LOGFILE_NAME = os.path.join(LOGFILE_PATH, 'cameraTransfer.log')
-INIFILE_PATH = os.path.expanduser('~')
-INIFILE_NAME = os.path.join(INIFILE_PATH, 'www/intvlm8r.ini')
+    PI_USER_HOME = os.path.expanduser('~')
+
+LOGFILE_NAME = os.path.join(PI_USER_HOME, 'cameraTransfer.log')
+INIFILE_NAME = os.path.join(PI_USER_HOME, 'www/intvlm8r.ini')
 
 htmltext = ''
 
@@ -58,24 +58,29 @@ def main(argv):
         'copyDay'         : 'Off',
         'copyHour'        : '00',
         'copyOnBootup'    : False,
-        'wakePiHour'      : '25'
+        'wakePiHour'      : '25',
+        'enableCameraUsb' : True
         })
     config.read(INIFILE_NAME)
     try:
-        copyDay       = config.get('Copy', 'copyDay')
-        copyHour      = config.get('Copy', 'copyHour')
-        copyOnBootup  = config.getboolean('Copy', 'copyOnBootup')
-        wakePiHour    = config.get('Global', 'wakePiHour')
-
+        copyDay         = config.get('Copy', 'copyDay')
+        copyHour        = config.get('Copy', 'copyHour')
+        copyOnBootup    = config.getboolean('Copy', 'copyOnBootup')
+        wakePiHour      = config.get('Global', 'wakePiHour')
+        enableCameraUsb = config.getboolean('Global', 'enableCameraUsb')
     except Exception as e:
         copyDay = 'Off' # If we hit an exception, force copyDay=Off
         copyHour = '00'
         copyOnBootup = False
         wakePiHour = 25
+        enableCameraUsb = True
         log('INI file error: ' + str(e))
 
     now = datetime.datetime.now()
-    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay}, CopyHour = {copyHour}. wakePiHour is {wakePiHour}:00')
+    log(f'Now values are: NowDay = {now.strftime("%A")}, NowHour = {now.strftime("%H")}, CopyDay = {copyDay} , CopyHour = {copyHour}. wakePiHour is {wakePiHour}:00')
+    if enableCameraUsb == False:
+        log('Not OK to copy: enableCameraUsb is False')
+        return
     if copyNow == True:
         # We're OK to copy NOW. (copyNow trumps all other options)
         log('OK to copy on copyNow')

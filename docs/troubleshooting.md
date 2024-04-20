@@ -7,6 +7,7 @@ Jump to the relevant section:
 - [Camera Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#camera-errors)
 - [USB Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#usb-errors)
 - [Transfer Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#transfer-errors)
+- [Setup script Errors](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#setup-script-errors)
 
 
 <hr/>
@@ -252,6 +253,24 @@ The intvlm8r's main log file "gunicorn.error" will also log issues that may aris
 sudo nano ~/www/gunicorn.error
 ```
 &nbsp;<br>
+
+[Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
+
+<hr />
+
+## Setup script Errors
+
+### Could not get lock
+
+![image](https://github.com/greiginsydney/Intervalometerator/assets/11004787/75a73530-8f26-4161-9b54-33afa0d3495c)
+
+```text
+E: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 1583 (apt-get)
+N: Be aware that removing the lock file is not a solution and may break your system.
+E: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), is another process using it?
+```
+
+Solution: reboot and repeat the last command.
 
 [Top](https://github.com/greiginsydney/Intervalometerator/blob/master/docs/troubleshooting.md#troubleshooting)
 

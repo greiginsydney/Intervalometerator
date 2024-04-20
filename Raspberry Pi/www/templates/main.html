@@ -24,6 +24,13 @@
 	</tr>
 </table> 
 
+{% if cameraUsbMode == 'false' %}
+<table>
+	<tr class="noborder">
+		<td class="centre-text">USB communication with the camera is not enabled</td>
+	</tr>
+</table>
+{% else %}
 <form method="post" onsubmit="return userFeedback(this, event)">
 	<table>
 		{% if fileCount != "Unknown" %}
@@ -72,7 +79,8 @@
 		{% endif %}
 	</table>
 </form>
-	
+{% endif %}
+
 <table>
 	<tr>
 		<td>
@@ -80,7 +88,7 @@
 			<div class="alignright">{{ piImageCount }}</div>
 		</td>
 	</tr>
-	<tr class="{{ 'green' if (lastImage|string() == piLastImage|string()) and (piLastImage != 'n/a') }}">
+	<tr{% if (lastImage|string() == piLastImage|string()) and (piLastImage != 'n/a') %} class="green"{% endif %}>
 		<td>
 			<div class="alignleft">Last image on Pi:</div>
 			<div class="alignright">{{ piLastImage }}</div>
@@ -102,8 +110,15 @@
 
 <table>
 	<tr>
-		<td>
+		<td class="noborder nopadbot">
 			<div class="alignleft">Last transfer:</div>
+			<div class="alignright">
+				<a href="{{ lastTrnLogFile }}" target="_blank">{{ lastTrnTime }}</a>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="noborder nopadtop">
 			<div class="alignright">
 				<a href="{{ lastTrnLogFile }}" target="_blank">{{ lastTrnResult }}</a>
 			</div>
@@ -114,7 +129,11 @@
 <table>
 	<tr>
 		<td>
+			{% if piLastImageFile == "photos/default_image.JPG" %}
+			<img src="{{ url_for('static',filename=(piLastImageFile))}}" alt="placeholder image - welcome to the Intervalometerator" width="100%">
+			{% else %}
 			<a href="{{ url_for('static',filename=(piLastImageFile))}}" target="_blank"><img src="{{ url_for('static',filename=(piLastImageFile))}}" alt="last image" width="100%"></a>
+			{% endif %}
 		</td>
 	</tr>
 </table> 

@@ -54,7 +54,7 @@ except:
 
 from werkzeug.security import check_password_hash
 
-from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g, send_from_directory
+from flask import Flask, flash, render_template, request, redirect, url_for, make_response, abort, jsonify, g, send_from_directory, session
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required, UserMixin, login_url
 from flask_caching import Cache
 from celery import Celery, chain
@@ -63,12 +63,18 @@ from celery.app.control import Inspect
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['result_backend'] = 'redis://localhost:6379/0'
+# app.config["TEMPLATES_AUTO_RELOAD"] = True # Uncomment when debugging
 
 app.secret_key = b'### Paste the secret key here. See the Setup docs ###' #Cookie for session messages
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
 
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['result_backend'])
+celery = Celery(app.name,
+                broker=app.config['CELERY_BROKER_URL'],
+                backend=app.config['result_backend'],
+                broker_connection_retry_on_startup = True,
+                broker_connection_retry = True
+                )
 celery.conf.update(app.config)
 
 cache = Cache(app, config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': 'redis://localhost:6379/0'})
@@ -103,6 +109,7 @@ REBOOT_SAFE_WORD = 'seeyasoon'
 HOSTNAME = os.uname()[1]
 RAWEXTENSIONS = ('.CR2', '.NEF')
 PI_SPACE_RESERVED = 10 * 2**20 # 10 * 1M - the amount of drive space the Pi needs to keep spare
+TIME_SETTING_OPTIONS = [(1,'syncdatetime'), (2,'syncdatetimeutc'), (4,'datetime'), (8,'datetimeutc')]
 
 # /////// VERSION-RELATED STATICS ////////
 # UI components (features) will display if the Arduino is running this version or later:
@@ -294,6 +301,10 @@ def login():
 @login_required
 def logout():
     logout_user()
+    try:
+        session['_flashes'].clear() #Clears any lingering messages the user is now no longer authorised to see
+    except:
+        pass
     flash('You have been logged out', 'info')
     return redirect(url_for('login'))
 
@@ -324,14 +335,18 @@ def main():
         'piDaysFree'        : 'Unknown',
         'daysFreeWarn'      : '0',
         'daysFreeAlarm'     : '0',
-        'lastTrnResult'     : 'Unknown',
+        'lastTrnTime'       : 'Unknown',
+        'lastTrnResult'     : '',
         'lastTrnLogFile'    : '',
-        'piLastImageFile'   : 'Unknown'
+        'piLastImageFile'   : 'Unknown',
+        'cameraUsbMode'     : 'false' # Jinja requires bools in lower case
     }
 
     app.logger.debug('YES - this bit of MAIN fired!')
 
-    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    if usbMode:
+        templateData['cameraUsbMode'] = 'true'
 
     arduinoDate = getArduinoDate() # Failure returns "Unknown"
     templateData['arduinoDate'] = arduinoDate
@@ -360,7 +375,7 @@ def main():
     # Camera comms:
     try:
         if not config:
-            camera, context, config = connectCamera(1)
+            camera, context, config, discardMe = connectCamera(1)
         if camera:
             storage_info = gp.check_result(gp.gp_camera_get_storageinfo(camera))
             if len(storage_info) == 0:
@@ -459,7 +474,8 @@ def main():
         with open(PI_TRANSFER_FILE, 'r') as f:
             for line in reversed(f.read().splitlines()):
                 if 'STATUS: ' in line:
-                    templateData['lastTrnResult'] = line.replace('STATUS: ','')
+                    templateData['lastTrnTime'] = line[:19]
+                    templateData['lastTrnResult'] = line[28:]
                     break
     except Exception as e:
         app.logger.debug(f'Exception reading STATUS in piTransfer.log file: {e}')
@@ -597,7 +613,7 @@ def thumbnails():
     if ThumbsToShow == 0:
         flash('Thumbnail generation disabled', 'info')
     else:
-        if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'Off')):
+        if (getIni('Transfer', 'deleteAfterTransfer', 'bool', 'False')):
             flash('Delete after transfer is active', 'orange')
 
     return render_template('thumbnails.html', ThumbFiles = ThumbFiles)
@@ -607,96 +623,101 @@ def thumbnails():
 @login_required
 def camera():
     cameraData = {
-        'cameraModel'   : '',
-        'cameraLens'    : 'Unknown',
-        'cameraDate'    : '',
-        'focusmode'     : '',
-        'exposuremode'  : '',
-        'autopoweroff'  : '',
-        'imgfmtselected': '',
-        'imgfmtoptions' : '',
-        'wbselected'    : '',
-        'wboptions'     : '',
-        'isoselected'   : '',
-        'isooptions'    : '',
-        'apselected'    : '',
-        'apoptions'     : '',
-        'shutselected'  : '',
-        'shutoptions'   : '',
-        'expselected'   : '',
-        'expoptions'    : '',
-        'piPreviewFile' : '',
-        'cameraMfr'     : 'Unknown',
-        'blockPreview'  : 'False'
+        'cameraModel'     : '',
+        'cameraLens'      : 'Unknown',
+        'cameraDate'      : '',
+        'focusmode'       : '',
+        'exposuremode'    : '',
+        'autopoweroff'    : '',
+        'imgfmtselected'  : '',
+        'imgfmtoptions'   : '',
+        'wbselected'      : '',
+        'wboptions'       : '',
+        'isoselected'     : '',
+        'isooptions'      : '',
+        'apselected'      : '',
+        'apoptions'       : '',
+        'shutselected'    : '',
+        'shutoptions'     : '',
+        'expselected'     : '',
+        'expoptions'      : '',
+        'piPreviewFile'   : '',
+        'cameraMfr'       : 'Unknown',
+        'blockPreview'    : 'False',
+        'enableCameraUsb' : 'false' # Jinja requires bools in lower case
         }
 
     args = request.args.to_dict()
     if args.get('preview'):
         cameraData['piPreviewFile'] = PI_PREVIEW_FILE + '?' + str(int(time.time())) #Adds a unique suffix so the browser always downloads the file
 
-    try:
-        camera, context, config = connectCamera(1)
-        if camera:
-            abilities = camera.get_abilities()
-            cameraData['cameraModel']              = abilities.model
-            cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
-            if (cameraData['cameraLens'] == 'Unknown'):
-                #Try to build this from focal length:
-                focalMin, discardMe = readRange (camera, 'status', 'minfocallength')
-                focalMax, discardMe = readRange (camera, 'status', 'maxfocallength')
-                if (focalMin == focalMax):
-                    cameraData['cameraLens'] = focalMin
+    camera, context, config, usbMode = connectCamera(1)
+    if usbMode:
+        cameraData['enableCameraUsb'] = 'true'
+        try:
+            if camera:
+                abilities = camera.get_abilities()
+                cameraData['cameraModel']              = abilities.model
+                cameraData['cameraLens'], discardMe    = readRange (camera, 'status', 'lensname')
+                if (cameraData['cameraLens'] == 'Unknown'):
+                    #Try to build this from focal length:
+                    focalMin, discardMe = readRange (camera, 'status', 'minfocallength')
+                    focalMax, discardMe = readRange (camera, 'status', 'maxfocallength')
+                    if (focalMin == focalMax):
+                        cameraData['cameraLens'] = focalMin
+                    else:
+                        focalMin = focalMin.replace(" mm", "")
+                        cameraData['cameraLens'] = (f'{focalMin}-{focalMax}')
+                cameraTimeAndDate = getCameraTimeAndDate(camera, config, 'Unknown')
+                cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
+                if 'Nikon' in cameraMfr:
+                    cameraMfr = 'Nikon'
+                    cameraData['cameraMfr'] = 'Nikon'
+                elif 'Canon' in cameraMfr:
+                    cameraMfr = 'Canon'
+                    cameraData['cameraMfr'] = 'Canon'
+                if (cameraMfr == 'Nikon'):
+                    imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
+                    apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
+                    cameraData['exposuremode']      = readValue (config, 'expprogram')
                 else:
-                    focalMin = focalMin.replace(" mm", "")
-                    cameraData['cameraLens'] = (f'{focalMin}-{focalMax}')
-            cameraTimeAndDate = getCameraTimeAndDate(camera, config, 'Unknown')
-            cameraMfr, discardMe = readRange (camera, 'status', 'manufacturer')
-            if 'Nikon' in cameraMfr:
-                cameraMfr = 'Nikon'
-                cameraData['cameraMfr'] = 'Nikon'
-            elif 'Canon' in cameraMfr:
-                cameraMfr = 'Canon'
-                cameraData['cameraMfr'] = 'Canon'
-            if (cameraMfr == 'Nikon'):
-                imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
-                apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
-                cameraData['exposuremode']      = readValue (config, 'expprogram')
-            else:
-                imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
-                apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
-                cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
-            #Attributes generic to all cameras:
-            wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
-            isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
-            shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
-            expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
+                    imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
+                    apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
+                    cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+                #Attributes generic to all cameras:
+                wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
+                isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
+                shutselected, shutoptions       = readRange (camera, 'capturesettings', 'shutterspeed')
+                expselected, expoptions         = readRange (camera, 'capturesettings', 'exposurecompensation')
 
-            abilities = camera.get_abilities()
-            if abilities.model in cameraPreviewBlocklist:
-                cameraData['blockPreview']  = 'True'
+                abilities = camera.get_abilities()
+                if abilities.model in cameraPreviewBlocklist:
+                    cameraData['blockPreview']  = 'True'
 
-            camera.exit()
-            cameraData['cameraDate']    = cameraTimeAndDate
-            cameraData['focusmode']     = readValue (config, 'focusmode')
-            cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
-            if (cameraData['exposuremode'] == "Not available"):
-                #try "expprogram"
-                cameraData['exposuremode']  = readValue (config, 'expprogram')
-            cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
-            cameraData['imgfmtselected']= imgfmtselected
-            cameraData['imgfmtoptions'] = imgfmtoptions
-            cameraData['wbselected']    = wbselected
-            cameraData['wboptions']     = wboptions
-            cameraData['isoselected']   = isoselected
-            cameraData['isooptions']    = isooptions
-            cameraData['apselected']    = apselected
-            cameraData['apoptions']     = apoptions
-            cameraData['shutselected']  = shutselected
-            cameraData['shutoptions']   = shutoptions
-            cameraData['expselected']   = expselected
-            cameraData['expoptions']    = expoptions
-    except Exception as e:
-        app.logger.debug(f'Unknown camera GET error: {e}')
+                camera.exit()
+                cameraData['cameraDate']    = cameraTimeAndDate
+                cameraData['focusmode']     = readValue (config, 'focusmode')
+                cameraData['exposuremode']  = readValue (config, 'autoexposuremode')
+                if (cameraData['exposuremode'] == "Not available"):
+                    #try "expprogram"
+                    cameraData['exposuremode']  = readValue (config, 'expprogram')
+                cameraData['autopoweroff']  = readValue (config, 'autopoweroff')
+                cameraData['imgfmtselected']= imgfmtselected
+                cameraData['imgfmtoptions'] = imgfmtoptions
+                cameraData['wbselected']    = wbselected
+                cameraData['wboptions']     = wboptions
+                cameraData['isoselected']   = isoselected
+                cameraData['isooptions']    = isooptions
+                cameraData['apselected']    = apselected
+                cameraData['apoptions']     = apoptions
+                cameraData['shutselected']  = shutselected
+                cameraData['shutoptions']   = shutoptions
+                cameraData['expselected']   = expselected
+                cameraData['expoptions']    = expoptions
+        except Exception as e:
+            app.logger.debug(f'Unknown camera GET error: {e}')
+    else:
+        app.logger.debug('nothing to display: cameraUsbMode is false')
 
     templateData = cameraData.copy()
     return render_template('camera.html', **templateData)
@@ -709,56 +730,73 @@ def cameraPOST():
     This page is where you manage all the camera settings
     """
     preview = None
+
     if 'wakeCamera' in request.form:
         writeString("WC", 2) # Sends the WAKE command to the Arduino
         app.logger.debug('camera page POSTed the camera wake command')
-    else:
-        try:
-            camera, context, config = connectCamera(1)
-            if camera:
-                if 'camApply' in request.form:
-                    app.logger.debug('-- Camera Apply selected')
-                    cameraMfr = request.form.get('cameraMfr')
-                    app.logger.debug(f'cameraMfr = {cameraMfr}')
-                    if cameraMfr == 'Canon':
-                        #This *does* write a new setting to the camera:
-                        node = config.get_child_by_name('imageformat') #
-                        node.set_value(str(request.form.get('img')))
-                        if (request.form.get('aperture') != None):
-                            node = config.get_child_by_name('aperture')
-                            node.set_value(str(request.form.get('aperture')))
-                    elif cameraMfr == 'Nikon':
-                        #This *does* write a new setting to the camera:
-                        node = config.get_child_by_name('imagequality') #
-                        node.set_value(str(request.form.get('img')))
-                        if (request.form.get('aperture') != None):
-                            node = config.get_child_by_name('f-number')
-                            node.set_value(str(request.form.get('aperture')))
-                    else:
-                        pass
-                    # Don't bother sending any of the "read only" settings:
-                    if (request.form.get('wb') != None):
-                        node = config.get_child_by_name('whitebalance')
-                        node.set_value(str(request.form.get('wb')))
-                    if (request.form.get('iso') != None):
-                        node = config.get_child_by_name('iso')
-                        node.set_value(str(request.form.get('iso')))
-                    if (request.form.get('shutter') != None):
-                        node = config.get_child_by_name('shutterspeed')
-                        node.set_value(str(request.form.get('shutter')))
-                    if (request.form.get('exp') != None):
-                        node = config.get_child_by_name('exposurecompensation')
-                        node.set_value(str(request.form.get('exp')))
-                    camera.set_config(config, context)
+    elif 'enableCameraUsb' in request.form:
+        # This is only ever present when the box is checked, and we can't be sure if the user changed it or not.
+        if (request.form.get('cameraUsbToggled') == 'true'):
+            # The camera has just been enabled. Update the cache/ INI and return.
+            app.logger.debug('camera page POSTed that the USB on/off checkbox has been toggled')
+            setIni('Global', 'enableCameraUsb', 'True')
+            cache.set('enableCameraUsb', True)
+            # Falls through to the bottom of the page and returns the redirect
+        else:
+            try:
+                camera, context, config, discardMe = connectCamera(1)
+                if camera:
+                    if 'camApply' in request.form:
+                        app.logger.debug('-- Camera Apply selected')
+                        cameraMfr = request.form.get('cameraMfr')
+                        app.logger.debug(f'cameraMfr = {cameraMfr}')
+                        if cameraMfr == 'Canon':
+                            #This *does* write a new setting to the camera:
+                            node = config.get_child_by_name('imageformat') #
+                            node.set_value(str(request.form.get('img')))
+                            if (request.form.get('aperture') != None):
+                                node = config.get_child_by_name('aperture')
+                                node.set_value(str(request.form.get('aperture')))
+                        elif cameraMfr == 'Nikon':
+                            #This *does* write a new setting to the camera:
+                            node = config.get_child_by_name('imagequality') #
+                            node.set_value(str(request.form.get('img')))
+                            if (request.form.get('aperture') != None):
+                                node = config.get_child_by_name('f-number')
+                                node.set_value(str(request.form.get('aperture')))
+                        else:
+                            pass
+                        # Don't bother sending any of the "read only" settings:
+                        if (request.form.get('wb') != None):
+                            node = config.get_child_by_name('whitebalance')
+                            node.set_value(str(request.form.get('wb')))
+                        if (request.form.get('iso') != None):
+                            node = config.get_child_by_name('iso')
+                            node.set_value(str(request.form.get('iso')))
+                        if (request.form.get('shutter') != None):
+                            node = config.get_child_by_name('shutterspeed')
+                            node.set_value(str(request.form.get('shutter')))
+                        if (request.form.get('exp') != None):
+                            node = config.get_child_by_name('exposurecompensation')
+                            node.set_value(str(request.form.get('exp')))
+                        camera.set_config(config, context)
 
-                if 'camPreview' in request.form:
-                    app.logger.debug('-- Camera Preview selected')
-                    getPreviewImage(camera, config)
-                    preview = 1
+                    if 'camPreview' in request.form:
+                        app.logger.debug('-- Camera Preview selected')
+                        getPreviewImage(camera, config)
+                        preview = 1
 
-                camera.exit()
-        except Exception as e:
-            app.logger.debug(f'Unknown camera POST error: {e}')
+                    camera.exit()
+
+            except Exception as e:
+                app.logger.debug(f'Unknown camera POST error: {e}')
+
+    elif 'cameraUsbToggled' in request.form:
+        # To get to here 'enableCameraUsb' must be false and 'cameraUsbToggled' is true, so this only fires if USB mode just just been disabled:
+        app.logger.debug('camera page POSTed that the USB on/off checkbox has been toggled')
+        setIni('Global', 'enableCameraUsb', 'False')
+        cache.delete('enableCameraUsb')
+        cache.set('enableCameraUsb', False, timeout = 300)
 
     return redirect(url_for('camera', preview = preview))
 
@@ -783,7 +821,7 @@ def intervalometer():
 
     # Camera comms:
     try:
-        camera, context, config = connectCamera(1)
+        camera, context, config, discardMe = connectCamera(1)
         if camera:
             #Find the capturetarget config item. (TY Jim.)
             capture_target = gp.check_result(gp.gp_widget_get_child_by_name(config, 'capturetarget'))
@@ -899,7 +937,8 @@ def transfer():
         'renameOnCopy'          : 'Off',
         'renameString'          : '',
         'copyOnBootup'          : '',
-        'transferOnBootup'      : ''
+        'transferOnBootup'      : '',
+        'cameraUsbMode'         : 'false' # Jinja requires bools in lower case
     }
     config = configparser.ConfigParser(
         {
@@ -926,43 +965,46 @@ def transfer():
         'copyOnBootup'       : 'Off',
         'transferOnBootup'   : 'Off'
         })
-    try:
-        config.read(iniFile)
-        #app.logger.debug('Found the file in GET')
-        templateData['tfrMethod']          = config.get('Transfer', 'tfrmethod')
-        templateData['ftpServer']          = config.get('Transfer', 'ftpServer')
-        templateData['ftpUser']            = config.get('Transfer', 'ftpUser')
-        templateData['ftpPassword']        = config.get('Transfer', 'ftpPassword')
-        templateData['ftpRemoteFolder']    = config.get('Transfer', 'ftpRemoteFolder')
-        templateData['sftpServer']         = config.get('Transfer', 'sftpServer')
-        templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
-        templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
-        templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
-        templateData['dbx_app_key']        = config.get('Transfer', 'dbx_app_key')
-        templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
-        templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
-        templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
-        templateData['transferDay']        = config.get('Transfer', 'transferDay')
-        templateData['transferHour']       = config.get('Transfer', 'transferHour')
-        templateData['transferOnBootup']   = config.get('Transfer', 'transferOnBootup')
-        templateData['copyDay']            = config.get('Copy', 'copyDay')
-        templateData['copyHour']           = config.get('Copy', 'copyHour')
-        templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
-        templateData['renameString']       = config.get('Copy', 'renameString')
-        templateData['copyOnBootup']       = config.get('Copy', 'copyOnBootup')
-    except Exception as e:
-        app.logger.debug(f'INI file error: {e}')
-        flash('Error reading from the Ini file', 'red')
 
-    templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
+    usbMode = getCameraUsbMode()
+    if usbMode:
+        templateData['cameraUsbMode'] = 'true'
+        try:
+            config.read(iniFile)
+            #app.logger.debug('Found the file in transfer GET')
+            templateData['tfrMethod']          = config.get('Transfer', 'tfrmethod')
+            templateData['ftpServer']          = config.get('Transfer', 'ftpServer')
+            templateData['ftpUser']            = config.get('Transfer', 'ftpUser')
+            templateData['ftpPassword']        = config.get('Transfer', 'ftpPassword')
+            templateData['ftpRemoteFolder']    = config.get('Transfer', 'ftpRemoteFolder')
+            templateData['sftpServer']         = config.get('Transfer', 'sftpServer')
+            templateData['sftpUser']           = config.get('Transfer', 'sftpUser')
+            templateData['sftpPassword']       = config.get('Transfer', 'sftpPassword')
+            templateData['sftpRemoteFolder']   = config.get('Transfer', 'sftpRemoteFolder')
+            templateData['dbx_app_key']        = config.get('Transfer', 'dbx_app_key')
+            templateData['rsyncUsername']      = config.get('Transfer', 'rsyncUsername')
+            templateData['rsyncHost']          = config.get('Transfer', 'rsyncHost')
+            templateData['rsyncRemoteFolder']  = config.get('Transfer', 'rsyncRemoteFolder')
+            templateData['transferDay']        = config.get('Transfer', 'transferDay')
+            templateData['transferHour']       = config.get('Transfer', 'transferHour')
+            templateData['transferOnBootup']   = config.get('Transfer', 'transferOnBootup')
+            templateData['copyDay']            = config.get('Copy', 'copyDay')
+            templateData['copyHour']           = config.get('Copy', 'copyHour')
+            templateData['renameOnCopy']       = config.get('Copy', 'renameOnCopy')
+            templateData['renameString']       = config.get('Copy', 'renameString')
+            templateData['copyOnBootup']       = config.get('Copy', 'copyOnBootup')
+        except Exception as e:
+            app.logger.debug(f'INI file error: {e}')
+            flash('Error reading from the Ini file', 'red')
 
-    rawWakePi = str(readFromArduino("5", "String", True))
-    if rawWakePi != "Unknown":
-        setIni('Global', 'wakePiHour', rawWakePi[0:2])
-        templateData['wakePiTime']     = rawWakePi[0:2]
+        templateData['piTransferLogLink'] = PI_TRANSFER_FILE.replace(PI_TRANSFER_DIR,'static')
+
+        rawWakePi = str(readFromArduino("5", "String", True))
+        if rawWakePi != "Unknown":
+            setIni('Global', 'wakePiHour', rawWakePi[0:2])
+            templateData['wakePiTime']     = rawWakePi[0:2]
 
     return render_template('transfer.html', **templateData)
-
 
 @app.route("/transfer", methods = ['POST'])    # The camera's POST method
 @login_required
@@ -1039,11 +1081,15 @@ def copyNowCronJob():
     if sourceIp != "127.0.0.1":
         abort(403)
 
-    tasks = [
-        copyNow.si(),
-        newThumbs.si()
-    ]
-    chain(*tasks).apply_async()
+    if getCameraUsbMode():
+        tasks = [copyNow.si()]
+        if (getIni('Transfer', 'transferDay', 'string', '') == 'afterCopy'):
+            tasks.append(transferNow.si())
+            app.logger.debug('copyNowCronJob() entered. A transfer will occur after the copy')
+        tasks.append(newThumbs.si())
+        chain(*tasks).apply_async()
+    else:
+        app.logger.debug('copyNowCronJob() entered, however CameraUsbMode is False. Aborting')
 
     res = make_response('OK')
     return res, 200
@@ -1074,6 +1120,13 @@ def transferNow(self):
     errorMsg = 'out'
     statusColour = 'white'
     try:
+        with open(PI_TRANSFER_FILE, 'a') as piTransferLogfile:
+            nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+            piTransferLogfile.write(f'{nowtime}\r\n')
+            piTransferLogfile.write(f'{nowtime} Logged by intvlm8r.py/transferNow: about to commence transfer after copy\r\n')
+    except Exception as e:
+        app.logger.info(f'transferNow error logging to PI_TRANSFER_FILE: {e}')
+    try:
         #cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer'] # Removed with 4.6.3 in March 2024.
         cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
@@ -1085,6 +1138,15 @@ def transferNow(self):
             stderrdata = stderrdata.strip()
             app.logger.info(f'transferNow error = {stderrdata}')
             errorMsg = ''
+            
+            if "sudo: a terminal is required to read the password" in stderrdata:
+                # The intvlm8r user isn't a member of the sudoers group. We need higher permissions. Log stderrdata & a STATUS msg:
+                with open(PI_TRANSFER_FILE, 'a') as piTransferLogfile:
+                    nowtime = datetime.now().strftime('%Y/%m/%d %H:%M:%S') #2019/09/08 13:06:03
+                    piTransferLogfile.write(f'{nowtime}\r\n')
+                    piTransferLogfile.write(f'{nowtime} ERROR logged by intvlm8r.py/transferNow: {stderrdata}\r\n')
+                    piTransferLogfile.write(f'{nowtime} STATUS: Transfer failed, needs password. Add user to NOPASSWD\r\n')
+            
     except Exception as e:
         app.logger.info(f'Unhandled transferNow error: {e}')
         errorMsg = ' unexpected'
@@ -1468,12 +1530,17 @@ def system():
         'pythonGphoto2Version': 'Unknown',
         'cameraDateTime'      : 'Unknown',
         'tzOffset'            : '0',
-        'cameraTimeMode'      : 0
+        'cameraTimeMode'      : 0,
+        'timeSettingOptions'  : TIME_SETTING_OPTIONS,
+        'timeSettingsValid'   : 0,
+        'cameraUsbMode'       : 'false' # Jinja requires bools in lower case
         }
 
     templateData['piThumbCount'] = getIni('Global', 'thumbsCount', 'int', '24')
 
-    camera, context, config = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    camera, context, config, usbMode = connectCamera(4) # Check the camera: see if it's awake, and if not, just wake it and return
+    if usbMode:
+        templateData['cameraUsbMode'] = 'true'
 
     arduinoVersion = str(getArduinoVersion('0'))
 
@@ -1544,14 +1611,23 @@ def system():
 
     templateData['arduinoVersion'] = 'Unknown' if (str(arduinoVersion) == '0') else str(arduinoVersion)
 
-    try:
-        if not config:
-            camera, context, config = connectCamera(1)
-        if camera:
-            templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
-            camera.exit()
-    except Exception as e:
-        app.logger.debug(f'system: Threw querying cameraDateTime: {e}')
+    if usbMode:
+        try:
+            if not config:
+                camera, context, config, discardMe = connectCamera(1)
+            if camera:
+                templateData['cameraDateTime'] = getCameraTimeAndDate(camera, config, 'Unknown')
+
+                #Capture all the valid time setting options:
+                timeSettingsValid = 0
+                for value, name in TIME_SETTING_OPTIONS:
+                    if readValue(config,name) != 'Not available':
+                        timeSettingsValid += value
+                templateData['timeSettingsValid'] = timeSettingsValid
+                app.logger.debug(f'system: timeSettingsValid = {timeSettingsValid}')
+                camera.exit()
+        except Exception as e:
+            app.logger.debug(f'system: Threw in cameraDateTime: {e}')
 
     try:
         tzOffset = (request.cookies.get('tzOffset'))
@@ -1567,14 +1643,13 @@ def system():
 
     try:
         cameraTimeMode = request.cookies.get('cameraTimeMode')
-        if cameraTimeMode != '1':
-            cameraTimeMode = '0'
     except:
         cameraTimeMode = '0'
         app.logger.debug(f'system: Threw on bad cameraTimeMode: {cameraTimeMode}')
     templateData['cameraTimeMode'] = cameraTimeMode
 
     return render_template('system.html', **templateData)
+
 
 @app.route("/system", methods = ['POST'])    # The system page's POST method
 @login_required
@@ -1617,10 +1692,7 @@ def systemPOST():
 
     if 'SyncSystem' in request.form:
         newTime = str(request.form.get('SyncSystem'))
-        if (request.form.get('cameraTimeMode')):
-            cameraTimeMode = '1'
-        else:
-            cameraTimeMode = '0'
+        cameraTimeMode = str(request.form.get('cameraTimeMode'))
         app.logger.debug(f'Yes we got the SyncSystem button & value {newTime}')
         if request.form.get('setArduinoTime'):
             app.logger.debug('Checked: setArduinoTime')
@@ -1631,17 +1703,18 @@ def systemPOST():
         if request.form.get('setCameraTime'):
             app.logger.debug('Checked: setCameraTime')
             try:
-                camera, context, config = connectCamera(1)
+                camera, context, config, discardMe = connectCamera(1)
                 if camera:
                     if setCameraTimeAndDate(camera, config, newTime, cameraTimeMode):
                         # apply the changed config
                         camera.set_config(config)
                     else:
                         app.logger.debug('Failed to setCameraTimeAndDate')
+                        flash('Error setting camera time & date', 'red')
                     camera.exit()
             except Exception as e:
                 app.logger.debug(f'Exception trying to setCameraTimeAndDate: {e}')
-        # Lastly here, let's set the cookie:
+        # Lastly here, let's set the cookies:
         res.set_cookie('tzOffset', request.form.get('tzOffsetValue'), 365 * 7 * 24 * 60 * 60)
         res.set_cookie('cameraTimeMode', cameraTimeMode, 365 * 7 * 24 * 60 * 60)
 
@@ -1696,47 +1769,71 @@ def setTime(newTime):
         app.logger.debug(f'setTime unhandled time error: {e}')
 
 
+def getCameraUsbMode():
+    """
+    Queries the cache to determine if Camera USB comms is enabled.
+    If this fails to return a result, query the INI file.
+    Still no hits? Default to True
+    """
+    result = cache.get('enableCameraUsb')
+    if result is None:
+        #The cache is empty? Read from INI, and set the cache
+        app.logger.debug('getCameraUsbMode cache query returned None')
+        result = getIni('Global', 'enableCameraUsb', 'bool', 'True')
+        cache.set('enableCameraUsb', result, timeout = 300)
+    return result
+
+
 def connectCamera(retries):
+    """
+    Establishes a connection to the camera & returns a tuple of the camera objects.
+    The 'retries' value lets the calling fn determine how much time we'll invest in trying to get the camera's attention.
+    This is all done in an effort to minimise page load times
+    """
     app.logger.debug('connectCamera entered')
-    try:
-        camera = gp.Camera()
-        context = gp.gp_context_new()
-        while True:
-            app.logger.debug(f'connectCamera retries = {retries}')
-            try:
-                camera.init(context)
-                config = camera.get_config(context)
-                app.logger.debug('connectCamera has made a connection to the camera. Exiting')
-                break
-            except gp.GPhoto2Error as e:
-                app.logger.debug(f'connectCamera GPhoto2Error: {e}')
-                if e.string == 'Unknown model':
-                    if retries % 2 == 0:
-                        app.logger.debug('connectCamera waking the camera & going again')
-                        writeString("WC", 1) # Sends the WAKE command to the Arduino
-                    else:
-                        app.logger.debug('connectCamera going again without waking the camera')
-                elif e.string == 'Could not claim the USB device':
-                    app.logger.debug('connectCamera could not claim the USB device. Exiting')
-                    #TODO: pass this back upstream to present to the user
+    if getCameraUsbMode():
+        try:
+            camera = gp.Camera()
+            context = gp.gp_context_new()
+            while True:
+                app.logger.debug(f'connectCamera retries = {retries}')
+                try:
+                    camera.init(context)
+                    config = camera.get_config(context)
+                    app.logger.debug('connectCamera has made a connection to the camera. Exiting')
+                    break
+                except gp.GPhoto2Error as e:
+                    app.logger.debug(f'connectCamera GPhoto2Error: {e}')
+                    if e.string == 'Unknown model':
+                        if retries % 2 == 0:
+                            app.logger.debug('connectCamera waking the camera & going again')
+                            writeString("WC", 1) # Sends the WAKE command to the Arduino
+                        else:
+                            app.logger.debug('connectCamera going again without waking the camera')
+                    elif e.string == 'Could not claim the USB device':
+                        app.logger.debug('connectCamera could not claim the USB device. Exiting')
+                        #TODO: pass this back upstream to present to the user
+                        camera.exit()
+                        return None, None, None, True
+                except Exception as e:
+                    app.logger.debug(f'connectCamera error: {e}')
+                if retries >= 4:
+                    app.logger.debug('connectCamera returning None')
                     camera.exit()
-                    return None, None, None
-            except Exception as e:
-                app.logger.debug(f'connectCamera error: {e}')
-            if retries >= 4:
-                app.logger.debug('connectCamera returning None')
-                camera.exit()
-                return None, None, None
-            if retries % 2 == 0:
-                time.sleep(1.5);    # Pause after waking
-            else:
-                time.sleep(0.5);  # Brief pause before looping
-            retries += 1
-        app.logger.debug('connectCamera returning 3 values')
-        return camera, context, config
-    except Exception as e:
-        app.logger.debug(f'connectCamera outer error: {e}')
-        return None, None, None
+                    return None, None, None, True
+                if retries % 2 == 0:
+                    time.sleep(1.5);    # Pause after waking
+                else:
+                    time.sleep(0.5);  # Brief pause before looping
+                retries += 1
+            app.logger.debug('connectCamera returning 3 values')
+            return camera, context, config, True
+        except Exception as e:
+            app.logger.debug(f'connectCamera outer error: {e}')
+            return None, None, None, True
+    else:
+        app.logger.debug('connectCamera returned  - NO CAMERA MODE active')
+        return None, None, None, False
 
 
 def readValue ( camera, attribute ):
@@ -1815,40 +1912,65 @@ def getCameraTimeAndDate( camera, config, returnValue ):
 
 def setCameraTimeAndDate(camera, config, newTimeDate, cameraTimeMode):
     """
-    Straight out of Jim's examples again, this time from "set-camera-clock.py" (with some tweaks)
+    Based on Jim's example "set-camera-clock.py"
     """
-    abilities = camera.get_abilities()
-    # get configuration tree
-    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
-    if OK >= gp.GP_OK:
-        app.logger.debug('Set camera time (opt 1)')
-        now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-        epochTime = int(time.mktime(now))
-        date_config.set_value(epochTime)
-        return True
-    if cameraTimeMode != '1':
-        #Skip this option if the "Alt camera time mode" is selected on the /system page
-        OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
-        if OK >= gp.GP_OK:
-            app.logger.debug('Set camera time (opt 4)')
-            sync_config.set_value(1)
+    app.logger.debug(f'Entered setCameraTimeAndDate. cameraTimeMode = {cameraTimeMode}')
+    for value, name in TIME_SETTING_OPTIONS:
+        if value == int(cameraTimeMode):
+            app.logger.debug(f'Setting camera time option {value}, {name}')
+            break
+    try:
+        #abilities = camera.get_abilities()
+        # These need to be carefully sequenced so you don't misfire on 'shorter' in 'longer':
+        if 'syncdatetimeutc' in name:
+            OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetimeutc')
+            if OK >= gp.GP_OK:
+                sync_config.set_value(1)
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to syncdatetimeutc widget query")
+                return False
             return True
-    OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
-    if OK >= gp.GP_OK:
-        widget_type = date_config.get_type()
-        if widget_type == gp.GP_WIDGET_DATE:
-            app.logger.debug('Set camera time (opt 2)')
-            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-            epochTime = int(time.mktime(now))
-            app.logger.debug('epochTime = {0}'.format(epochTime))
-            date_config.set_value(epochTime)
+        elif 'datetimeutc' in name:
+            OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetimeutc')
+            if OK >= gp.GP_OK:
+                now = int(time.time())
+                date_config.set_value(now)
+                return True
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to datetimeutc widget query")
+                return False
+        elif 'syncdatetime' in name:
+            OK, sync_config = gp.gp_widget_get_child_by_name(config, 'syncdatetime')
+            if OK >= gp.GP_OK:
+                sync_config.set_value(1)
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to syncdatetime widget query")
+                return False
+            return True
+        elif 'datetime' in name:
+            OK, date_config = gp.gp_widget_get_child_by_name(config, 'datetime')
+            if OK >= gp.GP_OK:
+                widget_type = date_config.get_type()
+                if widget_type == gp.GP_WIDGET_DATE:
+                    app.logger.debug('setCameraTimeAndDate datetime as GP_WIDGET_DATE integer')
+                    now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+                    epochTime = int(time.mktime(now))
+                    app.logger.debug('epochTime = {0}'.format(epochTime))
+                    date_config.set_value(epochTime)
+                else:
+                    app.logger.debug('setCameraTimeAndDate datetime as string')
+                    now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
+                    newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
+                    date_config.set_value(newNow)
+                return True
+            else:
+                app.logger.debug("setCameraTimeAndDate didn't receive OK to datetime widget query")
+                return False
         else:
-            app.logger.debug('Set camera time (opt 3)')
-            now = time.strptime(newTimeDate,'%Y%m%d%H%M%S')
-            newNow = time.strftime('%Y-%m-%d %H:%M:%S', now)
-            date_config.set_value(newNow)
-        return True
-    app.logger.debug('Failed to set camera time')
+            app.logger.debug('setCameraTimeAndDate failed to match on the incoming cameraTimeMode')
+            return False
+    except Exception as e:
+        app.logger.debug(f'setCameraTimeAndDate threw: {e}')
     return False
 
 
@@ -2412,9 +2534,9 @@ def setIni(keySection, keyName, newValue):
         config.set(keySection, keyName, newValue)
         with open(iniFile, 'w') as config_file:
             config.write(config_file)
-        app.logger.debug(f'Added key {keySection}/{keyName} with a value of {newValue}')
+        app.logger.debug(f'Added key {keySection}/{keyName} with {newValue = }') # Strange but true, this syntax prints the variable's name & value between single-quotes
     except Exception as e:
-        app.logger.debug(f'Exception thrown trying to add key {keySection}/{keyName} with a value of {newValue}')
+        app.logger.debug(f'Exception thrown trying to add key {keySection}/{keyName} with {newValue = }')
 
 
 @app.route('/trnCopyNow', methods=['POST'])
@@ -2426,10 +2548,9 @@ def trnCopyNow():
     """
     app.logger.debug('trnCopyNow() entered. [See /var/log/celery/celery_worker.log for what happens here]')
 
-    tasks = [
-        copyNow.si(),
-        newThumbs.si()
-    ]
+    tasks = [copyNow.si()]
+    tasks.append(newThumbs.si())
+
     task = chain(*tasks).apply_async()
 
     app.logger.debug(f'trnCopyNow() returned with task_id= {task.id}')
@@ -2470,8 +2591,8 @@ def copyNow(self):
     if filesToCopy:
         numberToCopy = len(filesToCopy)
         app.logger.info(f'copyNow has been tasked with copying {numberToCopy} images')
-        deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'Off')
-        renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'Off')
+        deleteAfterCopy = getIni('Copy', 'deleteAfterCopy', 'bool', 'False')
+        renameOnCopy = getIni('Copy', 'renameOnCopy', 'bool', 'False')
         renameString = getIni('Copy', 'renameString', 'string', None)
         if not renameString:
             app.logger.info('copyNow reports renameString is blank/empty. Forcing renameOnCopy = False')
@@ -2904,4 +3025,5 @@ def norobots():
 if __name__ == "__main__":
    # app.jinja_env.auto_reload = True             # Enable when debugging: reloads template files
    # app.config['TEMPLATES_AUTO_RELOAD'] = True   # Enable when debugging: reloads template files
+   # app.run(host='0.0.0.0', debug=True)          # Toggle with below: templates won't reload without Debug
    app.run(host='0.0.0.0')

@@ -8,7 +8,7 @@ You should only perform the steps here once you've completed the config steps an
 
 This process will drop it off the current WiFi network and turn it into its own network and Access Point, at which time it will lose Internet access and be unable to load new software components.
 
-Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.[1][2]
+Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Point and accept client connections directly.\[[1](#1-configuring-the-pi-as-a-wifi-ap)\] \[[2](#2-setting-up-a-raspberry-pi-as-an-access-point-in-a-standalone-network-nat)\]
 
 ## Make AP
 
@@ -32,7 +32,7 @@ Choose a better password than this     : myPiNetw0rkAccess!
 Choose an appropriate WiFi channel     : 5
 ```
 
-> The default radio channel #5 is valid around the world, HOWEVER you may find it congested in your area and choosing another may provide better connectivity.[3]
+> The default radio channel #5 is valid around the world, HOWEVER you may find it congested in your area and choosing another may provide better connectivity.\[[3](#3-list-of-wlan-channels)\]
 
 3. Upon completion the script will prompt for a reboot. 
 
@@ -85,7 +85,7 @@ Reboot now? [Y/n]:
 ## Debugging
 
 ### Can't find the Pi's WiFi network?
-- check you've chosen appropriate localisation settings in `hostapd.conf`. Don't forget the PiZero W is limited to 802.11g, the 2.4GHz frequencies [3]
+- check you've chosen appropriate localisation settings in `hostapd.conf`. Don't forget the PiZero W is limited to 802.11g, the 2.4GHz frequencies \[[3](#3-list-of-wlan-channels)\]
 - check the hostapd service is running OK: `sudo service hostapd status`
 - run this debug command and look through the output for any clues:
 `sudo hostapd -d /etc/hostapd/hostapd.conf`
@@ -103,6 +103,8 @@ Reboot now? [Y/n]:
 <br>
 <hr >
 
-[1] [Configuring the Pi as a WiFi AP](https://github.com/SurferTim/documentation/blob/6bc583965254fa292a470990c40b145f553f6b34/configuration/wireless/access-point.md)<br>
-[2] [Setting up a Raspberry Pi as an access point in a standalone network (NAT)](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)<br>
-[3] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax))
+## References
+
+#### [1] [Configuring the Pi as a WiFi AP](https://github.com/SurferTim/documentation/blob/6bc583965254fa292a470990c40b145f553f6b34/configuration/wireless/access-point.md)
+#### [2] [Setting up a Raspberry Pi as an access point in a standalone network (NAT)](https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md)
+#### [3] [List of WLAN channels](https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax))

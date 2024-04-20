@@ -1,6 +1,21 @@
 {% extends "index.html" %}
 {% block content %}
 
+{% if cameraUsbMode == 'false' %}
+<table>
+	<tr>
+		<th>Transfer Settings</th>
+	</tr>
+</table>
+<table>
+	<tr id="usbWarning" class="orange">
+		<td class="centre-text">
+			<strong>With camera USB disabled, the intvlm8r is only able to manage the shooting schedule</strong><br/>
+			Change this on the <a href="/camera" >/camera</a> page
+		</td>
+	</tr>
+</table>
+{% else %}
 <form method="post" onsubmit="return userFeedback(this, event)">
 	<table id='copy'>
 		<tr>
@@ -23,8 +38,8 @@
 				<div class="alignleft">Copy hour:</div>
 				<div class="alignright">
 					<select name="copyHour" id="copyHour" title="The hour of the day at which a copy takes place" onchange="newSelected(this.id)">
-						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							<option value="{{ hour }}"{% if hour == copyHour %} SELECTED{% endif %}>{{ hour }}</option>
+						{% for hour in range (24) %}
+							<option value="{{'%02d' % hour}}"{% if hour == copyHour|int %} SELECTED{% endif %}>{{'%02d' % hour}}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -222,6 +237,8 @@
 				<div class="alignleft">Transfer day:</div>
 				<div class="alignright">
 					<select name="transferDay" id="transferDay" title="The day of the week on which a copy takes place" onchange="newSelected(this.id)">
+					<option value="afterCopy"{% if 'afterCopy' == transferDay %} SELECTED{% endif %}>after Copy completes</option>
+					<option disabled>──────────</option>
 					{% for day in ['Daily','Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						<option value="{{ day }}"{% if day == transferDay %} SELECTED{% endif %}>{{ day }}</option>
 					{% endfor %}
@@ -234,8 +251,8 @@
 				<div class="alignleft">Transfer hour:</div>
 				<div class="alignright">
 					<select name="transferHour" id="transferHour" title="The hour of the day at which a transfer takes place" onchange="newSelected(this.id)">
-						{% for hour in ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'] %}
-							<option value="{{ hour }}"{% if hour == transferHour %} SELECTED{% endif %}>{{ hour }}</option>
+						{% for hour in range (24) %}
+							<option value="{{'%02d' % hour}}"{% if hour == transferHour|int %} SELECTED{% endif %}>{{'%02d' % hour}}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -280,7 +297,6 @@
 		</tr>
 	</table>
 </form>
-
 
 <script>
 var SelectionByte = 0;
@@ -367,7 +383,7 @@ dbx.style.display      = (method.value != "Dropbox" || copyDay.value == "Off") ?
 rsync.style.display    = (method.value != "rsync" || copyDay.value == "Off") ? "none":"";
 transfer.style.display = (method.value == "Off" || copyDay.value == "Off") ? "none":"";
 showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+showHideTrnHour.style.display         = (copyDay.value == "Off" || transferDay.value == "afterCopy" || "{{wakePiTime}}" != "25") ? "none":"";
 showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 showHideTrnMethod.style.display       = (copyDay.value == "Off") ? "none":"";
@@ -418,7 +434,7 @@ function newSelected(id)
 	if (id == "copyDay")
 	{
 		showHideCopyHour.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
-		showHideTrnHour.style.display         = (copyDay.value == "Off" || "{{wakePiTime}}" != "25") ? "none":"";
+		showHideTrnHour.style.display         = (copyDay.value == "Off" || transferDay.value == "afterCopy" || "{{wakePiTime}}" != "25") ? "none":"";
 		showHideCopyHrMsg.style.display       = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnHrMsg.style.display        = (copyDay.value == "Off" || "{{wakePiTime}}" == "25") ? "none":"";
 		showHideTrnWarning.style.display      = (copyDay.value != "Off") ? "none":"";
@@ -446,6 +462,7 @@ function newSelected(id)
 		{
 			document.getElementById("transferHourMsg").innerHTML = "A transfer takes place each " + transferDay.value + " at {{wakePiTime}}:00 when the Pi starts."
 		}
+		showHideTrnHour.style.display = (transferDay.value == "afterCopy") ? "none":"";
 	}
 
 	if (id == "transferOnBootup")
@@ -652,4 +669,6 @@ function getParentTable(obj)
 }
 
 </script>
+
+{% endif %}
 {% endblock %}

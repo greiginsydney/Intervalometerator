@@ -172,10 +172,14 @@
 		</tr>
 		<tr>
 			<td class="noborder">
-				<div class="alignleft"><label for="setCameraTime">Set camera date/time:</label></div>
+				<div class="alignleft{% if (cameraUsbMode == 'false') or (timeSettingsValid == 0)  %} grey-out tooltip{% endif %}">
+					<label for="setCameraTime">Set camera date/time:</label>
+					{% if timeSettingsValid | int == 0 %}<span class="tooltiptext">No camera modes available</span>{% endif %}
+					{% if cameraUsbMode == 'false' %}<span class="tooltiptext">USB communication with the camera is not enabled</span>{% endif %}
+				</div>
 				<div class="alignright">
 					<label class="loginChkbox">
-						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"/>
+						<input type="checkbox" id="setCameraTime" name="setCameraTime" onchange="newSetTimeSelected(this.id)"{% if (cameraUsbMode == 'false') or (timeSettingsValid | int == 0) %} DISABLED{% endif %}/>
 						<span class="rememberme"></span>
 					</label>
 				</div>
@@ -185,12 +189,17 @@
 			<td class="noborder">
 				<div class="alignleft">&nbsp;</div>
 				<div class="alignright">
-					<label class="loginChkbox">
-						<input type="checkbox" id="cameraTimeMode" name="cameraTimeMode" onchange="newSetTimeSelected(this.id)" {% if cameraTimeMode == '1' %} checked="checked"{% endif %}>
-						<span class="rememberme"></span>
-					</label>
+					<select name="cameraTimeMode" id="cameraTimeMode" title="Choose the method to use">
+						{% if timeSettingsValid | int == 0 %}
+							<option value="0" DISABLED>"n/a"</option>
+						{% else %}
+							{% for value, name in timeSettingOptions %}
+							<option value="{{value}}"{% if value == cameraTimeMode|int %} SELECTED{% endif %}{% if (timeSettingsValid - value) < 0 %} DISABLED{% endif %}>{{name}}</option>
+							{% endfor %}
+						{% endif %}
+					</select>
 				</div>
-				<div class="alignright"><label for="cameraTimeMode">Alt camera time mode:&nbsp;</label></div>
+				<div class="alignright"><label for="cameraTimeMode">Camera time mode:&nbsp;</label></div>
 			</td>
 		</tr>
 		<tr>
