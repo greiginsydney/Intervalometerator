@@ -394,8 +394,10 @@ install_apps ()
 	pip3 install ExifReader requests
 	echo -e ""$GREEN"Installing libraw-dev"$RESET""
 	apt install libraw-dev -y
-	echo -e ""$GREEN"Installing cython imageio"$RESET""
-	pip3 install cython imageio
+	echo -e ""$GREEN"Installing cython"$RESET""
+	pip3 install cython
+	# echo -e ""$GREEN"Installing imageio"$RESET""
+	# pip3 install imageio
 	# =================== END image handling ===================
 	# ====================== START rawpy =======================
 	installRawpy=0
