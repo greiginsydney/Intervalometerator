@@ -133,7 +133,6 @@ sudo apt-get install git -y
 
 ```txt
 cd ~
-sudo rm -rf Intervalometerator
 git clone --depth=3 https://github.com/greiginsydney/Intervalometerator
 ```
 
