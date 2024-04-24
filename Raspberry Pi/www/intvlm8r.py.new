@@ -1182,7 +1182,7 @@ def thermal():
         'vMinAt'         : '',
         'VHiAlarm'       : 0,
         'VLoAlarm'       : 0,
-        'vFSD'           : 18 #A constant to feed to the page & use for valculations
+        'vFSD'           : 18 # A constant to feed to the page & use for calculations
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
