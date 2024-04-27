@@ -19,7 +19,7 @@ References:
 */
 // Last updated/changed in version 4.6.0:
 // - added 'shootFast'
-char version[6] = "5.0.0";
+char version[6] = "5.0.1";
 /*****************************************************************************/
 #include <SPI.h>   // SPI - The underlying comms to talk to the clock
 #include <Wire.h>  // I2C - to talk to the Pi
