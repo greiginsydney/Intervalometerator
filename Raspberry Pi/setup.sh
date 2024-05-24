@@ -408,7 +408,7 @@ install_apps ()
 	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isRawpy && ($isRawpy != "(none)") ]];
 	then
-		echo -e "\rCurrent installed version of rawpy  = $isRawpy"
+		echo -e "\rCurrent  installed version of rawpy = $isRawpy"
 		if [[ $isRawpy != $latestRawpyRls ]];
 		then
 			echo -e ""$GREEN"Updating rawpy"$RESET""
@@ -417,7 +417,7 @@ install_apps ()
 			echo 'No rawpy upgrade required'
 		fi
 	else
-		echo -e "\rCurrent installed version of rawpy  = None"
+		echo -e "\rCurrent  installed version of rawpy = None"
 		echo -e ""$GREEN"Installing rawpy"$RESET""
 		installRawpy=1
 	fi
