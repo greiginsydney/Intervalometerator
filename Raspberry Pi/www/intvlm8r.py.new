@@ -168,7 +168,7 @@ def readFromArduino(value, dataType, cacheRequest):
     ascii = ord(value[0])
     if (cacheRequest == True):
         cached = cache.get(value)
-        if cached is None:
+        if (cached is None) or (len(cached) == 0):
             #The cache is empty? Bummer
             pass
         else:
