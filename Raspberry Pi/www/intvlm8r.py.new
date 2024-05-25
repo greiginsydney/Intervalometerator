@@ -170,7 +170,7 @@ def readFromArduino(value, dataType, cacheRequest):
         cached = cache.get(value)
         if (cached is None) or (len(cached) == 0):
             #The cache is empty? Bummer
-            pass
+            app.logger.debug(f'ASCII = {ascii}. Cached value returned was empty or None')
         else:
             app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
