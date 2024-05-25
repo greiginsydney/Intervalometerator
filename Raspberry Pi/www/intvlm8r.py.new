@@ -195,8 +195,7 @@ def readFromArduino(value, dataType, cacheRequest):
             time.sleep(1) # Wait a second before each retry
     app.logger.debug(f'Status received was {dataType}: >{status}<')
 
-    if (cacheRequest == True):
-        cache.set(value, status, timeout = 0)
+    cache.set(value, status, timeout = 0) # Cache every query.
 
     if status == "":
         status = "Unknown"
