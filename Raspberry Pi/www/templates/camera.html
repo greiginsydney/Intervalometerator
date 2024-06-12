@@ -145,7 +145,7 @@
 			<div class="alignright">
 				<select name="aperture" id="aperture" onchange="newSelected(this.id)">
 					{% for aperture in apoptions %}
-						<option {% if exposuremode == "S" or exposuremode == "TV" or aperture == "implicit auto"%} disabled{% endif %} value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
+						<option {% if exposuremode == "S" or exposuremode == "TV" or aperture == "implicit auto"%}disabled{% endif %} value="{{aperture}}"{{ ' SELECTED' if aperture == apselected }}>{{aperture}}</option>
 					{% endfor %}
 				</select>
 			</div>
@@ -157,7 +157,7 @@
 			<div class="alignright">
 				<select name="shutter" id="shutter" onchange="newSelected(this.id)">
 					{% for shutterspeed in shutoptions %}
-						<option {% if exposuremode == "A" or exposuremode == "AV" or shutterspeed == "auto" %} disabled{% endif %} value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
+						<option {% if exposuremode == "A" or exposuremode == "AV" or shutterspeed == "auto" %}disabled{% endif %} value="{{shutterspeed}}"{{ ' SELECTED' if shutterspeed == shutselected }}>{{shutterspeed}}</option>
 					{% endfor %}
 				</select>
 			</div>
