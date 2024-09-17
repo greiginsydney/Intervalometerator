@@ -1569,9 +1569,10 @@ END
 		sleep 5
 		nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
 	fi
-	nmcli con modify hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
-	nmcli con modify hotspot wifi-sec.key-mgmt wpa-psk
-	nmcli con modify hotspot wifi-sec.psk "$wifiPwd"
+	nmcli con mod hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
+ 	nmcli con mod hotspot 802-11-wireless.powersave disable
+	nmcli con mod hotspot wifi-sec.key-mgmt wpa-psk
+	nmcli con mod hotspot wifi-sec.psk "$wifiPwd"
 	nmcli con mod hotspot ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 	echo -e ""$GREEN"Byeee!"$RESET""
 	nmcli con up hotspot
