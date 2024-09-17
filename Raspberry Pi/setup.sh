@@ -1820,6 +1820,7 @@ unmake_ap_nmcli ()
 			nmcli con mod "$newSsid" ipv4.method auto
 		;;
 	esac
+ 	nmcli con mod "$newSsid" 802-11-wireless.powersave disable
 	nmcli con up "$newSsid"
 }
 
