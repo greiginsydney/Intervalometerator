@@ -1141,7 +1141,7 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 
 	# Wi-Fi Power Save
 	# Disable Wi-Fi power save mode:
-	isNmcli=$(dpkg -s network-manager | grep "Status: " | cut -d ' ' -f4)
+	isNmcli=$(dpkg -s network-manager 2>/dev/null | grep "Status: " | cut -d ' ' -f4)
 	if [[ $isNmcli == "installed" ]];
 	then
 		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
