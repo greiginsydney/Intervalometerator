@@ -2141,11 +2141,48 @@ test_install ()
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 
-	if iw wlan0 get power_save | grep -q 'on';
+	isNmcli=$(dpkg -s network-manager 2>/dev/null | grep "Status: " | cut -d ' ' -f4)
+	if [[ $isNmcli == "installed" ]];
 	then
-		echo -e ""$YELLOW"FAIL:"$RESET" Wi-Fi power save is ON"
+		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
+		if [ ! -z "$activeConnections" ];
+		then
+			# Loop through them:
+			IFS=$'\n'
+			for thisConnection in $activeConnections;
+			do
+				local wlanId=$(nmcli -t -f NAME,DEVICE connection show | grep $thisConnection | cut -d: -f2)
+				if [[ "$wlanId" =~ "wlan" ]];
+				then
+					local powerSave=$(nmcli -p connection show $thisConnection | grep 802-11-wireless.powersave | cut -s -d : -f 2 | tr -cd '0-9')
+					case $powerSave in
+						('0')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save is set to 'default' (ambiguous)"
+							;;
+						('1')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save is set to 'ignore' (ambiguous)"
+							;;
+						('2')
+							echo -e ""$GREEN"PASS:"$RESET" $wlanId Wi-Fi power save is OFF"
+							;;
+						('3')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save is ON"
+							;;
+						(*)
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save test returned an unexpected response: $powerSave"
+							;;
+					esac
+				fi
+			done
+			unset IFS
+		fi
 	else
-		echo -e ""$GREEN"PASS:"$RESET" Wi-Fi power save is OFF"
+		if iw wlan0 get power_save | grep -q 'on';
+		then
+			echo -e ""$YELLOW"FAIL:"$RESET" Wi-Fi power save is ON"
+		else
+			echo -e ""$GREEN"PASS:"$RESET" Wi-Fi power save is OFF"
+		fi
 	fi
 	echo ''
 	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx
