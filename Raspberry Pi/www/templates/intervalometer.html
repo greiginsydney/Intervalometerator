@@ -108,6 +108,7 @@
 
 <script>
 
+var shootDays        = document.getElementById("shootDays");
 var startHour        = document.getElementById("startHour");
 var endHour          = document.getElementById("endHour");
 var interval         = document.getElementById("interval");
@@ -116,7 +117,7 @@ var daysincamera     = document.getElementById("daysincamera");
 var daysinpi         = document.getElementById("daysinpi");
 var shootFastWarning = document.getElementById("shootFastWarning");
 
-var numDaysSelected = 0;
+var numDaysSelected = shootDays.options.length;
 var SelectionByte = 0;
 var SelectionBits = new Array();
 	SelectionBits["shootDays"] =  1;
@@ -124,14 +125,7 @@ var SelectionBits = new Array();
 	SelectionBits["endHour"]   =  4;
 	SelectionBits["interval"]  =  8;
 
-var IntvElements = new Array(); // the array contains the elements themselves, to be referened in checkForEmptyValues()
-	IntvElements[1] =  shootDays;
-	IntvElements[2] =  startHour;
-	IntvElements[4] =  endHour;
-	IntvElements[8] =  interval;
-
 // Run when the form first loads:
-checkForEmptyValues();
 lightButtons();
 calculateShots();
 intervalHighlighting();
@@ -316,7 +310,6 @@ function checkThresholds(thisRow, thisValue)
 
 function lightButtons()
 {
-	checkForEmptyValues();
 	if ((SelectionByte == 0) || (numDaysSelected == 0))
 	{
 		document.getElementById("apply").disabled  = true;
@@ -337,17 +330,6 @@ function lightButtons()
 	{
 		startHour.classList.remove("redborder");
 		endHour.classList.remove("redborder");
-	}
-}
-
-function checkForEmptyValues()
-{
-	for (let i = 1; i <= 8; i = i*2) // loops 1,2,4,8
-	{
-		if (String(IntvElements[i].value).length == 0)
-		{
-			SelectionByte = SelectionByte | SelectionBits[i]; // Or turns the bit on if the value is ''
-		}
 	}
 }
 
