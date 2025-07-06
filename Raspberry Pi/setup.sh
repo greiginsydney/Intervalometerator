@@ -208,16 +208,18 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing python3-pip"$RESET""
 	apt-get install python3-pip -y
-	echo -e ""$GREEN"Upgrading pip3"$RESET""
-	pip3 install --upgrade pip
+	#echo -e ""$GREEN"Upgrading pip3"$RESET""
+	#pip3 install --upgrade pip
 	echo -e ""$GREEN"Installing python3-flask"$RESET""
 	apt-get install python3-flask -y
 	echo -e ""$GREEN"Installing Werkzeug"$RESET""
-	pip3 install Werkzeug
+	#pip install Werkzeug
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install Werkzeug"
+	
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
-	pip3 install flask flask-bootstrap flask-login Flask_Caching configparser
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install flask flask-bootstrap flask-login Flask_Caching configparser"
 	echo -e ""$GREEN"Installing gunicorn, psutil, packaging"$RESET""
-	pip3 install gunicorn psutil packaging
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install gunicorn psutil packaging"
 	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
 
@@ -226,11 +228,13 @@ install_apps ()
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
 		echo -e ""$GREEN"Installing redis"$RESET""
-		pip3 install redis
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install redis"
 	fi
 
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
-	pip3 install "celery[redis]"
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install 'celery[redis]'"
+
+
 
 	if [ $installSftp -eq 1 ];
 	then
@@ -244,27 +248,27 @@ install_apps ()
 		apt-get install libkrb5-dev -y
 		echo -e ""$GREEN"Installing bcrypt"$RESET""
 		# pip3 install "bcrypt<4.0.0" See issue #129
-		pip3 install bcrypt
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install bcrypt"
 		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
-		pip3 install pynacl cryptography gssapi paramiko
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install pynacl cryptography gssapi paramiko"
 	fi
 
 	if [ $installDropbox -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing dropbox"$RESET""
-		pip3 install dropbox
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install dropbox"
 	fi
 
 	if [ $installGoogle -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
-		pip3 install pip google-api-python-client oauth2client
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install pip google-api-python-client oauth2client"
 	fi
 
 	if [ $installRsync -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing sysrsync"$RESET""
-		pip3 install sysrsync
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install sysrsync"
 	fi
 
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, jq"$RESET""
@@ -374,7 +378,7 @@ install_apps ()
 		then
 			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
-			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
+			sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:"
 		else
 			echo -e "\rCurrent  installed version of python-gphoto2 = $isGphoto"
 			echo 'No python-gphoto2 upgrade required'
@@ -382,20 +386,20 @@ install_apps ()
 	else
 		echo -e "\rCurrent  installed version of python-gphoto2 = None"
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
-		pip3 install -v gphoto2 --no-binary :all:
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v gphoto2 --no-binary :all:"
 	fi
 	# ================== END python-gphoto ==================
 	# ================ START image handling =================
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
-	pip3 install -v pillow --no-cache-dir
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v pillow --no-cache-dir"
 	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
-	pip3 install ExifReader requests
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install ExifReader requests"
 	echo -e ""$GREEN"Installing libraw-dev"$RESET""
 	apt install libraw-dev -y
 	echo -e ""$GREEN"Installing cython"$RESET""
-	pip3 install cython
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install cython"
 	# echo -e ""$GREEN"Installing imageio"$RESET""
 	# pip3 install imageio
 	# =================== END image handling ===================
@@ -462,7 +466,7 @@ install_apps ()
 	fi
 
 	echo -e ""$GREEN"Installing smbus2"$RESET""
-	pip3 install smbus2
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install smbus2"
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
@@ -522,8 +526,8 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
-		whereisgphoto=$(python -m pip show gphoto2 | sed -n 's/.*Location:\s\(.*\).*/\1/p')
-	else
+	#	whereisgphoto=$(python -m pip show gphoto2 | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+	#else
 		whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
 	fi
 
