@@ -526,8 +526,8 @@ install_apps ()
 	# if [[ ($VENV_REQUIRED == 1) ]]; #I don't know which of these is the better
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
-	#	whereisgphoto=$(python -m pip show gphoto2 | sed -n 's/.*Location:\s\(.*\).*/\1/p')
-	#else
+		whereisgphoto=$(python -m pip show gphoto2 | sed -n 's/.*Location:\s\(.*\).*/\1/p')
+	else
 		whereisgphoto=$(su - $SUDO_USER -c "pip3 show gphoto2" | sed -n 's/.*Location:\s\(.*\).*/\1/p')
 	fi
 
