@@ -12,7 +12,7 @@
 			<div class="alignright">
 				<select multiple name="shootDays" id="shootDays" title="Select one or more days to shoot" onchange="newDaySelected()">
 					{% if piDoW == "" %}
-						<option class="hidden" disabled selected> -- choose -- </option>
+						<option class="hidden" value="" disabled selected> -- choose -- </option>
 					{% endif %}
 					{% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
 						<option value="{{day}}"{% if day in piDoW %} SELECTED{% endif %}>{{day}}</option>
@@ -26,7 +26,7 @@
 				<div class="alignleft">Daily start hour:</div>
 				<div class="alignright">
 					<select name="startHour" id="startHour" title="Select the start hour each day" onchange="newSelected(this.id)">
-						<option class="hidden" disabled selected> -- choose -- </option>
+						<option class="hidden" value="" disabled selected> -- choose -- </option>
 						{% for hour in range (24) %}
 							<option value="{{'%02d' % hour}}"{% if hour == piStartHour|int %} SELECTED{% endif %}>{{'%02d' % hour}}</option>
 						{% endfor %}
@@ -39,7 +39,7 @@
 				<div class="alignleft">Daily end hour:</div>
 				<div class="alignright">
 					<select name="endHour" id="endHour" title="Select the end hour each day" onchange="newSelected(this.id)">
-						<option class="hidden" disabled selected> -- choose -- </option>
+						<option class="hidden" value="" disabled selected> -- choose -- </option>
 						{% for hour in range (1, 25) %}
 							<option value="{{'%02d' % hour}}"{% if hour == piEndHour|int %} SELECTED{% endif %}>{{'%02d' % hour}}</option>
 						{% endfor %}
@@ -52,7 +52,7 @@
 				<div class="alignleft">Interval:</div>
 				<div class="alignright">
 					<select name="interval" id="interval" title="Select the interval between shots" onchange="newSelected(this.id)">
-						<option class="hidden" disabled selected> -- choose -- </option>
+						<option class="hidden" value="" disabled selected> -- choose -- </option>
 						{% if shootFast is defined %}
 							{% for intv in ['63','64','65','66','70','72','75','80','90'] %}
 							<option class="orange" value="{{intv}}"{% if intv == piInterval %} SELECTED{% endif %}>{{'%02d'| format((intv | int) - 60)}} seconds</option>
@@ -108,6 +108,7 @@
 
 <script>
 
+var shootDays        = document.getElementById("shootDays");
 var startHour        = document.getElementById("startHour");
 var endHour          = document.getElementById("endHour");
 var interval         = document.getElementById("interval");
@@ -116,7 +117,7 @@ var daysincamera     = document.getElementById("daysincamera");
 var daysinpi         = document.getElementById("daysinpi");
 var shootFastWarning = document.getElementById("shootFastWarning");
 
-var numDaysSelected = 1;
+var numDaysSelected = shootDays.options.length;
 var SelectionByte = 0;
 var SelectionBits = new Array();
 	SelectionBits["shootDays"] =  1;
@@ -129,7 +130,6 @@ lightButtons();
 calculateShots();
 intervalHighlighting();
 showSfWarning();
-
 
 function newSelected(id)
 {
@@ -332,6 +332,7 @@ function lightButtons()
 		endHour.classList.remove("redborder");
 	}
 }
+
 </script>
 
 {% endblock %}

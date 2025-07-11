@@ -208,16 +208,18 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing python3-pip"$RESET""
 	apt-get install python3-pip -y
-	echo -e ""$GREEN"Upgrading pip3"$RESET""
-	pip3 install --upgrade pip
+	#echo -e ""$GREEN"Upgrading pip3"$RESET""
+	#pip3 install --upgrade pip
 	echo -e ""$GREEN"Installing python3-flask"$RESET""
 	apt-get install python3-flask -y
 	echo -e ""$GREEN"Installing Werkzeug"$RESET""
-	pip3 install Werkzeug
+	#pip install Werkzeug
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install Werkzeug"
+	
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
-	pip3 install flask flask-bootstrap flask-login Flask_Caching configparser
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install flask flask-bootstrap flask-login Flask_Caching configparser"
 	echo -e ""$GREEN"Installing gunicorn, psutil, packaging"$RESET""
-	pip3 install gunicorn psutil packaging
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install gunicorn psutil packaging"
 	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
 
@@ -226,11 +228,13 @@ install_apps ()
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
 		echo -e ""$GREEN"Installing redis"$RESET""
-		pip3 install redis
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install redis"
 	fi
 
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
-	pip3 install "celery[redis]"
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install 'celery[redis]'"
+
+
 
 	if [ $installSftp -eq 1 ];
 	then
@@ -244,27 +248,27 @@ install_apps ()
 		apt-get install libkrb5-dev -y
 		echo -e ""$GREEN"Installing bcrypt"$RESET""
 		# pip3 install "bcrypt<4.0.0" See issue #129
-		pip3 install bcrypt
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install bcrypt"
 		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
-		pip3 install pynacl cryptography gssapi paramiko
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install pynacl cryptography gssapi paramiko"
 	fi
 
 	if [ $installDropbox -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing dropbox"$RESET""
-		pip3 install dropbox
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install dropbox"
 	fi
 
 	if [ $installGoogle -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
-		pip3 install pip google-api-python-client oauth2client
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install pip google-api-python-client oauth2client"
 	fi
 
 	if [ $installRsync -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing sysrsync"$RESET""
-		pip3 install sysrsync
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install sysrsync"
 	fi
 
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, jq"$RESET""
@@ -374,7 +378,7 @@ install_apps ()
 		then
 			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
-			pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:
+			sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:"
 		else
 			echo -e "\rCurrent  installed version of python-gphoto2 = $isGphoto"
 			echo 'No python-gphoto2 upgrade required'
@@ -382,20 +386,20 @@ install_apps ()
 	else
 		echo -e "\rCurrent  installed version of python-gphoto2 = None"
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
-		pip3 install -v gphoto2 --no-binary :all:
+		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v gphoto2 --no-binary :all:"
 	fi
 	# ================== END python-gphoto ==================
 	# ================ START image handling =================
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
-	pip3 install -v pillow --no-cache-dir
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v pillow --no-cache-dir"
 	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
-	pip3 install ExifReader requests
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install ExifReader requests"
 	echo -e ""$GREEN"Installing libraw-dev"$RESET""
 	apt install libraw-dev -y
 	echo -e ""$GREEN"Installing cython"$RESET""
-	pip3 install cython
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install cython"
 	# echo -e ""$GREEN"Installing imageio"$RESET""
 	# pip3 install imageio
 	# =================== END image handling ===================
@@ -408,7 +412,7 @@ install_apps ()
 	isRawpy=$(su - $SUDO_USER -c "pip3 show rawpy 2>/dev/null" | sed -n 's/.*Version:\s\(.*\).*/\1/p')
 	if [[ $isRawpy && ($isRawpy != "(none)") ]];
 	then
-		echo -e "\rCurrent installed version of rawpy  = $isRawpy"
+		echo -e "\rCurrent  installed version of rawpy = $isRawpy"
 		if [[ $isRawpy != $latestRawpyRls ]];
 		then
 			echo -e ""$GREEN"Updating rawpy"$RESET""
@@ -417,7 +421,7 @@ install_apps ()
 			echo 'No rawpy upgrade required'
 		fi
 	else
-		echo -e "\rCurrent installed version of rawpy  = None"
+		echo -e "\rCurrent  installed version of rawpy = None"
 		echo -e ""$GREEN"Installing rawpy"$RESET""
 		installRawpy=1
 	fi
@@ -462,7 +466,7 @@ install_apps ()
 	fi
 
 	echo -e ""$GREEN"Installing smbus2"$RESET""
-	pip3 install smbus2
+	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install smbus2"
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
@@ -1141,20 +1145,56 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 
 	# Wi-Fi Power Save
 	# Disable Wi-Fi power save mode:
-	if iw wlan0 get power_save | grep -q 'on';
+	isNmcli=$(dpkg -s network-manager 2>/dev/null | grep "Status: " | cut -d ' ' -f4)
+	if [[ $isNmcli == "installed" ]];
 	then
-		iw wlan0 set power_save off
-		echo -e ""$GREEN"Disabled Wi-Fi power save mode"$RESET""
+		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
+		if [ ! -z "$activeConnections" ];
+		then
+			# Loop through them:
+			IFS=$'\n'
+			for thisConnection in $activeConnections;
+			do
+				local wlanId=$(nmcli -t -f NAME,DEVICE connection show | grep $thisConnection | cut -d: -f2)
+				if [[ "$wlanId" =~ "wlan" ]];
+				then
+					local powerSave=$(nmcli -p connection show $thisConnection | grep 802-11-wireless.powersave | cut -s -d : -f 2 | tr -cd '0-9')
+					case $powerSave in
+						('')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId returned no Wi-Fi power save value"
+							;;
+						('2')
+							echo -e ""$GREEN"PASS:"$RESET" $wlanId Wi-Fi power save is already OFF"
+							;;
+						(*)
+							echo -e ""$GREEN"PASS:"$RESET" $wlanId Wi-Fi power save has been turned OFF"
+							nmcli connection modify $thisConnection 802-11-wireless.powersave 2
+							;;
+					esac
+				fi
+			done
+			unset IFS
+		fi
 	else
-		echo -e "Wi-Fi power save mode is already off"
-	fi
-	# Permanently disable Wi-Fi power save mode:
-	if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local;
-	then
-		echo -e 'Wi-Fi power save mode is already disabled in /etc/rc.local'
-	else
-		sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
-		echo -e ""$GREEN"Wi-Fi power save mode disabled in /etc/rc.local"$RESET""
+		echo -e ""$YELLOW"INFO:"$RESET" network-manager not detected. Disabling Wi-Fi power save via legacy method"
+		if iw wlan0 get power_save | grep -q 'on';
+		then
+			iw wlan0 set power_save off
+			echo -e ""$GREEN"Disabled Wi-Fi power save mode"$RESET""
+		else
+			echo -e "Wi-Fi power save mode is already off"
+		fi
+		# Permanently disable Wi-Fi power save mode:
+		if [ -f /etc/rc.local ];
+		then
+			if grep -q '/sbin/iw dev wlan0 set power_save off' /etc/rc.local;
+			then
+				echo -e 'Wi-Fi power save mode is already disabled in /etc/rc.local'
+			else
+				sed -i '/^exit 0/i \/sbin\/iw dev wlan0 set power_save off\n' /etc/rc.local
+				echo -e ""$GREEN"Wi-Fi power save mode disabled in /etc/rc.local"$RESET""
+			fi
+		fi
 	fi
 
 	remoteit
@@ -1569,9 +1609,10 @@ END
 		sleep 5
 		nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect yes ssid "$wifiSsid"
 	fi
-	nmcli con modify hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
-	nmcli con modify hotspot wifi-sec.key-mgmt wpa-psk
-	nmcli con modify hotspot wifi-sec.psk "$wifiPwd"
+	nmcli con mod hotspot 802-11-wireless.mode ap 802-11-wireless.band bg 802-11-wireless.channel $wifiChannel #ipv4.method shared
+ 	nmcli con mod hotspot 802-11-wireless.powersave disable
+	nmcli con mod hotspot wifi-sec.key-mgmt wpa-psk
+	nmcli con mod hotspot wifi-sec.psk "$wifiPwd"
 	nmcli con mod hotspot ipv4.addresses "${piIpV4}/${cidr_mask}" ipv4.method manual
 	echo -e ""$GREEN"Byeee!"$RESET""
 	nmcli con up hotspot
@@ -1819,6 +1860,7 @@ unmake_ap_nmcli ()
 			nmcli con mod "$newSsid" ipv4.method auto
 		;;
 	esac
+ 	nmcli con mod "$newSsid" 802-11-wireless.powersave disable
 	nmcli con up "$newSsid"
 }
 
@@ -2103,11 +2145,48 @@ test_install ()
 	#WiFiSsid=$(sed -n -E 's|^\s*ssid="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 	#WiFiPsk=$(sed -n -E 's|^\s*psk="(.*)"$|\1|p' /etc/wpa_supplicant/wpa_supplicant.conf | tail -1) # Delimiter needs to be '|'
 
-	if iw wlan0 get power_save | grep -q 'on';
+	isNmcli=$(dpkg -s network-manager 2>/dev/null | grep "Status: " | cut -d ' ' -f4)
+	if [[ $isNmcli == "installed" ]];
 	then
-		echo -e ""$YELLOW"FAIL:"$RESET" Wi-Fi power save is ON"
+		local activeConnections=$(nmcli -t c s -a | awk '!/loopback/' | cut -d: -f 1  )
+		if [ ! -z "$activeConnections" ];
+		then
+			# Loop through them:
+			IFS=$'\n'
+			for thisConnection in $activeConnections;
+			do
+				local wlanId=$(nmcli -t -f NAME,DEVICE connection show | grep $thisConnection | cut -d: -f2)
+				if [[ "$wlanId" =~ "wlan" ]];
+				then
+					local powerSave=$(nmcli -p connection show $thisConnection | grep 802-11-wireless.powersave | cut -s -d : -f 2 | tr -cd '0-9')
+					case $powerSave in
+						('0')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save is set to 'default' (ambiguous)"
+							;;
+						('1')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save is set to 'ignore' (ambiguous)"
+							;;
+						('2')
+							echo -e ""$GREEN"PASS:"$RESET" $wlanId Wi-Fi power save is OFF"
+							;;
+						('3')
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save is ON"
+							;;
+						(*)
+							echo -e ""$YELLOW"FAIL:"$RESET" $wlanId Wi-Fi power save test returned an unexpected response: $powerSave"
+							;;
+					esac
+				fi
+			done
+			unset IFS
+		fi
 	else
-		echo -e ""$GREEN"PASS:"$RESET" Wi-Fi power save is OFF"
+		if iw wlan0 get power_save | grep -q 'on';
+		then
+			echo -e ""$YELLOW"FAIL:"$RESET" Wi-Fi power save is ON"
+		else
+			echo -e ""$GREEN"PASS:"$RESET" Wi-Fi power save is OFF"
+		fi
 	fi
 	echo ''
 	systemctl is-active --quiet nginx    && printf ""$GREEN"PASS:"$RESET" %-9s service is running\n" nginx    || printf ""$YELLOW"FAIL:"$RESET" %-9s service is dead\n" nginx

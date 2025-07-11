@@ -168,9 +168,9 @@ def readFromArduino(value, dataType, cacheRequest):
     ascii = ord(value[0])
     if (cacheRequest == True):
         cached = cache.get(value)
-        if cached is None:
+        if (cached is None) or (len(cached) == 0):
             #The cache is empty? Bummer
-            pass
+            app.logger.debug(f'ASCII = {ascii}. Cached value returned was empty or None')
         else:
             app.logger.debug(f"ASCII = {ascii}. Returned cached value '{cached}'")
             return cached
@@ -195,8 +195,7 @@ def readFromArduino(value, dataType, cacheRequest):
             time.sleep(1) # Wait a second before each retry
     app.logger.debug(f'Status received was {dataType}: >{status}<')
 
-    if (cacheRequest == True):
-        cache.set(value, status, timeout = 0)
+    cache.set(value, status, timeout = 0) # Cache every query.
 
     if status == "":
         status = "Unknown"
@@ -1182,7 +1181,7 @@ def thermal():
         'vMinAt'         : '',
         'VHiAlarm'       : 0,
         'VLoAlarm'       : 0,
-        'vFSD'           : 18 #A constant to feed to the page & use for valculations
+        'vFSD'           : 18 # A constant to feed to the page & use for calculations
         }
 
     thermalUnits = request.cookies.get('thermalUnits')
