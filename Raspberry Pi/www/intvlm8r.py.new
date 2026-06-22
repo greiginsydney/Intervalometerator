@@ -2929,6 +2929,20 @@ def scan_wifi_networks(interface):
     return wifi_networks
 
 
+# Thank you Claude.ai:
+def get_python_interpreter():
+    """
+    Returns the path to the Python interpreter that piTransfer.py (and similar subprocess
+    calls) should be invoked with. Prefers the venv if one exists (introduced for optional
+    packages like dropbox/paramiko/sysrsync), falling back to system Python for installations
+    that pre-date the venv.
+    """
+    venv_python = os.path.join(os.path.expanduser('~'), 'venv', 'bin', 'python3')
+    if os.path.isfile(venv_python):
+        return venv_python
+    return '/usr/bin/python3'
+
+
 def runSubprocess(cmd, returnValue=None):
     """
     Accepts a command to run & returns the outcome (if successful).
