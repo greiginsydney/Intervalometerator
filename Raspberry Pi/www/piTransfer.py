@@ -36,29 +36,42 @@ import sys
 import time
 
 #Only attempt to import these if they've been installed:
-#(My attempts at lazy-loading and alternative test/load strategies failed.)
+#Note: We can't log anything here because logging hasn't been initiated yet (that happens in main()).
+#Instead we stash any *unexpected* import errors in import_errors, and log them once main() starts.
+#ModuleNotFoundError is deliberately NOT logged here: it just means the user hasn't installed/isn't using
+#that optional transfer method, which is expected and not worth a log entry.
+import_errors = {}
+
 try:
     import dropbox
     from dropbox import DropboxOAuth2FlowNoRedirect
     from dropbox.exceptions import ApiError, AuthError
-except:
+except ModuleNotFoundError:
     pass
+except Exception as e:
+    import_errors['Dropbox'] = str(e)
 try:
     import paramiko
-except:
+except ModuleNotFoundError:
     pass
+except Exception as e:
+    import_errors['Paramiko'] = str(e)
 try:
     import sysrsync
-except:
+except ModuleNotFoundError:
     pass
+except Exception as e:
+    import_errors['sysrsync'] = str(e)
 try:
     import httplib2
     from apiclient import discovery
     from oauth2client import client
     from oauth2client.file import Storage
     from googleapiclient.http import MediaFileUpload
-except:
+except ModuleNotFoundError:
     pass
+except Exception as e:
+    import_errors['Google'] = str(e)
 
 # ////////////////////////////////
 # /////////// STATICS ////////////
@@ -84,15 +97,45 @@ GOOGLE_CREDENTIALS   = os.path.join(PI_USER_HOME , 'www/Google_credentials.txt')
 DROPBOX_TOKEN        = os.path.join(PI_USER_HOME , 'www/Dropbox_token.txt')
 RSYNC_LOG_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.log')
 RSYNC_TMP_FILE       = os.path.join(PI_USER_HOME , 'www/rsynclog.tmp')
+VENV_PYTHON          = os.path.join(PI_USER_HOME , 'venv/bin/python3')
 
 # Paramiko client configuration
 sftpPort = 22
+
+
+def check_venv():
+    """
+    Warns (but does not block) if this script doesn't appear to be running inside the
+    expected venv. This is a defence-in-depth check: intvlm8r.py is expected to invoke this
+    script with the venv's python3 directly (if one exists), but this catches the case where
+    piTransfer.py is invoked some other way (e.g. a stale cron entry, manual testing, or a
+    future caller that forgets to check) with the wrong interpreter.
+    Logs a STATUS message if something looks off. Always returns - this is advisory only, since
+    installs that pre-date the venv don't have one, and that's a legitimate, working configuration.
+    """
+    if not os.path.isfile(VENV_PYTHON):
+        # No venv exists on this install - nothing to check against. Pre-dates the venv, or it's not yet been created.
+        return
+    in_venv = (sys.prefix != sys.base_prefix)  # True if any venv/virtualenv is currently active
+    if not in_venv:
+        log(f'STATUS: Warning - a venv exists at {VENV_PYTHON} but this script is running from '
+            f'{sys.executable} instead. Optional transfer methods (Dropbox/SFTP/rsync) may fail to import. '
+            f'Invoke this script with {VENV_PYTHON} instead.')
+    elif not sys.prefix.startswith(os.path.dirname(os.path.dirname(VENV_PYTHON))):
+        # We're in *a* venv, but seemingly not the expected one.
+        log(f'STATUS: Warning - running from venv {sys.prefix}, but expected the venv at '
+            f'{os.path.dirname(os.path.dirname(VENV_PYTHON))}')
 
 
 def main(argv):
     logging.basicConfig(filename=LOGFILE_NAME, filemode='a', format='{asctime} {message}', style='{', datefmt='%Y/%m/%d %H:%M:%S', level=logging.DEBUG)
     log('')
     log(f'sys.argv = {sys.argv}')
+
+    check_venv()
+    for module_name, error_message in import_errors.items():
+        log(f'STATUS: {module_name} module failed to load correctly: {error_message}')
+
     copyNow = False
     bootup  = False
     if len(sys.argv) > 1:
