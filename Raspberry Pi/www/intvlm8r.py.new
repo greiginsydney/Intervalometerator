@@ -1127,7 +1127,8 @@ def transferNow(self):
         app.logger.info(f'transferNow error logging to PI_TRANSFER_FILE: {e}')
     try:
         #cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer'] # Removed with 4.6.3 in March 2024.
-        cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
+        #cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
+        cmd = ['sudo', get_python_interpreter(), 'piTransfer.py', 'copyNow']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
