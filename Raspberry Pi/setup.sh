@@ -916,18 +916,23 @@ install_website ()
 	echo -e ""$GREEN"Enabling myIp.service"$RESET""
 	systemctl enable myIp.service
 
-	#Camera Transfer - Cron Job
+
+	#Cron Jobs
+
+	whichPython3=$(which python3)
 
 	#Thank you SO:
 	# https://stackoverflow.com/questions/878600/how-to-create-a-cron-job-using-bash-automatically-without-the-interactive-editor
 	# https://stackoverflow.com/questions/4880290/how-do-i-create-a-crontab-through-a-script
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q cameraTransfer.py 'cronTemp';
+	#Camera Transfer
+	if grep -F -q "$whichPython3 ${USER_HOME}/www/cameraTransfer.py" "cronTemp";
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
+		sed -i '/cameraTransfer.py/d' cronTemp #delete any previous reference to cameraTransfer.
+		echo "0 * * * * $whichPython3 ${USER_HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		echo "Success: 'cameraTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
@@ -936,11 +941,12 @@ install_website ()
 	#piTransfer
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q piTransfer.py 'cronTemp';
+	if grep -F -q "$whichPython3 ${USER_HOME}/www/piTransfer.py" "cronTemp";
 	then
 		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
+		sed -i '/piTransfer.py/d' cronTemp #delete any previous reference to piTransfer.
+		echo "0 * * * * $whichPython3 ${USER_HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		echo "Success: 'piTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
@@ -949,12 +955,12 @@ install_website ()
 	#overnight time sync. Takes place at 0330 to catch any change to/from Daylight Saving Time
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -F -q "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
+	if grep -F -q "$whichPython3 ${USER_HOME}/www/setTime.py" "cronTemp";
 	then
 		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
 		sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime.
-		echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+		echo "30 3 * * * $whichPython3 ${USER_HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
