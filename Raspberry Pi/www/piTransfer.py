@@ -387,6 +387,9 @@ def commenceDbx(app_key):
     try:
         with dropbox.Dropbox(oauth2_refresh_token=refresh_token, app_key=app_key) as dbx:
             dbx.users_get_current_account()
+    except NameError as e:
+        log(f'STATUS: NameError: {e}')
+        return
     except AuthError as err:
         log(f'Dropbox Auth error: {err}')
         log('STATUS: Invalid Dropbox access token')
@@ -529,6 +532,9 @@ def commenceSftp(sftpServer, sftpUser, sftpPassword, sftpRemoteFolder):
             password=sftpPassword,
         )
         sftp = ssh.open_sftp()
+    except NameError as e:
+        log(f'STATUS: NameError: {e}')
+        return
     except paramiko.AuthenticationException as e:
         log(f'Authentication failed: {e}')
         log('STATUS: SFTP Authentication failed')
@@ -603,10 +609,10 @@ def commenceGoogle(remoteFolder):
     Create a Drive service
     """
     auth_required = True
-    #Have we got some credentials already?
-    storage = Storage(GOOGLE_CREDENTIALS)
-    credentials = storage.get()
     try:
+        #Have we got some credentials already?
+        storage = Storage(GOOGLE_CREDENTIALS)
+        credentials = storage.get()
         if credentials:
             # Check for expiry
             if credentials.access_token_expired:
@@ -621,6 +627,9 @@ def commenceGoogle(remoteFolder):
                 auth_required = False
         else:
             log ('Google could not find or could not access credentials')
+    except NameError as e:
+        log(f'STATUS: NameError: {e}')
+        return
     except:
         # Something went wrong - try manual auth
         log('Google Cached Auth failed')
