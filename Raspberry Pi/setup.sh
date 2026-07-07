@@ -35,7 +35,7 @@ YELLOW="\033[38;5;11m"
 GREY="\033[38;5;60m"
 RESET="\033[0m"
 
-OSLIST="bookworm" # Add new OS's here, space-delimited, as they're released.
+OSLIST="bookworm trixie" # Add new OS's here, space-delimited, as they're released.
 
 # -----------------------------------
 # START FUNCTIONS
