@@ -198,7 +198,7 @@ The fix is to:
 1) make a copy of `connectd.service`:  `cp -fv /usr/lib/systemd/system/connectd.service /etc/systemd/system/connectd.service`
 2) edit `/etc/systemd/system/connectd.service`, telling it to wait until celery has started: `After=network.target rc-local.service celery.service`
 
-The above changes are automatically made by the setup.sh script if remote.it is found to be installed (from 4.4.3). The setup script's 'test' feature will report the current status and if any corrective action is required: `sudo -E ./setup.sh test`:
+The above changes are automatically made by the setup.sh script if remote.it is found to be installed (from 4.4.3). The setup script's 'test' feature will report the current status and if any corrective action is required: `sudo ./setup.sh test`:
 
 ```bash
 PASS: schannel service is running (remoteit)
