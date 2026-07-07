@@ -152,7 +152,7 @@ sudo chmod +x setup.sh
 
 32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi user's home directory.)
 ```txt
-sudo -E -H ./setup.sh start
+sudo ./setup.sh start
 ```
 
 33. First up you'll be presented with a menu to choose which of the upload/transfer options to install:
@@ -203,14 +203,14 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 35. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
-sudo -E ./setup.sh web
+sudo ./setup.sh web
 ```
 
 36. The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
-pi@raspberrypi:~ $ sudo -E ./setup.sh web
+pi@raspberrypi:~ $ sudo ./setup.sh web
 mkdir: created directory 'photos'
 mkdir: created directory 'preview'
 mkdir: created directory 'thumbs'
