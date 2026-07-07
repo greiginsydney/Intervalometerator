@@ -28,7 +28,7 @@ Change the website's password  : password1
 pi@Model3B:~ $
 ```
 
-The alternative is to manually edit the main python script (`sudo nano ~/www/intvlm8r.py`). Around line 75 is "# Our user database".
+The alternative is to manually edit the main python script (`sudo nano ~/www/intvlm8r.py`). Around line 120 is "# Our user database".
 
 <br>
 
@@ -36,7 +36,7 @@ The alternative is to manually edit the main python script (`sudo nano ~/www/int
 
 ## How can I add more users to the list of website logins?
 
-This is done by adding new lines to the main python script (`sudo nano ~/www/intvlm8r.py`). Around line 75 is "# Our user database".
+This is done by adding new lines to the main python script (`sudo nano ~/www/intvlm8r.py`). Around line 120 is "# Our user database".
 
 Add more users in this format:
 
