@@ -24,6 +24,7 @@ from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
 from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
+from imageformat_map import buildImgFmtOptions # Added in 5.0.2 for new Canon image format values
 import configparser             # Ini file
 import fnmatch                  # Testing filenames
 import gphoto2 as gp
@@ -676,13 +677,14 @@ def camera():
                     cameraMfr = 'Canon'
                     cameraData['cameraMfr'] = 'Canon'
                 if (cameraMfr == 'Nikon'):
-                    imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
-                    apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
-                    cameraData['exposuremode']      = readValue (config, 'expprogram')
+                    imgfmtselected, imgfmtoptionsRaw = readRange (camera, 'capturesettings', 'imagequality')
+                    apselected, apoptions            = readRange (camera, 'capturesettings', 'f-number')
+                    cameraData['exposuremode']       = readValue (config, 'expprogram')
                 else:
-                    imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
-                    apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
-                    cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+                    imgfmtselected, imgfmtoptionsRaw = readRange (camera, 'imgsettings', 'imageformat')
+                    apselected, apoptions            = readRange (camera, 'capturesettings', 'aperture')
+                    cameraData['exposuremode']       = readValue (config, 'autoexposuremode')
+                imgfmtoptions = buildImgFmtOptions(imgfmtoptionsRaw)
                 #Attributes generic to all cameras:
                 wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
                 isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
