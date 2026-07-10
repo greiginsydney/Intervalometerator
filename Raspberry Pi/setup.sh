@@ -129,25 +129,25 @@ install_apps ()
 		fi;
 		echo ''
 
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("paramiko"))';
+		if pyHasModule paramiko; then
 		then
 			installSftp=1
 		else
 			installSftp=0
 		fi
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("dropbox"))';
+		if pyHasModule dropbox; then
 		then
 			installDropbox=1
 		else
 			installDropbox=0
 		fi
-		# if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("oauth2client"))';
+		# if pyHasModule oauth2client; then
 		# then
 		# 	installGoogle=1
 		# else
 		installGoogle=0
 		# fi
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("sysrsync"))';
+		if pyHasModule sysrsync; then
 		then
 			installRsync=1
 		else
@@ -235,7 +235,6 @@ install_apps ()
 
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
 	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install 'celery[redis]'"
-
 
 
 	if [ $installSftp -eq 1 ];
@@ -581,6 +580,12 @@ pip3-install ()
 	echo -e ""$GREEN"Installing$DISPLAY_TEXT"$RESET""
 	exit
 	${WHICH_PIP3} "install $1"
+}
+
+
+pyHasModule ()
+{
+    python3 -c "import importlib.util,sys; sys.exit(importlib.util.find_spec('$1') is None)"
 }
 
 
