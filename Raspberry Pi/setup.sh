@@ -129,25 +129,25 @@ install_apps ()
 		fi;
 		echo ''
 
-		if pyHasModule paramiko; then
+		if pyHasModule paramiko;
 		then
 			installSftp=1
 		else
 			installSftp=0
 		fi
-		if pyHasModule dropbox; then
+		if pyHasModule dropbox;
 		then
 			installDropbox=1
 		else
 			installDropbox=0
 		fi
-		# if pyHasModule oauth2client; then
+		# if pyHasModule oauth2client;
 		# then
 		# 	installGoogle=1
 		# else
 		installGoogle=0
 		# fi
-		if pyHasModule sysrsync; then
+		if pyHasModule sysrsync;
 		then
 			installRsync=1
 		else
