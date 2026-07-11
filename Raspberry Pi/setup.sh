@@ -1129,15 +1129,15 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 '
 
 	# Added 16 Mar 2024 in 4.6.3. Support for powerShell-style in-line comment text is ambiguous here at best.
-	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' /boot/config.txt
+	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' $I2CPath
 	then
-		echo -e ""$YELLOW"'/boot/config.txt' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
+		echo -e ""$YELLOW"'$I2CPath' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
 		#Add the new '# Legacy:' header line first:
-		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' /boot/config.txt
+		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' $I2CPath
 		#Replace the bad version:
-		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' /boot/config.txt
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' $I2CPath
 	else
-		echo "Skipped: '/boot/config.txt' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
+		echo "Skipped: '$I2CPath' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
 	fi
 
 	if [ -f ${USER_HOME}/www/intvlm8r.old ];
