@@ -2358,7 +2358,8 @@ remoteit()
 		else
 			sed -i -E 's/^(After=network.target rc-local.service)(.*)$/\1 celery.service/g' /etc/systemd/system/connectd.service #Add AFTER celery.service
 			echo "Added 'After=celery.service' suffix"
-			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
+			TODAY=$(date '+%Y-%m-%d')
+			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $TODAY" /etc/systemd/system/connectd.service
 		fi
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed - legacy version"
