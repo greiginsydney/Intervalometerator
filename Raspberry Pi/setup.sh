@@ -35,7 +35,7 @@ YELLOW="\033[38;5;11m"
 GREY="\033[38;5;60m"
 RESET="\033[0m"
 
-OSLIST="bookworm trixie" # Add new OS's here, space-delimited, as they're released.
+VENV_MIN_OS_VERSION=12 # Debian 12 (bookworm) is the first release requiring a virtual environment. Newer OS's are covered automatically.
 
 # -----------------------------------
 # START FUNCTIONS
@@ -46,13 +46,14 @@ venv_test ()
 {
 	echo -e ""$GREEN"Testing operating system and virtual environment"$RESET""
 	THISOS=$(sed -n -E "s|^VERSION_CODENAME=(\s*.*)$|\1|p" /etc/os-release) ## Delimiter is a '|' here
+	THISOSVERSION=$(sed -n -E "s|^VERSION_ID=\"?([0-9]+)\"?.*$|\1|p" /etc/os-release) ## Delimiter is a '|' here
 
-	if [[ " $OSLIST " =~ .*\ $THISOS\ .* ]];
+	if [[ $THISOSVERSION -ge $VENV_MIN_OS_VERSION ]];
 	then
-		echo "'$THISOS' OS detected. Requires a virtual environment."
+		echo "'$THISOS' ($THISOSVERSION) OS detected. Requires a virtual environment."
 		VENV_REQUIRED=1
 	else
-		echo "'$THISOS' OS detected. A virtual environment is optional."
+		echo "'$THISOS' ($THISOSVERSION) OS detected. A virtual environment is optional."
 		VENV_REQUIRED=0
 	fi;
 
