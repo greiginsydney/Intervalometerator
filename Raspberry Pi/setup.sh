@@ -562,6 +562,7 @@ install_apps ()
 }
 
 
+# TODO: $WHICH_PIP3 is not yet defined/in use
 pip3-install ()
 {
 	DISPLAY_TEXT=""
@@ -578,7 +579,6 @@ pip3-install ()
 		fi
 	done
 	echo -e ""$GREEN"Installing$DISPLAY_TEXT"$RESET""
-	exit
 	${WHICH_PIP3} "install $1"
 }
 
