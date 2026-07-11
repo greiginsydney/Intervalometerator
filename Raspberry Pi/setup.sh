@@ -1002,7 +1002,7 @@ install_website ()
 	apt-get remove unattended-upgrades -y
 
 	echo ''
-	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
+	if systemctl status apt-daily.timer | grep -Fq "could not be found";
 	then
 		echo "apt-daily.timer could not be found"
 	else
@@ -1017,7 +1017,7 @@ install_website ()
 		fi
 	fi
 
-	if [[ $(systemctl status apt-daily.service | grep -Fq "could not be found") ]];
+	if systemctl status apt-daily.service | grep -Fq "could not be found";
 	then
 		echo "apt-daily.service could not be found"
 	else
