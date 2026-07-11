@@ -70,7 +70,7 @@ venv_test ()
 				then
 					echo -e "\n"$YELLOW"Virtual environment NOT active. Attempting to activate."$RESET""
 					source "venv/bin/activate"
-					TRIED==1
+					TRIED=1
 				else
 					VENV_ACTIVE=0
 					break
