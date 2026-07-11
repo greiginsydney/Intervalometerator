@@ -46,9 +46,13 @@ venv_test ()
 {
 	echo -e ""$GREEN"Testing operating system and virtual environment"$RESET""
 	THISOS=$(sed -n -E "s|^VERSION_CODENAME=(\s*.*)$|\1|p" /etc/os-release) ## Delimiter is a '|' here
-	THISOSVERSION=$(sed -n -E "s|^VERSION_ID=\"?([0-9]+)\"?.*$|\1|p" /etc/os-release) ## Delimiter is a '|' here
+	THISOSVERSION=$(sed -n -E "s|^VERSION_ID=\"?([0-9]+)\"?.*$|\1|p" /etc/os-release)
 
-	if [[ $THISOSVERSION -ge $VENV_MIN_OS_VERSION ]];
+	if [[ -z "$THISOSVERSION" ]];
+	then
+		echo -e "\n"$YELLOW"Unable to detect a numeric OS version (this may be a testing/unstable release). Assuming a virtual environment is required."$RESET""
+		VENV_REQUIRED=1
+	elif [[ $THISOSVERSION -ge $VENV_MIN_OS_VERSION ]];
 	then
 		echo "'$THISOS' ($THISOSVERSION) OS detected. Requires a virtual environment."
 		VENV_REQUIRED=1
