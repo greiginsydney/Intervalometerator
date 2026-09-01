@@ -150,7 +150,7 @@ mv -fv "Intervalometerator/Raspberry Pi/setup.sh" ~
 sudo chmod +x setup.sh
 ```
 
-32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi user's home directory.)
+32. Now run it!
 ```txt
 sudo ./setup.sh start
 ```
