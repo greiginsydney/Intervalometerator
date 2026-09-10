@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. You want the "a port of Debian Bookworm with no desktop environment" version.
+1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. You want the "a port of Debian Trixie [or Bookworm] with no desktop environment" version.
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
@@ -107,23 +107,30 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue.
 
-29.1. Confirm your current version of python:
+29.1 Confirm your current version of python:
 
+```txt
+python3 --version
 ```
-pi@BenchPi3BPlus:~ $ python3 --version
-Python 3.11.2
-pi@BenchPi3BPlus:~ $
+The output should look like this, which confirms python 3.13 (ignore the .5):
+```txt
+Python 3.13.5
+```
+(The above is correct for Trixie. Bookworm will report 3.11.2. The process is the same but adjust the number below accordingly.)
+
+29.2 Update the following command if required with that of the same version number:
+
+```txt
+sudo apt install python3.13-venv -y
+```
+```txt
+python3 -m venv venv
+```
+```txt
+source venv/bin/activate
 ```
 
-29.2. Update the following command if required with that of the same version number:
-
-```
-pi@BenchPi3BPlus:~ $ sudo apt install python3.11-venv -y
-pi@BenchPi3BPlus:~ $ python3 -m venv venv
-pi@BenchPi3BPlus:~ $
-```
-
-29.3 We need to install git so we can download the repo from GitHub:
+30. We need to install git so we can download the repo from GitHub:
 
 ```
 sudo apt-get install git -y
