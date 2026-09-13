@@ -104,8 +104,8 @@
 			<div class="alignleft"><label for="img">Image format:</label></div>
 			<div class="alignright">
 				<select name="img" id="img" onchange="newSelected(this.id)">
-					{% for img in imgfmtoptions %}
-						<option value="{{img}}"{{ ' SELECTED' if img == imgfmtselected }}>{{img}}</option>
+					{% for value, label in imgfmtoptions %}
+						<option value="{{value}}"{{ ' SELECTED' if value == imgfmtselected }}>{{label}}</option>
 					{% endfor %}
 				</select>
 			</div>

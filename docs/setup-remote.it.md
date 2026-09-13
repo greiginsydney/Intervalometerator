@@ -143,7 +143,7 @@ This process installs Remote.it on the Pi which then launches and establishes th
 
 (If you've already put an SSH certificate on the Pi, you might choose HTTPS instead here.)
 
-8. To double-check we're good to proceed, execute the install script with the "remoteit" switch `sudo -E ./setup.sh remoteit`. The output should include the following:
+8. To double-check we're good to proceed, execute the install script with the "remoteit" switch `sudo ./setup.sh remoteit`. The output should include the following:
 
 <p align="center">
 <img src="https://github.com/greiginsydney/Intervalometerator/assets/11004787/7d7b3a9a-4388-477d-98fa-a4c71d6f1594" width="80%">

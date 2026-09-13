@@ -14,7 +14,7 @@ Skip this document entirely if you're NOT wanting the Pi to be a WiFi Access Poi
 
 1. Run the setup script with the "ap" attribute:
 ```txt
-sudo -E ./setup.sh ap
+sudo ./setup.sh ap
 ```
 
 2. The script will prompt you for all the required values. On its first run out of the box it will offer default values. These will usually be safe to use, but by all means change the SSID and WiFi password from the defaults:
@@ -54,7 +54,7 @@ Reboot now? [Y/n]:
 
 1. If at any time you want to switch the Pi from being an Access Point to being a wireless client on another network, run:
 ```txt
-sudo -E ./setup.sh noap
+sudo ./setup.sh noap
 ```
 
 2. The script will then prompt you to set or reconfirm the WiFi details:

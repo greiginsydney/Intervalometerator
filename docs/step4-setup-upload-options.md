@@ -77,14 +77,19 @@ NB: This process was last confirmed accurate in March 2023.
 <img src="https://user-images.githubusercontent.com/11004787/178093485-10bf1e6b-e2b7-4dd5-ab3b-f7c661eaf114.png" width="40%">
 </p>
 
-11. Navigate to the www folder:
+11. The final stage is to authorise the intvlm8r to access your Dropbox account. SSH to the intvlm8r and navigate to the www folder:
 ```text
 cd ~/www
 ```
 
-12. The final stage is to authorise the intvlm8r to access your Dropbox account. SSH to the intvlm8r and run the piTransfer script with the 'reauthDropbox' switch:
+12.  Run the piTransfer script with the 'reauthDropbox' switch:
 ```text
 python3 piTransfer.py reauthDropbox
+``` 
+
+12a. If you receive `Error in Dropbox re-auth. (See /home/pi/www/static/piTransfer.log for details)`, activate the virtual environment and repeat step 12:
+```text
+source ~/venv/bin/activate
 ``` 
 
 13. It will prompt you to copy a long link to your browser:

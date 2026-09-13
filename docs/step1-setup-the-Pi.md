@@ -3,7 +3,7 @@
 If you're starting from scratch, start here at Step 1.
 
 
-1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. You want the "a port of Debian Bookworm with no desktop environment" version.
+1. Prepare the memory card with the [32-bit Raspberry Pi OS 'Lite'](https://www.raspberrypi.org/software/operating-systems/) image. You want the "a port of Debian Trixie [or Bookworm] with no desktop environment" version.
 
 > The ["Raspberry Pi Imager"](https://www.raspberrypi.org/software/) app can download and write the image to a memory card for you quickly and easily.
 
@@ -107,23 +107,30 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 Your SSH session will end here. Wait for the Pi to reboot, sign back in again and continue.
 
-29.1. Confirm your current version of python:
+29.1 Confirm your current version of python:
 
+```txt
+python3 --version
 ```
-pi@BenchPi3BPlus:~ $ python3 --version
-Python 3.11.2
-pi@BenchPi3BPlus:~ $
+The output should look like this, which confirms python 3.13 (ignore the .5):
+```txt
+Python 3.13.5
+```
+(The above is correct for Trixie. Bookworm will report 3.11.2. The process is the same but adjust the number below accordingly.)
+
+29.2 Update the following command if required with that of the same version number:
+
+```txt
+sudo apt install python3.13-venv -y
+```
+```txt
+python3 -m venv venv
+```
+```txt
+source venv/bin/activate
 ```
 
-29.2. Update the following command if required with that of the same version number:
-
-```
-pi@BenchPi3BPlus:~ $ sudo apt install python3.11-venv -y
-pi@BenchPi3BPlus:~ $ python3 -m venv venv
-pi@BenchPi3BPlus:~ $
-```
-
-29.3 We need to install git so we can download the repo from GitHub:
+30. We need to install git so we can download the repo from GitHub:
 
 ```
 sudo apt-get install git -y
@@ -150,9 +157,9 @@ mv -fv "Intervalometerator/Raspberry Pi/setup.sh" ~
 sudo chmod +x setup.sh
 ```
 
-32. Now run it! (Be careful here: the switches are critical. "-E" ensures your user path is passed to the script. Without it the software will be moved to the wrong location, or not at all. "-H" passes the Pi user's home directory.)
+32. Now run it!
 ```txt
-sudo -E -H ./setup.sh start
+sudo ./setup.sh start
 ```
 
 33. First up you'll be presented with a menu to choose which of the upload/transfer options to install:
@@ -203,14 +210,14 @@ Pressing return or anything but n/N will cause the Pi to reboot.
 
 35. After the Pi has rebooted, sign back in again and resume. The next step is to re-run the script, but with a new switch:
 ```txt
-sudo -E ./setup.sh web
+sudo ./setup.sh web
 ```
 
 36. The script will now move some of the supporting files from the repo to their final homes, and edit some of the default config in the Pi. 
 
 It will output its progress to the screen:
 ```txt
-pi@raspberrypi:~ $ sudo -E ./setup.sh web
+pi@raspberrypi:~ $ sudo ./setup.sh web
 mkdir: created directory 'photos'
 mkdir: created directory 'preview'
 mkdir: created directory 'thumbs'

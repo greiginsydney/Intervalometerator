@@ -24,6 +24,7 @@ from decimal import Decimal     # Thumbs exposure time calculations
 from packaging import version   # getArduinoVersion and related
 from PIL import Image           # Camera page preview button
 from urllib.parse import urlparse, urljoin # Login
+from imageformat_map import buildImgFmtOptions # Added in 5.0.2 for new Canon image format values
 import configparser             # Ini file
 import fnmatch                  # Testing filenames
 import gphoto2 as gp
@@ -676,13 +677,14 @@ def camera():
                     cameraMfr = 'Canon'
                     cameraData['cameraMfr'] = 'Canon'
                 if (cameraMfr == 'Nikon'):
-                    imgfmtselected, imgfmtoptions   = readRange (camera, 'capturesettings', 'imagequality')
-                    apselected, apoptions           = readRange (camera, 'capturesettings', 'f-number')
-                    cameraData['exposuremode']      = readValue (config, 'expprogram')
+                    imgfmtselected, imgfmtoptionsRaw = readRange (camera, 'capturesettings', 'imagequality')
+                    apselected, apoptions            = readRange (camera, 'capturesettings', 'f-number')
+                    cameraData['exposuremode']       = readValue (config, 'expprogram')
                 else:
-                    imgfmtselected, imgfmtoptions   = readRange (camera, 'imgsettings', 'imageformat')
-                    apselected, apoptions           = readRange (camera, 'capturesettings', 'aperture')
-                    cameraData['exposuremode']      = readValue (config, 'autoexposuremode')
+                    imgfmtselected, imgfmtoptionsRaw = readRange (camera, 'imgsettings', 'imageformat')
+                    apselected, apoptions            = readRange (camera, 'capturesettings', 'aperture')
+                    cameraData['exposuremode']       = readValue (config, 'autoexposuremode')
+                imgfmtoptions = buildImgFmtOptions(imgfmtoptionsRaw)
                 #Attributes generic to all cameras:
                 wbselected, wboptions           = readRange (camera, 'imgsettings', 'whitebalance')
                 isoselected, isooptions         = readRange (camera, 'imgsettings', 'iso')
@@ -1127,7 +1129,8 @@ def transferNow(self):
         app.logger.info(f'transferNow error logging to PI_TRANSFER_FILE: {e}')
     try:
         #cmd = ['sudo', '/bin/systemctl', 'start', 'piTransfer'] # Removed with 4.6.3 in March 2024.
-        cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
+        #cmd = ['sudo', '/usr/bin/python3', 'piTransfer.py', 'copyNow']
+        cmd = ['sudo', get_python_interpreter(), 'piTransfer.py', 'copyNow']
         result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, encoding='utf-8')
         (stdoutdata, stderrdata) = result.communicate()
         if stdoutdata:
@@ -2927,6 +2930,20 @@ def scan_wifi_networks(interface):
                 wifi_networks.append(wifi_network)
     # Return the list of WiFi networks.
     return wifi_networks
+
+
+# Thank you Claude.ai:
+def get_python_interpreter():
+    """
+    Returns the path to the Python interpreter that piTransfer.py (and similar subprocess
+    calls) should be invoked with. Prefers the venv if one exists (introduced for optional
+    packages like dropbox/paramiko/sysrsync), falling back to system Python for installations
+    that pre-date the venv.
+    """
+    venv_python = os.path.join(os.path.expanduser('~'), 'venv', 'bin', 'python3')
+    if os.path.isfile(venv_python):
+        return venv_python
+    return '/usr/bin/python3'
 
 
 def runSubprocess(cmd, returnValue=None):

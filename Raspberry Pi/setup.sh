@@ -35,7 +35,7 @@ YELLOW="\033[38;5;11m"
 GREY="\033[38;5;60m"
 RESET="\033[0m"
 
-OSLIST="bookworm" # Add new OS's here, space-delimited, as they're released.
+VENV_MIN_OS_VERSION=12 # Debian 12 (bookworm) is the first release requiring a virtual environment. Newer OS's are covered automatically.
 
 # -----------------------------------
 # START FUNCTIONS
@@ -46,13 +46,18 @@ venv_test ()
 {
 	echo -e ""$GREEN"Testing operating system and virtual environment"$RESET""
 	THISOS=$(sed -n -E "s|^VERSION_CODENAME=(\s*.*)$|\1|p" /etc/os-release) ## Delimiter is a '|' here
+	THISOSVERSION=$(sed -n -E "s|^VERSION_ID=\"?([0-9]+)\"?.*$|\1|p" /etc/os-release)
 
-	if [[ " $OSLIST " =~ .*\ $THISOS\ .* ]];
+	if [[ -z "$THISOSVERSION" ]];
 	then
-		echo "'$THISOS' OS detected. Requires a virtual environment."
+		echo -e "\n"$YELLOW"Unable to detect a numeric OS version (this may be a testing/unstable release). Assuming a virtual environment is required."$RESET""
+		VENV_REQUIRED=1
+	elif [[ $THISOSVERSION -ge $VENV_MIN_OS_VERSION ]];
+	then
+		echo "'$THISOS' ($THISOSVERSION) OS detected. Requires a virtual environment."
 		VENV_REQUIRED=1
 	else
-		echo "'$THISOS' OS detected. A virtual environment is optional."
+		echo "'$THISOS' ($THISOSVERSION) OS detected. A virtual environment is optional."
 		VENV_REQUIRED=0
 	fi;
 
@@ -70,7 +75,7 @@ venv_test ()
 				then
 					echo -e "\n"$YELLOW"Virtual environment NOT active. Attempting to activate."$RESET""
 					source "venv/bin/activate"
-					TRIED==1
+					TRIED=1
 				else
 					VENV_ACTIVE=0
 					break
@@ -103,49 +108,51 @@ venv_test ()
 
 install_apps ()
 {
-	if [[ -d /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi ]];
+	export HOME=/root
+	
+	if [[ -d ${USER_HOME}/Intervalometerator/Raspberry\ Pi ]];
 	then
 		echo -e ""$GREEN"Moving repo files."$RESET""
-		cp -fvr /home/${SUDO_USER}/Intervalometerator/Raspberry\ Pi/* /home/${SUDO_USER}/
-		rm -fr /home/${SUDO_USER}/Intervalometerator/
+		cp -fvr ${USER_HOME}/Intervalometerator/Raspberry\ Pi/* ${USER_HOME}/
+		rm -fr ${USER_HOME}/Intervalometerator/
 	else
 		echo -e "\n"$YELLOW"No repo files to move."$RESET""
 	fi;
 
-	if [[ -f /home/${SUDO_USER}/www/intvlm8r.py ]];
+	if [[ -f ${USER_HOME}/www/intvlm8r.py ]];
 	then
 		echo ''
-		if [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
+		if [[ -f ${USER_HOME}/www/intvlm8r.py.new ]];
 		then
 			echo -e ""$GREEN"intvlm8r.py.new & intvlm8r.py found. Looks like this is an upgrade"$RESET""
 			echo ''
-			cp -fv /home/${SUDO_USER}/www/intvlm8r.py /home/${SUDO_USER}/www/intvlm8r.old
-			cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
+			cp -fv ${USER_HOME}/www/intvlm8r.py ${USER_HOME}/www/intvlm8r.old
+			cp -fv ${USER_HOME}/www/intvlm8r.py.new ${USER_HOME}/www/intvlm8r.py
 
 		else
 			echo -e ""$GREEN"intvlm8r.py found. Looks like a repeat run through the 'start' process"$RESET""
 		fi;
 		echo ''
 
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("paramiko"))';
+		if pyHasModule paramiko;
 		then
 			installSftp=1
 		else
 			installSftp=0
 		fi
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("dropbox"))';
+		if pyHasModule dropbox;
 		then
 			installDropbox=1
 		else
 			installDropbox=0
 		fi
-		# if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("oauth2client"))';
+		# if pyHasModule oauth2client;
 		# then
 		# 	installGoogle=1
 		# else
 		installGoogle=0
 		# fi
-		if python3 -c 'import pkgutil; exit(not pkgutil.find_loader("sysrsync"))';
+		if pyHasModule sysrsync;
 		then
 			installRsync=1
 		else
@@ -154,12 +161,12 @@ install_apps ()
 
 		echo '====== Select Upload/Transfer options ======='
 		echo "An 'X' indicates the option is already installed"
-	elif [[ -f /home/${SUDO_USER}/www/intvlm8r.py.new ]];
+	elif [[ -f ${USER_HOME}/www/intvlm8r.py.new ]];
 	then
 		echo ''
 		echo -e ""$GREEN"intvlm8r.py.new but no intvlm8r.py found. Proceeding with a new installation"$RESET""
 		echo ''
-		cp -fv /home/${SUDO_USER}/www/intvlm8r.py.new /home/${SUDO_USER}/www/intvlm8r.py
+		cp -fv ${USER_HOME}/www/intvlm8r.py.new ${USER_HOME}/www/intvlm8r.py
 
 		#Ask the admin if they want to NOT install some of the transfer/upload options:
 		echo ''
@@ -214,12 +221,12 @@ install_apps ()
 	apt-get install python3-flask -y
 	echo -e ""$GREEN"Installing Werkzeug"$RESET""
 	#pip install Werkzeug
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install Werkzeug"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install Werkzeug"
 	
 	echo -e ""$GREEN"Installing flask, flask-bootstrap, flask-login, Flask_Caching, configparser"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install flask flask-bootstrap flask-login Flask_Caching configparser"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install flask flask-bootstrap flask-login Flask_Caching configparser"
 	echo -e ""$GREEN"Installing gunicorn, psutil, packaging"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install gunicorn psutil packaging"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install gunicorn psutil packaging"
 	echo -e ""$GREEN"Installing redis-server"$RESET""
 	apt install redis-server -y
 
@@ -228,12 +235,11 @@ install_apps ()
 	if [[ ($VENV_ACTIVE == 1) ]];
 	then
 		echo -e ""$GREEN"Installing redis"$RESET""
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install redis"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install redis"
 	fi
 
 	echo -e ""$GREEN"Installing celery[redis]"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install 'celery[redis]'"
-
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install 'celery[redis]'"
 
 
 	if [ $installSftp -eq 1 ];
@@ -248,27 +254,27 @@ install_apps ()
 		apt-get install libkrb5-dev -y
 		echo -e ""$GREEN"Installing bcrypt"$RESET""
 		# pip3 install "bcrypt<4.0.0" See issue #129
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install bcrypt"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install bcrypt"
 		echo -e ""$GREEN"Installing pynacl, cryptography, gssapi, paramiko"$RESET""
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install pynacl cryptography gssapi paramiko"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install pynacl cryptography gssapi paramiko"
 	fi
 
 	if [ $installDropbox -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing dropbox"$RESET""
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install dropbox"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install dropbox"
 	fi
 
 	if [ $installGoogle -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing google-api-python-client, oauth2client"$RESET""
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install pip google-api-python-client oauth2client"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install pip google-api-python-client oauth2client"
 	fi
 
 	if [ $installRsync -eq 1 ];
 	then
 		echo -e ""$GREEN"Installing sysrsync"$RESET""
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install sysrsync"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install sysrsync"
 	fi
 
 	echo -e ""$GREEN"Installing nginx, nginx-common, supervisor, jq"$RESET""
@@ -348,16 +354,16 @@ install_apps ()
 		apt-get install python3-pip build-essential libltdl-dev libusb-1.0-0-dev libexif-dev libpopt-dev libudev-dev pkg-config git automake autoconf autopoint gettext libtool wget -y
 
 		echo -e ""$GREEN"Installing libgphoto2 from GitHub"$RESET""
-		rm -rf /home/${SUDO_USER}/libgphoto2
+		rm -rf ${USER_HOME}/libgphoto2
 		git clone https://github.com/gphoto/libgphoto2.git
-		cd /home/${SUDO_USER}/libgphoto2
+		cd ${USER_HOME}/libgphoto2
 		autoreconf --install --symlink
 		./configure
 		make
 		make install
 		ldconfig
 
-		cd /home/${SUDO_USER}/
+		cd ${USER_HOME}/
 
 		echo -e ""$GREEN"Generate udev rules for the camera"$RESET""
 		# TY: https://maskaravivek.medium.com/how-to-control-and-capture-images-from-dslr-using-raspberry-pi-cfc0cf2d5e85
@@ -378,7 +384,7 @@ install_apps ()
 		then
 			echo -e "\rCurrent installed version of python-gphoto2 = $isGphoto"
 			echo -e ""$GREEN"Updating python-gphoto2"$RESET""
-			sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:"
+			sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install -v -U --force-reinstall gphoto2 --no-binary :all:"
 		else
 			echo -e "\rCurrent  installed version of python-gphoto2 = $isGphoto"
 			echo 'No python-gphoto2 upgrade required'
@@ -386,20 +392,20 @@ install_apps ()
 	else
 		echo -e "\rCurrent  installed version of python-gphoto2 = None"
 		echo -e "\r"$GREEN"Installing python-gphoto2"$RESET""
-		sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v gphoto2 --no-binary :all:"
+		sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install -v gphoto2 --no-binary :all:"
 	fi
 	# ================== END python-gphoto ==================
 	# ================ START image handling =================
 	echo -e ""$GREEN"Installing libjpeg-dev, libopenjp2-7"$RESET""
 	apt-get install libjpeg-dev libopenjp2-7 -y
 	echo -e ""$GREEN"Installing pillow"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install -v pillow --no-cache-dir"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install -v pillow --no-cache-dir"
 	echo -e ""$GREEN"Installing ExifReader, requests"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install ExifReader requests"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install ExifReader requests"
 	echo -e ""$GREEN"Installing libraw-dev"$RESET""
 	apt install libraw-dev -y
 	echo -e ""$GREEN"Installing cython"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install cython"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install cython"
 	# echo -e ""$GREEN"Installing imageio"$RESET""
 	# pip3 install imageio
 	# =================== END image handling ===================
@@ -466,7 +472,7 @@ install_apps ()
 	fi
 
 	echo -e ""$GREEN"Installing smbus2"$RESET""
-	sudo -u ${SUDO_USER} bash -c "source /home/${SUDO_USER}/venv/bin/activate && pip3 install smbus2"
+	sudo -u ${SUDO_USER} bash -c "source ${USER_HOME}/venv/bin/activate && pip3 install smbus2"
 	echo -e ""$GREEN"Installing i2c-tools"$RESET""
 	apt-get install i2c-tools -y
 	# We don't want Bluetooth, so uninstall it:
@@ -537,14 +543,14 @@ install_apps ()
 		examples="$gphoto2/examples"
 		if [ -d  $gphoto2 ];
 		then
-			ln -sfnv "$gphoto2" /home/${SUDO_USER}/gphoto2
+			ln -sfnv "$gphoto2" ${USER_HOME}/gphoto2
 			echo -e "Created shortcut 'gphoto2' to point to '$gphoto2'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2 to create shortcut"$RESET""
 		fi
 		if [ -d  $examples ];
 		then
-			ln -sfnv "$examples" /home/${SUDO_USER}/examples
+			ln -sfnv "$examples" ${USER_HOME}/examples
 			echo -e "Created shortcut 'examples' to point to '$examples'"
 		else
 			echo -e "\n"$YELLOW"Unable to find installed gphoto2/examples to create shortcut"$RESET""
@@ -554,13 +560,14 @@ install_apps ()
 	fi
 
 	# And a shortcut for the logs folder:
-	ln -sfnv /var/log/ /home/${SUDO_USER}/log
+	ln -sfnv /var/log/ ${USER_HOME}/log
 
 	# Prepare for reboot/restart:
 	echo -e "\n"$GREEN"Exited install_apps OK"$RESET""
 }
 
 
+# TODO: $WHICH_PIP3 is not yet defined/in use
 pip3-install ()
 {
 	DISPLAY_TEXT=""
@@ -577,28 +584,23 @@ pip3-install ()
 		fi
 	done
 	echo -e ""$GREEN"Installing$DISPLAY_TEXT"$RESET""
-	exit
 	${WHICH_PIP3} "install $1"
+}
+
+
+pyHasModule ()
+{
+    python3 -c "import importlib.util,sys; sys.exit(importlib.util.find_spec('$1') is None)"
 }
 
 
 install_website ()
 {
-	# Check for the '-E' switch:
-	if env | grep -q 'HOME=/root';
-	then
-		echo -e "\nPlease re-run as 'sudo -E ./setup.sh web'"
-		echo ''
-		exit 1
-	else
-		echo -e ""$GREEN"Environment passed with '-E' switch"$RESET""
-	fi
-
 	declare -a ServiceFiles=("celery" "celery.service" "intvlm8r" "intvlm8r.service" "cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" "apt-daily.timer" "apt-daily.service" "myIp.service")
 	declare -a VenvFiles=("cameraTransfer.service" "setTime.service" "piTransfer.service" "heartbeat.service" ) # These? "apt-daily.timer" "apt-daily.service" "myIp.service" "celery.service"
 
   # Here's where you start to build the website. This process is largely a copy/mashup of these posts.[^3] [^4] [^5]
-	cd  ${HOME}
+	cd  ${USER_HOME}
 	mkdir -pv photos
 	mkdir -pv preview
 	mkdir -pv thumbs
@@ -606,55 +608,55 @@ install_website ()
 	mkdir -pv www/static
 	mkdir -pv www/templates
 	# Now create a 'symbolic link' (a shortcut) to the photos, preview and thumbs folders so they appear in the path for the webserver to access them:
-	ln -sfnv ${HOME}/photos  ${HOME}/www/static
-	ln -sfnv ${HOME}/preview ${HOME}/www/static
-	ln -sfnv ${HOME}/thumbs  ${HOME}/www/static
+	ln -sfnv ${USER_HOME}/photos  ${USER_HOME}/www/static
+	ln -sfnv ${USER_HOME}/preview ${USER_HOME}/www/static
+	ln -sfnv ${USER_HOME}/thumbs  ${USER_HOME}/www/static
 
 	# piTransfer.py will add to this file the name of every image it successfully transfers
 	if [ ! -f photos/uploadedOK.txt ];
 	then
-		echo "/home/$SUDO_USER/photos/default_image.JPG" > photos/uploadedOK.txt #So we don't try to upload the default_image
+		echo "${USER_HOME}/photos/default_image.JPG" > photos/uploadedOK.txt #So we don't try to upload the default_image
 	fi
-	touch ${HOME}/setTime.log # Created here so it has correct ownership
-	touch ${HOME}/hbresults.txt
+	touch ${USER_HOME}/setTime.log # Created here so it has correct ownership
+	touch ${USER_HOME}/hbresults.txt
 
 	if [ -f default_image.JPG ];
 	then
-		mv -nv default_image.JPG ~/photos/default_image.JPG
+		mv -nv default_image.JPG ${USER_HOME}/photos/default_image.JPG
 	fi
 
 	if [ -f default_image-thumb.JPG ];
 	then
-		mv -nv default_image-thumb.JPG ~/thumbs/default_image-thumb.JPG
+		mv -nv default_image-thumb.JPG ${USER_HOME}/thumbs/default_image-thumb.JPG
 	fi
 
 	if [ -f piThumbsInfo.txt ];
 	then
-		mv -nv piThumbsInfo.txt ~/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
+		mv -nv piThumbsInfo.txt ${USER_HOME}/thumbs/piThumbsInfo.txt # -n = "do not overwrite"
 	fi
 
 	if [ -f piTransfer.log ];
 	then
-		mv -nv piTransfer.log ~/www/static/piTransfer.log # -n = "do not overwrite"
+		mv -nv piTransfer.log ${USER_HOME}/www/static/piTransfer.log # -n = "do not overwrite"
 	fi
 
-	chown -R $SUDO_USER:www-data ${HOME}
+	chown -R $SUDO_USER:www-data ${USER_HOME}
 
-	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
+	if [ -f ${USER_HOME}/www/intvlm8r.old ];
 	then
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the login prompt step."$RESET""
-		echo "(You can edit the logins directly in /www/intvlm8r.py, or run 'sudo -E ./setup.sh login' to change the first one)"
+		echo "(You can edit the logins directly in ${USER_HOME}/www/intvlm8r.py, or run 'sudo ./setup.sh login' to change the first one)"
 
-		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" /home/${SUDO_USER}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+		firstLogin=$(sed -n -E "s|^(users\s*=.*)$|\1|p" ${USER_HOME}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 		if [ ! -z "$firstLogin" ];
 		then
-			sed -i -E "s|^(users = .*)|$firstLogin|g" /home/${SUDO_USER}/www/intvlm8r.py
+			sed -i -E "s|^(users = .*)|$firstLogin|g" ${USER_HOME}/www/intvlm8r.py
 			echo -e ""$GREEN"intvlm8r.old found. Restored first login."$RESET""
 		else
 			echo 'Upgrade file found but the first login was not found/detected.'
 		fi
 
-		if grep -q '^users.update' ~/www/intvlm8r.old;
+		if grep -q '^users.update' ${USER_HOME}/www/intvlm8r.old;
 		then
 			#There are additional users we need to reinstate.
 			matchRegex="^(users.update\(\{')(\w+)'.*$"
@@ -662,22 +664,22 @@ install_website ()
 			while read line; do
 				if [[ $line =~ $matchRegex ]] ;
 				then
-					if grep -q "^${BASH_REMATCH[1]}${BASH_REMATCH[2]}'" ~/www/intvlm8r.py;
+					if grep -q "^${BASH_REMATCH[1]}${BASH_REMATCH[2]}'" ${USER_HOME}/www/intvlm8r.py;
 					then
 						echo "Skipped: user '${BASH_REMATCH[2]}' already exists"
 					else
-						sed -i "/^users\s*=.*/a $line" ~/www/intvlm8r.py
+						sed -i "/^users\s*=.*/a $line" ${USER_HOME}/www/intvlm8r.py
 						echo "Reinstated user '${BASH_REMATCH[2]}'"
 					fi
 				fi
-			done <~/www/intvlm8r.old
+			done <${USER_HOME}/www/intvlm8r.old
 		fi
 
-		if grep -q "### Paste the secret key here. See the Setup docs ###" /home/${SUDO_USER}/www/intvlm8r.old;
+		if grep -q "### Paste the secret key here. See the Setup docs ###" ${USER_HOME}/www/intvlm8r.old;
 		then
 			echo 'intvlm8r.old found but the Secret Key has not been set.' #Skip the extraction.
 		else
-			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" /home/${SUDO_USER}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
+			oldSecretKey=$(sed -n -E "s|^\s*app.secret_key = b'(.*)'.*$|\1|p" ${USER_HOME}/www/intvlm8r.old | tail -1) # Delimiter is a '|' here
 			if [ ! -z "$oldSecretKey" ];
 			then
 				echo 'intvlm8r.old found and the original Secret Key has been extracted.'
@@ -690,16 +692,16 @@ install_website ()
 		chg_web_login
 	fi
 
-	if grep -q '### Paste the secret key here. See the Setup docs ###' /home/${SUDO_USER}/www/intvlm8r.py;
+	if grep -q '### Paste the secret key here. See the Setup docs ###' ${USER_HOME}/www/intvlm8r.py;
 	then
 		if [ ! -z "$oldSecretKey" ];
 		then
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" /home/${SUDO_USER}/www/intvlm8r.py
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$oldSecretKey/g" ${USER_HOME}/www/intvlm8r.py
 			echo 'intvlm8r.old found and the original Secret Key has been restored.'
 		else
 			#Generate a secret key here & paste in to intvlm8r.py:
 			UUID=$(cat /proc/sys/kernel/random/uuid)
-			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" /home/${SUDO_USER}/www/intvlm8r.py
+			sed -i "s/### Paste the secret key here. See the Setup docs ###/$UUID/g" ${USER_HOME}/www/intvlm8r.py
 			echo 'A new Secret Key was created.'
 		fi
 	else
@@ -925,18 +927,22 @@ install_website ()
 	systemctl enable myIp.service
 
 
-	#Camera Transfer - Cron Job
+	#Cron Jobs
+
+	whichPython3=$(which python3)
 
 	#Thank you SO:
 	# https://stackoverflow.com/questions/878600/how-to-create-a-cron-job-using-bash-automatically-without-the-interactive-editor
 	# https://stackoverflow.com/questions/4880290/how-do-i-create-a-crontab-through-a-script
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q cameraTransfer.py 'cronTemp';
+	#Camera Transfer
+	if grep -F -q "$whichPython3 ${USER_HOME}/www/cameraTransfer.py" "cronTemp";
 	then
 		echo "Skipped: 'cameraTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python3 ${HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
+		sed -i '/cameraTransfer.py/d' cronTemp #delete any previous reference to cameraTransfer.
+		echo "0 * * * * $whichPython3 ${USER_HOME}/www/cameraTransfer.py 2>&1 | logger -t cameraTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		echo "Success: 'cameraTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
@@ -945,11 +951,12 @@ install_website ()
 	#piTransfer
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -q piTransfer.py 'cronTemp';
+	if grep -F -q "$whichPython3 ${USER_HOME}/www/piTransfer.py" "cronTemp";
 	then
 		echo "Skipped: 'piTransfer.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
-		echo "0 * * * * /usr/bin/python3 ${HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
+		sed -i '/piTransfer.py/d' cronTemp #delete any previous reference to piTransfer.
+		echo "0 * * * * $whichPython3 ${USER_HOME}/www/piTransfer.py 2>&1 | logger -t piTransfer" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		echo "Success: 'piTransfer.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
@@ -958,12 +965,12 @@ install_website ()
 	#overnight time sync. Takes place at 0330 to catch any change to/from Daylight Saving Time
 	(crontab -l -u ${SUDO_USER} 2>/dev/null > cronTemp) || true
 
-	if grep -F -q "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py" "cronTemp";
+	if grep -F -q "$whichPython3 ${USER_HOME}/www/setTime.py" "cronTemp";
 	then
 		echo "Skipped: 'setTime.py' is already in the crontable. Edit later with 'crontab -e'"
 	else
 		sed -i '/setTime.py/d' cronTemp #delete any previous reference to setTime.
-		echo "30 3 * * * /usr/bin/python3 ${HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
+		echo "30 3 * * * $whichPython3 ${USER_HOME}/www/setTime.py 2>&1 | logger -t setTime" >> cronTemp #echo new cron into cron file
 		crontab -u $SUDO_USER cronTemp #install new cron file
 		echo "Success: 'setTime.py' added to the crontable. Edit later with 'crontab -e'"
 	fi
@@ -975,7 +982,7 @@ install_website ()
 	# (Thank you SO: https://unix.stackexchange.com/a/78309)
 
 	#NTP
-	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
+	if [ -f ${USER_HOME}/www/intvlm8r.old ];
 	then
 		echo -e ""$GREEN"intvlm8r.old found. Skipping the NTP prompt step."$RESET""
 	else
@@ -1000,7 +1007,7 @@ install_website ()
 	apt-get remove unattended-upgrades -y
 
 	echo ''
-	if [[ $(systemctl status apt-daily.timer | grep -Fq "could not be found") ]];
+	if systemctl status apt-daily.timer | grep -Fq "could not be found";
 	then
 		echo "apt-daily.timer could not be found"
 	else
@@ -1015,7 +1022,7 @@ install_website ()
 		fi
 	fi
 
-	if [[ $(systemctl status apt-daily.service | grep -Fq "could not be found") ]];
+	if systemctl status apt-daily.service | grep -Fq "could not be found";
 	then
 		echo "apt-daily.service could not be found"
 	else
@@ -1051,10 +1058,10 @@ install_website ()
 		do
 			val="/etc/systemd/system/$val"
 			#echo $val
-			sed -i -E "s|^(\s*ExecStart\s*=\s*)(sudo\s*)?(/usr/bin/python3)|\1\2/home/$SUDO_USER/venv/bin/python3|g" $val
+			sed -i -E "s|^(\s*ExecStart\s*=\s*)(sudo\s*)?(/usr/bin/python3)|\1\2${USER_HOME}/venv/bin/python3|g" $val
 		done
-		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1/home/$SUDO_USER/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service
-		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"/home/$SUDO_USER/venv/bin/celery\"|g" /etc/default/celery
+		sed -i -E "s|^(\s*ExecStart\s*=\s*)(/usr/local/bin/gunicorn)|\1${USER_HOME}/venv/bin/gunicorn|g" /etc/systemd/system/intvlm8r.service
+		sed -i -E "s|^(\s*CELERY_BIN\s*=\s*)(\"/usr/local/bin/celery\")|\1\"${USER_HOME}/venv/bin/celery\"|g" /etc/default/celery
 		sed -i -E --follow-symlinks "s|^(\s*ExecStartPost\s*=\s*)(.*)(sleep)(.*)$|\1\n# \2\3\4|g" /etc/systemd/system/redis.service		# Comment-out the ExecStartPost 'sleep' command. (Legacy installs only: we added it initially)
 		# nginx:
 		sed -i -E "s|^(\s*user www-data)(.*)$|# \1\2|g" /etc/nginx/nginx.conf	# Comment-out existing www-data user
@@ -1127,20 +1134,20 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 '
 
 	# Added 16 Mar 2024 in 4.6.3. Support for powerShell-style in-line comment text is ambiguous here at best.
-	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' /boot/config.txt
+	if grep -Fxq 'dtoverlay=gpio-poweroff,gpiopin=27,active_low #**LEGACY' $I2CPath
 	then
-		echo -e ""$YELLOW"'/boot/config.txt' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
+		echo -e ""$YELLOW"'$I2CPath' contains ambiguous 'dtoverlay=gpio-poweroff' comment text. Correcting""$RESET"
 		#Add the new '# Legacy:' header line first:
-		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' /boot/config.txt
+		sed -i '/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/i#Legacy:' $I2CPath
 		#Replace the bad version:
-		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' /boot/config.txt
+		sed -i 's/^dtoverlay=gpio-poweroff,gpiopin=27,active_low #\*\*LEGACY/dtoverlay=gpio-poweroff,gpiopin=27,active_low/g' $I2CPath
 	else
-		echo "Skipped: '/boot/config.txt' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
+		echo "Skipped: '$I2CPath' does not contain ambiguous 'dtoverlay=gpio-poweroff' comment text"
 	fi
 
-	if [ -f /home/${SUDO_USER}/www/intvlm8r.old ];
+	if [ -f ${USER_HOME}/www/intvlm8r.old ];
 	then
-		mv -fv /home/${SUDO_USER}/www/intvlm8r.old /home/${SUDO_USER}/www/intvlm8r.bak
+		mv -fv ${USER_HOME}/www/intvlm8r.old ${USER_HOME}/www/intvlm8r.bak
 	fi
 
 	# Wi-Fi Power Save
@@ -1199,9 +1206,9 @@ TEMPORARILY REMOVED 20230412 PENDING MORE TESTING
 
 	remoteit
 
-	if [ -f /home/${SUDO_USER}/www/intvlm8r.py.new ];
+	if [ -f ${USER_HOME}/www/intvlm8r.py.new ];
 	then
-		rm -fv /home/${SUDO_USER}/www/intvlm8r.py.new
+		rm -fv ${USER_HOME}/www/intvlm8r.py.new
 	fi
 
 	# Prepare for reboot/restart:
@@ -1222,7 +1229,7 @@ chg_web_login ()
 			oldPassword=${BASH_REMATCH[2]}
 			break
 		fi
-	done <~/www/intvlm8r.py
+	done <${USER_HOME}/www/intvlm8r.py
 
 	if [ ! -z "$oldLoginName" ];
 	then
@@ -1242,7 +1249,7 @@ chg_web_login ()
 			fi
 			break	# We only get to here if the login name is not blank and doesn't contain invalid characters
 		done
-		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ~/www/intvlm8r.py
+		sed -i "s/^users\s*=\s*{'$oldLoginName'/users = {'$loginName'/g" ${USER_HOME}/www/intvlm8r.py
 		matchPassword="[\']+"
 		if [[ $oldPassword == 'password' ]]; # we'll change this to a random 8-char default:
 		then
@@ -1267,7 +1274,7 @@ chg_web_login ()
 			echo ''
 			set +e #Suspend the error trap
 			escapedPassword=$(echo "$password" | sed 's/[]<>[\\\/.&""|$(){}?+*^]/\\&/g')
-			sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':)\s*'.*'}}$/\1 '$escapedPassword'}}/" ~/www/intvlm8r.py
+			sed -i -E "s/^(users\s*=\s*\{'$loginName':\s*\{'password':)\s*'.*'}}$/\1 '$escapedPassword'}}/" ${USER_HOME}/www/intvlm8r.py
 			if [[ "$?" -ne 0 ]];
 			then
 				echo 'Whoops - something broke. Please try again with a less complex password'
@@ -1278,7 +1285,7 @@ chg_web_login ()
 			break
 		done
 	else
-		echo 'Error: Login name not found. Please edit ~/www/intvlm8r.py to resolve.'
+		echo "Error: Login name not found. Please edit ${USER_HOME}/www/intvlm8r.py to resolve."
 	fi
 }
 
@@ -1391,7 +1398,7 @@ END
 	if [ -z "$oldDhcpSubnetMask" ]; then oldDhcpSubnetMask='255.255.255.0'; fi
 
 	#Only move the hostapd.conf file from the Repo is there isn't an existing one:
-	[ -f /home/${SUDO_USER}/hostapd.conf ] && mv -v /home/${SUDO_USER}/hostapd.conf /etc/hostapd/hostapd.conf
+	[ -f ${USER_HOME}/hostapd.conf ] && mv -v ${USER_HOME}/hostapd.conf /etc/hostapd/hostapd.conf
 	#Extract the required Wi-Fi values:
 	oldWifiSsid=$(sed -n -E 's/^\s*ssid=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
 	oldWifiChannel=$(sed -n -E 's/^\s*channel=(.*)$/\1/p' /etc/hostapd/hostapd.conf)
@@ -1740,7 +1747,7 @@ END
 		echo 'Disabled hostapd'
 		sed -i -E "s|^\s*#*\s*(DAEMON_CONF=\")(.*\")|## \1\2|" /etc/default/hostapd # DOUBLE-Comment-out
 	fi
-	[ -f /etc/hostapd/hostapd.conf ] && mv -fv /etc/hostapd/hostapd.conf /home/${SUDO_USER}/hostapd.conf
+	[ -f /etc/hostapd/hostapd.conf ] && mv -fv /etc/hostapd/hostapd.conf ${USER_HOME}/hostapd.conf
  
 	#Paste in the new settings
 	case $staticResponse in
@@ -2242,10 +2249,10 @@ test_install ()
 				then
 					echo -e ""$GREEN"PASS:"$RESET" /etc/systemd/system/connectd.service waits until celery is up"
 				else
-					echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo -E ./setup.sh remoteit' to fix"
+					echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service does NOT wait until celery is up. Run 'sudo ./setup.sh remoteit' to fix"
 				fi
 			else
-				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo -E ./setup.sh remoteit' to fix"
+				echo -e ""$YELLOW"FAIL:"$RESET" /etc/systemd/system/connectd.service not present. Run 'sudo ./setup.sh remoteit' to fix"
 			fi
 		fi
 
@@ -2300,7 +2307,7 @@ test_install ()
 	gvfsFiles="/usr/lib/gvfs/gvfsd-gphoto2 /usr/lib/gvfs/gvfs-gphoto2-volume-monitor"
 	for gvfsFile in $gvfsFiles;
 	do
-		[ -x  $gvfsFile ] && ""$YELLOW"FAIL:"$RESET" %-41s is executable\n" $gvfsFile || printf ""$GREEN"PASS:"$RESET" %-41s is not executable or does not exist\n" $gvfsFile
+		[ -x $gvfsFile ] && printf ""$YELLOW"FAIL:"$RESET" %-41s is executable\n" $gvfsFile || printf ""$GREEN"PASS:"$RESET" %-41s is not executable or does not exist\n" $gvfsFile
 	done
 
 	echo ''
@@ -2351,7 +2358,8 @@ remoteit()
 		else
 			sed -i -E 's/^(After=network.target rc-local.service)(.*)$/\1 celery.service/g' /etc/systemd/system/connectd.service #Add AFTER celery.service
 			echo "Added 'After=celery.service' suffix"
-			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $today" /etc/systemd/system/connectd.service
+			TODAY=$(date '+%Y-%m-%d')
+			sed -i "/^After=network.target rc-local.service celery.service/a #Celery requirement added by intvlm8r setup.sh $TODAY" /etc/systemd/system/connectd.service
 		fi
 	else
 		echo -e ""$GREEN"PASS:"$RESET" remote.it is not installed - legacy version"
@@ -2388,6 +2396,7 @@ update()
 dev()
 {
 	echo ''
+
 }
 
 
@@ -2419,9 +2428,15 @@ prompt_for_reboot()
 
 if [ "$EUID" -ne 0 ];
 then
-	echo -e "\nPlease re-run as 'sudo -E [-H] ./setup.sh <step>'"
-	echo -e "(Only the 'start' step needs the extra -H switch)"
+	echo -e "\nRun as: sudo ./setup.sh <step>"
+	echo -e "(sudo -E/-H are no longer required, but won't cause problems if used out of habit)"
 	exit 1
+fi
+
+if [ -n "${SUDO_USER}" ]; then
+	USER_HOME=$(getent passwd "${SUDO_USER}" | cut -d: -f6)
+else
+	USER_HOME=${HOME}
 fi
 
 venv_test
